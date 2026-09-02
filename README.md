@@ -21,10 +21,21 @@ Inherited upstream release workflows are preserved in `.github/upstream-workflow
 but are not executed. Only the two Personal workflows are active. No upstream
 mobile, desktop, package or container releases are published by this fork.
 
-Google Health and other personal features are **not implemented yet**. This first
-version establishes the isolated source/build/update path. Keep credentials and
-health data out of commits, Actions logs and issues. Preserve upstream licensing
-and attribution; this is experimental software, not a validated medical device.
+Personal adds a **Personal** navigation item for tenant administrators:
+
+- **Google Health**: Google OAuth with selectable steps, heart rate and weight;
+  encrypted offline credentials, partial consent, 15-minute polling, a configurable
+  1–90 day reconciliation window and a paginated readings view. Imported readings
+  are shown in Personal, not yet projected into upstream reports or therapy models.
+- **Medication log**: actual administrations or skipped doses for Mounjaro and
+  similar medicines; explicit ingredient, amount/unit, time, route, optional site
+  and notes. Edit/delete use revision checks. No dosing schedules, insulin/IOB
+  calculations, pen-click conversion or treatment recommendations.
+
+See [Personal usage](PERSONAL_USAGE.md) for Google setup, privacy, limitations and
+testing. Keep credentials and health data out of commits, Actions logs and issues.
+Preserve upstream licensing and attribution; this is experimental software, not a
+validated medical device.
 
 ## Upstream project
 

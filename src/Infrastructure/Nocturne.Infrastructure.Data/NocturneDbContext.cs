@@ -124,6 +124,10 @@ public class NocturneDbContext : DbContext, IDataProtectionKeyContext
 
     public DbSet<BodyWeightEntity> BodyWeights { get; set; }
 
+    public DbSet<PersonalGoogleConnectionEntity> PersonalGoogleConnections { get; set; }
+    public DbSet<PersonalHealthReadingEntity> PersonalHealthReadings { get; set; }
+    public DbSet<PersonalMedicationEntity> PersonalMedications { get; set; }
+
     public DbSet<DiscrepancyAnalysisEntity> DiscrepancyAnalyses { get; set; }
 
     public DbSet<DiscrepancyDetailEntity> DiscrepancyDetails { get; set; }
@@ -371,6 +375,10 @@ public class NocturneDbContext : DbContext, IDataProtectionKeyContext
         ConfigureIndexes(modelBuilder);
 
         ConfigureEntities(modelBuilder);
+
+        foreach (var type in new[] { typeof(PersonalGoogleConnectionEntity), typeof(PersonalHealthReadingEntity), typeof(PersonalMedicationEntity) })
+            foreach (var property in modelBuilder.Entity(type).Metadata.GetProperties())
+                property.SetColumnName(System.Text.RegularExpressions.Regex.Replace(property.Name, "([a-z0-9])([A-Z])", "$1_$2").ToLowerInvariant());
 
         // The TOTP shared secret is a permanent second factor, so the column holds a Data
         // Protection payload rather than the seed. Configured here rather than in the static

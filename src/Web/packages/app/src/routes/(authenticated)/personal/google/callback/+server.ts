@@ -1,0 +1,22 @@
+import { redirect } from "@sveltejs/kit";
+import type { RequestHandler } from "./$types";
+
+export const GET: RequestHandler = async ({ locals, url, setHeaders }) => {
+  setHeaders({ "cache-control": "no-store", "referrer-policy": "no-referrer" });
+  let outcome = "failed";
+  if (locals.isAuthenticated && locals.user && !url.searchParams.has("error")) {
+    const code = url.searchParams.get("code");
+    const state = url.searchParams.get("state");
+    if (code && state) {
+      try {
+        await locals.apiClient.personalGoogleHealth.completePersonalGoogleHealth(
+          { code, state }
+        );
+        outcome = "connected";
+      } catch {
+        /* Authorization codes, tokens and provider errors must never be logged. */
+      }
+    }
+  }
+  redirect(303, `/personal/google?connection=${outcome}`);
+};

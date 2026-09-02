@@ -1,0 +1,27 @@
+name: Personal source checks
+on:
+  push:
+    branches: [personal]
+  pull_request:
+    branches: [personal]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  metadata:
+    name: Personal source metadata
+    if: github.repository == 'smokkelaar/nocturne-personal'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - run: python3 .personal/sync.py --check
+      - name: Reject accidentally activated upstream publishers
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          names = {p.name for p in Path('.github/workflows').iterdir()}
+          assert names == {'personal-check.yml', 'personal-sync.yml'}, names
+          PY

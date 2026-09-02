@@ -25,3 +25,8 @@ jobs:
           names = {p.name for p in Path('.github/workflows').iterdir()}
           assert names == {'personal-check.yml', 'personal-sync.yml'}, names
           PY
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
+        with:
+          dotnet-version: '10.0.400'
+      - name: Personal OAuth, import and medication tests
+        run: dotnet test tests/Unit/Nocturne.API.Tests -c Release -p:GenerateNSwagClient=false --filter 'FullyQualifiedName~PersonalHealthTests|FullyQualifiedName~V4WriteScopeGatingTests' --logger 'console;verbosity=minimal'

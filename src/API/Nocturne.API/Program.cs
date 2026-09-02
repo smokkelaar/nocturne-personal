@@ -145,6 +145,14 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IAuditContext, AuditContext>();
 builder.Services.AddHostedService<AuditRetentionService>();
 builder.Services.AddHostedService<SoftDeleteCleanupService>();
+builder.Services.AddSingleton<Nocturne.API.Services.Personal.GoogleHealthCoordinator>();
+builder.Services.AddScoped<Nocturne.Core.Contracts.Health.IPersonalGoogleHealthService, Nocturne.API.Services.Personal.GoogleHealthService>();
+builder.Services.AddHttpClient<Nocturne.API.Services.Personal.GoogleHealthClient>(client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(45);
+    client.MaxResponseContentBufferSize = 16 * 1024 * 1024;
+}).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false });
+builder.Services.AddHostedService<Nocturne.API.Services.Personal.GoogleHealthWorker>();
 
 // Consumed by the dev-only admin controllers (Development) and the demo admin
 // controller's seed-extras endpoint (demo container, all environments).

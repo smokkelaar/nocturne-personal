@@ -366,36 +366,24 @@ public abstract class BaseConnectorService<TConfig> : IConnectorService<TConfig>
     }
 
     /// <summary>
-    ///     Calculate the optimal "since" timestamp for fetching glucose entries
-    ///     Uses catch-up logic to fetch from the most recent entry, or falls back to default lookback
+    ///     The glucose family's resume point: the most recent stored entry (minus the catch-up
+    ///     overlap), or <see cref="InitialSyncFloor"/> when none is stored. Combine it with a
+    ///     caller's bound through <see cref="ResumeFrom(DateTime?, DateTime?)"/> rather than
+    ///     choosing between the two.
     /// </summary>
-    protected async Task<DateTime?> CalculateSinceTimestampAsync(
-        TConfig config,
-        DateTime? defaultSince = null
-    )
+    protected async Task<DateTime?> CalculateSinceTimestampAsync(TConfig config)
     {
-        if (defaultSince.HasValue)
-            return defaultSince.Value;
-
-        // Get the most recent entry timestamp from Nocturne API
         var latestEntryTimestamp = await FetchLatestEntryTimestampAsync(config);
 
         return CalculateSinceFromTimestamp(latestEntryTimestamp, "entries");
     }
 
     /// <summary>
-    ///     Calculate the optimal "since" timestamp for fetching treatments
-    ///     Uses catch-up logic to fetch from the most recent treatment, or falls back to default lookback
+    ///     The treatment family's resume point: the most recent stored treatment (minus the
+    ///     catch-up overlap), or <see cref="InitialSyncFloor"/> when none is stored.
     /// </summary>
-    protected async Task<DateTime?> CalculateTreatmentSinceTimestampAsync(
-        TConfig config,
-        DateTime? defaultSince = null
-    )
+    protected async Task<DateTime?> CalculateTreatmentSinceTimestampAsync(TConfig config)
     {
-        if (defaultSince.HasValue)
-            return defaultSince.Value;
-
-        // Get the most recent treatment timestamp from Nocturne API
         var latestTreatmentTimestamp = await FetchLatestTreatmentTimestampAsync(config);
 
         return CalculateSinceFromTimestamp(latestTreatmentTimestamp, "treatments");
@@ -456,6 +444,27 @@ public abstract class BaseConnectorService<TConfig> : IConnectorService<TConfig>
 
         return requested < resumePoint ? requested : resumePoint;
     }
+
+    /// <summary>
+    ///     The lower bound for a source that cannot crawl from an open one: as
+    ///     <see cref="ResumeFrom(DateTime?, DateTime?)"/>, over a resume point already resolved to
+    ///     a concrete timestamp.
+    /// </summary>
+    protected static DateTime ResumeFrom(DateTime? requested, DateTime resumePoint) =>
+        ResumeFrom(requested, (DateTime?)resumePoint) ?? resumePoint;
+
+    /// <summary>
+    ///     The lower bound a whole request crawls from, for a source that cannot crawl from an open
+    ///     one. An explicit range is answered as asked: it is the shape a manual re-import of one
+    ///     window sends, and widening it back to a resume point below re-crawls everything in
+    ///     between. A range naming no lower bound is asking for everything available, so it starts
+    ///     at <paramref name="historyFloor"/> — as far back as the connector reaches, which is the
+    ///     reading the reset-cursor endpoint documents and the only one under which it resets
+    ///     anything.
+    /// </summary>
+    protected static DateTime ResumeFrom(
+        SyncRequest request, DateTime resumePoint, DateTime historyFloor) =>
+        request.To is null ? ResumeFrom(request.From, resumePoint) : request.From ?? historyFloor;
 
     /// <summary>
     ///     Applies the catch-up overlap to a latest-record timestamp: returns the timestamp

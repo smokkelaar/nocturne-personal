@@ -9,6 +9,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Nocturne.API.Controllers.V4.Personal;
 using Nocturne.API.Services.Personal;
+using Nocturne.Core.Contracts.Health;
 using Nocturne.Core.Models.Personal;
 using Nocturne.Infrastructure.Data;
 using Nocturne.Infrastructure.Data.Entities;

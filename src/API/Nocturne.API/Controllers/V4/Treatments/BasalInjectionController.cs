@@ -16,10 +16,10 @@ namespace Nocturne.API.Controllers.V4.Treatments;
 /// </summary>
 /// <remarks>
 /// Both create and update enforce the same rules: <see cref="BasalInjection.Units"/> must be in (0, 500],
-/// <see cref="BasalInjection.Timestamp"/> may not be more than five minutes in the future, and — when the
-/// request carries a <c>PatientInsulinId</c> — the referenced <see cref="PatientInsulin"/> must exist with
-/// role <see cref="InsulinRole.Basal"/> or <see cref="InsulinRole.Both"/> and be active at the injection
-/// time. The server resolves <see cref="PatientInsulin"/> fresh on every write to populate the
+/// <see cref="BasalInjection.Timestamp"/> must be set and no more than five minutes in the future, and —
+/// when the request carries a <c>PatientInsulinId</c> — the referenced <see cref="PatientInsulin"/> must
+/// exist with role <see cref="InsulinRole.Basal"/> or <see cref="InsulinRole.Both"/> and be active at the
+/// injection time. The server resolves <see cref="PatientInsulin"/> fresh on every write to populate the
 /// <see cref="TreatmentInsulinContext"/> snapshot.
 ///
 /// The insulin reference is optional, matching <see cref="BolusController"/>: uploader-style clients that
@@ -162,14 +162,8 @@ public class BasalInjectionController(
         [FromBody] CreateBasalInjectionRequest[] requests,
         CancellationToken ct = default)
     {
-        if (requests is not { Length: > 0 })
-            return Problem(detail: "Basal injection data is required", statusCode: 400, title: "Bad Request");
-
-        if (requests.Length > 1000)
-            return Problem(detail: "Bulk operations are limited to 1000 injections per request", statusCode: 400, title: "Bad Request");
-
-        if (requests.Any(r => !string.IsNullOrEmpty(r.SyncIdentifier) && string.IsNullOrEmpty(r.DataSource)))
-            return Problem(detail: "DataSource is required when SyncIdentifier is supplied", statusCode: 400, title: "Bad Request");
+        if (await this.ValidateBulkAsync(requests, "Basal injection", "injection", "injections", ct) is { } invalid)
+            return invalid;
 
         var models = new List<BasalInjection>(requests.Length);
         foreach (var request in requests)
@@ -217,6 +211,9 @@ public class BasalInjectionController(
     {
         if (units <= 0 || units > UnitsHardCeiling)
             return Problem(detail: "Units must be > 0 and <= 500.", statusCode: 400, title: "Bad Request");
+
+        if (timestamp == default)
+            return Problem(detail: "Timestamp must be set", statusCode: 400, title: "Bad Request");
 
         if (timestamp > DateTimeOffset.UtcNow.AddMinutes(FutureToleranceMinutes))
             return Problem(detail: "Timestamp cannot be more than 5 minutes in the future.", statusCode: 400, title: "Bad Request");

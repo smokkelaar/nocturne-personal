@@ -214,7 +214,7 @@ public abstract class V4RepositoryBase<TModel, TEntity>
     }
 
     /// <inheritdoc cref="Core.Contracts.V4.Repositories.IV4Repository{T}.CreateAsync" />
-    /// <remarks>Virtual: SyncId-upsert types (Bolus, CarbIntake) override to upsert in place.</remarks>
+    /// <remarks>Virtual: <see cref="SyncUpsertRepositoryBase{TModel,TEntity}"/> overrides it to upsert in place.</remarks>
     public virtual async Task<TModel> CreateAsync(TModel model, WriteOrigin origin, CancellationToken ct = default)
     {
         await using var ctx = await ContextFactory.CreateAsync(ct);
@@ -373,8 +373,8 @@ public abstract class V4RepositoryBase<TModel, TEntity>
         List<TEntity> MateriallyChanged,
         List<TEntity> ToInsert);
 
-    /// <summary>SyncId-upsert types override: match existing rows by (DataSource, SyncIdentifier), update them in
-    /// place, and return the upserted rows, those that changed materially, and the rows still to insert.
+    /// <summary>Upsert participants override: match existing rows by their key, update them in place, and
+    /// return the upserted rows, those that changed materially, and the rows still to insert.
     /// Default: nothing upserted.</summary>
     protected virtual Task<UpsertSplit> SplitUpsertsAsync(
         NocturneDbContext ctx, List<TEntity> entities, CancellationToken ct)
@@ -387,27 +387,15 @@ public abstract class V4RepositoryBase<TModel, TEntity>
         => Task.CompletedTask;
 
     /// <summary>
-    /// Bulk-inserts records with batch-level and DB-level deduplication by LegacyId. The base
-    /// implements the LegacyId-only path; SyncId-upsert / DeduplicationService participants override
-    /// the <see cref="SplitUpsertsAsync"/> / <see cref="PostCommitDedupAsync"/> hooks rather than the
-    /// whole method.
+    /// Bulk write in one transaction: <see cref="SplitUpsertsAsync"/> separates the rows upserted in
+    /// place from the rows still to insert, the insert set is deduplicated by LegacyId (batch- then
+    /// DB-level) and inserted in chunks, and the commit is followed by dedup linking and the
+    /// broadcast. The base implements the LegacyId-only path; SyncId-upsert / DeduplicationService
+    /// participants override the <see cref="SplitUpsertsAsync"/> / <see cref="PostCommitDedupAsync"/>
+    /// hooks rather than the whole method.
     /// </summary>
-    public virtual Task<IEnumerable<TModel>> BulkCreateAsync(
+    public virtual async Task<IEnumerable<TModel>> BulkCreateAsync(
         IEnumerable<TModel> recordsParam, WriteOrigin origin, CancellationToken ct = default)
-        => BulkWriteAsync(recordsParam, SplitUpsertsAsync, origin, ct);
-
-    /// <summary>
-    /// The transaction every bulk write shares: <paramref name="splitter"/> separates the rows upserted
-    /// in place from the rows still to insert, the insert set is deduplicated by LegacyId (batch- then
-    /// DB-level) and inserted in chunks, and the commit is followed by dedup linking and the broadcast.
-    /// Types that expose a second bulk entry point alongside the insert-only
-    /// <see cref="BulkCreateAsync"/> (an explicit <c>BulkUpsertAsync</c>) pass their own splitter.
-    /// </summary>
-    protected async Task<IEnumerable<TModel>> BulkWriteAsync(
-        IEnumerable<TModel> recordsParam,
-        Func<NocturneDbContext, List<TEntity>, CancellationToken, Task<UpsertSplit>> splitter,
-        WriteOrigin origin,
-        CancellationToken ct)
     {
         var records = recordsParam.ToList();
         if (records.Count == 0) return [];
@@ -418,7 +406,7 @@ public abstract class V4RepositoryBase<TModel, TEntity>
             await using var tx = await ctx.Database.BeginTransactionAsync(ct);
             var entities = records.Select(ToEntity).ToList();
 
-            var split = await splitter(ctx, entities, ct);
+            var split = await SplitUpsertsAsync(ctx, entities, ct);
             var toInsert = split.ToInsert;
 
             // Batch-level LegacyId dedup

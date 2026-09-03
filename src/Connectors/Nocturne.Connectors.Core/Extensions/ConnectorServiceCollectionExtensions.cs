@@ -13,7 +13,7 @@ namespace Nocturne.Connectors.Core.Extensions;
 /// <summary>
 ///     Options for configuring a connector via AddConnector
 /// </summary>
-public abstract class ConnectorOptions
+public sealed class ConnectorOptions
 {
     /// <summary>
     ///     The connector name used in configuration paths (e.g., "Dexcom", "LibreLinkUp")
@@ -91,19 +91,18 @@ public static class ConnectorServiceCollectionExtensions
         }
 
         /// <summary>
-        ///     Registers a connector with its configuration, service, and token provider.
-        ///     This is the preferred method for registering new connectors.
+        ///     Registers a connector with its configuration, service, token provider and sync
+        ///     executor. This is the preferred method for registering new connectors.
         /// </summary>
         /// <typeparam name="TConfig">Configuration type</typeparam>
         /// <typeparam name="TService">Connector service type</typeparam>
         /// <typeparam name="TTokenProvider">Token provider type</typeparam>
         /// <param name="configuration">Configuration</param>
         /// <param name="options">Connector options</param>
-        /// <returns>The configuration if enabled, null otherwise</returns>
-        public TConfig? AddConnector<TConfig, TService, TTokenProvider>(IConfiguration configuration,
+        public void AddConnector<TConfig, TService, TTokenProvider>(IConfiguration configuration,
             ConnectorOptions options)
             where TConfig : BaseConnectorConfiguration, new()
-            where TService : class
+            where TService : class, IConnectorService<TConfig>
             where TTokenProvider : class
         {
             // Register configuration
@@ -114,7 +113,7 @@ public static class ConnectorServiceCollectionExtensions
 
             // Skip registration if disabled
             if (!config.Enabled)
-                return null;
+                return;
 
             // Register server resolver
             services.AddSingleton<IConnectorServerResolver<TConfig>>(
@@ -151,53 +150,8 @@ public static class ConnectorServiceCollectionExtensions
                     options.AddResilience
                 );
 
-            return config;
-        }
-
-        /// <summary>
-        ///     Simplified connector registration for connectors without token providers.
-        /// </summary>
-        public TConfig? AddConnector<TConfig, TService>(IConfiguration configuration,
-            ConnectorOptions options)
-            where TConfig : BaseConnectorConfiguration, new()
-            where TService : class
-        {
-            // Register configuration
-            var config = services.AddConnectorConfiguration<TConfig>(
-                configuration,
-                options.ConnectorName
-            );
-
-            // Skip registration if disabled
-            if (!config.Enabled)
-                return null;
-
-            // Register server resolver
-            services.AddSingleton<IConnectorServerResolver<TConfig>>(
-                new ConnectorServerResolver<TConfig>(
-                    options.ServerMapping,
-                    options.GetServerRegion,
-                    options.DefaultServer));
-
-            // Register config loader
-            services.AddScoped<IConnectorConfigurationLoader<TConfig>, ConnectorConfigurationLoader<TConfig>>();
-
-            // Register token cache (shared singleton across all connectors)
-            services.TryAddSingleton<IConnectorTokenCache, ConnectorTokenCache>();
-            services.TryAddSingleton<IConnectorCacheInvalidator>(sp => sp.GetRequiredService<IConnectorTokenCache>());
-
-            // Register HttpClient WITHOUT BaseAddress (server resolved per-tenant at call time)
-            services.AddHttpClient<TService>()
-                .ConfigureConnectorClient(
-                    null,
-                    options.AdditionalHeaders,
-                    options.UserAgent,
-                    options.Timeout,
-                    options.ConnectTimeout,
-                    options.AddResilience
-                );
-
-            return config;
+            services.AddConnectorTokenProvider<TTokenProvider>();
+            services.AddConnectorSyncExecutor<ConnectorSyncExecutor<TService, TConfig>>();
         }
 
         /// <summary>
@@ -289,44 +243,26 @@ public static class ConnectorServiceCollectionExtensions
 
             // Discover and invoke all IConnectorInstaller implementations
             foreach (var assembly in connectorAssemblies)
-            {
-                try
+                foreach (var type in assembly.LoadableTypes())
                 {
-                    foreach (var type in assembly.GetTypes())
-                    {
-                        if (type.IsAbstract || type.IsInterface)
-                            continue;
+                    if (type.IsAbstract || type.IsInterface)
+                        continue;
 
-                        if (!typeof(IConnectorInstaller).IsAssignableFrom(type))
-                            continue;
+                    if (!typeof(IConnectorInstaller).IsAssignableFrom(type))
+                        continue;
 
-                        var installer = (IConnectorInstaller)Activator.CreateInstance(type)!;
-                        installer.Install(services, configuration);
-                    }
+                    var installer = (IConnectorInstaller)Activator.CreateInstance(type)!;
+                    installer.Install(services, configuration);
                 }
-                catch (ReflectionTypeLoadException)
-                {
-                    // Some types may not be loadable, skip them
-                }
-            }
 
             if (pollingService is null)
                 return services;
 
             void AddPollerIfEnabled(Type hostedService, Type configType)
             {
-                // Per-connector section, then the global Settings section, then on by default.
                 var connectorName = ConnectorRegistrationAttribute.DeclaredOn(configType).ConnectorName;
-                var section = configuration.GetSection($"Parameters:Connectors:{connectorName}");
-                if (!section.Exists())
-                    section = configuration.GetSection($"Connectors:{connectorName}");
 
-                var isEnabled = section.GetValue<bool?>("Enabled")
-                    ?? configuration.GetValue<bool?>("Parameters:Connectors:Settings:Enabled")
-                    ?? configuration.GetValue<bool?>("Connectors:Settings:Enabled")
-                    ?? true;
-
-                if (isEnabled)
+                if (configuration.ConnectorEnabled(connectorName) ?? true)
                     services.TryAddEnumerable(
                         ServiceDescriptor.Singleton(typeof(IHostedService), hostedService));
             }

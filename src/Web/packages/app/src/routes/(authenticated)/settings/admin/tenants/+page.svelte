@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { formatNumericDate } from "$lib/utils/formatting";
   import {
     Card,
     CardContent,
@@ -34,6 +35,7 @@
   import { getCurrentTenantId } from "../../current-tenant.remote";
   import { getTransitionStatus } from "$api/generated/platforms.generated.remote";
   import { describeSubmitError, errorMessage } from "$lib/forms/submit-error";
+  import { remoteErrorMessage } from "$lib/api/remote-error";
 
   const tenantIdQuery = getCurrentTenantId();
   const currentTenantId = $derived(tenantIdQuery.current ?? undefined);
@@ -79,8 +81,8 @@
     loadError = null;
     try {
       tenant = await tenantRemote.getById(currentTenantId).run();
-    } catch {
-      loadError = "Failed to load tenant details.";
+    } catch (err) {
+      loadError = remoteErrorMessage(err, "Failed to load tenant details.");
     } finally {
       loading = false;
     }
@@ -331,7 +333,7 @@
             <p class="text-sm font-medium text-muted-foreground">Created</p>
             <p class="mt-1 text-sm">
               {tenant.sysCreatedAt
-                ? new Date(tenant.sysCreatedAt).toLocaleDateString()
+                ? formatNumericDate(new Date(tenant.sysCreatedAt))
                 : "---"}
             </p>
           </div>

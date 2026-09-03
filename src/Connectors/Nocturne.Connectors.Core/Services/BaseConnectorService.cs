@@ -366,36 +366,24 @@ public abstract class BaseConnectorService<TConfig> : IConnectorService<TConfig>
     }
 
     /// <summary>
-    ///     Calculate the optimal "since" timestamp for fetching glucose entries
-    ///     Uses catch-up logic to fetch from the most recent entry, or falls back to default lookback
+    ///     The glucose family's resume point: the most recent stored entry (minus the catch-up
+    ///     overlap), or <see cref="InitialSyncFloor"/> when none is stored. Combine it with a
+    ///     caller's bound through <see cref="ResumeFrom(DateTime?, DateTime?)"/> rather than
+    ///     choosing between the two.
     /// </summary>
-    protected async Task<DateTime?> CalculateSinceTimestampAsync(
-        TConfig config,
-        DateTime? defaultSince = null
-    )
+    protected async Task<DateTime?> CalculateSinceTimestampAsync(TConfig config)
     {
-        if (defaultSince.HasValue)
-            return defaultSince.Value;
-
-        // Get the most recent entry timestamp from Nocturne API
         var latestEntryTimestamp = await FetchLatestEntryTimestampAsync(config);
 
         return CalculateSinceFromTimestamp(latestEntryTimestamp, "entries");
     }
 
     /// <summary>
-    ///     Calculate the optimal "since" timestamp for fetching treatments
-    ///     Uses catch-up logic to fetch from the most recent treatment, or falls back to default lookback
+    ///     The treatment family's resume point: the most recent stored treatment (minus the
+    ///     catch-up overlap), or <see cref="InitialSyncFloor"/> when none is stored.
     /// </summary>
-    protected async Task<DateTime?> CalculateTreatmentSinceTimestampAsync(
-        TConfig config,
-        DateTime? defaultSince = null
-    )
+    protected async Task<DateTime?> CalculateTreatmentSinceTimestampAsync(TConfig config)
     {
-        if (defaultSince.HasValue)
-            return defaultSince.Value;
-
-        // Get the most recent treatment timestamp from Nocturne API
         var latestTreatmentTimestamp = await FetchLatestTreatmentTimestampAsync(config);
 
         return CalculateSinceFromTimestamp(latestTreatmentTimestamp, "treatments");
@@ -456,6 +444,27 @@ public abstract class BaseConnectorService<TConfig> : IConnectorService<TConfig>
 
         return requested < resumePoint ? requested : resumePoint;
     }
+
+    /// <summary>
+    ///     The lower bound for a source that cannot crawl from an open one: as
+    ///     <see cref="ResumeFrom(DateTime?, DateTime?)"/>, over a resume point already resolved to
+    ///     a concrete timestamp.
+    /// </summary>
+    protected static DateTime ResumeFrom(DateTime? requested, DateTime resumePoint) =>
+        ResumeFrom(requested, (DateTime?)resumePoint) ?? resumePoint;
+
+    /// <summary>
+    ///     The lower bound a whole request crawls from, for a source that cannot crawl from an open
+    ///     one. An explicit range is answered as asked: it is the shape a manual re-import of one
+    ///     window sends, and widening it back to a resume point below re-crawls everything in
+    ///     between. A range naming no lower bound is asking for everything available, so it starts
+    ///     at <paramref name="historyFloor"/> — as far back as the connector reaches, which is the
+    ///     reading the reset-cursor endpoint documents and the only one under which it resets
+    ///     anything.
+    /// </summary>
+    protected static DateTime ResumeFrom(
+        SyncRequest request, DateTime resumePoint, DateTime historyFloor) =>
+        request.To is null ? ResumeFrom(request.From, resumePoint) : request.From ?? historyFloor;
 
     /// <summary>
     ///     Applies the catch-up overlap to a latest-record timestamp: returns the timestamp
@@ -1348,59 +1357,21 @@ public abstract class BaseConnectorService<TConfig> : IConnectorService<TConfig>
         // HttpClient is managed by IHttpClientFactory - do not dispose
     }
 
-    #region Health Tracking
+    #region Failure Tracking
 
-    /// <summary>
-    ///     Tracks consecutive failed requests for health monitoring.
-    ///     Automatically incremented on failures and reset on success.
-    /// </summary>
     private int _failedRequestCount;
 
-    /// <summary>
-    ///     Maximum failed requests before connector is considered unhealthy.
-    ///     Override in derived classes to customize threshold.
-    /// </summary>
-    protected virtual int MaxFailedRequestsBeforeUnhealthy => 5;
-
-    /// <summary>
-    ///     Gets whether the connector is in a healthy state based on recent request failures.
-    ///     Returns false if consecutive failures exceed MaxFailedRequestsBeforeUnhealthy.
-    /// </summary>
-    public virtual bool IsHealthy =>
-        Volatile.Read(ref _failedRequestCount) < MaxFailedRequestsBeforeUnhealthy;
-
-    /// <summary>
-    ///     Gets the number of consecutive failed requests.
-    /// </summary>
-    public int FailedRequestCount => Volatile.Read(ref _failedRequestCount);
-
-    /// <summary>
-    ///     Resets the failed request counter. Call this after successful recovery.
-    /// </summary>
-    public virtual void ResetFailedRequestCount()
-    {
-        Interlocked.Exchange(ref _failedRequestCount, 0);
-        _logger.LogInformation("[{ConnectorSource}] Failed request count reset", ConnectorSource);
-    }
-
-    /// <summary>
-    ///     Increments the failed request count and logs the failure.
-    /// </summary>
     protected void TrackFailedRequest(string? reason = null)
     {
         var newCount = Interlocked.Increment(ref _failedRequestCount);
         _logger.LogWarning(
-            "[{ConnectorSource}] Request failed (count: {FailedCount}/{MaxAllowed}){Reason}",
+            "[{ConnectorSource}] Request failed (consecutive: {FailedCount}){Reason}",
             ConnectorSource,
             newCount,
-            MaxFailedRequestsBeforeUnhealthy,
             reason != null ? $": {reason}" : ""
         );
     }
 
-    /// <summary>
-    ///     Resets the failed request count on success.
-    /// </summary>
     protected void TrackSuccessfulRequest()
     {
         var previousCount = Volatile.Read(ref _failedRequestCount);
@@ -1421,8 +1392,8 @@ public abstract class BaseConnectorService<TConfig> : IConnectorService<TConfig>
 
     /// <summary>
     ///     Executes an async operation under the shared connector retry loop, tracking success and
-    ///     failure for health monitoring. See <see cref="ConnectorRetryLoop.RunAsync{T}"/> for the
-    ///     attempt-budget and delay contract.
+    ///     failure. See <see cref="ConnectorRetryLoop.RunAsync{T}"/> for the attempt-budget and
+    ///     delay contract.
     /// </summary>
     /// <typeparam name="T">The return type of the operation</typeparam>
     /// <param name="operation">The async operation to execute</param>

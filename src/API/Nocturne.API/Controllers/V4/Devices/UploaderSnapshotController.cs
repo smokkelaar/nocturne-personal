@@ -51,20 +51,11 @@ public class UploaderSnapshotController(IUploaderSnapshotRepository repo)
         [FromBody] UpsertUploaderSnapshotRequest[] requests,
         CancellationToken ct = default)
     {
-        if (requests is not { Length: > 0 })
-            return Problem(detail: "Uploader snapshot data is required", statusCode: 400, title: "Bad Request");
-
-        if (requests.Length > 1000)
-            return Problem(detail: "Bulk operations are limited to 1000 snapshots per request", statusCode: 400, title: "Bad Request");
-
-        if (requests.Any(r => r.Timestamp == default))
-            return Problem(detail: "Timestamp must be set on every snapshot", statusCode: 400, title: "Bad Request");
-
-        if (requests.Any(r => !string.IsNullOrEmpty(r.SyncIdentifier) && string.IsNullOrEmpty(r.DataSource)))
-            return Problem(detail: "DataSource is required when SyncIdentifier is supplied", statusCode: 400, title: "Bad Request");
+        if (await this.ValidateBulkAsync(requests, "Uploader snapshot", "snapshot", "snapshots", ct) is { } invalid)
+            return invalid;
 
         var models = requests.Select(MapToModel).ToList();
-        var persisted = await Repository.BulkUpsertAsync(models, WriteOrigin.Live, ct);
+        var persisted = await Repository.BulkCreateAsync(models, WriteOrigin.Live, ct);
         return StatusCode(201, persisted.ToArray());
     }
 

@@ -5574,7 +5574,8 @@ namespace Nocturne.Infrastructure.Data.Migrations
                         .HasColumnName("current_bg");
 
                     b.Property<string>("DataSource")
-                        .HasColumnType("text")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
                         .HasColumnName("data_source");
 
                     b.Property<DateTime?>("DeletedAt")
@@ -7408,7 +7409,8 @@ namespace Nocturne.Infrastructure.Data.Migrations
                         .HasColumnName("correlation_id");
 
                     b.Property<string>("DataSource")
-                        .HasColumnType("text")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
                         .HasColumnName("data_source");
 
                     b.Property<DateTime?>("DeletedAt")
@@ -8216,7 +8218,8 @@ namespace Nocturne.Infrastructure.Data.Migrations
                         .HasColumnName("correlation_id");
 
                     b.Property<string>("DataSource")
-                        .HasColumnType("text")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
                         .HasColumnName("data_source");
 
                     b.Property<DateTime?>("DeletedAt")

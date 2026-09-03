@@ -8,106 +8,6 @@ public static class CacheKeyBuilder
     private const string KeySeparator = ":";
 
     /// <summary>
-    /// Builds a cache key for glucose entries
-    /// </summary>
-    /// <param name="tenantId">Tenant ID</param>
-    /// <param name="suffix">Optional suffix</param>
-    public static string BuildEntriesKey(string tenantId, string? suffix = null) =>
-        BuildKey("entries", tenantId, suffix);
-
-    /// <summary>
-    /// Builds a cache key for treatments
-    /// </summary>
-    /// <param name="tenantId">Tenant ID</param>
-    /// <param name="suffix">Optional suffix</param>
-    public static string BuildTreatmentsKey(string tenantId, string? suffix = null) =>
-        BuildKey("treatments", tenantId, suffix);
-
-    /// <summary>
-    /// Builds a cache key for device status
-    /// </summary>
-    /// <param name="tenantId">Tenant ID</param>
-    /// <param name="suffix">Optional suffix</param>
-    public static string BuildDeviceStatusKey(string tenantId, string? suffix = null) =>
-        BuildKey("devicestatus", tenantId, suffix);
-
-    /// <summary>
-    /// Builds a cache key for profiles
-    /// </summary>
-    /// <param name="tenantId">Tenant ID</param>
-    /// <param name="suffix">Optional suffix</param>
-    public static string BuildProfilesKey(string tenantId, string? suffix = null) =>
-        BuildKey("profiles", tenantId, suffix);
-
-    /// <summary>
-    /// Builds a cache key for food entries
-    /// </summary>
-    /// <param name="tenantId">Tenant ID</param>
-    /// <param name="suffix">Optional suffix</param>
-    public static string BuildFoodKey(string tenantId, string? suffix = null) =>
-        BuildKey("food", tenantId, suffix);
-
-    /// <summary>
-    /// Builds a cache key for settings
-    /// </summary>
-    /// <param name="tenantId">Tenant ID</param>
-    /// <param name="suffix">Optional suffix</param>
-    public static string BuildSettingsKey(string tenantId, string? suffix = null) =>
-        BuildKey("settings", tenantId, suffix);
-
-    /// <summary>
-    /// Builds a cache key for API status
-    /// </summary>
-    /// <param name="tenantId">Tenant ID</param>
-    /// <param name="suffix">Optional suffix</param>
-    public static string BuildStatusKey(string tenantId, string? suffix = null) =>
-        BuildKey("status", tenantId, suffix);
-
-    /// <summary>
-    /// Builds a cache key for version information
-    /// </summary>
-    /// <param name="tenantId">Tenant ID</param>
-    /// <param name="suffix">Optional suffix</param>
-    public static string BuildVersionKey(string tenantId, string? suffix = null) =>
-        BuildKey("version", tenantId, suffix);
-
-    /// <summary>
-    /// Builds a cache key for Loop integration data
-    /// </summary>
-    /// <param name="tenantId">Tenant ID</param>
-    /// <param name="suffix">Optional suffix</param>
-    public static string BuildLoopKey(string tenantId, string? suffix = null) =>
-        BuildKey("loop", tenantId, suffix);
-
-    /// <summary>
-    /// Builds a cache key for IOB calculations
-    /// </summary>
-    /// <param name="tenantId">Tenant ID</param>
-    /// <param name="suffix">Optional suffix</param>
-    public static string BuildIobKey(string tenantId, string? suffix = null) =>
-        BuildKey("iob", tenantId, suffix);
-
-    /// <summary>
-    /// Builds a cache key for COB calculations
-    /// </summary>
-    /// <param name="tenantId">Tenant ID</param>
-    /// <param name="suffix">Optional suffix</param>
-    public static string BuildCobKey(string tenantId, string? suffix = null) =>
-        BuildKey("cob", tenantId, suffix);
-
-    /// <summary>
-    /// Builds a cache key for profile calculations
-    /// </summary>
-    /// <param name="tenantId">Tenant ID</param>
-    /// <param name="timestamp">Timestamp for time-based calculations</param>
-    /// <param name="suffix">Optional suffix</param>
-    public static string BuildProfileCalculationKey(
-        string tenantId,
-        long timestamp,
-        string? suffix = null
-    ) => BuildKey("profile-calc", tenantId, timestamp.ToString(), suffix);
-
-    /// <summary>
     /// Builds a cache key for current entries
     /// </summary>
     /// <param name="tenantId">Tenant ID</param>
@@ -181,14 +81,6 @@ public static class CacheKeyBuilder
     }
 
     /// <summary>
-    /// Builds a cache key for profile at specific timestamp
-    /// </summary>
-    /// <param name="tenantId">Tenant ID</param>
-    /// <param name="timestamp">Unix timestamp for profile lookup</param>
-    public static string BuildProfileAtTimestampKey(string tenantId, long timestamp) =>
-        BuildKey("profiles", "at", tenantId, timestamp.ToString());
-
-    /// <summary>
     /// Builds a generic cache key
     /// </summary>
     /// <param name="category">Cache category</param>
@@ -253,14 +145,6 @@ public static class CacheKeyBuilder
         BuildKey("calculations", "iob", userId, timestamp.ToString());
 
     /// <summary>
-    /// Builds a cache key for COB calculation results
-    /// </summary>
-    /// <param name="userId">User ID</param>
-    /// <param name="timestamp">Timestamp for calculation</param>
-    public static string BuildCobCalculationKey(string userId, long timestamp) =>
-        BuildKey("calculations", "cob", userId, timestamp.ToString());
-
-    /// <summary>
     /// Builds a cache key for profile calculations at timestamp
     /// </summary>
     /// <param name="profileId">Profile ID</param>
@@ -269,49 +153,11 @@ public static class CacheKeyBuilder
         BuildKey("profiles", "calculated", profileId, timestamp.ToString());
 
     /// <summary>
-    /// Builds a cache key for time-in-range statistics
-    /// </summary>
-    /// <param name="userId">User ID</param>
-    /// <param name="period">Time period (e.g., "24h", "7d", "30d")</param>
-    public static string BuildTirStatsKey(string userId, string period) =>
-        BuildKey("stats", "tir", userId, period);
-
-    /// <summary>
-    /// Builds a cache key for HbA1c estimate statistics
-    /// </summary>
-    /// <param name="userId">User ID</param>
-    /// <param name="period">Time period (e.g., "24h", "7d", "30d")</param>
-    public static string BuildHbA1cStatsKey(string userId, string period) =>
-        BuildKey("stats", "hba1c", userId, period);
-
-    /// <summary>
-    /// Builds a cache key for glucose statistics
-    /// </summary>
-    /// <param name="userId">User ID</param>
-    /// <param name="period">Time period (e.g., "24h", "7d", "30d")</param>
-    public static string BuildGlucoseStatsKey(string userId, string period) =>
-        BuildKey("stats", "glucose", userId, period);
-
-    /// <summary>
     /// Creates a pattern for invalidating all IOB calculation cache for a user
     /// </summary>
     /// <param name="userId">User ID</param>
     public static string BuildIobCalculationPattern(string userId) =>
         $"calculations{KeySeparator}iob{KeySeparator}{userId}{KeySeparator}*";
-
-    /// <summary>
-    /// Creates a pattern for invalidating all COB calculation cache for a user
-    /// </summary>
-    /// <param name="userId">User ID</param>
-    public static string BuildCobCalculationPattern(string userId) =>
-        $"calculations{KeySeparator}cob{KeySeparator}{userId}{KeySeparator}*";
-
-    /// <summary>
-    /// Creates a pattern for invalidating all statistics cache for a user
-    /// </summary>
-    /// <param name="userId">User ID</param>
-    public static string BuildStatsPattern(string userId) =>
-        $"stats{KeySeparator}*{KeySeparator}{userId}{KeySeparator}*";
 
     /// <summary>
     /// Creates a pattern for invalidating all profile calculated cache for a profile

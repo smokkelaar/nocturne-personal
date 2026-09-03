@@ -46,6 +46,7 @@ public class PersonalGoogleHealthController(IPersonalGoogleHealthService service
 
     [HttpPost("sync"), RemoteCommand, RequireScope(Scope.TenantSettings)]
     [ProducesResponseType(typeof(GoogleHealthStatus), 200)]
+    [ProducesResponseType(typeof(ProblemDetails), 502)]
     public Task<ActionResult<GoogleHealthStatus>> SyncPersonalGoogleHealth(CancellationToken ct) => Run(async () => await service.SyncAsync(true, ct), ct);
 
     [HttpDelete("readings"), RemoteCommand, RequireScope(Scope.TenantSettings)]
@@ -67,6 +68,6 @@ public class PersonalGoogleHealthController(IPersonalGoogleHealthService service
     {
         try { await action(); return Ok(await service.StatusAsync(ct)); }
         catch (GoogleHealthException ex) { return Problem(statusCode: 400, detail: ex.Message); }
-        catch (HttpRequestException) { return StatusCode(502, new { code = "google_unavailable" }); }
+        catch (HttpRequestException) { return Problem(statusCode: 502, detail: "google_unavailable"); }
     }
 }

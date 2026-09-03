@@ -173,10 +173,34 @@ public class PersonalHealthTests
         Assert.Empty(await db.PersonalMedications.ToListAsync());
     }
 
+    [Fact]
+    public async Task Sync_returns_problem_details_when_google_is_unavailable()
+    {
+        var controller = new PersonalGoogleHealthController(new ThrowingGoogleHealthService(), null!);
+
+        var result = await controller.SyncPersonalGoogleHealth(default);
+
+        var response = Assert.IsType<ObjectResult>(result.Result);
+        Assert.Equal(502, response.StatusCode);
+        var problem = Assert.IsType<ProblemDetails>(response.Value);
+        Assert.Equal("google_unavailable", problem.Detail);
+    }
+
     private static bool Valid(object value) => Validator.TryValidateObject(value, new ValidationContext(value), new List<ValidationResult>(), true);
     private static GoogleHealthOptions Options() => new() { ClientId = "synthetic.apps.googleusercontent.com", ClientSecret = "synthetic-secret", CallbackUrl = "https://example.test:8450/personal/google/callback", DataTypes = ["weight"] };
     private static PersonalMedicationInput Medication() => new() { Name = "Synthetic medicine", Ingredient = "Synthetic ingredient", Amount = 1.25m, Mills = DateTimeOffset.UtcNow.AddHours(-1).ToUnixTimeMilliseconds() };
     private static HttpResponseMessage Json(string text) => new(HttpStatusCode.OK) { Content = new StringContent(text, Encoding.UTF8, "application/json") };
+    private sealed class ThrowingGoogleHealthService : IPersonalGoogleHealthService
+    {
+        public Task<GoogleHealthStatus> StatusAsync(CancellationToken ct) => Task.FromResult(new GoogleHealthStatus());
+        public Task SaveAsync(GoogleHealthOptions options, Guid subject, CancellationToken ct) => Task.CompletedTask;
+        public Task<GoogleHealthAuthorize> StartAsync(Guid subject, CancellationToken ct) => Task.FromResult(new GoogleHealthAuthorize());
+        public Task CompleteAsync(GoogleHealthCallback callback, Guid subject, CancellationToken ct) => Task.CompletedTask;
+        public Task DisconnectAsync(Guid subject, CancellationToken ct) => Task.CompletedTask;
+        public Task PurgeAsync(Guid subject, CancellationToken ct) => Task.CompletedTask;
+        public Task SyncAsync(bool force, CancellationToken ct) => throw new HttpRequestException("synthetic");
+    }
+
     private sealed class StubHandler(Func<HttpRequestMessage, HttpResponseMessage> responder) : HttpMessageHandler
     {
         public Func<HttpRequestMessage, HttpResponseMessage> Responder { get; set; } = responder;

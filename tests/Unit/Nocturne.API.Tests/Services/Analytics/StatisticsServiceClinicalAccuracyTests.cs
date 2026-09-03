@@ -486,6 +486,23 @@ public class StatisticsServiceClinicalAccuracyTests
         result.Should().BeGreaterThan(9.0, "HBGI > 9.0 indicates high hyperglycemia risk");
     }
 
+    /// <summary>
+    /// Pins the published Kovatchev magnitudes exactly: the risk transform divides by 18 (not the
+    /// 18.0182 unit-conversion factor), and a drifted divisor or coefficient moves these values
+    /// well past the tolerance.
+    /// </summary>
+    [Fact]
+    public void CalculateHBGI_KnownSeries_MatchesPublishedFormula()
+    {
+        _sut.CalculateHBGI([180.0, 250.0, 300.0]).Should().BeApproximately(9.6041173, 0.001);
+    }
+
+    [Fact]
+    public void CalculateLBGI_KnownSeries_MatchesPublishedFormula()
+    {
+        _sut.CalculateLBGI([40.0, 54.0, 65.0]).Should().BeApproximately(9.2579505, 0.001);
+    }
+
     [Fact]
     public void CalculateLBGI_AllInRange_ShouldBeMinimal()
     {
@@ -1006,7 +1023,7 @@ public class StatisticsServiceClinicalAccuracyTests
             Timestamp = DateTimeOffset.UtcNow.AddMinutes(i * 5).UtcDateTime,
         });
 
-        var result = _sut.CalculateGlycemicVariability(values, entries);
+        var result = _sut.CalculateGlycemicVariability(values, entries)!;
 
         // CV < 36% is the clinical target
         result.CoefficientOfVariation.Should().BeLessThan(36);
@@ -1024,7 +1041,7 @@ public class StatisticsServiceClinicalAccuracyTests
             Timestamp = DateTimeOffset.UtcNow.AddMinutes(i * 5).UtcDateTime,
         });
 
-        var result = _sut.CalculateGlycemicVariability(values, entries);
+        var result = _sut.CalculateGlycemicVariability(values, entries)!;
 
         result.CoefficientOfVariation.Should().BeGreaterThan(50);
     }
@@ -1152,7 +1169,7 @@ public class StatisticsServiceClinicalAccuracyTests
         }).ToArray();
 
         var basicStats = _sut.CalculateBasicStats(values);
-        var gv = _sut.CalculateGlycemicVariability(values, entries);
+        var gv = _sut.CalculateGlycemicVariability(values, entries)!;
 
         // Both use sample SD (N-1): sqrt(Σ(x-mean)²/4) = sqrt(4000/4) = sqrt(1000) ≈ 31.6
         basicStats.StandardDeviation.Should().Be(

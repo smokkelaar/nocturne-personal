@@ -51,11 +51,11 @@ public class PumpSnapshotController(IPumpSnapshotRepository repo)
         [FromBody] UpsertPumpSnapshotRequest[] requests,
         CancellationToken ct = default)
     {
-        if (this.ValidateBulk(requests, "Pump snapshot", "snapshot", "snapshots") is { } invalid)
+        if (await this.ValidateBulkAsync(requests, "Pump snapshot", "snapshot", "snapshots", ct) is { } invalid)
             return invalid;
 
         var models = requests.Select(MapToModel).ToList();
-        var persisted = await Repository.BulkUpsertAsync(models, WriteOrigin.Live, ct);
+        var persisted = await Repository.BulkCreateAsync(models, WriteOrigin.Live, ct);
         return StatusCode(201, persisted.ToArray());
     }
 

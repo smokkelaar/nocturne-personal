@@ -146,34 +146,13 @@ public class StatisticsServiceTests
         );
 
         // Act
-        var result = _statisticsService.CalculateGlycemicVariability(values, entries);
+        var result = _statisticsService.CalculateGlycemicVariability(values, entries)!;
 
         // Assert
         result.Should().NotBeNull();
         result.CoefficientOfVariation.Should().BeGreaterThan(0);
         result.StandardDeviation.Should().BeGreaterThan(0);
         result.EstimatedA1c.Should().BeGreaterThan(0);
-    }
-
-    [Fact]
-    public void CalculateGlycemicVariability_WithInsufficientData_ShouldThrowException()
-    {
-        // Arrange
-        var values = new double[] { 100 };
-        var entries = new[]
-        {
-            new SensorGlucose
-            {
-                Mgdl = 100,
-                Timestamp = DateTimeOffset.UtcNow.UtcDateTime,
-            },
-        };
-
-        // Act & Assert
-        Action act = () => _statisticsService.CalculateGlycemicVariability(values, entries);
-        act.Should()
-            .Throw<ArgumentException>()
-            .WithMessage("Not enough data points to calculate glycemic variability metrics");
     }
 
     [Fact]
@@ -517,27 +496,6 @@ public class StatisticsServiceTests
     #region Formatting Tests
 
     [Fact]
-    public void FormatInsulinDisplay_WithVariousValues_ShouldFormatCorrectly()
-    {
-        // Arrange & Act & Assert
-        _statisticsService.FormatInsulinDisplay(0).Should().Be("0");
-        _statisticsService.FormatInsulinDisplay(0.05).Should().Be(".05");
-        _statisticsService.FormatInsulinDisplay(0.5).Should().Be(".50");
-        _statisticsService.FormatInsulinDisplay(1.0).Should().Be("1.00");
-        _statisticsService.FormatInsulinDisplay(5.25).Should().Be("5.25");
-    }
-
-    [Fact]
-    public void FormatCarbDisplay_WithVariousValues_ShouldFormatCorrectly()
-    {
-        // Arrange & Act & Assert
-        _statisticsService.FormatCarbDisplay(0).Should().Be("0");
-        _statisticsService.FormatCarbDisplay(0.5).Should().Be(".5");
-        _statisticsService.FormatCarbDisplay(1.0).Should().Be("1.0");
-        _statisticsService.FormatCarbDisplay(15.5).Should().Be("15.5");
-    }
-
-    [Fact]
     public void FormatPercentageDisplay_WithValidValue_ShouldFormatToOneDecimal()
     {
         // Arrange & Act & Assert
@@ -735,7 +693,7 @@ public class StatisticsServiceTests
         );
 
         // Act
-        var result = _statisticsService.CalculateGlycemicVariability(values, entries);
+        var result = _statisticsService.CalculateGlycemicVariability(values, entries)!;
 
         // Assert
         result.Should().NotBeNull();

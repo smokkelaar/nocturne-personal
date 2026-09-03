@@ -7,8 +7,6 @@ namespace Nocturne.Core.Models;
 /// </summary>
 /// <remarks>
 /// The <see cref="RecordType"/> property determines which table the <see cref="RecordId"/> references:
-/// <see cref="RecordType.Entry"/> maps to <see cref="Entry"/>,
-/// <see cref="RecordType.Treatment"/> maps to <see cref="Treatment"/>,
 /// <see cref="RecordType.StateSpan"/> maps to <see cref="StateSpan"/>,
 /// and other values map to V4 tables.
 /// </remarks>
@@ -34,7 +32,7 @@ public class LinkedRecord
     public RecordType RecordType { get; set; }
 
     /// <summary>
-    /// Gets or sets the ID of the linked record (entry, treatment, or state span)
+    /// Gets or sets the ID of the linked record
     /// </summary>
     [JsonPropertyName("recordId")]
     public Guid RecordId { get; set; }
@@ -70,16 +68,6 @@ public class LinkedRecord
 [JsonConverter(typeof(JsonStringEnumConverter<RecordType>))]
 public enum RecordType
 {
-    /// <summary>
-    /// Glucose entry (SGV, MBG, calibration)
-    /// </summary>
-    Entry,
-
-    /// <summary>
-    /// Treatment (bolus, carbs, temp basal, etc.)
-    /// </summary>
-    Treatment,
-
     /// <summary>
     /// State span (pump mode, connectivity, override, profile)
     /// </summary>
@@ -124,4 +112,44 @@ public enum RecordType
     /// V4 temporary basal rate
     /// </summary>
     TempBasal
+}
+
+/// <summary>
+/// The <c>linked_records.record_type</c> key of every <see cref="RecordType"/>. The per-type
+/// constants exist alongside <see cref="Key"/> because EF Core cannot translate a method call
+/// inside an expression tree; <c>RecordTypeKeysTests</c> holds the two forms equal.
+/// </summary>
+public static class RecordTypeKeys
+{
+    /// <summary><see cref="RecordType.StateSpan"/></summary>
+    public const string StateSpan = "statespan";
+
+    /// <summary><see cref="RecordType.SensorGlucose"/></summary>
+    public const string SensorGlucose = "sensorglucose";
+
+    /// <summary><see cref="RecordType.Bolus"/></summary>
+    public const string Bolus = "bolus";
+
+    /// <summary><see cref="RecordType.CarbIntake"/></summary>
+    public const string CarbIntake = "carbintake";
+
+    /// <summary><see cref="RecordType.BGCheck"/></summary>
+    public const string BGCheck = "bgcheck";
+
+    /// <summary><see cref="RecordType.DeviceEvent"/></summary>
+    public const string DeviceEvent = "deviceevent";
+
+    /// <summary><see cref="RecordType.Note"/></summary>
+    public const string Note = "note";
+
+    /// <summary><see cref="RecordType.BolusCalculation"/></summary>
+    public const string BolusCalculation = "boluscalculation";
+
+    /// <summary><see cref="RecordType.TempBasal"/></summary>
+    public const string TempBasal = "tempbasal";
+
+    /// <summary>
+    /// The stored key for <paramref name="recordType"/>.
+    /// </summary>
+    public static string Key(RecordType recordType) => recordType.ToString().ToLowerInvariant();
 }

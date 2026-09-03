@@ -99,8 +99,7 @@ public static class ConnectorServiceCollectionExtensions
         /// <typeparam name="TTokenProvider">Token provider type</typeparam>
         /// <param name="configuration">Configuration</param>
         /// <param name="options">Connector options</param>
-        /// <returns>The configuration if enabled, null otherwise</returns>
-        public TConfig? AddConnector<TConfig, TService, TTokenProvider>(IConfiguration configuration,
+        public void AddConnector<TConfig, TService, TTokenProvider>(IConfiguration configuration,
             ConnectorOptions options)
             where TConfig : BaseConnectorConfiguration, new()
             where TService : class, IConnectorService<TConfig>
@@ -114,7 +113,7 @@ public static class ConnectorServiceCollectionExtensions
 
             // Skip registration if disabled
             if (!config.Enabled)
-                return null;
+                return;
 
             // Register server resolver
             services.AddSingleton<IConnectorServerResolver<TConfig>>(
@@ -153,8 +152,6 @@ public static class ConnectorServiceCollectionExtensions
 
             services.AddConnectorTokenProvider<TTokenProvider>();
             services.AddConnectorSyncExecutor<ConnectorSyncExecutor<TService, TConfig>>();
-
-            return config;
         }
 
         /// <summary>
@@ -246,44 +243,26 @@ public static class ConnectorServiceCollectionExtensions
 
             // Discover and invoke all IConnectorInstaller implementations
             foreach (var assembly in connectorAssemblies)
-            {
-                try
+                foreach (var type in assembly.LoadableTypes())
                 {
-                    foreach (var type in assembly.GetTypes())
-                    {
-                        if (type.IsAbstract || type.IsInterface)
-                            continue;
+                    if (type.IsAbstract || type.IsInterface)
+                        continue;
 
-                        if (!typeof(IConnectorInstaller).IsAssignableFrom(type))
-                            continue;
+                    if (!typeof(IConnectorInstaller).IsAssignableFrom(type))
+                        continue;
 
-                        var installer = (IConnectorInstaller)Activator.CreateInstance(type)!;
-                        installer.Install(services, configuration);
-                    }
+                    var installer = (IConnectorInstaller)Activator.CreateInstance(type)!;
+                    installer.Install(services, configuration);
                 }
-                catch (ReflectionTypeLoadException)
-                {
-                    // Some types may not be loadable, skip them
-                }
-            }
 
             if (pollingService is null)
                 return services;
 
             void AddPollerIfEnabled(Type hostedService, Type configType)
             {
-                // Per-connector section, then the global Settings section, then on by default.
                 var connectorName = ConnectorRegistrationAttribute.DeclaredOn(configType).ConnectorName;
-                var section = configuration.GetSection($"Parameters:Connectors:{connectorName}");
-                if (!section.Exists())
-                    section = configuration.GetSection($"Connectors:{connectorName}");
 
-                var isEnabled = section.GetValue<bool?>("Enabled")
-                    ?? configuration.GetValue<bool?>("Parameters:Connectors:Settings:Enabled")
-                    ?? configuration.GetValue<bool?>("Connectors:Settings:Enabled")
-                    ?? true;
-
-                if (isEnabled)
+                if (configuration.ConnectorEnabled(connectorName) ?? true)
                     services.TryAddEnumerable(
                         ServiceDescriptor.Singleton(typeof(IHostedService), hostedService));
             }

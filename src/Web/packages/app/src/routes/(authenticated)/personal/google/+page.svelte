@@ -165,8 +165,6 @@
       await refresh();
       if (outcome === "connected" && status?.connected && !status.lastAttempt) {
         await syncPersonalGoogleHealth();
-        await getPersonalGoogleHealth().refresh();
-        await getPersonalHealthReadings({ dataType: type, skip }).refresh();
         await refresh();
       }
       if (outcome === "failed")
@@ -373,8 +371,6 @@
         onclick={() =>
           run(async () => {
             await syncPersonalGoogleHealth();
-            await getPersonalGoogleHealth().refresh();
-            await getPersonalHealthReadings({ dataType: type, skip }).refresh();
             await refresh();
           })}
       >
@@ -386,7 +382,6 @@
         onclick={() =>
           run(async () => {
             await disconnectPersonalGoogleHealth();
-            await getPersonalGoogleHealth().refresh();
             await refresh();
           })}
       >
@@ -477,8 +472,6 @@
         )
           void run(async () => {
             await purgePersonalGoogleHealth();
-            await getPersonalGoogleHealth().refresh();
-            await getPersonalHealthReadings({ dataType: type, skip }).refresh();
             await refresh();
           });
       }}

@@ -90,20 +90,16 @@ public class PersonalHealthTests
     }
 
     [Theory]
-    [InlineData("ACCOUNT_NOT_LINKED", "account_not_linked")]
-    [InlineData("INVALID_PAGE_TOKEN", "invalid_google_request")]
-    [InlineData("API_PRIVATE_PREVIEW_ACCESS_DENIED", "preview_access_denied")]
-    [InlineData("MISSING_OAUTH_SCOPE", "permission_denied")]
-    public async Task Maps_google_error_reasons_without_exposing_response_details(string reason, string expected)
+    [InlineData("ACCOUNT_NOT_LINKED", "account_not_linked", true)]
+    [InlineData("INVALID_PAGE_TOKEN", "invalid_google_request", true)]
+    [InlineData("API_PRIVATE_PREVIEW_ACCESS_DENIED", "preview_access_denied", false)]
+    [InlineData("MISSING_OAUTH_SCOPE", "permission_denied", false)]
+    public async Task Maps_google_error_reasons_without_exposing_response_details(string reason, string expected, bool directReason)
     {
-        var body = JsonSerializer.Serialize(new
-        {
-            error = new
-            {
-                message = "sensitive upstream detail",
-                details = new[] { new { metadata = new { detailedReasons = reason } } }
-            }
-        });
+        var detail = directReason
+            ? new Dictionary<string, object> { ["reason"] = reason }
+            : new Dictionary<string, object> { ["metadata"] = new { detailedReasons = reason } };
+        var body = JsonSerializer.Serialize(new { error = new { message = "sensitive upstream detail", details = new[] { detail } } });
         var handler = new StubHandler(_ => new HttpResponseMessage(HttpStatusCode.BadRequest)
         {
             Content = new StringContent(body, Encoding.UTF8, "application/json")
@@ -180,6 +176,39 @@ public class PersonalHealthTests
         var controller = new PersonalGoogleHealthController(service, db);
         foreach (var type in options.DataTypes)
             Assert.Single(Assert.IsType<List<PersonalHealthReading>>(Assert.IsType<OkObjectResult>((await controller.GetPersonalHealthReadings(type)).Result).Value));
+    }
+
+    [Fact]
+    public async Task Unreadable_google_configuration_can_be_disconnected_and_reconfigured()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:"); await connection.OpenAsync();
+        await using var db = new NocturneDbContext(new DbContextOptionsBuilder<NocturneDbContext>().UseSqlite(connection).Options);
+        await db.Database.EnsureCreatedAsync();
+        var tenant = Guid.NewGuid(); var subject = Guid.NewGuid(); db.TenantId = tenant;
+        db.Tenants.Add(new TenantEntity { Id = tenant, Slug = "synthetic", DisplayName = "Synthetic", IsActive = true }); await db.SaveChangesAsync();
+        var handler = new StubHandler(request => request.RequestUri!.AbsolutePath switch
+        {
+            "/token" => Json($$"""{"access_token":"synthetic-access","refresh_token":"synthetic-refresh","scope":"openid {{GoogleHealthClient.MetricsScope}}"}"""),
+            "/v1/userinfo" => Json("{\"sub\":\"synthetic-account\"}"),
+            _ => Json("{}")
+        });
+        var coordinator = new GoogleHealthCoordinator();
+        var original = new GoogleHealthService(db, new EphemeralDataProtectionProvider(), coordinator, new GoogleHealthClient(new HttpClient(handler)));
+        var options = Options();
+        await original.SaveAsync(options, subject, default);
+        var authorization = await original.StartAsync(subject, default);
+        var state = QueryHelpers.ParseQuery(new Uri(authorization.Url).Query)["state"].ToString();
+        await original.CompleteAsync(new() { State = state, Code = "synthetic-code" }, subject, default);
+
+        var recovered = new GoogleHealthService(db, new EphemeralDataProtectionProvider(), coordinator, new GoogleHealthClient(new HttpClient(handler)));
+        var broken = await recovered.StatusAsync(default);
+        Assert.True(broken.Connected); Assert.False(broken.Configured);
+        Assert.Equal("stored_google_configuration_unreadable", broken.ErrorCode);
+
+        await recovered.DisconnectAsync(subject, default);
+        Assert.False((await recovered.StatusAsync(default)).Connected);
+        await recovered.SaveAsync(options, subject, default);
+        Assert.True((await recovered.StatusAsync(default)).Configured);
     }
 
     [Fact]

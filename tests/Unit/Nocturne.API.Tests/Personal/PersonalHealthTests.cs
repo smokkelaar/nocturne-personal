@@ -74,12 +74,47 @@ public class PersonalHealthTests
     public async Task Follows_pages_and_rejects_repeated_page_tokens()
     {
         var calls = 0;
-        var handler = new StubHandler(_ => Json(++calls == 1 ? "{\"nextPageToken\":\"second\"}" : "{\"dataPoints\":[]}"));
+        var requests = new List<Uri>();
+        var handler = new StubHandler(request =>
+        {
+            requests.Add(request.RequestUri!);
+            return Json(++calls == 1 ? "{\"nextPageToken\":\"second\"}" : "{\"dataPoints\":[]}");
+        });
         var client = new GoogleHealthClient(new HttpClient(handler));
         Assert.Empty(await client.ReadAsync("synthetic-token", "weight", DateTimeOffset.UtcNow.AddDays(-1), DateTimeOffset.UtcNow, default));
         Assert.Equal(2, calls);
+        Assert.DoesNotContain("pageToken", requests[0].Query);
+        Assert.Equal("second", QueryHelpers.ParseQuery(requests[1].Query)["pageToken"]);
         handler.Responder = _ => Json("{\"nextPageToken\":\"repeated\"}");
         await Assert.ThrowsAsync<GoogleHealthException>(() => client.ReadAsync("synthetic-token", "weight", DateTimeOffset.UtcNow.AddDays(-1), DateTimeOffset.UtcNow, default));
+    }
+
+    [Theory]
+    [InlineData("ACCOUNT_NOT_LINKED", "account_not_linked")]
+    [InlineData("INVALID_PAGE_TOKEN", "invalid_google_request")]
+    [InlineData("API_PRIVATE_PREVIEW_ACCESS_DENIED", "preview_access_denied")]
+    [InlineData("MISSING_OAUTH_SCOPE", "permission_denied")]
+    public async Task Maps_google_error_reasons_without_exposing_response_details(string reason, string expected)
+    {
+        var body = JsonSerializer.Serialize(new
+        {
+            error = new
+            {
+                message = "sensitive upstream detail",
+                details = new[] { new { metadata = new { detailedReasons = reason } } }
+            }
+        });
+        var handler = new StubHandler(_ => new HttpResponseMessage(HttpStatusCode.BadRequest)
+        {
+            Content = new StringContent(body, Encoding.UTF8, "application/json")
+        });
+        var client = new GoogleHealthClient(new HttpClient(handler));
+
+        var exception = await Assert.ThrowsAsync<GoogleHealthException>(() => client.ReadAsync(
+            "synthetic-token", "weight", DateTimeOffset.UtcNow.AddDays(-1), DateTimeOffset.UtcNow, default));
+
+        Assert.Equal(expected, exception.Message);
+        Assert.DoesNotContain("sensitive", exception.Message);
     }
 
     [Fact]

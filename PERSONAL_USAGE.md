@@ -29,6 +29,10 @@ Gebruik je vertrouwde HTTPS-domein en de Personal-poort (standaard 8450).
 7. Klik **Nu synchroniseren**. Controleer de laatste geslaagde import en de echte
    metingen onderaan. Daarna wordt ongeveer elke 15 minuten gesynchroniseerd.
 
+Na deze eenmalige configuratie blijft het client-secret versleuteld opgeslagen.
+Bij opnieuw koppelen toont Personal daarom alleen **Inloggen met Google**; de
+geavanceerde instellingen hoeven niet opnieuw te worden ingevuld.
+
 De OAuth-koppeling vraagt alleen read-only Health-scopes en `openid`. Dat laatste
 bindt de import aan hetzelfde Google-account; naam, e-mail en profielfoto worden
 niet opgeslagen. Een accountwissel vereist ontkoppelen en daarna expliciet wissen
@@ -65,6 +69,9 @@ Google-metingen uit Personal. Het verwijdert niets bij Google en geen medicatiel
 - Google Health is geen rechtstreekse externe toegang tot de lokale Android
   Health Connect-database. Niet alle vroegere Google Fit- of Samsung Health-data
   hoeven in de Google-cloud beschikbaar te zijn.
+- Google kan `ACCOUNT_NOT_LINKED` teruggeven wanneer het gekozen Google-account
+  nog niet aan een Fitbit-account is gekoppeld. Personal toont dit afzonderlijk
+  van netwerk- en OAuth-fouten.
 - Slaap en andere typen zijn nog niet selecteerbaar in deze versie.
 - De Personal-metingen staan nog niet in de bestaande Nocturne-rapporten; er is
   bewust geen automatische invloed op behandelprofielen of doseringsfuncties.

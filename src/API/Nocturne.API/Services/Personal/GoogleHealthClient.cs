@@ -34,12 +34,8 @@ public sealed class GoogleHealthClient(HttpClient http)
     {
         using var response = await http.PostAsync("https://oauth2.googleapis.com/token", new FormUrlEncodedContent(form), ct);
         if (!response.IsSuccessStatusCode)
-            throw new GoogleHealthException(response.StatusCode switch
-            {
-                System.Net.HttpStatusCode.BadRequest => "reconnect_required",
-                System.Net.HttpStatusCode.TooManyRequests => "rate_limited",
-                _ => "google_unavailable"
-            }, response.Headers.RetryAfter?.Delta ?? (response.Headers.RetryAfter?.Date - DateTimeOffset.UtcNow));
+            throw await ErrorAsync(response, response.StatusCode == System.Net.HttpStatusCode.BadRequest
+                ? "reconnect_required" : "google_unavailable", ct);
         using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync(ct));
         return json.RootElement.Clone();
     }
@@ -73,17 +69,19 @@ public sealed class GoogleHealthClient(HttpClient http)
         var pageToken = "";
         for (var page = 0; page < 100; page++)
         {
-            using var request = new HttpRequestMessage(HttpMethod.Get, root + "&pageToken=" + Uri.EscapeDataString(pageToken));
+            var url = pageToken.Length == 0 ? root : root + "&pageToken=" + Uri.EscapeDataString(pageToken);
+            using var request = new HttpRequestMessage(HttpMethod.Get, url);
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
             using var response = await http.SendAsync(request, ct);
             if (!response.IsSuccessStatusCode)
-                throw new GoogleHealthException(response.StatusCode switch
+                throw await ErrorAsync(response, response.StatusCode switch
                 {
                     System.Net.HttpStatusCode.Unauthorized => "reconnect_required",
                     System.Net.HttpStatusCode.Forbidden => "permission_denied",
-                    System.Net.HttpStatusCode.TooManyRequests => "rate_limited",
+                    System.Net.HttpStatusCode.BadRequest => "invalid_google_request",
+                    System.Net.HttpStatusCode.NotFound => "google_resource_not_found",
                     _ => "google_unavailable"
-                }, response.Headers.RetryAfter?.Delta ?? (response.Headers.RetryAfter?.Date - DateTimeOffset.UtcNow));
+                }, ct);
             using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync(ct));
             if (json.RootElement.TryGetProperty("dataPoints", out var data))
                 foreach (var item in data.EnumerateArray())
@@ -98,6 +96,38 @@ public sealed class GoogleHealthClient(HttpClient http)
             if (!seen.Add(pageToken)) throw new GoogleHealthException("pagination_failed");
         }
         throw new GoogleHealthException("history_too_large");
+    }
+
+    private static async Task<GoogleHealthException> ErrorAsync(HttpResponseMessage response, string fallback, CancellationToken ct)
+    {
+        var code = response.StatusCode == System.Net.HttpStatusCode.TooManyRequests ? "rate_limited" : fallback;
+        try
+        {
+            using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync(ct));
+            if (json.RootElement.TryGetProperty("error", out var error) &&
+                error.TryGetProperty("details", out var details) && details.ValueKind == JsonValueKind.Array)
+            {
+                var reasons = details.EnumerateArray()
+                    .Where(detail => detail.TryGetProperty("metadata", out _))
+                    .Select(detail => detail.GetProperty("metadata"))
+                    .Where(metadata => metadata.TryGetProperty("detailedReasons", out _))
+                    .Select(metadata => metadata.GetProperty("detailedReasons").GetString())
+                    .Where(reason => !string.IsNullOrWhiteSpace(reason))
+                    .SelectMany(reason => reason!.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
+                    .ToHashSet(StringComparer.Ordinal);
+                code = reasons.Contains("ACCOUNT_NOT_LINKED") ? "account_not_linked"
+                    : reasons.Contains("API_PRIVATE_PREVIEW_ACCESS_DENIED") ? "preview_access_denied"
+                    : reasons.Contains("MISSING_OAUTH_SCOPE") || reasons.Contains("DISALLOWED_OAUTH_SCOPES") ||
+                      reasons.Contains("DATA_ACCESS_DENIED") || reasons.Contains("RESOURCE_PERMISSION_DENIED") ? "permission_denied"
+                    : reasons.Any(reason => reason.StartsWith("INVALID_", StringComparison.Ordinal)) ? "invalid_google_request"
+                    : code;
+            }
+        }
+        catch (Exception ex) when (ex is JsonException or InvalidOperationException)
+        {
+        }
+        return new GoogleHealthException(code,
+            response.Headers.RetryAfter?.Delta ?? (response.Headers.RetryAfter?.Date - DateTimeOffset.UtcNow));
     }
 
     public static string Key(PersonalHealthReading reading) => Convert.ToHexString(SHA256.HashData(

@@ -212,6 +212,31 @@ public class PersonalHealthTests
     }
 
     [Fact]
+    public async Task Unsupported_stored_type_keeps_status_and_disconnect_available()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:"); await connection.OpenAsync();
+        await using var db = new NocturneDbContext(new DbContextOptionsBuilder<NocturneDbContext>().UseSqlite(connection).Options);
+        await db.Database.EnsureCreatedAsync();
+        var tenant = Guid.NewGuid(); var subject = Guid.NewGuid(); db.TenantId = tenant;
+        db.Tenants.Add(new TenantEntity { Id = tenant, Slug = "synthetic", DisplayName = "Synthetic", IsActive = true }); await db.SaveChangesAsync();
+        var provider = new EphemeralDataProtectionProvider();
+        var service = new GoogleHealthService(db, provider, new GoogleHealthCoordinator(), new GoogleHealthClient(new HttpClient(new StubHandler(_ => Json("{}")))));
+        await service.SaveAsync(Options(), subject, default);
+        var row = await db.PersonalGoogleConnections.SingleAsync();
+        var legacy = Options(); legacy.DataTypes = ["weight", "sleep"];
+        var protector = provider.CreateProtector("Nocturne.Personal.GoogleHealth.v1", tenant.ToString());
+        row.ProtectedSettings = protector.Protect(JsonSerializer.Serialize(legacy, new JsonSerializerOptions(JsonSerializerDefaults.Web)));
+        await db.SaveChangesAsync();
+
+        var status = await service.StatusAsync(default);
+
+        Assert.True(status.Configured); Assert.False(status.Connected);
+        Assert.Equal(["weight"], status.SelectedTypes);
+        Assert.Equal("unsupported_type", status.ErrorCode);
+        await service.DisconnectAsync(subject, default);
+    }
+
+    [Fact]
     public void Future_catalog_entries_cannot_be_silently_selected()
     {
         var options = Options(); options.DataTypes = ["sleep"];

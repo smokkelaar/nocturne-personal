@@ -393,8 +393,8 @@ public sealed class GoogleHealthService(NocturneDbContext db, IDataProtectionPro
                     throw new GoogleHealthException("duplicate_google_data", stage: "data_validation");
                 // Replace only the completely fetched window, so retries, edits and source deletions cannot double-count steps.
                 await using var transaction = await db.Database.BeginTransactionAsync(ct);
-                var first = from.ToUnixTimeMilliseconds(); var last = to.ToUnixTimeMilliseconds();
-                await db.PersonalHealthReadings.Where(x => active.Contains(x.DataType) && x.Mills >= first && x.Mills < last).ExecuteDeleteAsync(ct);
+                var firstMills = from.ToUnixTimeMilliseconds(); var lastMills = to.ToUnixTimeMilliseconds();
+                await db.PersonalHealthReadings.Where(x => active.Contains(x.DataType) && x.Mills >= firstMills && x.Mills < lastMills).ExecuteDeleteAsync(ct);
                 db.PersonalHealthReadings.AddRange(readings.Select(r => new PersonalHealthReadingEntity
                 {
                     Id = Guid.CreateVersion7(), DataType = r.DataType, SourceKey = GoogleHealthClient.Key(r), Mills = r.Mills,

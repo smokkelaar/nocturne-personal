@@ -38,6 +38,14 @@
     invalid_configuration: "Controleer de client-ID en de terugkijkperiode.",
     invalid_callback:
       "Gebruik een HTTPS-domeinnaam met exact het pad /personal/google/callback, zonder extra parameters.",
+    invalid_client_credentials:
+      "Google heeft de client-ID of het client-secret afgewezen. Controleer de OAuth-client van het type Web application.",
+    oauth_scope_configuration:
+      "Google accepteert een aangevraagde Health-scope niet. Controleer de OAuth-toestemming en de ingeschakelde Google Health API.",
+    oauth_request_invalid:
+      "Google heeft de OAuth-aanvraag afgewezen. Controleer de OAuth-client en start de koppeling opnieuw.",
+    invalid_token_response:
+      "Google gaf geen bruikbare sessie terug. Start de koppeling opnieuw; blijft dit gebeuren, controleer dan de technische code en serverlog.",
     client_secret_required: "Een Google client-secret is eenmalig vereist.",
     connection_owner_required:
       "Alleen de Nocturne-gebruiker die deze koppeling heeft aangemaakt kan haar wijzigen.",
@@ -67,6 +75,22 @@
       "Dit Google-account heeft geen toegang tot deze Google Health API-versie.",
     google_resource_not_found:
       "Google Health kent de gevraagde gegevensbron niet voor dit account.",
+    data_access_denied:
+      "Google staat het lezen van dit gegevenstype niet toe voor dit account.",
+    invalid_time_range:
+      "Google accepteert de gevraagde terugkijkperiode niet. Kies tijdelijk een kortere periode en probeer opnieuw.",
+    invalid_filter_operator:
+      "Google accepteert de gebruikte tijdsfilter niet. Werk Nocturne Personal bij.",
+    invalid_google_filter:
+      "Google heeft de filter voor dit gegevenstype afgewezen. Werk Nocturne Personal bij.",
+    invalid_google_data_type:
+      "Google herkent het aangevraagde Health-gegevenstype niet. Werk Nocturne Personal bij.",
+    invalid_source_family:
+      "Google kon de Health-bronnen voor dit gegevenstype niet samenvoegen.",
+    invalid_google_response:
+      "Google gaf een ongeldig of onvolledig antwoord. De bestaande import is behouden.",
+    no_google_data:
+      "De import is gelukt, maar Google gaf voor de vermelde typen geen metingen in de ingestelde periode. Controleer in de Google Health- of Fitbit-app of dit account echt gegevens synchroniseert.",
     stored_google_configuration_unreadable:
       "De opgeslagen Google-koppeling is niet meer leesbaar. Ontkoppel lokaal, trek de oude Nocturne-toegang zo nodig ook in bij je Google-account en voer de instellingen opnieuw in. Geïmporteerde metingen blijven staan.",
     unsupported_type:
@@ -135,13 +159,25 @@
   }
   onMount(() => {
     void run(async () => {
+      const outcome = new URLSearchParams(window.location.search).get(
+        "connection"
+      );
       await refresh();
-      if (
-        new URLSearchParams(window.location.search).get("connection") ===
-        "failed"
-      )
+      if (outcome === "connected" && status?.connected && !status.lastAttempt) {
+        await syncPersonalGoogleHealth();
+        await getPersonalGoogleHealth().refresh();
+        await getPersonalHealthReadings({ dataType: type, skip }).refresh();
+        await refresh();
+      }
+      if (outcome === "failed")
         message =
           "Google koppelen is niet gelukt of geannuleerd. Start opnieuw; gebruik hetzelfde Google-account als bij de bestaande import.";
+      if (outcome === "provider_denied")
+        message =
+          "Google heeft geen toestemming teruggegeven. Start opnieuw en keur de gevraagde leesrechten goed.";
+      if (outcome === "no_session")
+        message =
+          "De Nocturne-inlogsessie ontbrak bij de terugkeer van Google. Log opnieuw in bij Nocturne en start daarna de Google-koppeling opnieuw in dezelfde browser.";
     });
   });
 </script>
@@ -269,9 +305,21 @@
   {#if message}<p role="alert" class="rounded-lg border border-destructive p-4">
       {message}
     </p>{/if}
-  {#if status?.errorCode}<p role="status" class="rounded-lg border p-4">
-      {errors[status.errorCode] ?? "De import kon niet worden afgerond."}
-    </p>{/if}
+  {#if status?.errorCode}<div role="status" class="space-y-2 rounded-lg border p-4">
+      <p>{errors[status.errorCode] ?? "De import kon niet worden afgerond."}</p>
+      {#if status.errorDataTypes?.length}<p>
+          Betrokken gegevens: {status.errorDataTypes
+            .map((item) => labels[item] ?? item)
+            .join(", ")}.
+        </p>{/if}
+      <p class="text-sm text-muted-foreground">
+        Technische code: <code>{status.errorCode}</code>{status.lastAttempt
+          ? ` · laatste poging ${new Date(status.lastAttempt).toLocaleString()}`
+          : ""}{status.nextAttempt
+          ? ` · volgende poging niet vóór ${new Date(status.nextAttempt).toLocaleString()}`
+          : ""}
+      </p>
+    </div>{/if}
   {#if !status?.connected}
     {#if status?.configured}
       <div class="space-y-4 rounded-xl border p-5">
@@ -307,6 +355,12 @@
         Laatste geslaagde import: {status.lastSync
           ? new Date(status.lastSync).toLocaleString()
           : "nog niet uitgevoerd"}
+      </p>
+      <p>
+        Google-sessie: {status.accessTokenExpiresAt &&
+        new Date(status.accessTokenExpiresAt) > new Date()
+          ? `direct bruikbaar tot ${new Date(status.accessTokenExpiresAt).toLocaleString()}`
+          : "wordt bij de volgende import automatisch vernieuwd"}
       </p>
       <p class="text-sm text-muted-foreground">
         Automatisch ongeveer elke 15 minuten. De ingestelde periode wordt

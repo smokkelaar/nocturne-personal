@@ -21,8 +21,12 @@ public class GoogleHealthStatus
     public string[] SelectedTypes { get; set; } = [];
     public string[] GrantedTypes { get; set; } = [];
     public int HistoryDays { get; set; } = 7;
+    public DateTimeOffset? AccessTokenExpiresAt { get; set; }
+    public DateTimeOffset? LastAttempt { get; set; }
     public DateTimeOffset? LastSync { get; set; }
+    public DateTimeOffset? NextAttempt { get; set; }
     public string? ErrorCode { get; set; }
+    public string[] ErrorDataTypes { get; set; } = [];
 }
 
 public class GoogleHealthCapability

@@ -7,9 +7,19 @@ using Nocturne.Core.Models.Personal;
 
 namespace Nocturne.API.Services.Personal;
 
-public sealed class GoogleHealthException(string code, TimeSpan? retryAfter = null) : Exception(code)
+public sealed class GoogleHealthException(
+    string code,
+    TimeSpan? retryAfter = null,
+    string? stage = null,
+    string? dataType = null,
+    string? providerReason = null,
+    int? providerStatus = null) : Exception(code)
 {
     public TimeSpan? RetryAfter { get; } = retryAfter;
+    public string? Stage { get; } = stage;
+    public string? DataType { get; } = dataType;
+    public string? ProviderReason { get; } = providerReason;
+    public int? ProviderStatus { get; } = providerStatus;
 }
 
 public sealed class GoogleHealthClient(HttpClient http)
@@ -30,12 +40,18 @@ public sealed class GoogleHealthClient(HttpClient http)
         _ => throw new GoogleHealthException("unsupported_type")
     };
 
-    public async Task<JsonElement> ExchangeAsync(Dictionary<string, string> form, CancellationToken ct)
+    public Task<JsonElement> ExchangeAuthorizationCodeAsync(Dictionary<string, string> form, CancellationToken ct) =>
+        ExchangeAsync(form, "expired_signin", "authorization_code", ct);
+
+    public Task<JsonElement> RefreshAccessTokenAsync(Dictionary<string, string> form, CancellationToken ct) =>
+        ExchangeAsync(form, "reconnect_required", "token_refresh", ct);
+
+    private async Task<JsonElement> ExchangeAsync(
+        Dictionary<string, string> form, string invalidGrantCode, string stage, CancellationToken ct)
     {
         using var response = await http.PostAsync("https://oauth2.googleapis.com/token", new FormUrlEncodedContent(form), ct);
         if (!response.IsSuccessStatusCode)
-            throw await ErrorAsync(response, response.StatusCode == System.Net.HttpStatusCode.BadRequest
-                ? "reconnect_required" : "google_unavailable", ct);
+            throw await OAuthErrorAsync(response, invalidGrantCode, stage, ct);
         using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync(ct));
         return json.RootElement.Clone();
     }
@@ -52,10 +68,13 @@ public sealed class GoogleHealthClient(HttpClient http)
         using var request = new HttpRequestMessage(HttpMethod.Get, "https://openidconnect.googleapis.com/v1/userinfo");
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
         using var response = await http.SendAsync(request, ct);
-        if (!response.IsSuccessStatusCode) throw new GoogleHealthException("reconnect_required");
+        if (!response.IsSuccessStatusCode)
+            throw new GoogleHealthException("reconnect_required", stage: "account_identity", providerStatus: (int)response.StatusCode);
         using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync(ct));
-        var subject = json.RootElement.GetProperty("sub").GetString();
-        if (string.IsNullOrEmpty(subject)) throw new GoogleHealthException("reconnect_required");
+        if (!json.RootElement.TryGetProperty("sub", out var subjectValue) || subjectValue.ValueKind != JsonValueKind.String ||
+            string.IsNullOrWhiteSpace(subjectValue.GetString()))
+            throw new GoogleHealthException("invalid_token_response", stage: "account_identity");
+        var subject = subjectValue.GetString()!;
         return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(subject)));
     }
 
@@ -76,31 +95,75 @@ public sealed class GoogleHealthClient(HttpClient http)
             if (!response.IsSuccessStatusCode)
                 throw await ErrorAsync(response, response.StatusCode switch
                 {
-                    System.Net.HttpStatusCode.Unauthorized => "reconnect_required",
+                    System.Net.HttpStatusCode.Unauthorized => "access_token_rejected",
                     System.Net.HttpStatusCode.Forbidden => "permission_denied",
                     System.Net.HttpStatusCode.BadRequest => "invalid_google_request",
                     System.Net.HttpStatusCode.NotFound => "google_resource_not_found",
                     _ => "google_unavailable"
-                }, ct);
-            using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync(ct));
-            if (json.RootElement.TryGetProperty("dataPoints", out var data))
-                foreach (var item in data.EnumerateArray())
-                {
-                    var point = Parse(type, item);
-                    if (point.Mills < from.ToUnixTimeMilliseconds() || point.Mills >= to.ToUnixTimeMilliseconds())
-                        throw new GoogleHealthException("unexpected_time_range");
-                    points.Add(point);
-                }
-            pageToken = json.RootElement.TryGetProperty("nextPageToken", out var next) ? next.GetString() ?? "" : "";
+                }, type, ct);
+            try
+            {
+                using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync(ct));
+                if (json.RootElement.TryGetProperty("dataPoints", out var data))
+                    foreach (var item in data.EnumerateArray())
+                    {
+                        var point = Parse(type, item);
+                        if (point.Mills < from.ToUnixTimeMilliseconds() || point.Mills >= to.ToUnixTimeMilliseconds())
+                            throw new GoogleHealthException("unexpected_time_range", stage: "data_parse", dataType: type);
+                        points.Add(point);
+                    }
+                pageToken = json.RootElement.TryGetProperty("nextPageToken", out var next) ? next.GetString() ?? "" : "";
+            }
+            catch (GoogleHealthException)
+            {
+                throw;
+            }
+            catch (Exception ex) when (ex is JsonException or InvalidOperationException)
+            {
+                throw new GoogleHealthException("invalid_google_response", stage: "data_read", dataType: type);
+            }
             if (pageToken.Length == 0) return points;
-            if (!seen.Add(pageToken)) throw new GoogleHealthException("pagination_failed");
+            if (!seen.Add(pageToken)) throw new GoogleHealthException("pagination_failed", stage: "data_read", dataType: type);
         }
-        throw new GoogleHealthException("history_too_large");
+        throw new GoogleHealthException("history_too_large", stage: "data_read", dataType: type);
     }
 
-    private static async Task<GoogleHealthException> ErrorAsync(HttpResponseMessage response, string fallback, CancellationToken ct)
+    private static async Task<GoogleHealthException> OAuthErrorAsync(
+        HttpResponseMessage response, string invalidGrantCode, string stage, CancellationToken ct)
+    {
+        var code = response.StatusCode == System.Net.HttpStatusCode.TooManyRequests ? "rate_limited" : "google_unavailable";
+        string? providerReason = null;
+        try
+        {
+            using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync(ct));
+            string? rawReason = null;
+            if (json.RootElement.TryGetProperty("error", out var error) && error.ValueKind == JsonValueKind.String)
+                rawReason = error.GetString();
+            providerReason = SafeProviderReason(rawReason);
+            code = rawReason switch
+            {
+                "invalid_grant" => invalidGrantCode,
+                "invalid_client" => "invalid_client_credentials",
+                "redirect_uri_mismatch" => "invalid_callback",
+                "invalid_scope" => "oauth_scope_configuration",
+                "access_denied" => "permission_denied",
+                "invalid_request" => "oauth_request_invalid",
+                "temporarily_unavailable" or "server_error" => "google_unavailable",
+                _ => code
+            };
+        }
+        catch (Exception ex) when (ex is JsonException or InvalidOperationException)
+        {
+        }
+        return new GoogleHealthException(code, RetryAfter(response), stage, providerReason: providerReason,
+            providerStatus: (int)response.StatusCode);
+    }
+
+    private static async Task<GoogleHealthException> ErrorAsync(
+        HttpResponseMessage response, string fallback, string dataType, CancellationToken ct)
     {
         var code = response.StatusCode == System.Net.HttpStatusCode.TooManyRequests ? "rate_limited" : fallback;
+        string? providerReason = null;
         try
         {
             using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync(ct));
@@ -108,19 +171,55 @@ public sealed class GoogleHealthClient(HttpClient http)
                 error.TryGetProperty("details", out var details) && details.ValueKind == JsonValueKind.Array)
             {
                 var reasons = GoogleReasons(details);
-                code = reasons.Contains("ACCOUNT_NOT_LINKED") ? "account_not_linked"
-                    : reasons.Contains("API_PRIVATE_PREVIEW_ACCESS_DENIED") ? "preview_access_denied"
-                    : reasons.Contains("MISSING_OAUTH_SCOPE") || reasons.Contains("DISALLOWED_OAUTH_SCOPES") ||
-                      reasons.Contains("DATA_ACCESS_DENIED") || reasons.Contains("RESOURCE_PERMISSION_DENIED") ? "permission_denied"
-                    : reasons.Any(reason => reason.StartsWith("INVALID_", StringComparison.OrdinalIgnoreCase)) ? "invalid_google_request"
-                    : code;
+                (code, providerReason) = MapGoogleReason(reasons, code);
+                providerReason = SafeProviderReason(providerReason);
             }
         }
         catch (Exception ex) when (ex is JsonException or InvalidOperationException)
         {
         }
-        return new GoogleHealthException(code,
-            response.Headers.RetryAfter?.Delta ?? (response.Headers.RetryAfter?.Date - DateTimeOffset.UtcNow));
+        return new GoogleHealthException(code, RetryAfter(response), "data_read", dataType, providerReason,
+            (int)response.StatusCode);
+    }
+
+    private static TimeSpan? RetryAfter(HttpResponseMessage response) =>
+        response.Headers.RetryAfter?.Delta ?? (response.Headers.RetryAfter?.Date - DateTimeOffset.UtcNow);
+
+    private static string? SafeProviderReason(string? reason) =>
+        !string.IsNullOrWhiteSpace(reason) && reason.Length <= 100 &&
+        reason.All(character => character is >= 'A' and <= 'Z' or >= '0' and <= '9' or '_' or >= 'a' and <= 'z')
+            ? reason
+            : null;
+
+    private static (string Code, string? Reason) MapGoogleReason(HashSet<string> reasons, string fallback)
+    {
+        string? Find(string reason) => reasons.FirstOrDefault(value => value.Equals(reason, StringComparison.OrdinalIgnoreCase));
+        string? FindPrefix(string prefix) => reasons.FirstOrDefault(value => value.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
+        var reason = Find("ACCOUNT_NOT_LINKED");
+        if (reason is not null) return ("account_not_linked", reason);
+        reason = Find("API_PRIVATE_PREVIEW_ACCESS_DENIED");
+        if (reason is not null) return ("preview_access_denied", reason);
+        reason = Find("MISSING_OAUTH_SCOPE") ?? Find("DISALLOWED_OAUTH_SCOPES");
+        if (reason is not null) return ("permission_denied", reason);
+        reason = Find("DATA_ACCESS_DENIED") ?? Find("RESOURCE_PERMISSION_DENIED");
+        if (reason is not null) return ("data_access_denied", reason);
+        reason = Find("RESOURCE_NOT_FOUND");
+        if (reason is not null) return ("google_resource_not_found", reason);
+        reason = Find("INVALID_TIME_RANGE");
+        if (reason is not null) return ("invalid_time_range", reason);
+        reason = Find("INVALID_DATA_POINT_FILTER_RESTRICTION_COMPARATOR");
+        if (reason is not null) return ("invalid_filter_operator", reason);
+        reason = FindPrefix("INVALID_DATA_POINT_FILTER") ?? FindPrefix("INVALID_FILTER");
+        if (reason is not null) return ("invalid_google_filter", reason);
+        reason = Find("INVALID_PARENT_DATA_TYPE_COLLECTION_FORMAT") ?? Find("INVALID_PARENT_DATA_TYPE_COLLECTION") ??
+                 Find("INVALID_DATA_TYPE_FORMAT");
+        if (reason is not null) return ("invalid_google_data_type", reason);
+        reason = Find("INVALID_DATA_POINT_DATA_SOURCE_FAMILY");
+        if (reason is not null) return ("invalid_source_family", reason);
+        reason = Find("INTERNAL_ERROR");
+        if (reason is not null) return ("google_unavailable", reason);
+        reason = FindPrefix("INVALID_");
+        return reason is null ? (fallback, null) : ("invalid_google_request", reason);
     }
 
     private static HashSet<string> GoogleReasons(JsonElement details)
@@ -149,7 +248,10 @@ public sealed class GoogleHealthClient(HttpClient http)
         if (value.ValueKind == JsonValueKind.String)
         {
             foreach (var reason in (value.GetString() ?? "").Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
-                reasons.Add(reason);
+            {
+                var normalized = reason.Trim().Trim('[', ']', '"', '\'');
+                if (normalized.Length > 0) reasons.Add(normalized);
+            }
         }
         else if (value.ValueKind == JsonValueKind.Array)
         {
@@ -169,15 +271,15 @@ public sealed class GoogleHealthClient(HttpClient http)
             var time = payload.GetProperty(interval ? "interval" : "sampleTime");
             var start = DateTimeOffset.Parse(time.GetProperty(interval ? "startTime" : "physicalTime").GetString()!, CultureInfo.InvariantCulture);
             long? end = interval ? DateTimeOffset.Parse(time.GetProperty("endTime").GetString()!, CultureInfo.InvariantCulture).ToUnixTimeMilliseconds() : null;
-            var valueName = type switch { "steps" => "count", "heart-rate" => "beatsPerMinute", "weight" => "weightGrams", _ => throw new GoogleHealthException("unsupported_type") };
+            var valueName = type switch { "steps" => "count", "heart-rate" => "beatsPerMinute", "weight" => "weightGrams", _ => throw new GoogleHealthException("unsupported_type", stage: "data_parse", dataType: type) };
             var value = decimal.Parse(payload.GetProperty(valueName).ToString(), CultureInfo.InvariantCulture);
             if (value < 0 || (type != "steps" && value == 0) || (type != "weight" && decimal.Truncate(value) != value) || (end.HasValue && end.Value <= start.ToUnixTimeMilliseconds()))
-                throw new GoogleHealthException("invalid_google_data");
+                throw new GoogleHealthException("invalid_google_data", stage: "data_parse", dataType: type);
             int? offset = null;
             if (time.TryGetProperty(interval ? "startUtcOffset" : "utcOffset", out var offsetValue))
             {
                 var seconds = decimal.Parse(offsetValue.GetString()!.TrimEnd('s'), CultureInfo.InvariantCulture);
-                if (seconds % 60 != 0 || Math.Abs(seconds) > 50400) throw new GoogleHealthException("invalid_google_data");
+                if (seconds % 60 != 0 || Math.Abs(seconds) > 50400) throw new GoogleHealthException("invalid_google_data", stage: "data_parse", dataType: type);
                 offset = (int)(seconds / 60);
             }
             return new PersonalHealthReading
@@ -189,7 +291,7 @@ public sealed class GoogleHealthClient(HttpClient http)
         }
         catch (Exception ex) when (ex is KeyNotFoundException or FormatException or InvalidOperationException or OverflowException or ArgumentException)
         {
-            throw new GoogleHealthException("invalid_google_data");
+            throw new GoogleHealthException("invalid_google_data", stage: "data_parse", dataType: type);
         }
     }
 }

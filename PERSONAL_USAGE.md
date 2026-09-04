@@ -26,8 +26,9 @@ Gebruik je vertrouwde HTTPS-domein en de Personal-poort (standaard 8450).
    sleutels waarmee de tokens teruggelezen kunnen worden.
 6. Kies de gewenste typen en een terugkijkperiode, en klik **Inloggen bij Google**.
    Log in bij Google en geef zelf toestemming. De browser keert terug naar Personal.
-7. Klik **Nu synchroniseren**. Controleer de laatste geslaagde import en de echte
-   metingen onderaan. Daarna wordt ongeveer elke 15 minuten gesynchroniseerd.
+7. Personal start na een geslaagde terugkeer direct de eerste synchronisatie.
+   Controleer de laatste poging, de laatste geslaagde import en de echte metingen
+   onderaan. Daarna wordt ongeveer elke 15 minuten gesynchroniseerd.
 
 Na deze eenmalige configuratie blijft het client-secret versleuteld opgeslagen.
 Bij opnieuw koppelen toont Personal daarom alleen **Inloggen met Google**; de
@@ -37,6 +38,17 @@ De OAuth-koppeling vraagt alleen read-only Health-scopes en `openid`. Dat laatst
 bindt de import aan hetzelfde Google-account; naam, e-mail en profielfoto worden
 niet opgeslagen. Een accountwissel vereist ontkoppelen en daarna expliciet wissen
 van de eerdere Google-import, zodat twee personen niet stilzwijgend gemengd raken.
+
+Google geeft bij de callback een kortlevend access-token en een refresh-token voor
+offline toegang. Personal bewaart beide versleuteld, gebruikt het access-token tot
+kort voor de door Google opgegeven vervaltijd en vraagt pas dan met de refresh-token
+een nieuwe sessie aan. Daardoor is de zojuist aangemaakte sessie meteen bruikbaar en
+wordt Google niet bij iedere synchronisatie onnodig om een nieuw token gevraagd.
+Tokens worden nooit in de interface of in diagnostische logs getoond.
+De callback gebruikt tegelijk de bestaande Nocturne-sessie om tenant, gebruiker,
+OAuth-state en koppeling aan elkaar te binden. Rond het aanmelden daarom in dezelfde
+browser af. Bij een ontbrekende Nocturne-cookie wordt nu expliciet `no_session`
+getoond in plaats van een onverklaarde mislukking.
 
 ### Wat wordt opgehaald?
 
@@ -57,6 +69,11 @@ Gedeeltelijke toestemming is zichtbaar: alleen geselecteerde én toegestane type
 worden opgehaald. Ontbrekende gegevens worden niet als nul gepresenteerd. Bij een
 fout blijft de eerdere import behouden. Na quota- of netwerkfouten probeert de
 achtergrondtaak later opnieuw. Bij ingetrokken toestemming moet je opnieuw koppelen.
+De status toont een stabiele technische foutcode, de betrokken gegevenstypen, de
+laatste poging en zo nodig het eerstvolgende probeertijdstip. De serverlog vermeldt
+alleen fase, gegevenstype, HTTP-status en de stabiele Google-redencode; nooit tokens,
+metingen of vrije providerteksten. `no_google_data` betekent dat Google de aanvraag
+wel accepteerde maar voor die typen niets in de gekozen periode teruggaf.
 
 **Ontkoppelen** stopt lokaal de synchronisatie en probeert tevens de Google-token
 in te trekken. Als dat niet bevestigd kon worden, verschijnt de instructie om de

@@ -94,6 +94,7 @@ public class PersonalHealthTests
     [InlineData("INVALID_PAGE_TOKEN", "invalid_google_request", true)]
     [InlineData("API_PRIVATE_PREVIEW_ACCESS_DENIED", "preview_access_denied", false)]
     [InlineData("MISSING_OAUTH_SCOPE", "permission_denied", false)]
+    [InlineData("[\"ACCOUNT_NOT_LINKED\"]", "account_not_linked", false)]
     public async Task Maps_google_error_reasons_without_exposing_response_details(string reason, string expected, bool directReason)
     {
         var detail = directReason
@@ -110,7 +111,45 @@ public class PersonalHealthTests
             "synthetic-token", "weight", DateTimeOffset.UtcNow.AddDays(-1), DateTimeOffset.UtcNow, default));
 
         Assert.Equal(expected, exception.Message);
+        Assert.Equal("weight", exception.DataType);
+        Assert.Equal("data_read", exception.Stage);
         Assert.DoesNotContain("sensitive", exception.Message);
+    }
+
+    [Theory]
+    [InlineData("invalid_client", "invalid_client_credentials")]
+    [InlineData("redirect_uri_mismatch", "invalid_callback")]
+    [InlineData("invalid_scope", "oauth_scope_configuration")]
+    [InlineData("invalid_grant", "expired_signin")]
+    public async Task Maps_oauth_exchange_errors_to_actionable_codes(string providerError, string expected)
+    {
+        var handler = new StubHandler(_ => new HttpResponseMessage(HttpStatusCode.BadRequest)
+        {
+            Content = new StringContent(JsonSerializer.Serialize(new { error = providerError, error_description = "do not expose" }),
+                Encoding.UTF8, "application/json")
+        });
+        var client = new GoogleHealthClient(new HttpClient(handler));
+
+        var exception = await Assert.ThrowsAsync<GoogleHealthException>(() => client.ExchangeAuthorizationCodeAsync([], default));
+
+        Assert.Equal(expected, exception.Message);
+        Assert.Equal("authorization_code", exception.Stage);
+        Assert.DoesNotContain("expose", exception.Message);
+    }
+
+    [Fact]
+    public async Task Invalid_refresh_grant_requires_reconnection()
+    {
+        var handler = new StubHandler(_ => new HttpResponseMessage(HttpStatusCode.BadRequest)
+        {
+            Content = new StringContent("{\"error\":\"invalid_grant\"}", Encoding.UTF8, "application/json")
+        });
+        var client = new GoogleHealthClient(new HttpClient(handler));
+
+        var exception = await Assert.ThrowsAsync<GoogleHealthException>(() => client.RefreshAccessTokenAsync([], default));
+
+        Assert.Equal("reconnect_required", exception.Message);
+        Assert.Equal("token_refresh", exception.Stage);
     }
 
     [Fact]
@@ -124,14 +163,22 @@ public class PersonalHealthTests
         db.Tenants.Add(new TenantEntity { Id = tenant, Slug = "synthetic", DisplayName = "Synthetic", IsActive = true }); await db.SaveChangesAsync();
         var observation = DateTimeOffset.UtcNow.AddHours(-1).ToString("O");
         var grams = 72000;
-        var handler = new StubHandler(request => request.RequestUri!.AbsolutePath switch
+        var tokenCalls = 0;
+        var dataAuthorizations = new List<string?>();
+        var handler = new StubHandler(request =>
         {
-            "/token" => Json($$"""{"access_token":"synthetic-access","refresh_token":"synthetic-refresh","scope":"openid {{GoogleHealthClient.MetricsScope}}"}"""),
-            "/v1/userinfo" => Json("{\"sub\":\"synthetic-account\"}"),
-            "/revoke" => Json("{}"),
-            _ => Json(JsonSerializer.Serialize(new { dataPoints = new[] { new { weight = new { sampleTime = new { physicalTime = observation }, weightGrams = grams } } } }))
+            if (request.RequestUri!.AbsolutePath == "/token")
+            {
+                tokenCalls++;
+                return Json($$"""{"access_token":"synthetic-access","refresh_token":"synthetic-refresh","expires_in":3600,"token_type":"Bearer","scope":"openid {{GoogleHealthClient.MetricsScope}}"}""");
+            }
+            if (request.RequestUri.AbsolutePath == "/v1/userinfo") return Json("{\"sub\":\"synthetic-account\"}");
+            if (request.RequestUri.AbsolutePath == "/revoke") return Json("{}");
+            dataAuthorizations.Add(request.Headers.Authorization?.ToString());
+            return Json(JsonSerializer.Serialize(new { dataPoints = new[] { new { weight = new { sampleTime = new { physicalTime = observation }, weightGrams = grams } } } }));
         });
-        var service = new GoogleHealthService(db, new EphemeralDataProtectionProvider(), new GoogleHealthCoordinator(), new GoogleHealthClient(new HttpClient(handler)));
+        var protection = new EphemeralDataProtectionProvider();
+        var service = new GoogleHealthService(db, protection, new GoogleHealthCoordinator(), new GoogleHealthClient(new HttpClient(handler)));
         var options = Options(); options.DataTypes = ["steps", "weight"];
         await service.SaveAsync(options, subject, default);
         var auth = await service.StartAsync(subject, default);
@@ -143,10 +190,22 @@ public class PersonalHealthTests
         await Assert.ThrowsAsync<GoogleHealthException>(() => service.CompleteAsync(callback, subject, default));
         var status = await service.StatusAsync(default);
         Assert.Equal(["weight"], status.GrantedTypes); Assert.Equal("partial_consent", status.ErrorCode);
+        Assert.Equal(["steps"], status.ErrorDataTypes);
+        Assert.NotNull(status.AccessTokenExpiresAt);
         var stored = await db.PersonalGoogleConnections.SingleAsync();
         Assert.DoesNotContain("synthetic-secret", stored.ProtectedSettings); Assert.DoesNotContain("synthetic-refresh", stored.ProtectedToken!);
         await service.SyncAsync(true, default); Assert.Equal(72m, (await db.PersonalHealthReadings.SingleAsync()).Value);
+        Assert.Equal(1, tokenCalls);
+        Assert.All(dataAuthorizations, value => Assert.Equal("Bearer synthetic-access", value));
+        var protector = protection.CreateProtector("Nocturne.Personal.GoogleHealth.v1", tenant.ToString());
+        stored.ProtectedToken = protector.Protect(JsonSerializer.Serialize(new
+        {
+            refreshToken = "synthetic-refresh",
+            scopes = new[] { "openid", GoogleHealthClient.MetricsScope }
+        }, new JsonSerializerOptions(JsonSerializerDefaults.Web)));
+        await db.SaveChangesAsync();
         grams = 73000; await service.SyncAsync(true, default);
+        Assert.Equal(2, tokenCalls);
         Assert.Single(await db.PersonalHealthReadings.ToListAsync()); Assert.Equal(73m, (await db.PersonalHealthReadings.AsNoTracking().SingleAsync()).Value);
         handler.Responder = _ => new HttpResponseMessage(HttpStatusCode.TooManyRequests);
         await service.SyncAsync(true, default); Assert.Single(await db.PersonalHealthReadings.ToListAsync());
@@ -158,7 +217,7 @@ public class PersonalHealthTests
 
         handler.Responder = request => request.RequestUri!.AbsolutePath switch
         {
-            "/token" => Json(JsonSerializer.Serialize(new { access_token = "synthetic-access", refresh_token = "synthetic-refresh", scope = $"openid {GoogleHealthClient.MetricsScope} {GoogleHealthClient.ActivityScope}" })),
+            "/token" => Json(JsonSerializer.Serialize(new { access_token = "synthetic-access", refresh_token = "synthetic-refresh", expires_in = 3600, token_type = "Bearer", scope = $"openid {GoogleHealthClient.MetricsScope} {GoogleHealthClient.ActivityScope}" })),
             "/v1/userinfo" => Json("{\"sub\":\"synthetic-account\"}"),
             var path when path.Contains("/steps/") => Json(JsonSerializer.Serialize(new { dataPoints = new[] { new { steps = new { interval = new { startTime = observation, endTime = DateTimeOffset.Parse(observation).AddMinutes(1).ToString("O") }, count = "42" } } } })),
             var path when path.Contains("/heart-rate/") => Json(JsonSerializer.Serialize(new { dataPoints = new[] { new { heartRate = new { sampleTime = new { physicalTime = observation }, beatsPerMinute = "65" } } } })),
@@ -179,6 +238,48 @@ public class PersonalHealthTests
     }
 
     [Fact]
+    public async Task Persists_safe_data_type_diagnostics_when_google_account_is_not_linked()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:"); await connection.OpenAsync();
+        await using var db = new NocturneDbContext(new DbContextOptionsBuilder<NocturneDbContext>().UseSqlite(connection).Options);
+        await db.Database.EnsureCreatedAsync();
+        var tenant = Guid.NewGuid(); var subject = Guid.NewGuid(); db.TenantId = tenant;
+        db.Tenants.Add(new TenantEntity { Id = tenant, Slug = "synthetic", DisplayName = "Synthetic", IsActive = true });
+        await db.SaveChangesAsync();
+        var handler = new StubHandler(request => request.RequestUri!.AbsolutePath switch
+        {
+            "/token" => Json($$"""{"access_token":"synthetic-access","refresh_token":"synthetic-refresh","expires_in":3600,"token_type":"Bearer","scope":"openid {{GoogleHealthClient.MetricsScope}}"}"""),
+            "/v1/userinfo" => Json("{\"sub\":\"synthetic-account\"}"),
+            _ => new HttpResponseMessage(HttpStatusCode.BadRequest)
+            {
+                Content = new StringContent("{\"error\":{\"message\":\"do not persist this\",\"details\":[{\"metadata\":{\"detailedReasons\":[\"ACCOUNT_NOT_LINKED\"]}}]}}", Encoding.UTF8, "application/json")
+            }
+        });
+        var service = new GoogleHealthService(db, new EphemeralDataProtectionProvider(), new GoogleHealthCoordinator(),
+            new GoogleHealthClient(new HttpClient(handler)));
+        await service.SaveAsync(Options(), subject, default);
+        var authorization = await service.StartAsync(subject, default);
+        var state = QueryHelpers.ParseQuery(new Uri(authorization.Url).Query)["state"].ToString();
+        await service.CompleteAsync(new() { State = state, Code = "synthetic-code" }, subject, default);
+
+        await service.SyncAsync(true, default);
+
+        var status = await service.StatusAsync(default);
+        Assert.Equal("account_not_linked", status.ErrorCode);
+        Assert.Equal(["weight"], status.ErrorDataTypes);
+        Assert.NotNull(status.LastAttempt);
+        Assert.True(status.Connected);
+        Assert.DoesNotContain("persist", (await db.PersonalGoogleConnections.SingleAsync()).ErrorCode);
+
+        handler.Responder = _ => Json("{\"dataPoints\":[]}");
+        await service.SyncAsync(true, default);
+        status = await service.StatusAsync(default);
+        Assert.Equal("no_google_data", status.ErrorCode);
+        Assert.Equal(["weight"], status.ErrorDataTypes);
+        Assert.NotNull(status.LastSync);
+    }
+
+    [Fact]
     public async Task Unreadable_google_configuration_can_be_disconnected_and_reconfigured()
     {
         await using var connection = new SqliteConnection("Data Source=:memory:"); await connection.OpenAsync();
@@ -188,7 +289,7 @@ public class PersonalHealthTests
         db.Tenants.Add(new TenantEntity { Id = tenant, Slug = "synthetic", DisplayName = "Synthetic", IsActive = true }); await db.SaveChangesAsync();
         var handler = new StubHandler(request => request.RequestUri!.AbsolutePath switch
         {
-            "/token" => Json($$"""{"access_token":"synthetic-access","refresh_token":"synthetic-refresh","scope":"openid {{GoogleHealthClient.MetricsScope}}"}"""),
+            "/token" => Json($$"""{"access_token":"synthetic-access","refresh_token":"synthetic-refresh","expires_in":3600,"token_type":"Bearer","scope":"openid {{GoogleHealthClient.MetricsScope}}"}"""),
             "/v1/userinfo" => Json("{\"sub\":\"synthetic-account\"}"),
             _ => Json("{}")
         });

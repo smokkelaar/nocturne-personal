@@ -27,15 +27,43 @@ public sealed class GoogleHealthService(NocturneDbContext db, IDataProtectionPro
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
     private IDataProtector Protector => protection.CreateProtector("Nocturne.Personal.GoogleHealth.v1", db.TenantId.ToString());
     private string Protect<T>(T value) => Protector.Protect(JsonSerializer.Serialize(value, Json));
-    private T Unprotect<T>(string value) => JsonSerializer.Deserialize<T>(Protector.Unprotect(value), Json)!;
+    private T Unprotect<T>(string value) => JsonSerializer.Deserialize<T>(Protector.Unprotect(value), Json) ?? throw new JsonException();
     private Task<PersonalGoogleConnectionEntity?> Connection(CancellationToken ct) => db.PersonalGoogleConnections.SingleOrDefaultAsync(ct);
 
     public async Task<GoogleHealthStatus> StatusAsync(CancellationToken ct)
     {
         var row = await Connection(ct);
         if (row is null) return new() { Capabilities = GoogleHealthClient.Capabilities };
-        var settings = Unprotect<GoogleHealthOptions>(row.ProtectedSettings);
-        var token = row.ProtectedToken is null ? null : Unprotect<Token>(row.ProtectedToken);
+        GoogleHealthOptions settings;
+        try
+        {
+            settings = Unprotect<GoogleHealthOptions>(row.ProtectedSettings);
+            if (settings.DataTypes is null) throw new JsonException();
+        }
+        catch (Exception ex) when (ex is CryptographicException or JsonException)
+        {
+            return new()
+            {
+                Capabilities = GoogleHealthClient.Capabilities, Connected = row.ProtectedToken is not null,
+                LastSync = row.LastSync, ErrorCode = "stored_google_configuration_unreadable"
+            };
+        }
+        Token? token;
+        try
+        {
+            token = row.ProtectedToken is null ? null : Unprotect<Token>(row.ProtectedToken);
+            if (token is not null && (string.IsNullOrWhiteSpace(token.RefreshToken) || token.Scopes is null)) throw new JsonException();
+        }
+        catch (Exception ex) when (ex is CryptographicException or JsonException)
+        {
+            return new()
+            {
+                Capabilities = GoogleHealthClient.Capabilities, Configured = true, Connected = true,
+                ClientId = settings.ClientId, CallbackUrl = settings.CallbackUrl, HistoryDays = settings.HistoryDays,
+                SelectedTypes = settings.DataTypes, LastSync = row.LastSync,
+                ErrorCode = "stored_google_configuration_unreadable"
+            };
+        }
         return new()
         {
             Capabilities = GoogleHealthClient.Capabilities, Configured = true, Connected = token is not null, ClientId = settings.ClientId,
@@ -67,8 +95,11 @@ public sealed class GoogleHealthService(NocturneDbContext db, IDataProtectionPro
             {
                 if (row.SubjectId != subject) throw new GoogleHealthException("connection_owner_required");
                 if (row.ProtectedToken is not null) throw new GoogleHealthException("disconnect_first");
-                var prior = Unprotect<GoogleHealthOptions>(row.ProtectedSettings);
-                if (string.IsNullOrWhiteSpace(options.ClientSecret) && options.ClientId == prior.ClientId) options.ClientSecret = prior.ClientSecret;
+                if (string.IsNullOrWhiteSpace(options.ClientSecret))
+                {
+                    var prior = Unprotect<GoogleHealthOptions>(row.ProtectedSettings);
+                    if (options.ClientId == prior.ClientId) options.ClientSecret = prior.ClientSecret;
+                }
             }
             if (string.IsNullOrWhiteSpace(options.ClientSecret)) throw new GoogleHealthException("client_secret_required");
             row.ProtectedSettings = Protect(options); row.ErrorCode = null; row.NextAttempt = null;
@@ -146,8 +177,12 @@ public sealed class GoogleHealthService(NocturneDbContext db, IDataProtectionPro
             var row = await Connection(ct);
             if (row is null) return;
             if (row.SubjectId != subject) throw new GoogleHealthException("connection_owner_required");
-            var token = row.ProtectedToken is null ? null : Unprotect<Token>(row.ProtectedToken);
-            row.ProtectedToken = null; row.ErrorCode = null; row.NextAttempt = null;
+            Token? token = null;
+            var revokeFailed = false;
+            if (row.ProtectedToken is not null)
+                try { token = Unprotect<Token>(row.ProtectedToken); }
+                catch (Exception ex) when (ex is CryptographicException or JsonException) { revokeFailed = true; }
+            row.ProtectedToken = null; row.ErrorCode = revokeFailed ? "revoke_in_google" : null; row.NextAttempt = null;
             coordinator.Flows.TryRemove(db.TenantId, out _);
             await db.SaveChangesAsync(ct);
             if (token is not null)

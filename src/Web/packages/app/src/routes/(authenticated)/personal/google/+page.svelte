@@ -1,8 +1,8 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { isHttpError } from "@sveltejs/kit";
   import { resolve } from "$app/paths";
   import type { GoogleHealthStatus, PersonalHealthReading } from "$lib/api";
+  import { errorMessage } from "$lib/forms/submit-error";
   import {
     getPersonalGoogleHealth,
     savePersonalGoogleHealth,
@@ -67,6 +67,8 @@
       "Dit Google-account heeft geen toegang tot deze Google Health API-versie.",
     google_resource_not_found:
       "Google Health kent de gevraagde gegevensbron niet voor dit account.",
+    stored_google_configuration_unreadable:
+      "De opgeslagen Google-koppeling is niet meer leesbaar. Ontkoppel lokaal, trek de oude Nocturne-toegang zo nodig ook in bij je Google-account en voer de instellingen opnieuw in. Geïmporteerde metingen blijven staan.",
     revoke_in_google:
       "Lokaal ontkoppeld. Trek de app-toegang ook in bij je Google-account; dat kon niet automatisch worden bevestigd.",
     history_too_large:
@@ -99,8 +101,9 @@
     try {
       await action();
     } catch (error) {
+      const code = errorMessage(error);
       message =
-        (isHttpError(error) && errors[error.body.message]) ||
+        (code && errors[code]) ||
         "Dit lukte niet. Controleer de configuratie, je rechten en de verbinding. Bij een verlopen aanmelding: start opnieuw.";
     } finally {
       busy = false;

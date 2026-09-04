@@ -107,19 +107,12 @@ public sealed class GoogleHealthClient(HttpClient http)
             if (json.RootElement.TryGetProperty("error", out var error) &&
                 error.TryGetProperty("details", out var details) && details.ValueKind == JsonValueKind.Array)
             {
-                var reasons = details.EnumerateArray()
-                    .Where(detail => detail.TryGetProperty("metadata", out _))
-                    .Select(detail => detail.GetProperty("metadata"))
-                    .Where(metadata => metadata.TryGetProperty("detailedReasons", out _))
-                    .Select(metadata => metadata.GetProperty("detailedReasons").GetString())
-                    .Where(reason => !string.IsNullOrWhiteSpace(reason))
-                    .SelectMany(reason => reason!.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
-                    .ToHashSet(StringComparer.Ordinal);
+                var reasons = GoogleReasons(details);
                 code = reasons.Contains("ACCOUNT_NOT_LINKED") ? "account_not_linked"
                     : reasons.Contains("API_PRIVATE_PREVIEW_ACCESS_DENIED") ? "preview_access_denied"
                     : reasons.Contains("MISSING_OAUTH_SCOPE") || reasons.Contains("DISALLOWED_OAUTH_SCOPES") ||
                       reasons.Contains("DATA_ACCESS_DENIED") || reasons.Contains("RESOURCE_PERMISSION_DENIED") ? "permission_denied"
-                    : reasons.Any(reason => reason.StartsWith("INVALID_", StringComparison.Ordinal)) ? "invalid_google_request"
+                    : reasons.Any(reason => reason.StartsWith("INVALID_", StringComparison.OrdinalIgnoreCase)) ? "invalid_google_request"
                     : code;
             }
         }
@@ -128,6 +121,40 @@ public sealed class GoogleHealthClient(HttpClient http)
         }
         return new GoogleHealthException(code,
             response.Headers.RetryAfter?.Delta ?? (response.Headers.RetryAfter?.Date - DateTimeOffset.UtcNow));
+    }
+
+    private static HashSet<string> GoogleReasons(JsonElement details)
+    {
+        var reasons = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var detail in details.EnumerateArray())
+        {
+            AddReasons(detail, "reason", reasons);
+            if (!detail.TryGetProperty("metadata", out var metadata) || metadata.ValueKind != JsonValueKind.Object) continue;
+            foreach (var property in metadata.EnumerateObject())
+                if (property.Name.Equals("detailedReasons", StringComparison.OrdinalIgnoreCase) ||
+                    property.Name.Equals("reason", StringComparison.OrdinalIgnoreCase))
+                    AddReasons(property.Value, reasons);
+        }
+        return reasons;
+    }
+
+    private static void AddReasons(JsonElement source, string propertyName, HashSet<string> reasons)
+    {
+        if (source.ValueKind == JsonValueKind.Object && source.TryGetProperty(propertyName, out var value))
+            AddReasons(value, reasons);
+    }
+
+    private static void AddReasons(JsonElement value, HashSet<string> reasons)
+    {
+        if (value.ValueKind == JsonValueKind.String)
+        {
+            foreach (var reason in (value.GetString() ?? "").Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
+                reasons.Add(reason);
+        }
+        else if (value.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var reason in value.EnumerateArray()) AddReasons(reason, reasons);
+        }
     }
 
     public static string Key(PersonalHealthReading reading) => Convert.ToHexString(SHA256.HashData(

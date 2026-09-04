@@ -61,6 +61,9 @@ achtergrondtaak later opnieuw. Bij ingetrokken toestemming moet je opnieuw koppe
 **Ontkoppelen** stopt lokaal de synchronisatie en probeert tevens de Google-token
 in te trekken. Als dat niet bevestigd kon worden, verschijnt de instructie om de
 app-toegang zelf bij Google in te trekken. Metingen blijven behouden.
+Als een versleutelde koppeling na een herstel of migratie niet meer kan worden
+gelezen, blijft lokaal ontkoppelen beschikbaar. Voer daarna client-ID, client-secret
+en callback-URL opnieuw in; eerder geïmporteerde metingen blijven behouden.
 **Google-import wissen** verwijdert, na bevestiging en alleen na ontkoppelen, alle
 Google-metingen uit Personal. Het verwijdert niets bij Google en geen medicatielog.
 

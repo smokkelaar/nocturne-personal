@@ -69,6 +69,8 @@
       "Google Health kent de gevraagde gegevensbron niet voor dit account.",
     stored_google_configuration_unreadable:
       "De opgeslagen Google-koppeling is niet meer leesbaar. Ontkoppel lokaal, trek de oude Nocturne-toegang zo nodig ook in bij je Google-account en voer de instellingen opnieuw in. Geïmporteerde metingen blijven staan.",
+    unsupported_type:
+      "De opgeslagen selectie bevat een gegevenstype dat deze versie niet ondersteunt. Ontkoppel en configureer de koppeling opnieuw.",
     revoke_in_google:
       "Lokaal ontkoppeld. Trek de app-toegang ook in bij je Google-account; dat kon niet automatisch worden bevestigd.",
     history_too_large:
@@ -93,7 +95,14 @@
       `${window.location.origin}/personal/google/callback`;
     selected = status.configured ? (status.selectedTypes ?? []) : selected;
     historyDays = status.historyDays ?? 7;
-    await loadReadings();
+    try {
+      await loadReadings();
+    } catch (error) {
+      const code = errorMessage(error);
+      message =
+        (code && errors[code]) ||
+        "De Google-koppeling is geladen, maar de geïmporteerde metingen konden niet worden opgehaald.";
+    }
   }
   async function run(action: () => Promise<unknown>) {
     busy = true;

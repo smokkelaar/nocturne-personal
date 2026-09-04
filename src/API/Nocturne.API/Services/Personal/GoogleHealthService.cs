@@ -40,7 +40,7 @@ public sealed class GoogleHealthService(NocturneDbContext db, IDataProtectionPro
             settings = Unprotect<GoogleHealthOptions>(row.ProtectedSettings);
             if (settings.DataTypes is null) throw new JsonException();
         }
-        catch (Exception ex) when (ex is CryptographicException or JsonException)
+        catch (Exception ex) when (ex is CryptographicException or JsonException or FormatException)
         {
             return new()
             {
@@ -48,19 +48,24 @@ public sealed class GoogleHealthService(NocturneDbContext db, IDataProtectionPro
                 LastSync = row.LastSync, ErrorCode = "stored_google_configuration_unreadable"
             };
         }
+        var selectedTypes = settings.DataTypes
+            .Where(type => GoogleHealthClient.SupportedTypes.Contains(type, StringComparer.Ordinal))
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+        var selectionIsValid = selectedTypes.Length == settings.DataTypes.Length;
         Token? token;
         try
         {
             token = row.ProtectedToken is null ? null : Unprotect<Token>(row.ProtectedToken);
             if (token is not null && (string.IsNullOrWhiteSpace(token.RefreshToken) || token.Scopes is null)) throw new JsonException();
         }
-        catch (Exception ex) when (ex is CryptographicException or JsonException)
+        catch (Exception ex) when (ex is CryptographicException or JsonException or FormatException)
         {
             return new()
             {
                 Capabilities = GoogleHealthClient.Capabilities, Configured = true, Connected = true,
                 ClientId = settings.ClientId, CallbackUrl = settings.CallbackUrl, HistoryDays = settings.HistoryDays,
-                SelectedTypes = settings.DataTypes, LastSync = row.LastSync,
+                SelectedTypes = selectedTypes, LastSync = row.LastSync,
                 ErrorCode = "stored_google_configuration_unreadable"
             };
         }
@@ -68,14 +73,14 @@ public sealed class GoogleHealthService(NocturneDbContext db, IDataProtectionPro
         {
             Capabilities = GoogleHealthClient.Capabilities, Configured = true, Connected = token is not null, ClientId = settings.ClientId,
             CallbackUrl = settings.CallbackUrl, HistoryDays = settings.HistoryDays,
-            SelectedTypes = settings.DataTypes, GrantedTypes = settings.DataTypes.Where(t => token?.Scopes.Contains(GoogleHealthClient.ScopeFor(t)) == true).ToArray(),
-            LastSync = row.LastSync, ErrorCode = row.ErrorCode
+            SelectedTypes = selectedTypes, GrantedTypes = selectedTypes.Where(t => token?.Scopes.Contains(GoogleHealthClient.ScopeFor(t)) == true).ToArray(),
+            LastSync = row.LastSync, ErrorCode = selectionIsValid ? row.ErrorCode : "unsupported_type"
         };
     }
 
     public static void ValidateOptions(GoogleHealthOptions options)
     {
-        if (options.DataTypes.Length == 0 || options.DataTypes.Length > 32 || options.DataTypes.Distinct().Count() != options.DataTypes.Length || options.DataTypes.Except(GoogleHealthClient.SupportedTypes).Any())
+        if (options.DataTypes is null || options.DataTypes.Length == 0 || options.DataTypes.Length > 32 || options.DataTypes.Distinct().Count() != options.DataTypes.Length || options.DataTypes.Except(GoogleHealthClient.SupportedTypes).Any())
             throw new GoogleHealthException("unsupported_type");
         if (!options.ClientId.EndsWith(".apps.googleusercontent.com", StringComparison.Ordinal) || options.HistoryDays is < 1 or > 90)
             throw new GoogleHealthException("invalid_configuration");
@@ -181,7 +186,7 @@ public sealed class GoogleHealthService(NocturneDbContext db, IDataProtectionPro
             var revokeFailed = false;
             if (row.ProtectedToken is not null)
                 try { token = Unprotect<Token>(row.ProtectedToken); }
-                catch (Exception ex) when (ex is CryptographicException or JsonException) { revokeFailed = true; }
+                catch (Exception ex) when (ex is CryptographicException or JsonException or FormatException) { revokeFailed = true; }
             row.ProtectedToken = null; row.ErrorCode = revokeFailed ? "revoke_in_google" : null; row.NextAttempt = null;
             coordinator.Flows.TryRemove(db.TenantId, out _);
             await db.SaveChangesAsync(ct);

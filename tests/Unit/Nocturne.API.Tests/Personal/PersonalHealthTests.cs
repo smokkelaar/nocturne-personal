@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Nocturne.API.Controllers.V4.Personal;
 using Nocturne.API.Services.Personal;
 using Nocturne.Core.Contracts.Health;
@@ -156,8 +157,11 @@ public class PersonalHealthTests
     public async Task Stores_encrypted_oauth_and_imports_atomically_with_tenant_isolation()
     {
         await using var connection = new SqliteConnection("Data Source=:memory:"); await connection.OpenAsync();
-        await using var db = new NocturneDbContext(new DbContextOptionsBuilder<NocturneDbContext>().UseSqlite(connection).Options);
+        await using var db = new NocturneDbContext(new DbContextOptionsBuilder<NocturneDbContext>()
+            .UseSqlite(connection, options => options.ExecutionStrategy(dependencies => new TestRetryingExecutionStrategy(dependencies)))
+            .Options);
         await db.Database.EnsureCreatedAsync();
+        Assert.True(db.Database.CreateExecutionStrategy().RetriesOnFailure);
         var tenant = Guid.NewGuid(); var subject = Guid.NewGuid();
         db.TenantId = tenant;
         db.Tenants.Add(new TenantEntity { Id = tenant, Slug = "synthetic", DisplayName = "Synthetic", IsActive = true }); await db.SaveChangesAsync();
@@ -209,6 +213,9 @@ public class PersonalHealthTests
         Assert.Single(await db.PersonalHealthReadings.ToListAsync()); Assert.Equal(73m, (await db.PersonalHealthReadings.AsNoTracking().SingleAsync()).Value);
         handler.Responder = _ => new HttpResponseMessage(HttpStatusCode.TooManyRequests);
         await service.SyncAsync(true, default); Assert.Single(await db.PersonalHealthReadings.ToListAsync());
+        handler.Responder = _ => throw new InvalidOperationException("synthetic internal failure");
+        await service.SyncAsync(true, default);
+        Assert.Equal("internal_sync_google_read", (await service.StatusAsync(default)).ErrorCode);
         db.TenantId = Guid.NewGuid(); Assert.Empty(await db.PersonalHealthReadings.ToListAsync()); Assert.Empty(await db.PersonalGoogleConnections.ToListAsync());
         db.TenantId = tenant;
         await service.DisconnectAsync(subject, default);
@@ -396,5 +403,11 @@ public class PersonalHealthTests
     {
         public Func<HttpRequestMessage, HttpResponseMessage> Responder { get; set; } = responder;
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) => Task.FromResult(Responder(request));
+    }
+
+    private sealed class TestRetryingExecutionStrategy(ExecutionStrategyDependencies dependencies)
+        : ExecutionStrategy(dependencies, 1, TimeSpan.Zero)
+    {
+        protected override bool ShouldRetryOn(Exception exception) => false;
     }
 }

@@ -112,6 +112,20 @@
       "De antwoordperiode van Google wijkt af. Deze import is niet opgeslagen.",
     pagination_failed:
       "Niet alle pagina’s konden worden opgehaald. Deze import is niet opgeslagen.",
+    internal_sync_connection_read:
+      "De import kon de opgeslagen koppeling niet lezen. Controleer de serverlog rond deze poging.",
+    internal_sync_session_read:
+      "De import kon de beveiligde Google-sessie niet verwerken. Controleer de serverlog rond deze poging.",
+    internal_sync_token_refresh:
+      "De import liep onverwacht vast bij het vernieuwen van de Google-sessie. Controleer de serverlog rond deze poging.",
+    internal_sync_scope_validation:
+      "De import liep onverwacht vast bij het controleren van de verleende rechten. Controleer de serverlog rond deze poging.",
+    internal_sync_google_read:
+      "De import liep onverwacht vast bij het ophalen van Google Health-gegevens. Controleer de serverlog rond deze poging.",
+    internal_sync_data_validation:
+      "De import liep onverwacht vast bij het controleren van Google Health-gegevens. Controleer de serverlog rond deze poging.",
+    internal_sync_database_write:
+      "De gegevens zijn opgehaald, maar konden niet in Nocturne worden opgeslagen. Controleer de serverlog rond deze poging.",
   };
   async function loadReadings() {
     operation = "readings";
@@ -176,7 +190,7 @@
       if (!mounted) return;
       void run(async () => {
         const outcome = new URLSearchParams(window.location.search).get(
-          "connection",
+          "connection"
         );
         await refresh();
         if (
@@ -339,7 +353,8 @@
             .join(", ")}.
         </p>{/if}
       <p class="text-sm text-muted-foreground">
-        Technische code: <code>{status.errorCode}</code>{status.lastAttempt
+        Technische code: <code>{status.errorCode}</code>
+        {status.lastAttempt
           ? ` · laatste poging ${new Date(status.lastAttempt).toLocaleString()}`
           : ""}{status.nextAttempt
           ? ` · volgende poging niet vóór ${new Date(status.nextAttempt).toLocaleString()}`
@@ -525,7 +540,7 @@
       onclick={() => {
         if (
           confirm(
-            "Alleen de geïmporteerde Google-metingen in Personal definitief verwijderen? Medicatie en gegevens bij Google blijven behouden.",
+            "Alleen de geïmporteerde Google-metingen in Personal definitief verwijderen? Medicatie en gegevens bij Google blijven behouden."
           )
         )
           void run(async () => {

@@ -3,7 +3,7 @@ import { render } from "vitest-browser-svelte";
 import { page } from "vitest/browser";
 import type { GoogleHealthStatus, PersonalHealthReading } from "$lib/api";
 import { googleHealthMocks } from "$lib/test-stubs/personal-google-health";
-import GoogleHealthPage from "./+page.svelte";
+import GoogleHealthPage from "./google-health-page.svelte";
 
 function status(
   overrides: Partial<GoogleHealthStatus> = {}
@@ -16,10 +16,12 @@ function status(
     historyDays: 7,
     selectedTypes: ["steps", "heart-rate", "weight"],
     grantedTypes: [],
+    previewRequired: false,
     capabilities: [
       { dataType: "steps", supported: true },
       { dataType: "heart-rate", supported: true },
       { dataType: "weight", supported: true },
+      { dataType: "sleep", supported: true },
     ],
     ...overrides,
   };
@@ -39,20 +41,15 @@ describe("Google Health page", () => {
     vi.resetAllMocks();
     googleHealthMocks.status.mockResolvedValue(status());
     googleHealthMocks.readings.mockResolvedValue([]);
+    googleHealthMocks.preview.mockResolvedValue({ items: [] });
   });
 
-  it("loads the import choices and callback outside the mount effect", async () => {
+  it("loads the callback before asking for an import selection", async () => {
     render(GoogleHealthPage);
 
     await expect
       .element(page.getByRole("checkbox", { name: "Stappen" }))
-      .toBeChecked();
-    await expect
-      .element(page.getByRole("checkbox", { name: "Hartslag" }))
-      .toBeChecked();
-    await expect
-      .element(page.getByRole("checkbox", { name: "Gewicht" }))
-      .toBeChecked();
+      .not.toBeInTheDocument();
     await expect
       .element(page.getByLabelText("Callback-URL"))
       .toHaveValue(`${window.location.origin}/personal/google/callback`);
@@ -94,6 +91,28 @@ describe("Google Health page", () => {
       .not.toBeInTheDocument();
   });
 
+  it("previews available types before importing them", async () => {
+    googleHealthMocks.status.mockResolvedValue(
+      status({ configured: true, connected: true, previewRequired: true })
+    );
+    googleHealthMocks.preview.mockResolvedValue({
+      items: [
+        { dataType: "steps", granted: true, count: 42 },
+        { dataType: "sleep", granted: true, count: 0 },
+      ],
+    });
+    render(GoogleHealthPage);
+
+    await expect.element(page.getByText("42 gevonden")).toBeVisible();
+    await expect
+      .element(page.getByText("Nu geen gegevens gevonden"))
+      .toBeVisible();
+    await expect
+      .element(page.getByRole("checkbox", { name: "Stappen" }))
+      .toBeChecked();
+    expect(googleHealthMocks.sync).not.toHaveBeenCalled();
+  });
+
   it("reports an initial 401 and lets a retry load the configuration", async () => {
     googleHealthMocks.status.mockRejectedValueOnce({
       status: 401,
@@ -112,9 +131,7 @@ describe("Google Health page", () => {
       .not.toBeInTheDocument();
     await page.getByRole("button", { name: "Opnieuw laden" }).click();
 
-    await expect
-      .element(page.getByRole("checkbox", { name: "Stappen" }))
-      .toBeChecked();
+    await expect.element(page.getByLabelText("Callback-URL")).toBeVisible();
     await expect.element(page.getByRole("alert")).not.toBeInTheDocument();
     expect(googleHealthMocks.status).toHaveBeenCalledTimes(2);
   });
@@ -126,9 +143,7 @@ describe("Google Health page", () => {
     });
     render(GoogleHealthPage);
 
-    await expect
-      .element(page.getByRole("checkbox", { name: "Stappen" }))
-      .toBeChecked();
+    await expect.element(page.getByLabelText("Callback-URL")).toBeVisible();
     await expect.element(page.getByRole("alert")).toHaveTextContent("HTTP 503");
     await expect
       .element(

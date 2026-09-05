@@ -1,5 +1,6 @@
 <script lang="ts">
   import { getStatus as getConnectorStatuses } from "$api/generated/connectorStatus.generated.remote";
+  import { getPersonalGoogleHealth } from "$api/generated/personalGoogleHealths.generated.remote";
   import {
     getServicesOverview,
     getConnectorCapabilities,
@@ -38,6 +39,7 @@
     ChevronRight,
     Loader2,
     KeyRound,
+    HeartPulse,
   } from "lucide-svelte";
   import SettingsPageSkeleton from "$lib/components/settings/SettingsPageSkeleton.svelte";
   import DataSourceRow from "$lib/components/settings/DataSourceRow.svelte";
@@ -49,10 +51,14 @@
   import AppLogo from "$lib/components/ui/AppLogo.svelte";
   import UploaderSetupDialog from "$lib/components/connectors/UploaderSetupDialog.svelte";
   import ConnectorDetailsDialog from "$lib/components/connectors/ConnectorDetailsDialog.svelte";
-  import ManualSyncDialog, { type BatchSyncResult } from "$lib/components/connectors/ManualSyncDialog.svelte";
+  import ManualSyncDialog, {
+    type BatchSyncResult,
+  } from "$lib/components/connectors/ManualSyncDialog.svelte";
   import DemoDataSection from "$lib/components/connectors/DemoDataSection.svelte";
   import UploaderAppsCard from "$lib/components/connectors/UploaderAppsCard.svelte";
-  import ServerConnectorsCard, { type ConnectorStatusWithDescription } from "$lib/components/connectors/ServerConnectorsCard.svelte";
+  import ServerConnectorsCard, {
+    type ConnectorStatusWithDescription,
+  } from "$lib/components/connectors/ServerConnectorsCard.svelte";
   import DataSourceManageDialog from "$lib/components/connectors/DataSourceManageDialog.svelte";
   import { describeSubmitError } from "$lib/forms/submit-error";
   import { resolve } from "$app/paths";
@@ -64,27 +70,29 @@
   import { copyToClipboard } from "$lib/utils";
   import { createTerminalRunTracker } from "./terminal-run-tracker";
 
-  const isPlatformAdmin = $derived((page.data as { isPlatformAdmin?: boolean }).isPlatformAdmin ?? false);
+  const isPlatformAdmin = $derived(
+    (page.data as { isPlatformAdmin?: boolean }).isPlatformAdmin ?? false
+  );
 
   // Queries — fire on the server during SSR; results land in cache for hydration.
   const servicesOverviewQuery = getServicesOverview();
   const connectorStatusesQuery = getConnectorStatuses();
+  const googleHealthQuery = getPersonalGoogleHealth();
 
   const servicesOverview = $derived<ServicesOverview | null>(
-    servicesOverviewQuery.current ?? null,
+    servicesOverviewQuery.current ?? null
   );
   const connectorStatuses = $derived<ConnectorStatusDto[]>(
-    connectorStatusesQuery.current ?? [],
+    connectorStatusesQuery.current ?? []
   );
-  const isLoading = $derived(
-    servicesOverviewQuery.current === undefined,
-  );
+  const googleHealth = $derived(googleHealthQuery.current ?? null);
+  const isLoading = $derived(servicesOverviewQuery.current === undefined);
   const isLoadingConnectorStatuses = $derived(
-    connectorStatusesQuery.current === undefined,
+    connectorStatusesQuery.current === undefined
   );
 
   const error = $derived<string | null>(
-    !isLoading && !servicesOverview ? "Failed to load services" : null,
+    !isLoading && !servicesOverview ? "Failed to load services" : null
   );
   let selectedUploader = $state<UploaderApp | null>(null);
   let showSetupDialog = $state(false);
@@ -104,7 +112,9 @@
 
   // Connector heartbeat metrics state
   let selectedConnector = $state<ConnectorStatusWithDescription | null>(null);
-  let selectedConnectorCapabilities = $state<ConnectorCapabilities | null>(null);
+  let selectedConnectorCapabilities = $state<ConnectorCapabilities | null>(
+    null
+  );
   // Capability descriptors per connector, keyed by connector id.
   const connectorCapabilitiesById = $derived.by(() => {
     const overview = servicesOverviewQuery.current;
@@ -182,7 +192,8 @@
   async function refreshAll() {
     await refreshQuietly(
       () => servicesOverviewQuery.refresh(),
-      () => connectorStatusesQuery.refresh()
+      () => connectorStatusesQuery.refresh(),
+      () => googleHealthQuery.refresh()
     );
   }
 
@@ -200,7 +211,8 @@
       return;
     }
     try {
-      selectedConnectorCapabilities = await getConnectorCapabilities(connectorId).run();
+      selectedConnectorCapabilities =
+        await getConnectorCapabilities(connectorId).run();
     } catch (e) {
       console.error("Failed to load connector capabilities", e);
       selectedConnectorCapabilities = null;
@@ -227,7 +239,9 @@
     showManualSyncDialog = true;
 
     const startTime = new Date();
-    const connectorsToSync = connectorStatuses.filter((c) => c.isEnabled !== false);
+    const connectorsToSync = connectorStatuses.filter(
+      (c) => c.isEnabled !== false
+    );
     const results: BatchSyncResult["connectorResults"] = [];
     let successes = 0;
 
@@ -245,7 +259,10 @@
         let errorMsg = undefined;
 
         try {
-          const result = await triggerConnectorSync({ id: connectorId, request });
+          const result = await triggerConnectorSync({
+            id: connectorId,
+            request,
+          });
           success = result.success ?? false;
           if (!success) errorMsg = result.message || "Unknown error";
         } catch (e) {
@@ -305,7 +322,10 @@
 
     quickSyncingById = { ...quickSyncingById, [connectorId]: true };
     try {
-      const result = await triggerConnectorSync({ id: connectorId, request: {} });
+      const result = await triggerConnectorSync({
+        id: connectorId,
+        request: {},
+      });
 
       if (result.success) {
         toast.success("Sync started");
@@ -335,22 +355,36 @@
       if (sourceLower === uploaderIdLower) return uploader;
 
       if (uploaderIdLower === "xdrip") {
-        if (sourceLower.includes("xdrip") || deviceLower.includes("xdrip")) return uploader;
+        if (sourceLower.includes("xdrip") || deviceLower.includes("xdrip"))
+          return uploader;
       }
       if (uploaderIdLower === "loop") {
-        if ((sourceLower === "loop" || deviceLower.includes("loop")) && !sourceLower.includes("openaps")) return uploader;
+        if (
+          (sourceLower === "loop" || deviceLower.includes("loop")) &&
+          !sourceLower.includes("openaps")
+        )
+          return uploader;
       }
       if (uploaderIdLower === "aaps") {
-        if (sourceLower.includes("aaps") || sourceLower.includes("androidaps") || deviceLower.includes("aaps") || deviceLower.includes("androidaps")) return uploader;
+        if (
+          sourceLower.includes("aaps") ||
+          sourceLower.includes("androidaps") ||
+          deviceLower.includes("aaps") ||
+          deviceLower.includes("androidaps")
+        )
+          return uploader;
       }
       if (uploaderIdLower === "trio") {
-        if (sourceLower === "trio" || deviceLower.includes("trio")) return uploader;
+        if (sourceLower === "trio" || deviceLower.includes("trio"))
+          return uploader;
       }
       if (uploaderIdLower === "iaps") {
-        if (sourceLower === "iaps" || deviceLower.includes("iaps")) return uploader;
+        if (sourceLower === "iaps" || deviceLower.includes("iaps"))
+          return uploader;
       }
       if (uploaderIdLower === "spike") {
-        if (sourceLower.includes("spike") || deviceLower.includes("spike")) return uploader;
+        if (sourceLower.includes("spike") || deviceLower.includes("spike"))
+          return uploader;
       }
     }
 
@@ -398,11 +432,15 @@
   <!-- Header -->
   <div class="flex items-start justify-between">
     <div class="flex items-center gap-3">
-      <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+      <div
+        class="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10"
+      >
         <Wifi class="h-6 w-6 text-primary" />
       </div>
       <div>
-        <h1 class="text-2xl font-bold tracking-tight">Connectors & Connected Apps</h1>
+        <h1 class="text-2xl font-bold tracking-tight">
+          Connectors & Connected Apps
+        </h1>
         <p class="text-muted-foreground">
           Manage data sources, set up new connections, and control app access
         </p>
@@ -433,11 +471,14 @@
     </Card>
   {:else if servicesOverview}
     <!-- Active Data Sources -->
-    <Card {@attach coachmark({
-      key: "setup-connectors.sources",
-      title: "Waiting for data",
-      description: "Once you set up an uploader app or cloud connector below, your data source will appear here automatically.",
-    })}>
+    <Card
+      {@attach coachmark({
+        key: "setup-connectors.sources",
+        title: "Waiting for data",
+        description:
+          "Once you set up an uploader app or cloud connector below, your data source will appear here automatically.",
+      })}
+    >
       <CardHeader>
         <CardTitle class="flex items-center gap-2">
           <Wifi class="h-5 w-5" />
@@ -468,7 +509,9 @@
                 totalEntries={source.totalEntries}
                 entriesLast24h={source.entriesLast24h}
                 lastSeen={source.lastSeen}
-                subtitle={source.name !== source.deviceId ? source.deviceId : undefined}
+                subtitle={source.name !== source.deviceId
+                  ? source.deviceId
+                  : undefined}
                 onclick={() => openDataSourceDialog(source)}
               >
                 {#snippet badges()}
@@ -501,12 +544,53 @@
       onSetup={openUploaderSetup}
     />
 
+    <Card>
+      <CardHeader>
+        <CardTitle class="flex items-center gap-2">
+          <HeartPulse class="h-5 w-5" />
+          Health Apps
+        </CardTitle>
+        <CardDescription>
+          Import health and fitness measurements into Nocturne
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <a
+          href={resolve("/settings/connectors/google-health")}
+          class="group flex items-center gap-4 rounded-lg border p-4 transition-colors hover:border-primary/50 hover:bg-accent/50"
+        >
+          <div
+            class="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10"
+          >
+            <HeartPulse class="h-5 w-5 text-primary" />
+          </div>
+          <div class="min-w-0 flex-1">
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="font-medium">Google Health</span>
+              <Badge variant={googleHealth?.connected ? "default" : "outline"}>
+                {googleHealth?.connected ? "Connected" : "Not connected"}
+              </Badge>
+            </div>
+            <p class="text-sm text-muted-foreground">
+              Steps, heart rate, weight, and sleep from Google Health
+            </p>
+          </div>
+          <ChevronRight
+            class="h-4 w-4 text-muted-foreground group-hover:text-foreground"
+          />
+        </a>
+      </CardContent>
+    </Card>
+
     <!-- Server-Side Connectors -->
-    <div {@attach coachmark({
-      key: "setup-connectors.server-connectors",
-      title: "Cloud connectors",
-      description: "Pull data directly from Dexcom, LibreLink, or Glooko \u2014 no uploader app needed.",
-    })}>
+    <div
+      {@attach coachmark({
+        key: "setup-connectors.server-connectors",
+        title: "Cloud connectors",
+        description:
+          "Pull data directly from Dexcom, LibreLink, or Glooko \u2014 no uploader app needed.",
+      })}
+    >
       <ServerConnectorsCard
         availableConnectors={servicesOverview.availableConnectors ?? []}
         {connectorStatuses}
@@ -572,7 +656,9 @@
               apiTokenPrefillLabel = "";
               apiTokenPrefillScopes = ["health.readwrite"];
               apiTokenCreateOpen = true;
-              document.getElementById("api-tokens-section")?.scrollIntoView({ behavior: "smooth" });
+              document
+                .getElementById("api-tokens-section")
+                ?.scrollIntoView({ behavior: "smooth" });
             }}
           >
             <KeyRound class="mr-1.5 h-4 w-4" />
@@ -689,13 +775,16 @@
           class="flex items-center justify-between rounded-lg border p-4 hover:bg-accent transition-colors"
         >
           <div class="flex items-center gap-3">
-            <div class="flex h-10 w-10 items-center justify-center overflow-hidden rounded-md bg-muted">
+            <div
+              class="flex h-10 w-10 items-center justify-center overflow-hidden rounded-md bg-muted"
+            >
               <AppLogo icon="discord" />
             </div>
             <div>
               <p class="font-medium">Discord</p>
               <p class="text-sm text-muted-foreground">
-                Link a Discord account to receive alerts and use the Nocturne bot
+                Link a Discord account to receive alerts and use the Nocturne
+                bot
               </p>
             </div>
           </div>
@@ -733,7 +822,10 @@
 />
 
 <!-- Demo Data Management Dialog -->
-<DemoDataSection bind:open={showDemoDataDialog} onDeleteComplete={loadServices} />
+<DemoDataSection
+  bind:open={showDemoDataDialog}
+  onDeleteComplete={loadServices}
+/>
 
 <!-- Data Source Management Dialog -->
 <DataSourceManageDialog
@@ -742,9 +834,19 @@
   onDeleteComplete={loadServices}
 />
 
-<ManualSyncDialog bind:open={showManualSyncDialog} {isManualSyncing} {manualSyncResult} syncProgress={isManualSyncing ? activeSyncProgress : null} />
+<ManualSyncDialog
+  bind:open={showManualSyncDialog}
+  {isManualSyncing}
+  {manualSyncResult}
+  syncProgress={isManualSyncing ? activeSyncProgress : null}
+/>
 
 <!-- Connector Details Dialog -->
-<ConnectorDetailsDialog bind:open={showConnectorDialog} {selectedConnector} {selectedConnectorCapabilities} onSyncComplete={loadConnectorStatuses} />
+<ConnectorDetailsDialog
+  bind:open={showConnectorDialog}
+  {selectedConnector}
+  {selectedConnectorCapabilities}
+  onSyncComplete={loadConnectorStatuses}
+/>
 
 <DeduplicationDialog bind:open={showDeduplicationDialog} bind:isDeduplicating />

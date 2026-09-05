@@ -1,27 +1,33 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { resolve } from "$app/paths";
-  import type { GoogleHealthStatus, PersonalHealthReading } from "$lib/api";
+  import type {
+    GoogleHealthPreview,
+    GoogleHealthStatus,
+    PersonalHealthReading,
+  } from "$lib/api";
   import {
     describeGoogleHealthError,
     type GoogleHealthOperation,
-  } from "$lib/personal/google-health-error";
+  } from "$lib/connectors/google-health-error";
   import {
     getPersonalGoogleHealth,
     savePersonalGoogleHealth,
     startPersonalGoogleHealth,
     disconnectPersonalGoogleHealth,
     syncPersonalGoogleHealth,
+    previewPersonalGoogleHealth,
     purgePersonalGoogleHealth,
     getPersonalHealthReadings,
   } from "$lib/api/generated/personalGoogleHealths.generated.remote";
   let status = $state<GoogleHealthStatus | null>(null);
   let readings = $state<PersonalHealthReading[]>([]);
+  let preview = $state<GoogleHealthPreview | null>(null);
   let readingsLoaded = $state(false);
   let clientId = $state("");
   let clientSecret = $state("");
   let callbackUrl = $state("");
-  let selected = $state<string[]>(["steps", "heart-rate", "weight"]);
+  let selected = $state<string[]>(["steps", "heart-rate", "weight", "sleep"]);
   let historyDays = $state(7);
   let type = $state("weight");
   let skip = $state(0);
@@ -124,6 +130,8 @@
       "De import liep onverwacht vast bij het ophalen van Google Health-gegevens. Controleer de serverlog rond deze poging.",
     internal_sync_data_validation:
       "De import liep onverwacht vast bij het controleren van Google Health-gegevens. Controleer de serverlog rond deze poging.",
+    internal_sync_native_write:
+      "De gegevens zijn opgehaald, maar konden niet in de bestaande Nocturne-gezondheidsgegevens worden opgeslagen. Controleer de serverlog rond deze poging.",
     internal_sync_database_write:
       "De gegevens zijn opgehaald, maar konden niet in Nocturne worden opgeslagen. Controleer de serverlog rond deze poging.",
   };
@@ -169,9 +177,34 @@
       callbackUrl,
       dataTypes: selected,
       historyDays,
+      previewOnly: true,
     });
     clientSecret = "";
     await startSignin();
+  }
+  async function loadPreview() {
+    operation = "readings";
+    preview = await previewPersonalGoogleHealth();
+    selected =
+      preview.items
+        ?.filter((item) => item.granted && item.count > 0)
+        .map((item) => item.dataType ?? "")
+        .filter(Boolean) ?? [];
+  }
+  async function saveSelection() {
+    operation = "save";
+    await savePersonalGoogleHealth({
+      clientId,
+      clientSecret: null,
+      callbackUrl,
+      dataTypes: selected,
+      historyDays,
+      previewOnly: false,
+    });
+    operation = "sync";
+    await syncPersonalGoogleHealth();
+    preview = null;
+    await refresh();
   }
   async function startSignin() {
     operation = "signin";
@@ -198,9 +231,7 @@
           status?.connected &&
           !status.lastAttempt
         ) {
-          operation = "sync";
-          await syncPersonalGoogleHealth();
-          await refresh();
+          await loadPreview();
         }
         if (!message && outcome === "failed")
           message =
@@ -211,6 +242,8 @@
         if (!message && outcome === "no_session")
           message =
             "De Nocturne-inlogsessie ontbrak bij de terugkeer van Google. Log opnieuw in bij Nocturne en start daarna de Google-koppeling opnieuw in dezelfde browser.";
+        if (status?.connected && status.previewRequired && !preview && !message)
+          await loadPreview();
       });
     });
     return () => {
@@ -258,23 +291,11 @@
           bind:value={callbackUrl}
         />
       </label>
-      <fieldset>
-        <legend class="mb-2 font-medium">Wat wil je importeren?</legend>
-        {#each status?.capabilities ?? [] as capability (capability.dataType)}<label
-            class="mr-5 inline-flex items-center gap-2"
-          >
-            <input
-              type="checkbox"
-              bind:group={selected}
-              value={capability.dataType}
-              disabled={!capability.supported}
-            />
-            {labels[capability.dataType ?? ""] ??
-              capability.dataType}{!capability.supported
-              ? " (nog niet beschikbaar)"
-              : ""}
-          </label>{/each}
-      </fieldset>
+      <p class="text-sm text-muted-foreground">
+        Na het inloggen controleert Nocturne welke ondersteunde gegevens Google
+        voor deze periode beschikbaar heeft. Er wordt nog niets geïmporteerd
+        totdat je de selectie bevestigt.
+      </p>
       <label class="block">
         Terugkijkperiode (1–90 dagen)
         <input
@@ -289,21 +310,23 @@
     </fieldset>
     <button
       class="rounded bg-primary px-4 py-2 text-primary-foreground"
-      disabled={busy || selected.length === 0}
+      disabled={busy}
     >
       {buttonLabel}
     </button>
   </form>
 {/snippet}
 
-<svelte:head><title>Google Health · Personal</title></svelte:head>
+<svelte:head><title>Google Health · Connectors & Apps</title></svelte:head>
 <section class="mx-auto max-w-4xl space-y-6 p-6">
-  <a class="underline" href={resolve("/personal")}>Personal</a>
+  <a class="underline" href={resolve("/settings/connectors")}>
+    Connectors & Apps
+  </a>
   <h1 class="text-3xl font-semibold">Google Health</h1>
   <p>
-    Alleen lezen uit Google Health. Google Fit en lokale Android Health
-    Connect-gegevens zijn niet automatisch beschikbaar. Metingen worden hier in
-    Personal getoond, nog niet in de bestaande Nocturne-rapporten.
+    Alleen lezen uit Google Health. Stappen, hartslag, gewicht en slaap worden
+    opgeslagen in de bestaande Nocturne-gezondheidsgegevens en zijn daardoor
+    beschikbaar voor grafieken en rapporten die deze gegevens gebruiken.
   </p>
   <details class="rounded-lg border p-4">
     <summary class="cursor-pointer font-medium">
@@ -407,7 +430,59 @@
       {@render configurationForm("Instellingen opslaan en inloggen")}
     {/if}
   {/if}
-  {#if status?.connected}
+  {#if status?.connected && status.previewRequired}
+    <div class="space-y-4 rounded-lg border p-4">
+      <h2 class="text-xl font-medium">Beschikbare Google Health-gegevens</h2>
+      {#if preview}
+        <p class="text-sm text-muted-foreground">
+          Aantallen gevonden in de laatste {historyDays} dagen. Selecteer wat voortaan
+          in Nocturne moet worden geïmporteerd.
+        </p>
+        <div class="space-y-2">
+          {#each preview.items ?? [] as item (item.dataType)}
+            <label
+              class="flex items-center justify-between gap-4 rounded border p-3"
+            >
+              <span class="inline-flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  bind:group={selected}
+                  value={item.dataType}
+                  disabled={!item.granted || !!item.errorCode}
+                />
+                {labels[item.dataType ?? ""] ?? item.dataType}
+              </span>
+              <span class="text-sm text-muted-foreground">
+                {item.errorCode
+                  ? `Niet leesbaar (${item.errorCode})`
+                  : !item.granted
+                    ? "Geen toestemming"
+                    : item.count > 0
+                      ? `${item.count} gevonden`
+                      : "Nu geen gegevens gevonden"}
+              </span>
+            </label>
+          {/each}
+        </div>
+        <button
+          class="rounded bg-primary px-4 py-2 text-primary-foreground"
+          disabled={busy || selected.length === 0}
+          onclick={() => void run(saveSelection)}
+        >
+          Selectie opslaan en importeren
+        </button>
+      {:else}
+        <p>Beschikbare gegevens controleren…</p>
+      {/if}
+      <button
+        class="rounded border px-4 py-2"
+        disabled={busy}
+        onclick={() => void run(loadPreview)}
+      >
+        Opnieuw controleren
+      </button>
+    </div>
+  {:else if status?.connected}
     <div class="space-y-3 rounded-lg border p-4">
       <p>
         Verbonden · Import toegestaan: {status.grantedTypes
@@ -464,7 +539,7 @@
             await loadReadings();
           })}
       >
-        {#each status?.capabilities?.filter((c) => c.supported) ?? [] as capability (capability.dataType)}<option
+        {#each status?.capabilities?.filter((c) => c.supported && c.dataType !== "sleep") ?? [] as capability (capability.dataType)}<option
             value={capability.dataType}
           >
             {labels[capability.dataType ?? ""] ?? capability.dataType}
@@ -473,7 +548,8 @@
       <p class="text-sm text-muted-foreground">
         Bron: Google Health, door Google samengevoegde bronnen. Tijdstippen in
         de tijdzone van deze browser. Stappen zijn aantallen per interval, geen
-        dagtotalen.
+        dagtotalen. Slaapsessies staan in de bestaande slaapweergaven van
+        Nocturne.
       </p>
       <div class="overflow-auto">
         <table class="w-full text-left">

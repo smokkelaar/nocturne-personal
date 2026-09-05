@@ -22,6 +22,7 @@ public sealed class GoogleHealthCoordinator
 
 public sealed class GoogleHealthService(NocturneDbContext db, IDataProtectionProvider protection,
     GoogleHealthCoordinator coordinator, GoogleHealthClient google,
+    IGoogleHealthReadingWriter? writer = null,
     ILogger<GoogleHealthService>? logger = null) : IPersonalGoogleHealthService
 {
     private sealed record Token(
@@ -155,10 +156,10 @@ public sealed class GoogleHealthService(NocturneDbContext db, IDataProtectionPro
         {
             Capabilities = GoogleHealthClient.Capabilities, Configured = true, Connected = token is not null, ClientId = settings.ClientId,
             CallbackUrl = settings.CallbackUrl, HistoryDays = settings.HistoryDays,
-            SelectedTypes = selectedTypes, GrantedTypes = selectedTypes.Where(t => token?.Scopes.Contains(GoogleHealthClient.ScopeFor(t)) == true).ToArray(),
+            SelectedTypes = selectedTypes, GrantedTypes = GoogleHealthClient.SupportedTypes.Where(t => token?.Scopes.Contains(GoogleHealthClient.ScopeFor(t)) == true).ToArray(),
             AccessTokenExpiresAt = token?.AccessTokenExpiresAt, LastAttempt = row.LastAttempt, LastSync = row.LastSync,
             NextAttempt = row.NextAttempt, ErrorCode = selectionIsValid ? storedError.Code : "unsupported_type",
-            ErrorDataTypes = selectionIsValid ? storedError.DataTypes : []
+            ErrorDataTypes = selectionIsValid ? storedError.DataTypes : [], PreviewRequired = settings.PreviewOnly
         };
     }
 
@@ -183,11 +184,15 @@ public sealed class GoogleHealthService(NocturneDbContext db, IDataProtectionPro
             else
             {
                 if (row.SubjectId != subject) throw new GoogleHealthException("connection_owner_required");
-                if (row.ProtectedToken is not null) throw new GoogleHealthException("disconnect_first");
+                GoogleHealthOptions? prior = null;
+                if (row.ProtectedToken is not null || string.IsNullOrWhiteSpace(options.ClientSecret))
+                    prior = Unprotect<GoogleHealthOptions>(row.ProtectedSettings);
+                if (row.ProtectedToken is not null && prior is not null &&
+                    (options.ClientId != prior.ClientId || options.CallbackUrl != prior.CallbackUrl))
+                    throw new GoogleHealthException("disconnect_first");
                 if (string.IsNullOrWhiteSpace(options.ClientSecret))
                 {
-                    var prior = Unprotect<GoogleHealthOptions>(row.ProtectedSettings);
-                    if (options.ClientId == prior.ClientId) options.ClientSecret = prior.ClientSecret;
+                    if (options.ClientId == prior?.ClientId) options.ClientSecret = prior.ClientSecret;
                 }
             }
             if (string.IsNullOrWhiteSpace(options.ClientSecret)) throw new GoogleHealthException("client_secret_required");
@@ -214,7 +219,7 @@ public sealed class GoogleHealthService(NocturneDbContext db, IDataProtectionPro
             {
                 ["client_id"] = settings.ClientId, ["redirect_uri"] = settings.CallbackUrl,
                 ["response_type"] = "code", ["access_type"] = "offline", ["prompt"] = "consent select_account",
-                ["scope"] = "openid " + string.Join(' ', settings.DataTypes.Select(GoogleHealthClient.ScopeFor).Distinct()),
+                ["scope"] = "openid " + string.Join(' ', GoogleHealthClient.SupportedTypes.Select(GoogleHealthClient.ScopeFor).Distinct()),
                 ["state"] = state, ["code_challenge_method"] = "S256",
                 ["code_challenge"] = WebEncoders.Base64UrlEncode(SHA256.HashData(Encoding.ASCII.GetBytes(verifier)))
             };
@@ -243,7 +248,7 @@ public sealed class GoogleHealthService(NocturneDbContext db, IDataProtectionPro
             ValidateTokenType(response, "authorization_code");
             var access = RequiredString(response, "access_token", "authorization_code");
             var expiresIn = RequiredExpiresIn(response, "authorization_code");
-            var requestedScopes = settings.DataTypes.Select(GoogleHealthClient.ScopeFor).Append("openid")
+            var requestedScopes = GoogleHealthClient.SupportedTypes.Select(GoogleHealthClient.ScopeFor).Append("openid")
                 .Distinct(StringComparer.Ordinal).ToArray();
             var scopes = ResponseScopes(response, requestedScopes);
             if (!response.TryGetProperty("refresh_token", out var refreshValue) ||
@@ -257,7 +262,7 @@ public sealed class GoogleHealthService(NocturneDbContext db, IDataProtectionPro
                 throw new GoogleHealthException("account_mismatch");
             }
             var now = DateTimeOffset.UtcNow;
-            var missingScopes = settings.DataTypes
+            var missingScopes = GoogleHealthClient.SupportedTypes
                 .Where(type => !scopes.Contains(GoogleHealthClient.ScopeFor(type), StringComparer.Ordinal)).ToArray();
             row.AccountKey = account;
             row.ProtectedToken = Protect(new Token(refresh, scopes, access, now.AddSeconds(expiresIn)));
@@ -322,6 +327,7 @@ public sealed class GoogleHealthService(NocturneDbContext db, IDataProtectionPro
             if (row is null) return;
             if (row.SubjectId != subject) throw new GoogleHealthException("connection_owner_required");
             if (row.ProtectedToken is not null) throw new GoogleHealthException("disconnect_first");
+            if (writer is not null) await writer.PurgeAsync(ct);
             var strategy = db.Database.CreateExecutionStrategy();
             await strategy.ExecuteAsync(async () =>
             {
@@ -330,6 +336,55 @@ public sealed class GoogleHealthService(NocturneDbContext db, IDataProtectionPro
                 row.AccountKey = null; row.LastSync = null;
                 await db.SaveChangesAsync(ct); await transaction.CommitAsync(ct);
             });
+        }
+        finally { gate.Release(); }
+    }
+
+    public async Task<GoogleHealthPreview> PreviewAsync(Guid subject, CancellationToken ct)
+    {
+        var gate = coordinator.Gate(db.TenantId); await gate.WaitAsync(ct);
+        try
+        {
+            var row = await Connection(ct) ?? throw new GoogleHealthException("configure_first");
+            if (row.SubjectId != subject) throw new GoogleHealthException("connection_owner_required");
+            if (row.ProtectedToken is null) throw new GoogleHealthException("configure_first");
+            var settings = Unprotect<GoogleHealthOptions>(row.ProtectedSettings);
+            var token = Unprotect<Token>(row.ProtectedToken);
+            var now = DateTimeOffset.UtcNow;
+            if (string.IsNullOrWhiteSpace(token.AccessToken) || token.AccessTokenExpiresAt is null ||
+                token.AccessTokenExpiresAt <= now.Add(AccessTokenSafety))
+            {
+                token = await RefreshSessionAsync(settings, token, ct);
+                row.ProtectedToken = Protect(token);
+                await db.SaveChangesAsync(ct);
+            }
+            var from = now.AddDays(-settings.HistoryDays);
+            var items = new List<GoogleHealthPreviewItem>();
+            foreach (var type in GoogleHealthClient.SupportedTypes)
+            {
+                var granted = token.Scopes.Contains(GoogleHealthClient.ScopeFor(type), StringComparer.Ordinal);
+                if (!granted)
+                {
+                    items.Add(new() { DataType = type, Granted = false });
+                    continue;
+                }
+                try
+                {
+                    var count = type == "sleep"
+                        ? (await google.ReadSleepAsync(token.AccessToken!, from, now, ct)).Count
+                        : (await google.ReadAsync(token.AccessToken!, type, from, now, ct)).Count;
+                    items.Add(new() { DataType = type, Granted = true, Count = count });
+                }
+                catch (GoogleHealthException ex)
+                {
+                    items.Add(new() { DataType = type, Granted = true, ErrorCode = ex.Message });
+                }
+            }
+            return new() { Items = items.ToArray() };
+        }
+        catch (Exception ex) when (ex is CryptographicException or JsonException or FormatException)
+        {
+            throw new GoogleHealthException("stored_google_configuration_unreadable", stage: "preview");
         }
         finally { gate.Release(); }
     }
@@ -361,6 +416,7 @@ public sealed class GoogleHealthService(NocturneDbContext db, IDataProtectionPro
                 {
                     throw new GoogleHealthException("stored_google_configuration_unreadable", stage: stage);
                 }
+                if (settings.PreviewOnly) return;
                 var now = DateTimeOffset.UtcNow;
                 var access = token.AccessToken ?? "";
                 if (string.IsNullOrWhiteSpace(access) || token.AccessTokenExpiresAt is null ||
@@ -376,17 +432,23 @@ public sealed class GoogleHealthService(NocturneDbContext db, IDataProtectionPro
                 var active = settings.DataTypes.Where(t => token.Scopes.Contains(GoogleHealthClient.ScopeFor(t))).ToArray();
                 if (active.Length == 0) throw new GoogleHealthException("permission_denied", stage: "scope_validation");
                 var to = DateTimeOffset.UtcNow; var from = to.AddDays(-settings.HistoryDays);
-                async Task<List<PersonalHealthReading>> ReadAllAsync()
+                async Task<(List<PersonalHealthReading> Readings, List<Nocturne.Core.Models.SleepSession> SleepSessions)> ReadAllAsync()
                 {
                     var result = new List<PersonalHealthReading>();
-                    foreach (var type in active) result.AddRange(await google.ReadAsync(access, type, from, to, ct));
-                    return result;
+                    var sleepSessions = new List<Nocturne.Core.Models.SleepSession>();
+                    foreach (var type in active)
+                    {
+                        if (type == "sleep") sleepSessions.AddRange(await google.ReadSleepAsync(access, from, to, ct));
+                        else result.AddRange(await google.ReadAsync(access, type, from, to, ct));
+                    }
+                    return (result, sleepSessions);
                 }
                 List<PersonalHealthReading> readings;
+                List<Nocturne.Core.Models.SleepSession> sleepSessions;
                 try
                 {
                     stage = "google_read";
-                    readings = await ReadAllAsync();
+                    (readings, sleepSessions) = await ReadAllAsync();
                 }
                 catch (GoogleHealthException first) when (first.Message == "access_token_rejected")
                 {
@@ -401,7 +463,7 @@ public sealed class GoogleHealthService(NocturneDbContext db, IDataProtectionPro
                     try
                     {
                         stage = "google_read";
-                        readings = await ReadAllAsync();
+                        (readings, sleepSessions) = await ReadAllAsync();
                     }
                     catch (GoogleHealthException second) when (second.Message == "access_token_rejected")
                     {
@@ -413,6 +475,8 @@ public sealed class GoogleHealthService(NocturneDbContext db, IDataProtectionPro
                 stage = "data_validation";
                 if (readings.Select(GoogleHealthClient.Key).Distinct().Count() != readings.Count)
                     throw new GoogleHealthException("duplicate_google_data", stage: "data_validation");
+                if (sleepSessions.Select(session => session.OriginalId).Distinct(StringComparer.Ordinal).Count() != sleepSessions.Count)
+                    throw new GoogleHealthException("duplicate_google_data", stage: "data_validation", dataType: "sleep");
                 // Replace only the completely fetched window, so retries, edits and source deletions cannot double-count steps.
                 var firstMills = from.ToUnixTimeMilliseconds(); var lastMills = to.ToUnixTimeMilliseconds();
                 var replacements = readings.Select(r => new PersonalHealthReadingEntity
@@ -421,7 +485,9 @@ public sealed class GoogleHealthService(NocturneDbContext db, IDataProtectionPro
                     EndMills = r.EndMills, UtcOffsetMinutes = r.UtcOffsetMinutes, Value = r.Value, Unit = r.Unit
                 }).ToArray();
                 var missingConsent = settings.DataTypes.Except(active, StringComparer.Ordinal).ToArray();
-                var emptyTypes = active.Where(type => readings.All(reading => reading.DataType != type)).ToArray();
+                var emptyTypes = active.Where(type => type == "sleep"
+                    ? sleepSessions.Count == 0
+                    : readings.All(reading => reading.DataType != type)).ToArray();
                 var strategy = db.Database.CreateExecutionStrategy();
                 stage = "database_write";
                 await strategy.ExecuteAsync(async () =>
@@ -440,6 +506,8 @@ public sealed class GoogleHealthService(NocturneDbContext db, IDataProtectionPro
                         : emptyTypes.Length > 0 ? EncodeError("no_google_data", emptyTypes) : null;
                     await db.SaveChangesAsync(ct); await transaction.CommitAsync(ct);
                 });
+                stage = "native_write";
+                if (writer is not null) await writer.WriteAsync(readings, sleepSessions, active, from, to, ct);
                 stage = "complete";
             }
             catch (Exception ex) when (ex is GoogleHealthException or HttpRequestException or JsonException or TaskCanceledException)

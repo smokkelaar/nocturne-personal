@@ -8,6 +8,25 @@ on:
 permissions:
   contents: read
 jobs:
+  browser:
+    name: Personal Google Health browser regression
+    if: github.repository == 'smokkelaar/nocturne-personal'
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: src/Web/packages/app
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+      - run: npm install --global pnpm@10.13.1
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm exec svelte-kit sync
+      - run: pnpm exec vitest --config vitest.personal.config.ts --run --browser.headless
   metadata:
     name: Personal source metadata
     if: github.repository == 'smokkelaar/nocturne-personal'

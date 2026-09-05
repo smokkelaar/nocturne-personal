@@ -2,7 +2,10 @@
   import { onMount } from "svelte";
   import { resolve } from "$app/paths";
   import type { GoogleHealthStatus, PersonalHealthReading } from "$lib/api";
-  import { errorMessage } from "$lib/forms/submit-error";
+  import {
+    describeGoogleHealthError,
+    type GoogleHealthOperation,
+  } from "$lib/personal/google-health-error";
   import {
     getPersonalGoogleHealth,
     savePersonalGoogleHealth,
@@ -14,6 +17,7 @@
   } from "$lib/api/generated/personalGoogleHealths.generated.remote";
   let status = $state<GoogleHealthStatus | null>(null);
   let readings = $state<PersonalHealthReading[]>([]);
+  let readingsLoaded = $state(false);
   let clientId = $state("");
   let clientSecret = $state("");
   let callbackUrl = $state("");
@@ -21,8 +25,9 @@
   let historyDays = $state(7);
   let type = $state("weight");
   let skip = $state(0);
-  let busy = $state(false);
+  let busy = $state(true);
   let message = $state("");
+  let operation: GoogleHealthOperation = "status";
   const labels: Record<string, string> = {
     steps: "Stappen",
     "heart-rate": "Hartslag",
@@ -109,9 +114,15 @@
       "Niet alle pagina’s konden worden opgehaald. Deze import is niet opgeslagen.",
   };
   async function loadReadings() {
+    operation = "readings";
+    readingsLoaded = false;
+    readings = [];
     readings = await getPersonalHealthReadings({ dataType: type, skip }).run();
+    readingsLoaded = true;
   }
   async function refresh() {
+    message = "";
+    operation = "status";
     status = await getPersonalGoogleHealth().run();
     clientId = status.clientId ?? "";
     callbackUrl =
@@ -122,10 +133,7 @@
     try {
       await loadReadings();
     } catch (error) {
-      const code = errorMessage(error);
-      message =
-        (code && errors[code]) ||
-        "De Google-koppeling is geladen, maar de geïmporteerde metingen konden niet worden opgehaald.";
+      message = describeGoogleHealthError(error, "readings", errors);
     }
   }
   async function run(action: () => Promise<unknown>) {
@@ -134,16 +142,14 @@
     try {
       await action();
     } catch (error) {
-      const code = errorMessage(error);
-      message =
-        (code && errors[code]) ||
-        "Dit lukte niet. Controleer de configuratie, je rechten en de verbinding. Bij een verlopen aanmelding: start opnieuw.";
+      message = describeGoogleHealthError(error, operation, errors);
     } finally {
       busy = false;
     }
   }
   async function connect() {
-    await savePersonalGoogleHealth({
+    operation = "save";
+    status = await savePersonalGoogleHealth({
       clientId,
       clientSecret: clientSecret || null,
       callbackUrl,
@@ -154,29 +160,48 @@
     await startSignin();
   }
   async function startSignin() {
+    operation = "signin";
     const authorization = await startPersonalGoogleHealth();
     if (authorization.url) window.location.assign(authorization.url);
   }
+  async function disconnect() {
+    operation = "disconnect";
+    await disconnectPersonalGoogleHealth();
+    await refresh();
+  }
   onMount(() => {
-    void run(async () => {
-      const outcome = new URLSearchParams(window.location.search).get(
-        "connection"
-      );
-      await refresh();
-      if (outcome === "connected" && status?.connected && !status.lastAttempt) {
-        await syncPersonalGoogleHealth();
+    let mounted = true;
+    // SvelteKit 2.59 rejects query.run() during onMount's effect flush.
+    queueMicrotask(() => {
+      if (!mounted) return;
+      void run(async () => {
+        const outcome = new URLSearchParams(window.location.search).get(
+          "connection",
+        );
         await refresh();
-      }
-      if (outcome === "failed")
-        message =
-          "Google koppelen is niet gelukt of geannuleerd. Start opnieuw; gebruik hetzelfde Google-account als bij de bestaande import.";
-      if (outcome === "provider_denied")
-        message =
-          "Google heeft geen toestemming teruggegeven. Start opnieuw en keur de gevraagde leesrechten goed.";
-      if (outcome === "no_session")
-        message =
-          "De Nocturne-inlogsessie ontbrak bij de terugkeer van Google. Log opnieuw in bij Nocturne en start daarna de Google-koppeling opnieuw in dezelfde browser.";
+        if (
+          outcome === "connected" &&
+          status?.connected &&
+          !status.lastAttempt
+        ) {
+          operation = "sync";
+          await syncPersonalGoogleHealth();
+          await refresh();
+        }
+        if (!message && outcome === "failed")
+          message =
+            "Google koppelen is niet gelukt of geannuleerd. Start opnieuw; gebruik hetzelfde Google-account als bij de bestaande import.";
+        if (!message && outcome === "provider_denied")
+          message =
+            "Google heeft geen toestemming teruggegeven. Start opnieuw en keur de gevraagde leesrechten goed.";
+        if (!message && outcome === "no_session")
+          message =
+            "De Nocturne-inlogsessie ontbrak bij de terugkeer van Google. Log opnieuw in bij Nocturne en start daarna de Google-koppeling opnieuw in dezelfde browser.";
+      });
     });
+    return () => {
+      mounted = false;
+    };
   });
 </script>
 
@@ -303,7 +328,10 @@
   {#if message}<p role="alert" class="rounded-lg border border-destructive p-4">
       {message}
     </p>{/if}
-  {#if status?.errorCode}<div role="status" class="space-y-2 rounded-lg border p-4">
+  {#if status?.errorCode}<div
+      role="status"
+      class="space-y-2 rounded-lg border p-4"
+    >
       <p>{errors[status.errorCode] ?? "De import kon niet worden afgerond."}</p>
       {#if status.errorDataTypes?.length}<p>
           Betrokken gegevens: {status.errorDataTypes
@@ -318,7 +346,22 @@
           : ""}
       </p>
     </div>{/if}
-  {#if !status?.connected}
+  {#if !status}
+    <div class="space-y-3 rounded-xl border p-5" role="status">
+      <p>
+        {busy
+          ? "Koppelingsstatus laden…"
+          : "De koppelingsstatus is niet geladen. Probeer opnieuw voordat je de Google-instellingen wijzigt."}
+      </p>
+      <button
+        class="rounded border px-4 py-2"
+        disabled={busy}
+        onclick={() => void run(refresh)}
+      >
+        Opnieuw laden
+      </button>
+    </div>
+  {:else if !status.connected}
     {#if status?.configured}
       <div class="space-y-4 rounded-xl border p-5">
         <p>De Google Cloud-configuratie is lokaal en versleuteld opgeslagen.</p>
@@ -337,6 +380,13 @@
             {@render configurationForm("Opslaan en opnieuw inloggen")}
           </div>
         </details>
+        <button
+          class="rounded border px-4 py-2"
+          disabled={busy}
+          onclick={() => void run(disconnect)}
+        >
+          Ontkoppelen
+        </button>
       </div>
     {:else}
       {@render configurationForm("Instellingen opslaan en inloggen")}
@@ -370,6 +420,7 @@
         disabled={busy}
         onclick={() =>
           run(async () => {
+            operation = "sync";
             await syncPersonalGoogleHealth();
             await refresh();
           })}
@@ -379,98 +430,106 @@
       <button
         class="rounded border px-4 py-2"
         disabled={busy}
-        onclick={() =>
-          run(async () => {
-            await disconnectPersonalGoogleHealth();
-            await refresh();
-          })}
+        onclick={() => void run(disconnect)}
       >
         Ontkoppelen
       </button>
     </div>
   {/if}
-  <div class="space-y-3">
-    <h2 class="text-xl font-medium">Geïmporteerde metingen</h2>
-    <select
-      class="rounded border bg-background p-2"
-      bind:value={type}
-      disabled={busy}
-      onchange={() =>
-        run(async () => {
-          skip = 0;
-          await loadReadings();
-        })}
-    >
-      {#each status?.capabilities?.filter((c) => c.supported) ?? [] as capability (capability.dataType)}<option
-          value={capability.dataType}
+  {#if status}<div class="space-y-3">
+      <h2 class="text-xl font-medium">Geïmporteerde metingen</h2>
+      <select
+        aria-label="Gegevenstype"
+        class="rounded border bg-background p-2"
+        bind:value={type}
+        disabled={busy}
+        onchange={() =>
+          run(async () => {
+            skip = 0;
+            await loadReadings();
+          })}
+      >
+        {#each status?.capabilities?.filter((c) => c.supported) ?? [] as capability (capability.dataType)}<option
+            value={capability.dataType}
+          >
+            {labels[capability.dataType ?? ""] ?? capability.dataType}
+          </option>{/each}
+      </select>
+      <p class="text-sm text-muted-foreground">
+        Bron: Google Health, door Google samengevoegde bronnen. Tijdstippen in
+        de tijdzone van deze browser. Stappen zijn aantallen per interval, geen
+        dagtotalen.
+      </p>
+      <div class="overflow-auto">
+        <table class="w-full text-left">
+          <thead>
+            <tr class="border-b">
+              <th class="p-2">Tijdstip</th>
+              <th class="p-2">Einde interval</th>
+              <th class="p-2">Waarde</th>
+            </tr>
+          </thead>
+          <tbody>
+            {#each readings as row (`${row.dataType}-${row.mills}-${row.endMills ?? ""}`)}<tr
+                class="border-b"
+              >
+                <td class="p-2">{new Date(row.mills ?? 0).toLocaleString()}</td>
+                <td class="p-2">
+                  {row.endMills ? new Date(row.endMills).toLocaleString() : "—"}
+                </td>
+                <td class="p-2">
+                  {row.value}
+                  {row.unit === "steps" ? "stappen" : row.unit}
+                </td>
+              </tr>{/each}
+          </tbody>
+        </table>
+      </div>
+      {#if readingsLoaded && readings.length === 0}<p>
+          Geen metingen in deze selectie.
+        </p>{/if}
+      {#if !readingsLoaded && !busy}
+        <button
+          class="rounded border px-3 py-2"
+          onclick={() => void run(loadReadings)}
         >
-          {labels[capability.dataType ?? ""] ?? capability.dataType}
-        </option>{/each}
-    </select>
-    <p class="text-sm text-muted-foreground">
-      Bron: Google Health, door Google samengevoegde bronnen. Tijdstippen in de
-      tijdzone van deze browser. Stappen zijn aantallen per interval, geen
-      dagtotalen.
-    </p>
-    <div class="overflow-auto">
-      <table class="w-full text-left">
-        <thead>
-          <tr class="border-b">
-            <th class="p-2">Tijdstip</th>
-            <th class="p-2">Einde interval</th>
-            <th class="p-2">Waarde</th>
-          </tr>
-        </thead>
-        <tbody>
-          {#each readings as row (`${row.dataType}-${row.mills}-${row.endMills ?? ""}`)}<tr
-              class="border-b"
-            >
-              <td class="p-2">{new Date(row.mills ?? 0).toLocaleString()}</td>
-              <td class="p-2">
-                {row.endMills ? new Date(row.endMills).toLocaleString() : "—"}
-              </td>
-              <td class="p-2">
-                {row.value}
-                {row.unit === "steps" ? "stappen" : row.unit}
-              </td>
-            </tr>{/each}
-        </tbody>
-      </table>
-    </div>
-    {#if readings.length === 0}<p>Geen metingen in deze selectie.</p>{/if}
-    <button
-      class="mr-3 rounded border px-3 py-2"
-      disabled={busy || skip === 0}
-      onclick={() =>
-        run(async () => {
-          skip -= 100;
-          await loadReadings();
-        })}
-    >
-      Vorige
-    </button>
-    <button
-      class="rounded border px-3 py-2"
-      disabled={busy || readings.length < 100}
-      onclick={() =>
-        run(async () => {
-          skip += 100;
-          await loadReadings();
-        })}
-    >
-      Volgende
-    </button>
-  </div>
+          Metingen opnieuw laden
+        </button>
+      {/if}
+      <button
+        class="mr-3 rounded border px-3 py-2"
+        disabled={busy || !readingsLoaded || skip === 0}
+        onclick={() =>
+          run(async () => {
+            skip -= 100;
+            await loadReadings();
+          })}
+      >
+        Vorige
+      </button>
+      <button
+        class="rounded border px-3 py-2"
+        disabled={busy || !readingsLoaded || readings.length < 100}
+        onclick={() =>
+          run(async () => {
+            skip += 100;
+            await loadReadings();
+          })}
+      >
+        Volgende
+      </button>
+    </div>{/if}
   {#if status?.configured && !status.connected}<button
       class="rounded border border-destructive px-4 py-2"
       disabled={busy}
       onclick={() => {
         if (
           confirm(
-            "Alleen de geïmporteerde Google-metingen in Personal definitief verwijderen? Medicatie en gegevens bij Google blijven behouden."
+            "Alleen de geïmporteerde Google-metingen in Personal definitief verwijderen? Medicatie en gegevens bij Google blijven behouden.",
           )
         )
           void run(async () => {
+            operation = "purge";
             await purgePersonalGoogleHealth();
             await refresh();
           });

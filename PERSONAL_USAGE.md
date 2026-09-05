@@ -34,6 +34,18 @@ Na deze eenmalige configuratie blijft het client-secret versleuteld opgeslagen.
 Bij opnieuw koppelen toont Personal daarom alleen **Inloggen met Google**; de
 geavanceerde instellingen hoeven niet opnieuw te worden ingevuld.
 
+Vanaf Personal 0.2.5 wordt de koppelingsstatus pas na het opbouwen van de pagina
+opgevraagd. Dit herstelt het lege formulier met ontbrekende importkeuzes na een
+geslaagde Google-aanmelding (`connection=connected`). Laad na de update de pagina
+opnieuw; een reeds opgeslagen koppeling hoeft hiervoor niet opnieuw te worden gemaakt.
+Bij een laadfout verschijnt **Opnieuw laden**, met de mislukte stap en een veilige
+technische code (en HTTP-status indien beschikbaar). Een laadfout wordt niet als een
+lege import getoond. **Ontkoppelen** is ook beschikbaar als er alleen een opgeslagen
+configuratie is, bijvoorbeeld na een mislukte of verlopen Google-aanmelding.
+Bij een mislukte aanvraag na het kiezen van een ander gegevenstype of een andere
+pagina verdwijnen de vorige regels uit het overzicht. **Metingen opnieuw laden**
+probeert dezelfde selectie nogmaals; opgeslagen metingen blijven behouden.
+
 De OAuth-koppeling vraagt alleen read-only Health-scopes en `openid`. Dat laatste
 bindt de import aan hetzelfde Google-account; naam, e-mail en profielfoto worden
 niet opgeslagen. Een accountwissel vereist ontkoppelen en daarna expliciet wissen

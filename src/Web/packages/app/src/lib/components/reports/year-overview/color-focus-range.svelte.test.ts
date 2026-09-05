@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { render } from "vitest-browser-svelte";
 import { page, userEvent } from "vitest/browser";
 import Harness from "./ColorFocusRange.test-harness.svelte";
@@ -13,6 +13,31 @@ const maximumSlider = () =>
   page.getByRole("slider", { name: "TDD maximum color value" });
 
 describe("year overview color focus", () => {
+  it("reuses base steps when only the focus changes", async () => {
+    const precision = vi.spyOn(Number.prototype, "toPrecision");
+    try {
+      const screen = render(Harness);
+      await expect.element(maximumInput()).toHaveValue(500);
+      const initialConversions = precision.mock.calls.length;
+      expect(initialConversions).toBeGreaterThan(1000);
+
+      await minimumInput().fill("10.25");
+      await maximumInput().fill("70.75");
+      await expect.element(maximumInput()).toHaveValue(70.75);
+      expect(precision.mock.calls.length).toBe(initialConversions);
+
+      await screen.rerender({ observedMax: 800 });
+      await expect
+        .element(maximumSlider())
+        .toHaveAttribute("aria-valuemax", "800");
+      expect(precision.mock.calls.length).toBeGreaterThan(initialConversions);
+      await expect.element(minimumInput()).toHaveValue(10.25);
+      await expect.element(maximumInput()).toHaveValue(70.75);
+    } finally {
+      precision.mockRestore();
+    }
+  });
+
   it("focuses the legend on exact numeric limits within an outlier-sized axis", async () => {
     const { container } = render(Harness);
 

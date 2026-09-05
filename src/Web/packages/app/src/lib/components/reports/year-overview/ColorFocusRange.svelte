@@ -34,15 +34,20 @@
   const range = $derived(focusRange ?? ([0, automaticMax] as const));
   const domainMax = $derived(fixedMax ?? Math.max(automaticMax, range[1], 1));
   const gradient = $derived(colorFocusGradient(range, domainMax, cssVar));
-  const sliderSteps = $derived.by(() => {
+  const baseSliderSteps = $derived.by(() => {
     const step = Math.max(0.1, domainMax / 10_000);
     const count = Math.min(10_000, Math.floor(domainMax / step));
-    const steps = Array.from({ length: count + 1 }, (_, index) =>
+    return Array.from({ length: count + 1 }, (_, index) =>
       Number((index * step).toPrecision(12))
     );
-    // Bits UI normalizes supplied values to its steps, including untouched Auto values.
-    return [...steps, range[0], range[1], domainMax];
   });
+  // Bits UI normalizes supplied values to its steps, including untouched Auto values.
+  const sliderSteps = $derived([
+    ...baseSliderSteps,
+    range[0],
+    range[1],
+    domainMax,
+  ]);
   let minimumDraft = $state<number | undefined>();
   let maximumDraft = $state<number | undefined>();
   let invalidBound = $state<0 | 1 | null>(null);

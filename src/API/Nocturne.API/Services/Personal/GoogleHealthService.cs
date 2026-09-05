@@ -184,13 +184,15 @@ public sealed class GoogleHealthService(NocturneDbContext db, IDataProtectionPro
             else
             {
                 if (row.SubjectId != subject) throw new GoogleHealthException("connection_owner_required");
-                var prior = Unprotect<GoogleHealthOptions>(row.ProtectedSettings);
-                if (row.ProtectedToken is not null &&
+                GoogleHealthOptions? prior = null;
+                if (row.ProtectedToken is not null || string.IsNullOrWhiteSpace(options.ClientSecret))
+                    prior = Unprotect<GoogleHealthOptions>(row.ProtectedSettings);
+                if (row.ProtectedToken is not null && prior is not null &&
                     (options.ClientId != prior.ClientId || options.CallbackUrl != prior.CallbackUrl))
                     throw new GoogleHealthException("disconnect_first");
                 if (string.IsNullOrWhiteSpace(options.ClientSecret))
                 {
-                    if (options.ClientId == prior.ClientId) options.ClientSecret = prior.ClientSecret;
+                    if (options.ClientId == prior?.ClientId) options.ClientSecret = prior.ClientSecret;
                 }
             }
             if (string.IsNullOrWhiteSpace(options.ClientSecret)) throw new GoogleHealthException("client_secret_required");

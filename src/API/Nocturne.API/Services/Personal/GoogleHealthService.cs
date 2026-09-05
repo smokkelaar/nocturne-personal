@@ -348,9 +348,19 @@ public sealed class GoogleHealthService(NocturneDbContext db, IDataProtectionPro
             try
             {
                 stage = "session_read";
-                var settings = Unprotect<GoogleHealthOptions>(row.ProtectedSettings);
-                var token = Unprotect<Token>(row.ProtectedToken);
-                if (string.IsNullOrWhiteSpace(token.RefreshToken) || token.Scopes is null) throw new JsonException();
+                GoogleHealthOptions settings;
+                Token token;
+                try
+                {
+                    settings = Unprotect<GoogleHealthOptions>(row.ProtectedSettings);
+                    token = Unprotect<Token>(row.ProtectedToken);
+                    if (settings.DataTypes is null || string.IsNullOrWhiteSpace(token.RefreshToken) || token.Scopes is null)
+                        throw new JsonException();
+                }
+                catch (Exception ex) when (ex is CryptographicException or JsonException or FormatException)
+                {
+                    throw new GoogleHealthException("stored_google_configuration_unreadable", stage: stage);
+                }
                 var now = DateTimeOffset.UtcNow;
                 var access = token.AccessToken ?? "";
                 if (string.IsNullOrWhiteSpace(access) || token.AccessTokenExpiresAt is null ||

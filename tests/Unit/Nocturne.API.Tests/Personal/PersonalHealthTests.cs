@@ -316,6 +316,10 @@ public class PersonalHealthTests
         Assert.True(broken.Connected); Assert.False(broken.Configured);
         Assert.Equal("stored_google_configuration_unreadable", broken.ErrorCode);
 
+        await recovered.SyncAsync(true, default);
+        Assert.Equal("stored_google_configuration_unreadable", (await db.PersonalGoogleConnections.SingleAsync()).ErrorCode);
+        Assert.True((await recovered.StatusAsync(default)).Connected);
+
         await recovered.DisconnectAsync(subject, default);
         Assert.False((await recovered.StatusAsync(default)).Connected);
         await recovered.SaveAsync(options, subject, default);

@@ -107,7 +107,9 @@ describe("Google Health page", () => {
     await expect
       .element(page.getByText("Nu geen gegevens gevonden"))
       .toBeVisible();
-    await expect.element(page.getByLabelText("Callback-URL")).toBeVisible();
+    await expect
+      .element(page.getByRole("checkbox", { name: "Stappen" }))
+      .toBeChecked();
     expect(googleHealthMocks.sync).not.toHaveBeenCalled();
   });
 
@@ -129,9 +131,7 @@ describe("Google Health page", () => {
       .not.toBeInTheDocument();
     await page.getByRole("button", { name: "Opnieuw laden" }).click();
 
-    await expect
-      .element(page.getByRole("checkbox", { name: "Stappen" }))
-      .toBeChecked();
+    await expect.element(page.getByLabelText("Callback-URL")).toBeVisible();
     await expect.element(page.getByRole("alert")).not.toBeInTheDocument();
     expect(googleHealthMocks.status).toHaveBeenCalledTimes(2);
   });
@@ -143,9 +143,7 @@ describe("Google Health page", () => {
     });
     render(GoogleHealthPage);
 
-    await expect
-      .element(page.getByRole("checkbox", { name: "Stappen" }))
-      .toBeChecked();
+    await expect.element(page.getByLabelText("Callback-URL")).toBeVisible();
     await expect.element(page.getByRole("alert")).toHaveTextContent("HTTP 503");
     await expect
       .element(

@@ -216,6 +216,9 @@ public class PersonalHealthTests
         handler.Responder = _ => throw new InvalidOperationException("synthetic internal failure");
         await service.SyncAsync(true, default);
         Assert.Equal("internal_sync_google_read", (await service.StatusAsync(default)).ErrorCode);
+        handler.Responder = request => request.RequestUri!.AbsolutePath == "/revoke"
+            ? Json("{}")
+            : throw new InvalidOperationException("Unexpected request after import failure");
         db.TenantId = Guid.NewGuid(); Assert.Empty(await db.PersonalHealthReadings.ToListAsync()); Assert.Empty(await db.PersonalGoogleConnections.ToListAsync());
         db.TenantId = tenant;
         await service.DisconnectAsync(subject, default);

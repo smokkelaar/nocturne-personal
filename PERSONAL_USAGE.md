@@ -135,6 +135,22 @@ Dit logboek is niet voor insuline-eenheden, penklikken of milliliters. Het reken
 geen concentraties om, bepaalt geen opbouwschema, adviseert geen gemiste dosis en
 beïnvloedt geen IOB/insulineberekening. Gebruik je voorschrift voor behandelbeslissingen.
 
+## Kleurbereik in het jaaroverzicht
+
+In **Reports → Year Overview** kun je voor TDD, bolus, basaal, koolhydraten en
+Time in Range twee schuifpunten in de kleurenbalk verplaatsen. Met **Min** en
+**Max** kun je ook exacte grenzen invoeren, bijvoorbeeld 10 en 70 U voor TDD.
+De kleur verloopt alleen tussen die grenzen; daarbuiten blijft de eindkleur gelijk.
+Metingen en getoonde getallen worden niet aangepast. Ontbrekende gegevens blijven
+onderscheiden van nul. De vaste glucosekleuren blijven ongewijzigd.
+
+Het bereik wordt per meetwaarde, gebruiker en tenant in deze browser onthouden;
+het synchroniseert niet naar andere apparaten. Ook bij het laden van andere jaren
+blijft een handmatig bereik staan. **Auto** verwijdert alleen de instelling voor
+de gekozen meetwaarde en volgt weer het maximum van de geladen jaren (voor Time
+in Range altijd 0–100%). Als browseropslag niet beschikbaar is, blijven de
+schuifpunten bruikbaar en meldt de pagina dat de keuze niet wordt onthouden.
+
 ## Veilig testen
 
 Begin met een herkenbare testregistratie, controleer wijzigen/verwijderen en maak

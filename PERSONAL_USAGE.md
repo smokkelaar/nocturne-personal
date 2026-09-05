@@ -42,6 +42,9 @@ Bij een laadfout verschijnt **Opnieuw laden**, met de mislukte stap en een veili
 technische code (en HTTP-status indien beschikbaar). Een laadfout wordt niet als een
 lege import getoond. **Ontkoppelen** is ook beschikbaar als er alleen een opgeslagen
 configuratie is, bijvoorbeeld na een mislukte of verlopen Google-aanmelding.
+Bij een mislukte aanvraag na het kiezen van een ander gegevenstype of een andere
+pagina verdwijnen de vorige regels uit het overzicht. **Metingen opnieuw laden**
+probeert dezelfde selectie nogmaals; opgeslagen metingen blijven behouden.
 
 De OAuth-koppeling vraagt alleen read-only Health-scopes en `openid`. Dat laatste
 bindt de import aan hetzelfde Google-account; naam, e-mail en profielfoto worden

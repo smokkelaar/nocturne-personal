@@ -1,10 +1,14 @@
 import { vi } from "vitest";
 import type { GoogleHealthStatus, PersonalHealthReading } from "$lib/api";
+import type { getPersonalHealthReadings as queryPersonalHealthReadings } from "$lib/api/generated/personalGoogleHealths.generated.remote";
 import { effectAwareQuery } from "./effect-aware-query.svelte";
+
+type ReadingsRequest = Parameters<typeof queryPersonalHealthReadings>[0];
 
 export const googleHealthMocks = {
   status: vi.fn<() => Promise<GoogleHealthStatus>>(),
-  readings: vi.fn<() => Promise<PersonalHealthReading[]>>(),
+  readings:
+    vi.fn<(request: ReadingsRequest) => Promise<PersonalHealthReading[]>>(),
   save: vi.fn(),
   start: vi.fn(),
   disconnect: vi.fn(),
@@ -14,8 +18,8 @@ export const googleHealthMocks = {
 
 export const getPersonalGoogleHealth = () =>
   effectAwareQuery(googleHealthMocks.status);
-export const getPersonalHealthReadings = () =>
-  effectAwareQuery(googleHealthMocks.readings);
+export const getPersonalHealthReadings = (request: ReadingsRequest) =>
+  effectAwareQuery(() => googleHealthMocks.readings(request));
 export const savePersonalGoogleHealth = googleHealthMocks.save;
 export const startPersonalGoogleHealth = googleHealthMocks.start;
 export const disconnectPersonalGoogleHealth = googleHealthMocks.disconnect;

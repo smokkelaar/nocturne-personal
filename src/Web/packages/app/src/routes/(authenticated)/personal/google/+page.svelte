@@ -116,6 +116,7 @@
   async function loadReadings() {
     operation = "readings";
     readingsLoaded = false;
+    readings = [];
     readings = await getPersonalHealthReadings({ dataType: type, skip }).run();
     readingsLoaded = true;
   }
@@ -438,6 +439,7 @@
   {#if status}<div class="space-y-3">
       <h2 class="text-xl font-medium">Geïmporteerde metingen</h2>
       <select
+        aria-label="Gegevenstype"
         class="rounded border bg-background p-2"
         bind:value={type}
         disabled={busy}
@@ -486,6 +488,14 @@
       {#if readingsLoaded && readings.length === 0}<p>
           Geen metingen in deze selectie.
         </p>{/if}
+      {#if !readingsLoaded && !busy}
+        <button
+          class="rounded border px-3 py-2"
+          onclick={() => void run(loadReadings)}
+        >
+          Metingen opnieuw laden
+        </button>
+      {/if}
       <button
         class="mr-3 rounded border px-3 py-2"
         disabled={busy || !readingsLoaded || skip === 0}

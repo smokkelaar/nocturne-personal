@@ -1,5 +1,9 @@
 import { vi } from "vitest";
-import type { GoogleHealthStatus, PersonalHealthReading } from "$lib/api";
+import type {
+  GoogleHealthPreview,
+  GoogleHealthStatus,
+  PersonalHealthReading,
+} from "$lib/api";
 import type { getPersonalHealthReadings as queryPersonalHealthReadings } from "$lib/api/generated/personalGoogleHealths.generated.remote";
 import { effectAwareQuery } from "./effect-aware-query.svelte";
 
@@ -14,6 +18,7 @@ export const googleHealthMocks = {
   disconnect: vi.fn(),
   sync: vi.fn(),
   purge: vi.fn(),
+  preview: vi.fn<() => Promise<GoogleHealthPreview>>(),
 };
 
 export const getPersonalGoogleHealth = () =>
@@ -25,3 +30,4 @@ export const startPersonalGoogleHealth = googleHealthMocks.start;
 export const disconnectPersonalGoogleHealth = googleHealthMocks.disconnect;
 export const syncPersonalGoogleHealth = googleHealthMocks.sync;
 export const purgePersonalGoogleHealth = googleHealthMocks.purge;
+export const previewPersonalGoogleHealth = googleHealthMocks.preview;

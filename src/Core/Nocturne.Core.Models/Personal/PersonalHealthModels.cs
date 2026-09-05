@@ -9,6 +9,7 @@ public class GoogleHealthOptions
     [Required, MaxLength(500)] public string CallbackUrl { get; set; } = "";
     [MinLength(1), MaxLength(32)] public string[] DataTypes { get; set; } = [];
     [Range(1, 90)] public int HistoryDays { get; set; } = 7;
+    public bool PreviewOnly { get; set; }
 }
 
 public class GoogleHealthStatus
@@ -27,6 +28,20 @@ public class GoogleHealthStatus
     public DateTimeOffset? NextAttempt { get; set; }
     public string? ErrorCode { get; set; }
     public string[] ErrorDataTypes { get; set; } = [];
+    public bool PreviewRequired { get; set; }
+}
+
+public class GoogleHealthPreview
+{
+    public GoogleHealthPreviewItem[] Items { get; set; } = [];
+}
+
+public class GoogleHealthPreviewItem
+{
+    public string DataType { get; set; } = "";
+    public bool Granted { get; set; }
+    public int Count { get; set; }
+    public string? ErrorCode { get; set; }
 }
 
 public class GoogleHealthCapability

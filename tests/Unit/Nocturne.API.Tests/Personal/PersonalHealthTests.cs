@@ -93,6 +93,7 @@ public class PersonalHealthTests
         await writer.WriteAsync(
             readings,
             [sleep],
+            ["heart-rate", "steps", "weight", "sleep"],
             DateTimeOffset.FromUnixTimeMilliseconds(0),
             DateTimeOffset.FromUnixTimeMilliseconds(10_000),
             default);
@@ -103,6 +104,27 @@ public class PersonalHealthTests
         Assert.Equal(GoogleHealthReadingWriter.Source, heartRates[0].DataSource);
         Assert.False(string.IsNullOrWhiteSpace(heartRates[0].SyncIdentifier));
         Assert.Same(sleep, sleepSession);
+    }
+
+    [Fact]
+    public async Task Reconciliation_preserves_google_types_that_are_not_active()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:"); await connection.OpenAsync();
+        await using var db = new NocturneDbContext(new DbContextOptionsBuilder<NocturneDbContext>().UseSqlite(connection).Options);
+        await db.Database.EnsureCreatedAsync();
+        var tenant = Guid.NewGuid(); db.TenantId = tenant;
+        db.Tenants.Add(new TenantEntity { Id = tenant, Slug = "synthetic", DisplayName = "Synthetic", IsActive = true });
+        var timestamp = DateTime.UtcNow.AddHours(-1);
+        db.HeartRates.Add(new HeartRateEntity { Id = Guid.CreateVersion7(), Timestamp = timestamp, Bpm = 60, DataSource = GoogleHealthReadingWriter.Source, SyncIdentifier = "old-heart" });
+        db.BodyWeights.Add(new BodyWeightEntity { Id = Guid.CreateVersion7(), Mills = new DateTimeOffset(timestamp).ToUnixTimeMilliseconds(), WeightKg = 70, DataSource = GoogleHealthReadingWriter.Source, SyncIdentifier = "old-weight" });
+        await db.SaveChangesAsync();
+        var writer = new GoogleHealthReadingWriter(
+            Mock.Of<IHeartRateService>(), Mock.Of<IStepCountService>(), Mock.Of<IBodyWeightService>(), Mock.Of<ISleepService>(), db);
+
+        await writer.WriteAsync([], [], ["weight"], DateTimeOffset.UtcNow.AddDays(-1), DateTimeOffset.UtcNow, default);
+
+        Assert.Single(await db.HeartRates.AsNoTracking().ToListAsync());
+        Assert.Empty(await db.BodyWeights.AsNoTracking().ToListAsync());
     }
 
     [Theory]
@@ -278,8 +300,8 @@ public class PersonalHealthTests
         await service.CompleteAsync(callback, subject, default);
         await Assert.ThrowsAsync<GoogleHealthException>(() => service.CompleteAsync(callback, subject, default));
         var status = await service.StatusAsync(default);
-        Assert.Equal(["weight"], status.GrantedTypes); Assert.Equal("partial_consent", status.ErrorCode);
-        Assert.Equal(["steps"], status.ErrorDataTypes);
+        Assert.Equal(["heart-rate", "weight"], status.GrantedTypes); Assert.Equal("partial_consent", status.ErrorCode);
+        Assert.Equal(["steps", "sleep"], status.ErrorDataTypes);
         Assert.NotNull(status.AccessTokenExpiresAt);
         var stored = await db.PersonalGoogleConnections.SingleAsync();
         Assert.DoesNotContain("synthetic-secret", stored.ProtectedSettings); Assert.DoesNotContain("synthetic-refresh", stored.ProtectedToken!);
@@ -488,6 +510,7 @@ public class PersonalHealthTests
         public Task CompleteAsync(GoogleHealthCallback callback, Guid subject, CancellationToken ct) => Task.CompletedTask;
         public Task DisconnectAsync(Guid subject, CancellationToken ct) => Task.CompletedTask;
         public Task PurgeAsync(Guid subject, CancellationToken ct) => Task.CompletedTask;
+        public Task<GoogleHealthPreview> PreviewAsync(Guid subject, CancellationToken ct) => Task.FromResult(new GoogleHealthPreview());
         public Task SyncAsync(bool force, CancellationToken ct) => throw new HttpRequestException("synthetic");
     }
 

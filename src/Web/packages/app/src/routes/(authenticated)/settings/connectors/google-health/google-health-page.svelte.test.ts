@@ -16,6 +16,7 @@ function status(
     historyDays: 7,
     selectedTypes: ["steps", "heart-rate", "weight"],
     grantedTypes: [],
+    previewRequired: false,
     capabilities: [
       { dataType: "steps", supported: true },
       { dataType: "heart-rate", supported: true },
@@ -40,23 +41,15 @@ describe("Google Health page", () => {
     vi.resetAllMocks();
     googleHealthMocks.status.mockResolvedValue(status());
     googleHealthMocks.readings.mockResolvedValue([]);
+    googleHealthMocks.preview.mockResolvedValue({ items: [] });
   });
 
-  it("loads the import choices and callback outside the mount effect", async () => {
+  it("loads the callback before asking for an import selection", async () => {
     render(GoogleHealthPage);
 
     await expect
       .element(page.getByRole("checkbox", { name: "Stappen" }))
-      .toBeChecked();
-    await expect
-      .element(page.getByRole("checkbox", { name: "Hartslag" }))
-      .toBeChecked();
-    await expect
-      .element(page.getByRole("checkbox", { name: "Gewicht" }))
-      .toBeChecked();
-    await expect
-      .element(page.getByRole("checkbox", { name: "Slaap" }))
-      .toBeChecked();
+      .not.toBeInTheDocument();
     await expect
       .element(page.getByLabelText("Callback-URL"))
       .toHaveValue(`${window.location.origin}/personal/google/callback`);
@@ -96,6 +89,26 @@ describe("Google Health page", () => {
         page.getByRole("button", { name: "Instellingen opslaan en inloggen" })
       )
       .not.toBeInTheDocument();
+  });
+
+  it("previews available types before importing them", async () => {
+    googleHealthMocks.status.mockResolvedValue(
+      status({ configured: true, connected: true, previewRequired: true })
+    );
+    googleHealthMocks.preview.mockResolvedValue({
+      items: [
+        { dataType: "steps", granted: true, count: 42 },
+        { dataType: "sleep", granted: true, count: 0 },
+      ],
+    });
+    render(GoogleHealthPage);
+
+    await expect.element(page.getByText("42 gevonden")).toBeVisible();
+    await expect
+      .element(page.getByText("Nu geen gegevens gevonden"))
+      .toBeVisible();
+    await expect.element(page.getByLabelText("Callback-URL")).toBeVisible();
+    expect(googleHealthMocks.sync).not.toHaveBeenCalled();
   });
 
   it("reports an initial 401 and lets a retry load the configuration", async () => {

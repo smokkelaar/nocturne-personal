@@ -1,7 +1,11 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { resolve } from "$app/paths";
-  import type { GoogleHealthStatus, PersonalHealthReading } from "$lib/api";
+  import type {
+    GoogleHealthPreview,
+    GoogleHealthStatus,
+    PersonalHealthReading,
+  } from "$lib/api";
   import {
     describeGoogleHealthError,
     type GoogleHealthOperation,
@@ -12,11 +16,13 @@
     startPersonalGoogleHealth,
     disconnectPersonalGoogleHealth,
     syncPersonalGoogleHealth,
+    previewPersonalGoogleHealth,
     purgePersonalGoogleHealth,
     getPersonalHealthReadings,
   } from "$lib/api/generated/personalGoogleHealths.generated.remote";
   let status = $state<GoogleHealthStatus | null>(null);
   let readings = $state<PersonalHealthReading[]>([]);
+  let preview = $state<GoogleHealthPreview | null>(null);
   let readingsLoaded = $state(false);
   let clientId = $state("");
   let clientSecret = $state("");
@@ -171,9 +177,34 @@
       callbackUrl,
       dataTypes: selected,
       historyDays,
+      previewOnly: true,
     });
     clientSecret = "";
     await startSignin();
+  }
+  async function loadPreview() {
+    operation = "readings";
+    preview = await previewPersonalGoogleHealth();
+    selected =
+      preview.items
+        ?.filter((item) => item.granted && item.count > 0)
+        .map((item) => item.dataType ?? "")
+        .filter(Boolean) ?? [];
+  }
+  async function saveSelection() {
+    operation = "save";
+    await savePersonalGoogleHealth({
+      clientId,
+      clientSecret: null,
+      callbackUrl,
+      dataTypes: selected,
+      historyDays,
+      previewOnly: false,
+    });
+    operation = "sync";
+    await syncPersonalGoogleHealth();
+    preview = null;
+    await refresh();
   }
   async function startSignin() {
     operation = "signin";
@@ -200,9 +231,7 @@
           status?.connected &&
           !status.lastAttempt
         ) {
-          operation = "sync";
-          await syncPersonalGoogleHealth();
-          await refresh();
+          await loadPreview();
         }
         if (!message && outcome === "failed")
           message =
@@ -213,6 +242,8 @@
         if (!message && outcome === "no_session")
           message =
             "De Nocturne-inlogsessie ontbrak bij de terugkeer van Google. Log opnieuw in bij Nocturne en start daarna de Google-koppeling opnieuw in dezelfde browser.";
+        if (status?.connected && status.previewRequired && !preview && !message)
+          await loadPreview();
       });
     });
     return () => {
@@ -260,23 +291,11 @@
           bind:value={callbackUrl}
         />
       </label>
-      <fieldset>
-        <legend class="mb-2 font-medium">Wat wil je importeren?</legend>
-        {#each status?.capabilities ?? [] as capability (capability.dataType)}<label
-            class="mr-5 inline-flex items-center gap-2"
-          >
-            <input
-              type="checkbox"
-              bind:group={selected}
-              value={capability.dataType}
-              disabled={!capability.supported}
-            />
-            {labels[capability.dataType ?? ""] ??
-              capability.dataType}{!capability.supported
-              ? " (nog niet beschikbaar)"
-              : ""}
-          </label>{/each}
-      </fieldset>
+      <p class="text-sm text-muted-foreground">
+        Na het inloggen controleert Nocturne welke ondersteunde gegevens Google
+        voor deze periode beschikbaar heeft. Er wordt nog niets geïmporteerd
+        totdat je de selectie bevestigt.
+      </p>
       <label class="block">
         Terugkijkperiode (1–90 dagen)
         <input
@@ -291,7 +310,7 @@
     </fieldset>
     <button
       class="rounded bg-primary px-4 py-2 text-primary-foreground"
-      disabled={busy || selected.length === 0}
+      disabled={busy}
     >
       {buttonLabel}
     </button>
@@ -411,7 +430,59 @@
       {@render configurationForm("Instellingen opslaan en inloggen")}
     {/if}
   {/if}
-  {#if status?.connected}
+  {#if status?.connected && status.previewRequired}
+    <div class="space-y-4 rounded-lg border p-4">
+      <h2 class="text-xl font-medium">Beschikbare Google Health-gegevens</h2>
+      {#if preview}
+        <p class="text-sm text-muted-foreground">
+          Aantallen gevonden in de laatste {historyDays} dagen. Selecteer wat voortaan
+          in Nocturne moet worden geïmporteerd.
+        </p>
+        <div class="space-y-2">
+          {#each preview.items ?? [] as item (item.dataType)}
+            <label
+              class="flex items-center justify-between gap-4 rounded border p-3"
+            >
+              <span class="inline-flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  bind:group={selected}
+                  value={item.dataType}
+                  disabled={!item.granted || !!item.errorCode}
+                />
+                {labels[item.dataType ?? ""] ?? item.dataType}
+              </span>
+              <span class="text-sm text-muted-foreground">
+                {item.errorCode
+                  ? `Niet leesbaar (${item.errorCode})`
+                  : !item.granted
+                    ? "Geen toestemming"
+                    : item.count > 0
+                      ? `${item.count} gevonden`
+                      : "Nu geen gegevens gevonden"}
+              </span>
+            </label>
+          {/each}
+        </div>
+        <button
+          class="rounded bg-primary px-4 py-2 text-primary-foreground"
+          disabled={busy || selected.length === 0}
+          onclick={() => void run(saveSelection)}
+        >
+          Selectie opslaan en importeren
+        </button>
+      {:else}
+        <p>Beschikbare gegevens controleren…</p>
+      {/if}
+      <button
+        class="rounded border px-4 py-2"
+        disabled={busy}
+        onclick={() => void run(loadPreview)}
+      >
+        Opnieuw controleren
+      </button>
+    </div>
+  {:else if status?.connected}
     <div class="space-y-3 rounded-lg border p-4">
       <p>
         Verbonden · Import toegestaan: {status.grantedTypes

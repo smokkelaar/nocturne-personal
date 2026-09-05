@@ -556,7 +556,7 @@
       </CardHeader>
       <CardContent>
         <a
-          href="/settings/connectors/google-health"
+          href={resolve("/settings/connectors/google-health")}
           class="group flex items-center gap-4 rounded-lg border p-4 transition-colors hover:border-primary/50 hover:bg-accent/50"
         >
           <div

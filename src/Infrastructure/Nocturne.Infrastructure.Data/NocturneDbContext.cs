@@ -126,7 +126,7 @@ public class NocturneDbContext : DbContext, IDataProtectionKeyContext
 
     public DbSet<PersonalGoogleConnectionEntity> PersonalGoogleConnections { get; set; }
     public DbSet<PersonalHealthReadingEntity> PersonalHealthReadings { get; set; }
-    public DbSet<PersonalMedicationEntity> PersonalMedications { get; set; }
+    private DbSet<PersonalMedicationEntity> LegacyPersonalMedications { get; set; }
 
     public DbSet<DiscrepancyAnalysisEntity> DiscrepancyAnalyses { get; set; }
 

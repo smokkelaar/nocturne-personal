@@ -15,7 +15,7 @@ export type GoogleHealthOperation = keyof typeof operations;
 export function describeGoogleHealthError(
   error: unknown,
   operation: GoogleHealthOperation,
-  knownErrors: Record<string, string>,
+  knownErrors: Record<string, string>
 ): string {
   const status = errorStatus(error);
   const http =

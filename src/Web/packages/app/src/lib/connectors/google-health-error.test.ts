@@ -8,7 +8,7 @@ describe("Google Health diagnostics", () => {
     const message = describeGoogleHealthError(
       { status: 401, body: { message: "private upstream response" } },
       "status",
-      known,
+      known
     );
     expect(message).toContain("Nocturne-sessie is verlopen");
     expect(message).toContain("status/http_401");
@@ -20,7 +20,7 @@ describe("Google Health diagnostics", () => {
     const message = describeGoogleHealthError(
       { status: 400, body: { message: "reconnect_required" } },
       "sync",
-      known,
+      known
     );
     expect(message).toContain("Verbind opnieuw met Google.");
     expect(message).toContain("sync/reconnect_required");
@@ -40,8 +40,8 @@ describe("Google Health diagnostics", () => {
       expect(message).toContain("metingen konden niet worden opgehaald");
       expect(message).toContain("Technische code: readings/");
       expect(message).not.toMatch(
-        /private|access_token|client_secret|toString|__proto__|Infinity/,
+        /private|access_token|client_secret|toString|__proto__|Infinity/
       );
-    },
+    }
   );
 });

@@ -3,11 +3,12 @@ import type { RequestHandler } from "./$types";
 
 export const GET: RequestHandler = async ({ locals, url, setHeaders }) => {
   setHeaders({ "cache-control": "no-store", "referrer-policy": "no-referrer" });
-  let outcome = !locals.isAuthenticated || !locals.user
-    ? "no_session"
-    : url.searchParams.has("error")
-      ? "provider_denied"
-      : "failed";
+  let outcome =
+    !locals.isAuthenticated || !locals.user
+      ? "no_session"
+      : url.searchParams.has("error")
+        ? "provider_denied"
+        : "failed";
   if (locals.isAuthenticated && locals.user && !url.searchParams.has("error")) {
     const code = url.searchParams.get("code");
     const state = url.searchParams.get("state");
@@ -22,5 +23,5 @@ export const GET: RequestHandler = async ({ locals, url, setHeaders }) => {
       }
     }
   }
-  redirect(303, `/personal/google?connection=${outcome}`);
+  redirect(303, `/settings/connectors/google-health?connection=${outcome}`);
 };

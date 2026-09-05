@@ -5,7 +5,7 @@
   import {
     describeGoogleHealthError,
     type GoogleHealthOperation,
-  } from "$lib/personal/google-health-error";
+  } from "$lib/connectors/google-health-error";
   import {
     getPersonalGoogleHealth,
     savePersonalGoogleHealth,
@@ -21,7 +21,7 @@
   let clientId = $state("");
   let clientSecret = $state("");
   let callbackUrl = $state("");
-  let selected = $state<string[]>(["steps", "heart-rate", "weight"]);
+  let selected = $state<string[]>(["steps", "heart-rate", "weight", "sleep"]);
   let historyDays = $state(7);
   let type = $state("weight");
   let skip = $state(0);
@@ -124,6 +124,8 @@
       "De import liep onverwacht vast bij het ophalen van Google Health-gegevens. Controleer de serverlog rond deze poging.",
     internal_sync_data_validation:
       "De import liep onverwacht vast bij het controleren van Google Health-gegevens. Controleer de serverlog rond deze poging.",
+    internal_sync_native_write:
+      "De gegevens zijn opgehaald, maar konden niet in de bestaande Nocturne-gezondheidsgegevens worden opgeslagen. Controleer de serverlog rond deze poging.",
     internal_sync_database_write:
       "De gegevens zijn opgehaald, maar konden niet in Nocturne worden opgeslagen. Controleer de serverlog rond deze poging.",
   };
@@ -296,14 +298,16 @@
   </form>
 {/snippet}
 
-<svelte:head><title>Google Health · Personal</title></svelte:head>
+<svelte:head><title>Google Health · Connectors & Apps</title></svelte:head>
 <section class="mx-auto max-w-4xl space-y-6 p-6">
-  <a class="underline" href={resolve("/personal")}>Personal</a>
+  <a class="underline" href={resolve("/settings/connectors")}>
+    Connectors & Apps
+  </a>
   <h1 class="text-3xl font-semibold">Google Health</h1>
   <p>
-    Alleen lezen uit Google Health. Google Fit en lokale Android Health
-    Connect-gegevens zijn niet automatisch beschikbaar. Metingen worden hier in
-    Personal getoond, nog niet in de bestaande Nocturne-rapporten.
+    Alleen lezen uit Google Health. Stappen, hartslag, gewicht en slaap worden
+    opgeslagen in de bestaande Nocturne-gezondheidsgegevens en zijn daardoor
+    beschikbaar voor grafieken en rapporten die deze gegevens gebruiken.
   </p>
   <details class="rounded-lg border p-4">
     <summary class="cursor-pointer font-medium">
@@ -464,7 +468,7 @@
             await loadReadings();
           })}
       >
-        {#each status?.capabilities?.filter((c) => c.supported) ?? [] as capability (capability.dataType)}<option
+        {#each status?.capabilities?.filter((c) => c.supported && c.dataType !== "sleep") ?? [] as capability (capability.dataType)}<option
             value={capability.dataType}
           >
             {labels[capability.dataType ?? ""] ?? capability.dataType}
@@ -473,7 +477,8 @@
       <p class="text-sm text-muted-foreground">
         Bron: Google Health, door Google samengevoegde bronnen. Tijdstippen in
         de tijdzone van deze browser. Stappen zijn aantallen per interval, geen
-        dagtotalen.
+        dagtotalen. Slaapsessies staan in de bestaande slaapweergaven van
+        Nocturne.
       </p>
       <div class="overflow-auto">
         <table class="w-full text-left">

@@ -22,6 +22,7 @@ public sealed class GoogleHealthCoordinator
 
 public sealed class GoogleHealthService(NocturneDbContext db, IDataProtectionProvider protection,
     GoogleHealthCoordinator coordinator, GoogleHealthClient google,
+    IGoogleHealthReadingWriter? writer = null,
     ILogger<GoogleHealthService>? logger = null) : IPersonalGoogleHealthService
 {
     private sealed record Token(
@@ -322,6 +323,7 @@ public sealed class GoogleHealthService(NocturneDbContext db, IDataProtectionPro
             if (row is null) return;
             if (row.SubjectId != subject) throw new GoogleHealthException("connection_owner_required");
             if (row.ProtectedToken is not null) throw new GoogleHealthException("disconnect_first");
+            if (writer is not null) await writer.PurgeAsync(ct);
             var strategy = db.Database.CreateExecutionStrategy();
             await strategy.ExecuteAsync(async () =>
             {
@@ -376,17 +378,23 @@ public sealed class GoogleHealthService(NocturneDbContext db, IDataProtectionPro
                 var active = settings.DataTypes.Where(t => token.Scopes.Contains(GoogleHealthClient.ScopeFor(t))).ToArray();
                 if (active.Length == 0) throw new GoogleHealthException("permission_denied", stage: "scope_validation");
                 var to = DateTimeOffset.UtcNow; var from = to.AddDays(-settings.HistoryDays);
-                async Task<List<PersonalHealthReading>> ReadAllAsync()
+                async Task<(List<PersonalHealthReading> Readings, List<Nocturne.Core.Models.SleepSession> SleepSessions)> ReadAllAsync()
                 {
                     var result = new List<PersonalHealthReading>();
-                    foreach (var type in active) result.AddRange(await google.ReadAsync(access, type, from, to, ct));
-                    return result;
+                    var sleepSessions = new List<Nocturne.Core.Models.SleepSession>();
+                    foreach (var type in active)
+                    {
+                        if (type == "sleep") sleepSessions.AddRange(await google.ReadSleepAsync(access, from, to, ct));
+                        else result.AddRange(await google.ReadAsync(access, type, from, to, ct));
+                    }
+                    return (result, sleepSessions);
                 }
                 List<PersonalHealthReading> readings;
+                List<Nocturne.Core.Models.SleepSession> sleepSessions;
                 try
                 {
                     stage = "google_read";
-                    readings = await ReadAllAsync();
+                    (readings, sleepSessions) = await ReadAllAsync();
                 }
                 catch (GoogleHealthException first) when (first.Message == "access_token_rejected")
                 {
@@ -401,7 +409,7 @@ public sealed class GoogleHealthService(NocturneDbContext db, IDataProtectionPro
                     try
                     {
                         stage = "google_read";
-                        readings = await ReadAllAsync();
+                        (readings, sleepSessions) = await ReadAllAsync();
                     }
                     catch (GoogleHealthException second) when (second.Message == "access_token_rejected")
                     {
@@ -413,6 +421,10 @@ public sealed class GoogleHealthService(NocturneDbContext db, IDataProtectionPro
                 stage = "data_validation";
                 if (readings.Select(GoogleHealthClient.Key).Distinct().Count() != readings.Count)
                     throw new GoogleHealthException("duplicate_google_data", stage: "data_validation");
+                if (sleepSessions.Select(session => session.OriginalId).Distinct(StringComparer.Ordinal).Count() != sleepSessions.Count)
+                    throw new GoogleHealthException("duplicate_google_data", stage: "data_validation", dataType: "sleep");
+                stage = "native_write";
+                if (writer is not null) await writer.WriteAsync(readings, sleepSessions, from, to, ct);
                 // Replace only the completely fetched window, so retries, edits and source deletions cannot double-count steps.
                 var firstMills = from.ToUnixTimeMilliseconds(); var lastMills = to.ToUnixTimeMilliseconds();
                 var replacements = readings.Select(r => new PersonalHealthReadingEntity
@@ -421,7 +433,9 @@ public sealed class GoogleHealthService(NocturneDbContext db, IDataProtectionPro
                     EndMills = r.EndMills, UtcOffsetMinutes = r.UtcOffsetMinutes, Value = r.Value, Unit = r.Unit
                 }).ToArray();
                 var missingConsent = settings.DataTypes.Except(active, StringComparer.Ordinal).ToArray();
-                var emptyTypes = active.Where(type => readings.All(reading => reading.DataType != type)).ToArray();
+                var emptyTypes = active.Where(type => type == "sleep"
+                    ? sleepSessions.Count == 0
+                    : readings.All(reading => reading.DataType != type)).ToArray();
                 var strategy = db.Database.CreateExecutionStrategy();
                 stage = "database_write";
                 await strategy.ExecuteAsync(async () =>

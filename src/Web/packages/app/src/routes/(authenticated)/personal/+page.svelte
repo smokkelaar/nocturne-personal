@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { HeartPulse, Pill, Activity } from "lucide-svelte";
+  import { Pill, Activity } from "lucide-svelte";
 </script>
 
 <svelte:head><title>Personal · Nocturne</title></svelte:head>
@@ -9,14 +9,6 @@
     Persoonlijke uitbreidingen. Official en Latest blijven ongewijzigd.
   </p>
   <div class="grid gap-4 sm:grid-cols-2">
-    <a href="/personal/google" class="rounded-xl border p-6 hover:bg-muted/50">
-      <HeartPulse class="mb-4 size-8" />
-      <h2 class="text-xl font-medium">Google Health</h2>
-      <p class="mt-2 text-muted-foreground">
-        Koppel Google, kies stappen, hartslag en gewicht en bekijk de
-        geïmporteerde metingen.
-      </p>
-    </a>
     <a
       href="/personal/medications"
       class="rounded-xl border p-6 hover:bg-muted/50"

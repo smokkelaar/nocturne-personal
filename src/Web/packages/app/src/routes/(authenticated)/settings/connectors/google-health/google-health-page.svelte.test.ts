@@ -3,7 +3,7 @@ import { render } from "vitest-browser-svelte";
 import { page } from "vitest/browser";
 import type { GoogleHealthStatus, PersonalHealthReading } from "$lib/api";
 import { googleHealthMocks } from "$lib/test-stubs/personal-google-health";
-import GoogleHealthPage from "./+page.svelte";
+import GoogleHealthPage from "./google-health-page.svelte";
 
 function status(
   overrides: Partial<GoogleHealthStatus> = {}
@@ -20,6 +20,7 @@ function status(
       { dataType: "steps", supported: true },
       { dataType: "heart-rate", supported: true },
       { dataType: "weight", supported: true },
+      { dataType: "sleep", supported: true },
     ],
     ...overrides,
   };
@@ -52,6 +53,9 @@ describe("Google Health page", () => {
       .toBeChecked();
     await expect
       .element(page.getByRole("checkbox", { name: "Gewicht" }))
+      .toBeChecked();
+    await expect
+      .element(page.getByRole("checkbox", { name: "Slaap" }))
       .toBeChecked();
     await expect
       .element(page.getByLabelText("Callback-URL"))

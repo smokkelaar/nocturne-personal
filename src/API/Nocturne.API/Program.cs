@@ -148,6 +148,7 @@ builder.Services.AddHostedService<AuditRetentionService>();
 builder.Services.AddHostedService<SoftDeleteCleanupService>();
 builder.Services.AddSingleton<Nocturne.API.Services.Personal.GoogleHealthCoordinator>();
 builder.Services.AddScoped<Nocturne.Core.Contracts.Health.IPersonalGoogleHealthService, Nocturne.API.Services.Personal.GoogleHealthService>();
+builder.Services.AddScoped<Nocturne.Core.Contracts.Health.IGoogleHealthReadingWriter, Nocturne.API.Services.Personal.GoogleHealthReadingWriter>();
 builder.Services.AddHttpClient<Nocturne.API.Services.Personal.GoogleHealthClient>(client =>
 {
     client.Timeout = TimeSpan.FromSeconds(45);

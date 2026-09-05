@@ -8,9 +8,12 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using Moq;
 using Nocturne.API.Controllers.V4.Personal;
 using Nocturne.API.Services.Personal;
 using Nocturne.Core.Contracts.Health;
+using Nocturne.Core.Contracts.Sleep;
+using Nocturne.Core.Models;
 using Nocturne.Core.Models.Personal;
 using Nocturne.Infrastructure.Data;
 using Nocturne.Infrastructure.Data.Entities;
@@ -20,6 +23,88 @@ namespace Nocturne.API.Tests.Personal;
 
 public class PersonalHealthTests
 {
+    [Fact]
+    public void Maps_google_sleep_session_and_stages_to_nocturne_sleep()
+    {
+        using var doc = JsonDocument.Parse("""
+        {
+          "name":"users/example/dataTypes/sleep/dataPoints/night-1",
+          "sleep":{
+            "interval":{"startTime":"2026-09-04T22:00:00Z","endTime":"2026-09-05T06:00:00Z"},
+            "type":"STAGES",
+            "stages":[
+              {"startTime":"2026-09-04T22:00:00Z","endTime":"2026-09-05T00:00:00Z","type":"LIGHT"},
+              {"startTime":"2026-09-05T00:00:00Z","endTime":"2026-09-05T02:00:00Z","type":"DEEP"},
+              {"startTime":"2026-09-05T02:00:00Z","endTime":"2026-09-05T04:00:00Z","type":"REM"},
+              {"startTime":"2026-09-05T04:00:00Z","endTime":"2026-09-05T06:00:00Z","type":"AWAKE"}
+            ],
+            "metadata":{"processed":true,"nap":false,"manuallyEdited":false},
+            "summary":{"minutesAsleep":"360","minutesAwake":"120","minutesToFallAsleep":"15"}
+          }
+        }
+        """);
+
+        var session = GoogleHealthClient.ParseSleep(doc.RootElement);
+
+        Assert.Equal(SleepSource.Google, session.Source);
+        Assert.Equal(SleepSessionType.Overnight, session.Type);
+        Assert.Equal(SleepDetectionMethod.AutoFinal, session.DetectionMethod);
+        Assert.Equal(8 * 60 * 60 * 1000, session.DurationMs);
+        Assert.Equal(6 * 60 * 60 * 1000, session.TotalSleepMs);
+        Assert.Equal(2 * 60 * 60 * 1000, session.TotalAwakeMs);
+        Assert.Equal(4, session.Stages!.Count);
+        Assert.Equal(SleepStageType.Deep, session.Stages[1].Stage);
+        Assert.EndsWith("night-1", session.OriginalId);
+    }
+
+    [Fact]
+    public async Task Writes_google_measurements_to_native_nocturne_health_services()
+    {
+        var heartRateService = new Mock<IHeartRateService>();
+        var stepCountService = new Mock<IStepCountService>();
+        var bodyWeightService = new Mock<IBodyWeightService>();
+        var sleepService = new Mock<ISleepService>();
+        HeartRate[] heartRates = [];
+        StepCount[] stepCounts = [];
+        BodyWeight[] bodyWeights = [];
+        SleepSession? sleepSession = null;
+        heartRateService.Setup(service => service.CreateHeartRatesAsync(It.IsAny<IEnumerable<HeartRate>>(), It.IsAny<CancellationToken>()))
+            .Callback<IEnumerable<HeartRate>, CancellationToken>((items, _) => heartRates = items.ToArray())
+            .ReturnsAsync((IEnumerable<HeartRate> items, CancellationToken _) => items);
+        stepCountService.Setup(service => service.CreateStepCountsAsync(It.IsAny<IEnumerable<StepCount>>(), It.IsAny<CancellationToken>()))
+            .Callback<IEnumerable<StepCount>, CancellationToken>((items, _) => stepCounts = items.ToArray())
+            .ReturnsAsync((IEnumerable<StepCount> items, CancellationToken _) => items);
+        bodyWeightService.Setup(service => service.CreateBodyWeightsAsync(It.IsAny<IEnumerable<BodyWeight>>(), It.IsAny<CancellationToken>()))
+            .Callback<IEnumerable<BodyWeight>, CancellationToken>((items, _) => bodyWeights = items.ToArray())
+            .ReturnsAsync((IEnumerable<BodyWeight> items, CancellationToken _) => items);
+        sleepService.Setup(service => service.UpsertSessionAsync(It.IsAny<SleepSession>(), It.IsAny<CancellationToken>()))
+            .Callback<SleepSession, CancellationToken>((item, _) => sleepSession = item)
+            .ReturnsAsync((SleepSession item, CancellationToken _) => item);
+        var writer = new GoogleHealthReadingWriter(
+            heartRateService.Object, stepCountService.Object, bodyWeightService.Object, sleepService.Object);
+        var readings = new[]
+        {
+            new PersonalHealthReading { DataType = "heart-rate", Mills = 1_000, Value = 65, Unit = "bpm" },
+            new PersonalHealthReading { DataType = "steps", Mills = 2_000, EndMills = 3_000, Value = 42, Unit = "steps" },
+            new PersonalHealthReading { DataType = "weight", Mills = 4_000, Value = 72.5m, Unit = "kg" }
+        };
+        var sleep = new SleepSession { OriginalId = "night-1", Source = SleepSource.Google };
+
+        await writer.WriteAsync(
+            readings,
+            [sleep],
+            DateTimeOffset.FromUnixTimeMilliseconds(0),
+            DateTimeOffset.FromUnixTimeMilliseconds(10_000),
+            default);
+
+        Assert.Equal(65, Assert.Single(heartRates).Bpm);
+        Assert.Equal(42, Assert.Single(stepCounts).Metric);
+        Assert.Equal(72.5m, Assert.Single(bodyWeights).WeightKg);
+        Assert.Equal(GoogleHealthReadingWriter.Source, heartRates[0].DataSource);
+        Assert.False(string.IsNullOrWhiteSpace(heartRates[0].SyncIdentifier));
+        Assert.Same(sleep, sleepSession);
+    }
+
     [Theory]
     [InlineData("weight", "{\"weight\":{\"sampleTime\":{\"physicalTime\":\"2026-09-01T10:00:00Z\",\"utcOffset\":\"7200s\"},\"weightGrams\":72500}}", "kg", 72.5)]
     [InlineData("heart-rate", "{\"heartRate\":{\"sampleTime\":{\"physicalTime\":\"2026-09-01T10:00:00Z\"},\"beatsPerMinute\":\"67\"}}", "bpm", 67)]
@@ -354,8 +439,8 @@ public class PersonalHealthTests
     [Fact]
     public void Future_catalog_entries_cannot_be_silently_selected()
     {
-        var options = Options(); options.DataTypes = ["sleep"];
-        Assert.Contains(GoogleHealthClient.Capabilities, c => c.DataType == "sleep" && !c.Supported);
+        var options = Options(); options.DataTypes = ["body-fat"];
+        Assert.Contains(GoogleHealthClient.Capabilities, c => c.DataType == "body-fat" && !c.Supported);
         Assert.Throws<GoogleHealthException>(() => GoogleHealthService.ValidateOptions(options));
     }
 

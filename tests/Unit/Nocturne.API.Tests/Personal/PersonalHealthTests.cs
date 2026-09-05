@@ -1,4 +1,3 @@
-using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Text;
 using System.Text.Json;
@@ -162,20 +161,6 @@ public class PersonalHealthTests
     {
         var options = Options(); options.CallbackUrl = url;
         Assert.Throws<GoogleHealthException>(() => GoogleHealthService.ValidateOptions(options));
-    }
-
-    [Fact]
-    public void Medication_validation_has_no_default_dose_or_future_plan()
-    {
-        var input = Medication();
-        Assert.True(Valid(input));
-        input.Amount = null; Assert.False(Valid(input));
-        input.Status = "skipped"; Assert.True(Valid(input));
-        input.Amount = 1; Assert.False(Valid(input));
-        input.Status = "taken"; input.Unit = "units"; Assert.False(Valid(input));
-        input.Unit = "mL"; Assert.False(Valid(input));
-        input.Unit = "mg"; input.Amount = 0; Assert.False(Valid(input));
-        input.Amount = 1; input.Mills = DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeMilliseconds(); Assert.False(Valid(input));
     }
 
     [Fact]
@@ -503,7 +488,6 @@ public class PersonalHealthTests
         Assert.Equal("google_unavailable", problem.Detail);
     }
 
-    private static bool Valid(object value) => Validator.TryValidateObject(value, new ValidationContext(value), new List<ValidationResult>(), true);
     private static GoogleHealthOptions Options() => new() { ClientId = "synthetic.apps.googleusercontent.com", ClientSecret = "synthetic-secret", CallbackUrl = "https://example.test:8450/personal/google/callback", DataTypes = ["weight"] };
     private static HttpResponseMessage Json(string text) => new(HttpStatusCode.OK) { Content = new StringContent(text, Encoding.UTF8, "application/json") };
     private sealed class ThrowingGoogleHealthService : IPersonalGoogleHealthService

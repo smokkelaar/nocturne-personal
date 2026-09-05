@@ -37,6 +37,15 @@ describe("Google Health connector page", () => {
     await expect.element(page.getByLabelText("Import data from")).toBeVisible();
   });
 
+  it("shows the effective legacy history window when no explicit date is saved", async () => {
+    const expected = new Date(Date.now() - 7 * 86_400_000)
+      .toISOString()
+      .slice(0, 10);
+    render(GoogleHealthPage);
+
+    await expect.element(page.getByLabelText("Import data from")).toHaveValue(expected);
+  });
+
   it("shows detected, supported, and unsupported data types", async () => {
     googleHealthMocks.status.mockResolvedValue(status({ configured: true, connected: true }));
     googleHealthMocks.preview.mockResolvedValue({ items: [

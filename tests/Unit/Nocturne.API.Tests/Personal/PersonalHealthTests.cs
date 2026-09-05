@@ -423,7 +423,7 @@ public class PersonalHealthTests
         var service = new GoogleHealthService(db, provider, new GoogleHealthCoordinator(), new GoogleHealthClient(new HttpClient(new StubHandler(_ => Json("{}")))));
         await service.SaveAsync(Options(), subject, default);
         var row = await db.PersonalGoogleConnections.SingleAsync();
-        var legacy = Options(); legacy.DataTypes = ["weight", "sleep"];
+        var legacy = Options(); legacy.DataTypes = ["weight", "body-fat"];
         var protector = provider.CreateProtector("Nocturne.Personal.GoogleHealth.v1", tenant.ToString());
         row.ProtectedSettings = protector.Protect(JsonSerializer.Serialize(legacy, new JsonSerializerOptions(JsonSerializerDefaults.Web)));
         await db.SaveChangesAsync();

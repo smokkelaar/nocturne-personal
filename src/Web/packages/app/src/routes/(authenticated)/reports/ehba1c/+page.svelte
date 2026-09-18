@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { LineChart } from "layerchart";
+  import { LineChart, Tooltip } from "layerchart";
   import { Loader2, Activity, Plus, Trash2 } from "lucide-svelte";
   import * as Card from "$lib/components/ui/card";
   import * as ToggleGroup from "$lib/components/ui/toggle-group";
@@ -336,7 +336,33 @@
             props={{ spline: { "stroke-width": 3, "stroke-linecap": "round" } }}
             points={{ data: labChartPoints, x: (d) => d.date, y: (d) => d.displayValue, children: labMarkers }}
             {annotations}
-          />
+          >
+            {#snippet tooltip({ context })}
+              <Tooltip.Root {context} class="bg-popover text-popover-foreground rounded-md border p-3 shadow-lg">
+                {#snippet children({ data })}
+                  {@const hoveredDate = context.x(data) as Date}
+                  {@const labResult = labChartPoints.find((point) => point.date.getTime() === hoveredDate.getTime())}
+                  {#if labResult}
+                    <Tooltip.Header value={hoveredDate} />
+                    <Tooltip.List>
+                      <div class="flex items-center gap-2 text-sm">
+                        <span class="h-0 w-0 border-x-4 border-b-[7px] border-x-transparent border-b-foreground"></span>
+                        <span class="text-muted-foreground">Lab result</span>
+                        <span class="font-mono font-medium tabular-nums">{formatA1c(labResult.valuePercent)}</span>
+                      </div>
+                    </Tooltip.List>
+                  {:else}
+                    <Tooltip.Header value={hoveredDate} />
+                    <Tooltip.List>
+                      {#each context.tooltip.series.filter((series) => series.value !== undefined) as series (series.key)}
+                        <Tooltip.Item label={series.label} value={series.value} color={series.color} />
+                      {/each}
+                    </Tooltip.List>
+                  {/if}
+                {/snippet}
+              </Tooltip.Root>
+            {/snippet}
+          </LineChart>
         </div>
 
         <div class="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-sm">

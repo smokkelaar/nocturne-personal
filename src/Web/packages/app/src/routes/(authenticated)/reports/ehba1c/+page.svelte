@@ -347,18 +347,19 @@
               <Tooltip.Root {context} class="bg-popover text-popover-foreground rounded-md border p-3 shadow-lg">
                 {#snippet children({ data })}
                   {@const hoveredDate = context.x(data) as Date}
+                  {@const eHbA1cPoint = chartData.find((point) => point.date.toDateString() === hoveredDate.toDateString())}
                   {@const labResult = labChartPoints.find((point) => point.date.getTime() === hoveredDate.getTime())}
                   <div class="mb-2 text-sm font-semibold">{formatLongDate(hoveredDate)}</div>
                   <div class="min-w-56 space-y-1.5 text-sm">
-                    {#each context.tooltip.series.filter((series) => series.value !== undefined) as series (series.key)}
+                    {#if eHbA1cPoint}
                       <div class="grid grid-cols-[1fr_auto] items-center gap-x-4">
                         <span class="flex min-w-0 items-center gap-2 text-muted-foreground">
-                          <span class="h-2 w-2 shrink-0 rounded-full" style="background-color: {series.color}"></span>
+                          <span class="h-2 w-2 shrink-0 rounded-full" style="background-color: var(--ehba1c-line)"></span>
                           <span>eHbA1c</span>
                         </span>
-                        <span class="font-mono font-medium tabular-nums">{formatDisplayValue(Number(series.value))}</span>
+                        <span class="font-mono font-medium tabular-nums">{formatDisplayValue(toDisplayUnit(eHbA1cPoint.estimatedA1cPercent))}</span>
                       </div>
-                    {/each}
+                    {/if}
                     {#if labResult}
                       <div class="grid grid-cols-[1fr_auto] items-center gap-x-4">
                         <span class="flex min-w-0 items-center gap-2 text-muted-foreground">

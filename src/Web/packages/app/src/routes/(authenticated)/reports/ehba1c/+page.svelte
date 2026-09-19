@@ -342,23 +342,22 @@
                 {#snippet children({ data })}
                   {@const hoveredDate = context.x(data) as Date}
                   {@const labResult = labChartPoints.find((point) => point.date.getTime() === hoveredDate.getTime())}
-                  {#if labResult}
-                    <Tooltip.Header value={hoveredDate} />
-                    <Tooltip.List>
+                  <div class="mb-2 text-sm font-semibold">{formatLongDate(hoveredDate)}</div>
+                  <Tooltip.List>
+                    {#each context.tooltip.series.filter((series) => series.value !== undefined) as series (series.key)}
+                      <Tooltip.Item label={series.label} value={series.value} color={series.color} />
+                    {/each}
+                    {#if labResult}
                       <div class="flex items-center gap-2 text-sm">
                         <span class="h-0 w-0 border-x-4 border-b-[7px] border-x-transparent border-b-foreground"></span>
                         <span class="text-muted-foreground">Lab result</span>
                         <span class="font-mono font-medium tabular-nums">{formatA1c(labResult.valuePercent)}</span>
+                        {#if labResult.note}
+                          <span class="text-muted-foreground">— {labResult.note}</span>
+                        {/if}
                       </div>
-                    </Tooltip.List>
-                  {:else}
-                    <Tooltip.Header value={hoveredDate} />
-                    <Tooltip.List>
-                      {#each context.tooltip.series.filter((series) => series.value !== undefined) as series (series.key)}
-                        <Tooltip.Item label={series.label} value={series.value} color={series.color} />
-                      {/each}
-                    </Tooltip.List>
-                  {/if}
+                    {/if}
+                  </Tooltip.List>
                 {/snippet}
               </Tooltip.Root>
             {/snippet}
@@ -462,7 +461,6 @@
       class="fill-foreground stroke-background"
       stroke-width="1"
     >
-      <title>Lab result: {formatA1c(point.data.valuePercent)} ({formatLongDate(point.data.date)}){point.data.note ? ` — ${point.data.note}` : ""}</title>
     </polygon>
   {/each}
 {/snippet}

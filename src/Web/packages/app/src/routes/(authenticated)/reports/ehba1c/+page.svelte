@@ -76,6 +76,10 @@
     return value instanceof Date ? value : new Date(value ?? 0);
   }
 
+  function dateKey(date: Date): string {
+    return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+  }
+
   /** IFCC mmol/mol to NGSP %, the inverse of toIfccMmolMol — used to store a mmol/mol entry as %. */
   function toPercentFromDisplayUnit(value: number): number {
     return a1cUnit === "percent" ? value : value / 10.929 + 2.15;
@@ -347,8 +351,9 @@
               <Tooltip.Root {context} class="bg-popover text-popover-foreground rounded-md border p-3 shadow-lg">
                 {#snippet children({ data })}
                   {@const hoveredDate = context.x(data) as Date}
-                  {@const eHbA1cPoint = chartData.find((point) => point.date.toDateString() === hoveredDate.toDateString())}
-                  {@const labResult = labChartPoints.find((point) => point.date.getTime() === hoveredDate.getTime())}
+                  {@const hoveredDateKey = dateKey(hoveredDate)}
+                  {@const eHbA1cPoint = chartData.find((point) => dateKey(point.date) === hoveredDateKey)}
+                  {@const labResult = labChartPoints.find((point) => dateKey(point.date) === hoveredDateKey)}
                   <div class="mb-2 text-sm font-semibold">{formatLongDate(hoveredDate)}</div>
                   <div class="min-w-56 space-y-1.5 text-sm">
                     {#if eHbA1cPoint}

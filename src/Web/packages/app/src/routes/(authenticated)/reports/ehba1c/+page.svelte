@@ -343,21 +343,29 @@
                   {@const hoveredDate = context.x(data) as Date}
                   {@const labResult = labChartPoints.find((point) => point.date.getTime() === hoveredDate.getTime())}
                   <div class="mb-2 text-sm font-semibold">{formatLongDate(hoveredDate)}</div>
-                  <Tooltip.List>
+                  <div class="min-w-56 space-y-1.5 text-sm">
                     {#each context.tooltip.series.filter((series) => series.value !== undefined) as series (series.key)}
-                      <Tooltip.Item label={series.label} value={series.value} color={series.color} />
+                      <div class="grid grid-cols-[1fr_auto] items-center gap-x-4">
+                        <span class="flex min-w-0 items-center gap-2 text-muted-foreground">
+                          <span class="h-2 w-2 shrink-0 rounded-full" style="background-color: {series.color}"></span>
+                          <span>{series.label}</span>
+                        </span>
+                        <span class="font-mono font-medium tabular-nums">{series.value}</span>
+                      </div>
                     {/each}
                     {#if labResult}
-                      <div class="flex items-center gap-2 text-sm">
-                        <span class="h-0 w-0 border-x-4 border-b-[7px] border-x-transparent border-b-foreground"></span>
-                        <span class="text-muted-foreground">Lab result</span>
+                      <div class="grid grid-cols-[1fr_auto] items-center gap-x-4">
+                        <span class="flex min-w-0 items-center gap-2 text-muted-foreground">
+                          <span class="h-0 w-0 shrink-0 border-x-4 border-b-[7px] border-x-transparent border-b-foreground"></span>
+                          <span>Lab result</span>
+                        </span>
                         <span class="font-mono font-medium tabular-nums">{formatA1c(labResult.valuePercent)}</span>
                         {#if labResult.note}
-                          <span class="text-muted-foreground">— {labResult.note}</span>
+                          <span class="col-span-2 truncate text-xs text-muted-foreground">{labResult.note}</span>
                         {/if}
                       </div>
                     {/if}
-                  </Tooltip.List>
+                  </div>
                 {/snippet}
               </Tooltip.Root>
             {/snippet}
@@ -460,6 +468,7 @@
       points="{point.x},{point.y - 7} {point.x - 6},{point.y + 5} {point.x + 6},{point.y + 5}"
       class="fill-foreground stroke-background"
       stroke-width="1"
+      pointer-events="none"
     >
     </polygon>
   {/each}

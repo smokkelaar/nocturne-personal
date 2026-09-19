@@ -87,6 +87,12 @@
       : `${Math.round(toIfccMmolMol(percent))} mmol/mol`;
   }
 
+  function formatDisplayValue(value: number): string {
+    return a1cUnit === "percent"
+      ? `${value.toFixed(1)}%`
+      : `${Math.round(value)} mmol/mol`;
+  }
+
   function toChartPoints(pointsMap: Map<number, EHbA1cPoint[]>): ChartPoint[] {
     const all: ChartPoint[] = [];
     for (const points of pointsMap.values()) {
@@ -348,9 +354,9 @@
                       <div class="grid grid-cols-[1fr_auto] items-center gap-x-4">
                         <span class="flex min-w-0 items-center gap-2 text-muted-foreground">
                           <span class="h-2 w-2 shrink-0 rounded-full" style="background-color: {series.color}"></span>
-                          <span>{series.label}</span>
+                          <span>eHbA1c</span>
                         </span>
-                        <span class="font-mono font-medium tabular-nums">{series.value}</span>
+                        <span class="font-mono font-medium tabular-nums">{formatDisplayValue(Number(series.value))}</span>
                       </div>
                     {/each}
                     {#if labResult}

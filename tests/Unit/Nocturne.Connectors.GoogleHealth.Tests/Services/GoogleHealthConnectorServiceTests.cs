@@ -190,7 +190,7 @@ public class GoogleHealthConnectorServiceTests
     }
 
     [Fact]
-    public async Task Scheduled_sync_uses_the_bounded_lookback_not_the_initial_import_date()
+    public async Task Scheduled_sync_starts_with_todays_data_before_any_backfill()
     {
         var requestedFrom = DateTimeOffset.MinValue;
         var fixture = new Fixture(request => request.RequestUri!.AbsolutePath switch
@@ -203,10 +203,13 @@ public class GoogleHealthConnectorServiceTests
         config.ImportFrom = "2000-01-01T00:00:00.0000000+00:00";
         config.HistoryDays = 7;
 
+        // The very first sync ever (no persisted backfill state yet) always starts with today's
+        // data, so the most recent readings land immediately — the deep ImportFrom history is
+        // fetched incrementally, one older calendar day at a time, on later runs.
         var result = await fixture.Service.SyncDataAsync(config, CancellationToken.None);
 
         Assert.True(result.Success);
-        Assert.InRange(requestedFrom, DateTimeOffset.UtcNow.AddDays(-8), DateTimeOffset.UtcNow.AddDays(-6));
+        Assert.Equal(DateTimeOffset.UtcNow.Date, requestedFrom.UtcDateTime.Date);
     }
 
     [Fact]
@@ -223,9 +226,10 @@ public class GoogleHealthConnectorServiceTests
         });
         var config = fixture.Configuration();
         config.HistoryDays = 30;
+        var from = new DateTime(2026, 9, 1, 0, 0, 0, DateTimeKind.Utc);
 
         var result = await fixture.Service.SyncDataAsync(
-            new SyncRequest(), config, CancellationToken.None);
+            new SyncRequest { From = from, To = from.AddDays(1) }, config, CancellationToken.None);
 
         Assert.True(result.Success);
         Assert.Equal(2, result.ItemsSynced[SyncDataType.BodyWeight]);
@@ -250,9 +254,10 @@ public class GoogleHealthConnectorServiceTests
         });
         var config = fixture.Configuration();
         config.HistoryDays = 30;
+        var from = new DateTime(2026, 9, 1, 0, 0, 0, DateTimeKind.Utc);
 
         var result = await fixture.Service.SyncDataAsync(
-            new SyncRequest(), config, CancellationToken.None);
+            new SyncRequest { From = from, To = from.AddDays(1) }, config, CancellationToken.None);
 
         Assert.False(result.Success);
         fixture.Writer.Verify(value => value.WriteAsync(
@@ -267,7 +272,7 @@ public class GoogleHealthConnectorServiceTests
     }
 
     [Fact]
-    public async Task Manual_backfill_consumes_the_import_start_date_after_success()
+    public async Task Manual_backfill_consumes_the_import_start_date_once_backfill_reaches_the_floor()
     {
         var fixture = new Fixture(request => request.RequestUri!.AbsolutePath switch
         {
@@ -276,12 +281,62 @@ public class GoogleHealthConnectorServiceTests
             _ => throw new InvalidOperationException($"Unexpected request: {request.RequestUri}")
         });
         var config = fixture.Configuration();
-        config.ImportFrom = "2000-01-01T00:00:00.0000000+00:00";
+        // A floor only three days back keeps this test fast: one "today" sync plus three
+        // single-day backfill steps is enough to reach it and consume ImportFrom.
+        config.ImportFrom = DateTimeOffset.UtcNow.AddDays(-3).ToString("O");
 
-        var result = await fixture.Service.SyncDataAsync(new SyncRequest(), config, CancellationToken.None);
+        Assert.False(fixture.ImportFromWasConsumed);
+        for (var attempt = 0; attempt < 5 && !fixture.ImportFromWasConsumed; attempt++)
+        {
+            var result = await fixture.Service.SyncDataAsync(new SyncRequest(), config, CancellationToken.None);
+            Assert.True(result.Success);
+        }
+
+        Assert.True(fixture.ImportFromWasConsumed);
+    }
+
+    [Fact]
+    public async Task Heart_rate_samples_are_aggregated_to_one_average_per_utc_minute()
+    {
+        var fixture = new Fixture(request => request.RequestUri!.AbsolutePath switch
+        {
+            "/token" => Json($$"""{"access_token":"access","refresh_token":"refresh","expires_in":3600,"token_type":"Bearer","scope":"{{GoogleHealthClient.MetricsScope}}"}"""),
+            var path when path.Contains("/heart-rate/") => Json("""
+                {"dataPoints":[
+                    {"name":"a","heartRate":{"sampleTime":{"physicalTime":"2026-09-01T10:00:05Z"},"beatsPerMinute":"60"}},
+                    {"name":"b","heartRate":{"sampleTime":{"physicalTime":"2026-09-01T10:00:45Z"},"beatsPerMinute":"70"}},
+                    {"name":"c","heartRate":{"sampleTime":{"physicalTime":"2026-09-01T10:01:10Z"},"beatsPerMinute":"80"}}
+                ]}
+                """),
+            _ => throw new InvalidOperationException($"Unexpected request: {request.RequestUri}")
+        });
+        var config = fixture.Configuration();
+        config.SyncBodyWeight = false;
+        config.SyncHeartRate = true;
+        var from = new DateTime(2026, 9, 1, 0, 0, 0, DateTimeKind.Utc);
+        var firstMinute = new DateTimeOffset(2026, 9, 1, 10, 0, 0, TimeSpan.Zero).ToUnixTimeMilliseconds();
+        var secondMinute = new DateTimeOffset(2026, 9, 1, 10, 1, 0, TimeSpan.Zero).ToUnixTimeMilliseconds();
+
+        var result = await fixture.Service.SyncDataAsync(
+            new SyncRequest { From = from, To = from.AddDays(1) }, config, CancellationToken.None);
 
         Assert.True(result.Success);
-        Assert.True(fixture.ImportFromWasConsumed);
+        Assert.Equal(2, result.ItemsSynced[SyncDataType.HeartRate]);
+        fixture.Writer.Verify(value => value.WriteAsync(
+            It.Is<IReadOnlyCollection<GoogleHealthReading>>(items =>
+                items.Count == 2 &&
+                items.Any(item => item.Mills == firstMinute && item.Value == 65m) &&
+                items.Any(item => item.Mills == secondMinute && item.Value == 80m)),
+            It.IsAny<IReadOnlyCollection<Nocturne.Core.Models.SleepSession>>(),
+            2, It.IsAny<CancellationToken>()), Times.Once);
+
+        // Re-importing the same day updates the same two minute buckets rather than accumulating
+        // more rows, because their SyncIdentifier is derived from the minute, not the raw sample.
+        var repeated = await fixture.Service.SyncDataAsync(
+            new SyncRequest { From = from, To = from.AddDays(1) }, config, CancellationToken.None);
+
+        Assert.True(repeated.Success);
+        Assert.Equal(2, repeated.ItemsSynced[SyncDataType.HeartRate]);
     }
 
     [Fact]

@@ -45,11 +45,23 @@ by Google and covered by the granted scopes can be imported.
   Clearing the selection pauses imports without removing the connection or data.
 - **Save selection and import** queues a manual import. Leaving the page does not
   cancel the server-side operation. **Sync now** retries the current selection.
-- Automatic synchronization normally runs every 15 minutes. After a successful
-  import it resumes from the stored watermark with a five-minute overlap; without
-  a watermark it uses the configured history window. An older backfill never moves
-  the watermark backwards. The initial import date is consumed after its successful
-  manual import.
+- Every sync fetches at most one calendar day (or, once history is caught up, the
+  live "today" window) so a run always fits well inside the per-tenant sync
+  timeout, regardless of how much history is requested. The first sync for a
+  connection always imports today first, so recent data is available immediately.
+  Later syncs then step backwards one day at a time towards the requested start
+  date (the explicit import date, or the configured history window). Every ten
+  backfill days, one sync re-fetches "today" instead, so recent data keeps
+  arriving throughout a long backfill. A deep history (years) therefore takes many
+  syncs — hours to days depending on the sync interval — rather than one attempt,
+  and progress survives restarts since it is persisted after every step.
+- An older backfill never moves the live watermark backwards. The initial import
+  date is consumed once the backfill actually reaches it, not after a single sync.
+- Heart rate is aggregated to one average reading per UTC minute before it is
+  staged and written: Google Health reports near-continuous (often per-beat)
+  samples, which are far more than any report needs and would multiply row counts
+  and query time. The aggregate is stored like any other reading, so reports read
+  it directly with no extra computation at request time.
 - Each type is read page by page and written through its native Nocturne service.
   The maximum is 10,000 pages per type and operation; reaching the limit fails
   explicitly instead of reporting an incomplete history as complete.
@@ -57,6 +69,7 @@ by Google and covered by the granted scopes can be imported.
   Unsupported destinations are shown in the inventory but cannot be selected.
 - Disconnecting keeps imported data. Deleting imported Google data is a separate,
   confirmed action scoped to this connector and the current tenant.
+
 
 Sleep uses the session's **end time**, as required by the
 [Google Health filter contract](https://developers.google.com/health/filters).

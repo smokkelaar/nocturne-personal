@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Nocturne.API.Services.Demo;
@@ -921,6 +922,18 @@ public class DataSourceService : IDataSourceService
 
             var deletedCounts = await DeleteAllSourceDataAsync(deviceId, cancellationToken);
 
+            // Google Health keeps its historical-import cursor in connector configuration, and
+            // writes health records outside the generic data-source tables above. Deleting this
+            // connector's data is explicitly a reset for a fresh import, so clear both the
+            // records and the persisted completion state.
+            if (metadata.ConnectorId.Equals("googlehealth", StringComparison.OrdinalIgnoreCase))
+            {
+                var healthDeletedCounts = await ResetGoogleHealthImportAsync(
+                    metadata.ConnectorName, deviceId, cancellationToken);
+                foreach (var (type, count) in healthDeletedCounts)
+                    deletedCounts[type] = count;
+            }
+
             _logger.LogInformation(
                 "Deleted data for connector {ConnectorId} (device {DeviceId}): {DeletedCounts}",
                 connectorId,
@@ -1006,6 +1019,55 @@ public class DataSourceService : IDataSourceService
         if (tempBasalsDeleted > 0) deletedCounts[nameof(SyncDataType.TempBasals)] = tempBasalsDeleted;
         if (stateSpansDeleted > 0) deletedCounts[nameof(SyncDataType.StateSpans)] = stateSpansDeleted;
 
+        return deletedCounts;
+    }
+
+    /// <summary>
+    /// Clears the Google Health records and managed historical-import state after the user deletes
+    /// the connector's data. These records are intentionally hard-deleted: retaining user-delete
+    /// tombstones would make the next explicitly requested import silently skip the same readings.
+    /// </summary>
+    private async Task<Dictionary<string, long>> ResetGoogleHealthImportAsync(
+        string connectorName,
+        string source,
+        CancellationToken cancellationToken)
+    {
+        var heartRatesDeleted = await _context.HeartRates.IgnoreQueryFilters()
+            .Where(record => record.DataSource == source)
+            .ExecuteDeleteAsync(cancellationToken);
+        var stepCountsDeleted = await _context.StepCounts.IgnoreQueryFilters()
+            .Where(record => record.DataSource == source)
+            .ExecuteDeleteAsync(cancellationToken);
+        var bodyWeightsDeleted = await _context.BodyWeights.IgnoreQueryFilters()
+            .Where(record => record.DataSource == source)
+            .ExecuteDeleteAsync(cancellationToken);
+        var sleepSessionsDeleted = await _context.SleepSessions.IgnoreQueryFilters()
+            .Where(session => session.Source == "Google" && session.SourceApp == "Google Health")
+            .ExecuteDeleteAsync(cancellationToken);
+
+        var stored = await _connectorConfiguration.GetConfigurationAsync(connectorName, cancellationToken);
+        var configuration = stored is null
+            ? null
+            : JsonNode.Parse(stored.Configuration.RootElement.GetRawText())?.AsObject();
+        if (configuration is not null)
+        {
+            configuration.Remove("lastSyncedTo");
+            configuration.Remove("backfillCursorDate");
+            configuration.Remove("backfillFloorDate");
+            configuration.Remove("backfillComplete");
+            configuration.Remove("backfillChunkDays");
+            configuration.Remove("backfillDaysSinceRefresh");
+
+            using var document = JsonDocument.Parse(configuration.ToJsonString());
+            await _connectorConfiguration.SaveConfigurationAsync(
+                connectorName, document, _auditContext.SubjectName, cancellationToken);
+        }
+
+        var deletedCounts = new Dictionary<string, long>();
+        if (heartRatesDeleted > 0) deletedCounts[nameof(SyncDataType.HeartRate)] = heartRatesDeleted;
+        if (stepCountsDeleted > 0) deletedCounts[nameof(SyncDataType.Steps)] = stepCountsDeleted;
+        if (bodyWeightsDeleted > 0) deletedCounts[nameof(SyncDataType.BodyWeight)] = bodyWeightsDeleted;
+        if (sleepSessionsDeleted > 0) deletedCounts[nameof(SyncDataType.Sleep)] = sleepSessionsDeleted;
         return deletedCounts;
     }
 

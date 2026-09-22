@@ -1,10 +1,12 @@
 using FluentAssertions;
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Nocturne.API.Services.Audit;
 using Nocturne.API.Services.Connectors;
 using Nocturne.Connectors.Core.Services;
+using Nocturne.Connectors.GoogleHealth.Configurations;
 using Nocturne.Connectors.Nightscout.Configurations;
 using Nocturne.Core.Contracts.Audit;
 using Nocturne.Core.Contracts.Connectors;
@@ -51,6 +53,10 @@ public class DataSourceServiceDeleteConnectorDataTests : IDisposable
 
     public DataSourceServiceDeleteConnectorDataTests()
     {
+        // Load this assembly before the metadata registry is initialized. A Google Health-specific
+        // test below relies on its registration being discoverable alongside Nightscout.
+        _ = typeof(GoogleHealthConnectorConfiguration);
+
         // Force-load the Nightscout connector assembly so the static metadata registry can resolve
         // the connector id to its data-source id ("nightscout-connector").
         _ = typeof(NightscoutConnectorConfiguration);
@@ -236,5 +242,47 @@ public class DataSourceServiceDeleteConnectorDataTests : IDisposable
         _connectorConfig.Verify(c => c.SetActiveAsync(
             It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()),
             Times.Never);
+    }
+
+    [Fact]
+    public async Task DeleteGoogleHealthData_ClearsTheHistoricalImportCursor()
+    {
+        const string googleHealth = "googlehealth";
+        using var configuration = JsonDocument.Parse("""
+            {
+              "enabled": false,
+              "backfillCursorDate": "2026-06-06T00:00:00Z",
+              "backfillFloorDate": "2026-01-01T00:00:00Z",
+              "backfillComplete": true,
+              "backfillChunkDays": 4,
+              "lastSyncedTo": "2026-09-22T00:00:00Z"
+            }
+            """);
+        _connectorConfig.Setup(service => service.GetConfigurationAsync(
+                "GoogleHealth", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ConnectorConfigurationResponse
+            {
+                ConnectorName = "GoogleHealth",
+                Configuration = configuration
+            });
+
+        JsonDocument? saved = null;
+        _connectorConfig.Setup(service => service.SaveConfigurationAsync(
+                "GoogleHealth", It.IsAny<JsonDocument>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+            .Callback<string, JsonDocument, string?, CancellationToken>((_, document, _, _) =>
+                saved = JsonDocument.Parse(document.RootElement.GetRawText()))
+            .ReturnsAsync(new ConnectorConfigurationResponse());
+
+        await using var ctx = NewContext();
+        var result = await CreateService(ctx).DeleteConnectorDataAsync(googleHealth);
+
+        result.Success.Should().BeTrue();
+        saved.Should().NotBeNull();
+        saved!.RootElement.TryGetProperty("backfillCursorDate", out _).Should().BeFalse();
+        saved.RootElement.TryGetProperty("backfillFloorDate", out _).Should().BeFalse();
+        saved.RootElement.TryGetProperty("backfillComplete", out _).Should().BeFalse();
+        saved.RootElement.TryGetProperty("backfillChunkDays", out _).Should().BeFalse();
+        saved.RootElement.TryGetProperty("lastSyncedTo", out _).Should().BeFalse();
+        saved.RootElement.GetProperty("enabled").GetBoolean().Should().BeFalse();
     }
 }

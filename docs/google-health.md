@@ -45,16 +45,15 @@ by Google and covered by the granted scopes can be imported.
   Clearing the selection pauses imports without removing the connection or data.
 - **Save selection and import** queues a manual import. Leaving the page does not
   cancel the server-side operation. **Sync now** retries the current selection.
-- Every sync fetches at most one calendar day (or, once history is caught up, the
-  live "today" window) so a run always fits well inside the per-tenant sync
-  timeout, regardless of how much history is requested. The first sync for a
-  connection always imports today first, so recent data is available immediately.
-  Later syncs then step backwards one day at a time towards the requested start
-  date (the explicit import date, or the configured history window). Every ten
-  backfill days, one sync re-fetches "today" instead, so recent data keeps
-  arriving throughout a long backfill. A deep history (years) therefore takes many
-  syncs — hours to days depending on the sync interval — rather than one attempt,
-  and progress survives restarts since it is persisted after every step.
+- Every sync first refreshes the live window for today and then fetches one older
+  calendar month towards the requested start date (the explicit import date, or
+  the configured history window). Recent data therefore keeps arriving throughout
+  a multi-year backfill. If a historical month fails or hits the per-tenant timeout,
+  the next attempt automatically halves that window (for example 30, 15, 7, 3,
+  then 1 day) until it succeeds. Once the affected month is complete, the planner
+  returns to whole calendar months. Progress and the adaptive retry size survive
+  restarts because they are persisted after every successful step or failed
+  historical attempt. The connector overview shows the oldest synchronized date.
 - An older backfill never moves the live watermark backwards. The initial import
   date is consumed once the backfill actually reaches it, not after a single sync.
 - Heart rate is aggregated to one average reading per UTC minute before it is

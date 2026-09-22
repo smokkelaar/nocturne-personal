@@ -100,11 +100,11 @@ public class GoogleHealthConnectorServiceTests
     [InlineData("2026-09-10T10:00:00")]
     public async Task Scheduled_sync_resumes_from_a_persisted_watermark_in_utc(string watermark)
     {
-        var requestedFrom = DateTimeOffset.MinValue;
+        var requestedFrom = new List<DateTimeOffset>();
         var fixture = new Fixture(request => request.RequestUri!.AbsolutePath switch
         {
             "/token" => Json($$"""{"access_token":"access","refresh_token":"refresh","expires_in":3600,"token_type":"Bearer","scope":"{{GoogleHealthClient.MetricsScope}}"}"""),
-            var path when path.Contains("/weight/") => CaptureRange(request, value => requestedFrom = value),
+            var path when path.Contains("/weight/") => CaptureRange(request, requestedFrom.Add),
             _ => throw new InvalidOperationException($"Unexpected request: {request.RequestUri}")
         });
         fixture.StoredConfiguration = JsonSerializer.Serialize(new { importFrom = (string?)null, lastSyncedTo = watermark });
@@ -112,7 +112,8 @@ public class GoogleHealthConnectorServiceTests
         var result = await fixture.Service.SyncDataAsync(fixture.Configuration(), CancellationToken.None);
 
         Assert.True(result.Success);
-        Assert.Equal(new DateTimeOffset(2026, 9, 10, 9, 55, 0, TimeSpan.Zero), requestedFrom);
+        Assert.Equal(new DateTimeOffset(2026, 9, 10, 9, 55, 0, TimeSpan.Zero), requestedFrom[0]);
+        Assert.Equal(DateTimeOffset.UtcNow.Date.AddDays(-7), requestedFrom[1].UtcDateTime.Date);
     }
 
     [Theory]
@@ -186,30 +187,70 @@ public class GoogleHealthConnectorServiceTests
             It.IsAny<IReadOnlyCollection<GoogleHealthReading>>(),
             It.IsAny<IReadOnlyCollection<Nocturne.Core.Models.SleepSession>>(),
             It.IsAny<int>(),
-            It.IsAny<CancellationToken>()), Times.Once);
+            It.IsAny<CancellationToken>()), Times.Exactly(2));
     }
 
     [Fact]
-    public async Task Scheduled_sync_starts_with_todays_data_before_any_backfill()
+    public async Task Scheduled_sync_refreshes_today_then_backfills_one_calendar_month()
     {
-        var requestedFrom = DateTimeOffset.MinValue;
+        var requestedFrom = new List<DateTimeOffset>();
         var fixture = new Fixture(request => request.RequestUri!.AbsolutePath switch
         {
             "/token" => Json($$"""{"access_token":"access","refresh_token":"refresh","expires_in":3600,"token_type":"Bearer","scope":"{{GoogleHealthClient.MetricsScope}}"}"""),
-            var path when path.Contains("/weight/") => CaptureRange(request, value => requestedFrom = value),
+            var path when path.Contains("/weight/") => CaptureRange(request, requestedFrom.Add),
             _ => throw new InvalidOperationException($"Unexpected request: {request.RequestUri}")
         });
         var config = fixture.Configuration();
         config.ImportFrom = "2000-01-01T00:00:00.0000000+00:00";
         config.HistoryDays = 7;
 
-        // The very first sync ever (no persisted backfill state yet) always starts with today's
-        // data, so the most recent readings land immediately — the deep ImportFrom history is
-        // fetched incrementally, one older calendar day at a time, on later runs.
         var result = await fixture.Service.SyncDataAsync(config, CancellationToken.None);
 
         Assert.True(result.Success);
-        Assert.Equal(DateTimeOffset.UtcNow.Date, requestedFrom.UtcDateTime.Date);
+        var today = DateTimeOffset.UtcNow.Date;
+        Assert.Equal(today, requestedFrom[0].UtcDateTime.Date);
+        Assert.Equal(new DateTime(today.Year, today.Month, 1), requestedFrom[1].UtcDateTime.Date);
+
+        var repeated = await fixture.Service.SyncDataAsync(config, CancellationToken.None);
+
+        Assert.True(repeated.Success);
+        Assert.InRange(requestedFrom[2], DateTimeOffset.UtcNow.AddMinutes(-6), DateTimeOffset.UtcNow);
+        Assert.Equal(new DateTime(today.Year, today.Month, 1).AddMonths(-1), requestedFrom[3].UtcDateTime.Date);
+    }
+
+    [Fact]
+    public async Task Failed_historical_window_is_halved_for_the_next_attempt()
+    {
+        var weightRequests = 0;
+        var retryRanges = new List<DateTimeOffset>();
+        var failHistoricalWindow = true;
+        var fixture = new Fixture(request => request.RequestUri!.AbsolutePath switch
+        {
+            "/token" => Json($$"""{"access_token":"access","refresh_token":"refresh","expires_in":3600,"token_type":"Bearer","scope":"{{GoogleHealthClient.MetricsScope}}"}"""),
+            var path when path.Contains("/weight/") && failHistoricalWindow && ++weightRequests == 2 =>
+                new HttpResponseMessage(HttpStatusCode.ServiceUnavailable),
+            var path when path.Contains("/weight/") => CaptureRange(request, retryRanges.Add),
+            _ => throw new InvalidOperationException($"Unexpected request: {request.RequestUri}")
+        });
+        var config = fixture.Configuration();
+        config.HistoryDays = 7;
+
+        var failed = await fixture.Service.SyncDataAsync(config, CancellationToken.None);
+
+        Assert.False(failed.Success);
+        using (var stored = JsonDocument.Parse(fixture.StoredConfiguration))
+        {
+            Assert.Equal(4, stored.RootElement.GetProperty("backfillChunkDays").GetInt32());
+            Assert.True(stored.RootElement.TryGetProperty("lastSyncedTo", out _));
+        }
+
+        failHistoricalWindow = false;
+        retryRanges.Clear();
+        var retried = await fixture.Service.SyncDataAsync(config, CancellationToken.None);
+
+        Assert.True(retried.Success);
+        Assert.InRange(retryRanges[0], DateTimeOffset.UtcNow.AddMinutes(-6), DateTimeOffset.UtcNow);
+        Assert.Equal(DateTimeOffset.UtcNow.Date.AddDays(-4), retryRanges[1].UtcDateTime.Date);
     }
 
     [Fact]
@@ -281,8 +322,7 @@ public class GoogleHealthConnectorServiceTests
             _ => throw new InvalidOperationException($"Unexpected request: {request.RequestUri}")
         });
         var config = fixture.Configuration();
-        // A floor only three days back keeps this test fast: one "today" sync plus three
-        // single-day backfill steps is enough to reach it and consume ImportFrom.
+        // A floor three days back is reached by the first partial calendar-month window.
         config.ImportFrom = DateTimeOffset.UtcNow.AddDays(-3).ToString("O");
 
         Assert.False(fixture.ImportFromWasConsumed);

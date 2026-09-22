@@ -198,4 +198,18 @@ describe("Google Health connector page", () => {
     await expect.element(page.getByRole("button", { name: "Sync now" })).toBeDisabled();
     expect(googleHealthMocks.preview).not.toHaveBeenCalled();
   });
+
+  it("shows persisted historical import progress after reloading", async () => {
+    googleHealthMocks.status.mockResolvedValue(status({
+      configured: true,
+      connected: true,
+      backfillSyncedThrough: new Date("2025-06-01T00:00:00Z"),
+      backfillComplete: false,
+    }));
+    render(GoogleHealthPage);
+
+    await expect.element(page.getByText("Historical import progress")).toBeVisible();
+    await expect.element(page.getByText("Synchronized back through 2025-06-01.", { exact: false })).toBeVisible();
+    await expect.element(page.getByText("Each sync refreshes today and imports one older calendar month.", { exact: false })).toBeVisible();
+  });
 });

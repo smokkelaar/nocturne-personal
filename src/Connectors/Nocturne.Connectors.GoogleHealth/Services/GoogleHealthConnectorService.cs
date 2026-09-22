@@ -49,35 +49,28 @@ public sealed class GoogleHealthConnectorService(
         // only needs to be non-null so the base class skips its own (glucose/treatment-only) watermark.
         base.SyncDataAsync(config, cancellationToken, since ?? DateTime.UtcNow, progressReporter);
 
-    // How many single-day backfill steps run before a periodic tick is spent re-syncing "today"
-    // instead, so a multi-year backfill still keeps recent data close to live the whole time.
-    private const int BackfillRefreshEveryDays = 10;
-
     // Matches GoogleHealthConnectorConfiguration's own validation floor for an explicit ImportFrom.
     private static readonly DateTimeOffset EarliestSupportedDate = new(2000, 1, 1, 0, 0, 0, TimeSpan.Zero);
 
     private const string BackfillCursorKey = "backfillCursorDate";
     private const string BackfillFloorKey = "backfillFloorDate";
-    private const string BackfillDaysSinceRefreshKey = "backfillDaysSinceRefresh";
     private const string BackfillCompleteKey = "backfillComplete";
+    private const string BackfillChunkDaysKey = "backfillChunkDays";
 
     /// <summary>
     ///     Persisted backfill progress: <see cref="CursorDate"/> is the oldest UTC day already
     ///     imported (null before the very first sync), <see cref="FloorDate"/> is the oldest day the
-    ///     backfill is aiming for, and <see cref="DaysSinceRefresh"/> counts consecutive backfill days
-    ///     since "today" was last re-synced for freshness.
+    ///     backfill is aiming for.
     /// </summary>
     private readonly record struct BackfillState(
-        DateTimeOffset? CursorDate, DateTimeOffset FloorDate, int DaysSinceRefresh, bool Complete);
+        DateTimeOffset? CursorDate, DateTimeOffset FloorDate, bool Complete, int? ChunkDays);
 
     private readonly record struct GoogleHealthSyncWindow(DateTimeOffset From, DateTimeOffset To, bool IsBackfillDay, bool IsManaged);
 
     /// <summary>
-    ///     Resolves exactly one small window to import this run: either "today" (kept live on every
-    ///     first sync, every tenth backfill step, and once backfill is complete) or the single next
-    ///     older calendar day of an in-progress backfill. A multi-year history is therefore never
-    ///     attempted in one call — each run fits comfortably inside the per-tenant sync timeout, at
-    ///     the cost of the whole backfill taking many runs to finish. A caller-supplied window is
+    ///     Resolves the next historical calendar-month window. The live window is processed
+    ///     separately on every managed sync, before this backfill window. A multi-year history is
+    ///     therefore never attempted in one call. A caller-supplied window is
     ///     honored exactly, without touching backfill state, when it is already bounded to at most one
     ///     day; a wider or open-ended one (an admin cursor reset re-pulling all history) instead
     ///     (re)starts the managed backfill from its lower bound, or from the earliest supported date
@@ -99,17 +92,28 @@ public sealed class GoogleHealthConnectorService(
             var floor = explicitFrom is { } floorFrom
                 ? new DateTimeOffset(DateTime.SpecifyKind(floorFrom.Date, DateTimeKind.Utc))
                 : EarliestSupportedDate;
-            await SaveBackfillStateAsync(new BackfillState(today, floor, 0, floor >= today), ct);
-            return new GoogleHealthSyncWindow(await LiveFromAsync(ct), now, IsBackfillDay: false, IsManaged: true);
+            await SaveBackfillStateAsync(new BackfillState(today, floor, floor >= today, null), ct);
         }
 
         var state = await LoadBackfillStateAsync(ct);
-        if (state.CursorDate is null || state.Complete || state.DaysSinceRefresh >= BackfillRefreshEveryDays)
-            return new GoogleHealthSyncWindow(await LiveFromAsync(ct), now, IsBackfillDay: false, IsManaged: true);
+        if (state.CursorDate is null)
+        {
+            var floor = ComputeBackfillFloor(config, today);
+            state = new BackfillState(today, floor, floor >= today, null);
+            await SaveBackfillStateAsync(state, ct);
+        }
+        if (state.Complete)
+            return new GoogleHealthSyncWindow(today, today, IsBackfillDay: false, IsManaged: true);
 
-        var day = state.CursorDate.Value.AddDays(-1);
-        if (day < state.FloorDate) day = state.FloorDate;
-        return new GoogleHealthSyncWindow(day, day.AddDays(1), IsBackfillDay: true, IsManaged: true);
+        var cursor = state.CursorDate!.Value;
+        var monthStart = new DateTimeOffset(cursor.Year, cursor.Month, 1, 0, 0, 0, TimeSpan.Zero);
+        if (monthStart == cursor) monthStart = monthStart.AddMonths(-1);
+        var from = state.ChunkDays is { } chunkDays
+            ? cursor.AddDays(-chunkDays)
+            : monthStart;
+        if (from < monthStart) from = monthStart;
+        if (from < state.FloorDate) from = state.FloorDate;
+        return new GoogleHealthSyncWindow(from, cursor, IsBackfillDay: true, IsManaged: true);
     }
 
     /// <summary>
@@ -126,19 +130,25 @@ public sealed class GoogleHealthConnectorService(
             var today = new DateTimeOffset(DateTime.SpecifyKind(DateTime.UtcNow.Date, DateTimeKind.Utc));
             var floor = ComputeBackfillFloor(config, today);
             var complete = floor >= today;
-            await SaveBackfillStateAsync(new BackfillState(today, floor, 0, complete), ct);
+            await SaveBackfillStateAsync(new BackfillState(today, floor, complete, null), ct);
             return complete;
         }
         if (window.IsBackfillDay)
         {
             var reachedFloor = window.From <= state.FloorDate;
+            var monthStart = new DateTimeOffset(window.To.Year, window.To.Month, 1, 0, 0, 0, TimeSpan.Zero);
+            if (monthStart == window.To) monthStart = monthStart.AddMonths(-1);
+            var completedMonth = window.From <= monthStart;
             await SaveBackfillStateAsync(
-                state with { CursorDate = window.From, DaysSinceRefresh = state.DaysSinceRefresh + 1, Complete = reachedFloor },
+                state with
+                {
+                    CursorDate = window.From,
+                    Complete = reachedFloor,
+                    ChunkDays = completedMonth ? null : state.ChunkDays
+                },
                 ct);
             return reachedFloor && !state.Complete;
         }
-        if (!state.Complete)
-            await SaveBackfillStateAsync(state with { DaysSinceRefresh = 0 }, ct);
         return false;
     }
 
@@ -160,16 +170,17 @@ public sealed class GoogleHealthConnectorService(
     private async Task<BackfillState> LoadBackfillStateAsync(CancellationToken ct)
     {
         var stored = await connectorConfigurations.GetConfigurationAsync(ConnectorName, ct);
-        if (stored is null) return new BackfillState(null, EarliestSupportedDate, 0, false);
+        if (stored is null) return new BackfillState(null, EarliestSupportedDate, false, null);
         var configuration = JsonDocument.Parse(stored.Configuration.RootElement.GetRawText())
             .RootElement.Deserialize<Dictionary<string, JsonElement>>() ?? [];
         return new BackfillState(
             ParseStoredDate(configuration, BackfillCursorKey),
             ParseStoredDate(configuration, BackfillFloorKey) ?? EarliestSupportedDate,
-            configuration.TryGetValue(BackfillDaysSinceRefreshKey, out var days) && days.ValueKind == JsonValueKind.Number
-                ? days.GetInt32()
-                : 0,
-            configuration.TryGetValue(BackfillCompleteKey, out var complete) && complete.ValueKind == JsonValueKind.True);
+            configuration.TryGetValue(BackfillCompleteKey, out var complete) && complete.ValueKind == JsonValueKind.True,
+            configuration.TryGetValue(BackfillChunkDaysKey, out var chunkDays) &&
+                chunkDays.ValueKind == JsonValueKind.Number
+                ? Math.Max(1, chunkDays.GetInt32())
+                : null);
     }
 
     private static DateTimeOffset? ParseStoredDate(Dictionary<string, JsonElement> configuration, string key) =>
@@ -190,10 +201,34 @@ public sealed class GoogleHealthConnectorService(
             ? JsonSerializer.SerializeToElement(cursor.UtcDateTime.ToString("o"))
             : JsonSerializer.SerializeToElement<string?>(null);
         configuration[BackfillFloorKey] = JsonSerializer.SerializeToElement(state.FloorDate.UtcDateTime.ToString("o"));
-        configuration[BackfillDaysSinceRefreshKey] = JsonSerializer.SerializeToElement(state.DaysSinceRefresh);
+        configuration.Remove("backfillDaysSinceRefresh");
         configuration[BackfillCompleteKey] = JsonSerializer.SerializeToElement(state.Complete);
+        if (state.ChunkDays is { } chunkDays)
+            configuration[BackfillChunkDaysKey] = JsonSerializer.SerializeToElement(chunkDays);
+        else
+            configuration.Remove(BackfillChunkDaysKey);
         using var updated = JsonSerializer.SerializeToDocument(configuration);
         await connectorConfigurations.SaveConfigurationAsync(ConnectorName, updated, ct: ct);
+    }
+
+    private async Task TryReduceBackfillWindowAsync(GoogleHealthSyncWindow window)
+    {
+        var days = Math.Max(1, (int)Math.Ceiling((window.To - window.From).TotalDays / 2));
+        try
+        {
+            using var cleanup = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+            var state = await LoadBackfillStateAsync(cleanup.Token);
+            await SaveBackfillStateAsync(state with { ChunkDays = days }, cleanup.Token);
+            logger.LogWarning(
+                "Google Health historical window {From} to {To} did not complete; retrying with at most {ChunkDays} day(s)",
+                window.From, window.To, days);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex,
+                "Could not persist a smaller Google Health retry window for {From} to {To}",
+                window.From, window.To);
+        }
     }
 
     private async Task<DateTime?> LoadWatermarkAsync(CancellationToken ct)
@@ -262,20 +297,60 @@ public sealed class GoogleHealthConnectorService(
                 throw new GoogleHealthException("permission_denied", stage: "scope_validation");
             var missingConsent = selected.Except(active, StringComparer.Ordinal).ToArray();
 
-            var window = await ResolveWindowAsync(request, config, DateTimeOffset.UtcNow, cancellationToken);
-            var from = window.From;
-            var to = window.To;
-
-            logger.LogInformation(
-                "Starting Google Health connector sync for tenant {TenantId} from {From} to {To} ({WindowKind}). Active data types: {ActiveDataTypes}",
-                tenantId, from, to, window.IsBackfillDay ? "backfill day" : "live", string.Join(',', active));
-
+            var now = DateTimeOffset.UtcNow;
+            var window = await ResolveWindowAsync(request, config, now, cancellationToken);
             coordinator.Report(tenantId, GoogleHealthSyncPhase.Reading, completedDataTypes: 0, totalDataTypes: active.Length);
-            await ReadWithRefreshAsync(config, session.AccessToken!, active, from, to, tenantId, result, cancellationToken);
-            if (missingConsent.Length == 0)
+
+            if (!window.IsManaged)
             {
-                await PersistWatermarkAsync(to, cancellationToken);
-                if (window.IsManaged)
+                logger.LogInformation(
+                    "Starting explicitly bounded Google Health sync for tenant {TenantId} from {From} to {To}. Active data types: {ActiveDataTypes}",
+                    tenantId, window.From, window.To, string.Join(',', active));
+                await ReadWithRefreshAsync(
+                    config, session.AccessToken!, active, window.From, window.To, tenantId, result, cancellationToken);
+                if (missingConsent.Length == 0)
+                    await PersistWatermarkAsync(window.To, cancellationToken);
+                return Complete(result, missingConsent.Length == 0
+                    ? string.Empty
+                    : GoogleHealthErrorCode.Encode("partial_consent", missingConsent));
+            }
+
+            var liveFrom = await LiveFromAsync(cancellationToken);
+            logger.LogInformation(
+                "Starting live Google Health sync for tenant {TenantId} from {From} to {To}. Active data types: {ActiveDataTypes}",
+                tenantId, liveFrom, now, string.Join(',', active));
+            var accessToken = await ReadWithRefreshAsync(
+                config, session.AccessToken!, active, liveFrom, now, tenantId, result, cancellationToken);
+            if (missingConsent.Length == 0)
+                await PersistWatermarkAsync(now, cancellationToken);
+
+            if (window.IsBackfillDay && window.From < window.To)
+            {
+                logger.LogInformation(
+                    "Starting historical Google Health month for tenant {TenantId} from {From} to {To}. Active data types: {ActiveDataTypes}",
+                    tenantId, window.From, window.To, string.Join(',', active));
+                try
+                {
+                    await ReadWithRefreshAsync(
+                        config, accessToken, active, window.From, window.To, tenantId, result, cancellationToken);
+                }
+                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                {
+                    await TryReduceBackfillWindowAsync(window);
+                    throw;
+                }
+                catch (GoogleHealthException ex) when (ex.Message is
+                    "history_too_large" or "rate_limited" or "google_unavailable")
+                {
+                    await TryReduceBackfillWindowAsync(window);
+                    throw;
+                }
+                catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or TimeoutException)
+                {
+                    await TryReduceBackfillWindowAsync(window);
+                    throw;
+                }
+                if (missingConsent.Length == 0)
                 {
                     var justCompletedBackfill = await AdvanceBackfillStateAsync(window, config, cancellationToken);
                     if (justCompletedBackfill && !string.IsNullOrWhiteSpace(config.ImportFrom))
@@ -343,7 +418,7 @@ public sealed class GoogleHealthConnectorService(
         return session;
     }
 
-    private async Task ReadWithRefreshAsync(
+    private async Task<string> ReadWithRefreshAsync(
             GoogleHealthConnectorConfiguration config,
             string accessToken,
             string[] active,
@@ -356,6 +431,7 @@ public sealed class GoogleHealthConnectorService(
         try
         {
             await ReadOnceAsync(config, accessToken, active, from, to, tenantId, result, ct);
+            return accessToken;
         }
         catch (GoogleHealthException first) when (first.Message == "access_token_rejected")
         {
@@ -368,6 +444,7 @@ public sealed class GoogleHealthConnectorService(
             try
             {
                 await ReadOnceAsync(config, refreshed.AccessToken!, active, from, to, tenantId, result, ct);
+                return refreshed.AccessToken!;
             }
             catch (GoogleHealthException second) when (second.Message == "access_token_rejected")
             {
@@ -389,9 +466,9 @@ public sealed class GoogleHealthConnectorService(
             CancellationToken ct)
     {
         foreach (var type in active)
-            result.ItemsSynced[GoogleHealthClient.TryGetSyncDataType(type, out var dataType)
+            result.ItemsSynced.TryAdd(GoogleHealthClient.TryGetSyncDataType(type, out var dataType)
                 ? dataType
-                : throw new GoogleHealthException("unsupported_type")] = 0;
+                : throw new GoogleHealthException("unsupported_type"), 0);
         for (var index = 0; index < active.Length; index++)
         {
             var type = active[index];

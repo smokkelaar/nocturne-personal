@@ -484,6 +484,11 @@ public sealed class GoogleHealthService(
             {
                 var configuration = JsonNode.Parse(stored.Configuration.RootElement.GetRawText())!.AsObject();
                 configuration.Remove("lastSyncedTo");
+                configuration.Remove("backfillCursorDate");
+                configuration.Remove("backfillFloorDate");
+                configuration.Remove("backfillComplete");
+                configuration.Remove("backfillChunkDays");
+                configuration.Remove("backfillDaysSinceRefresh");
                 using var document = JsonDocument.Parse(configuration.ToJsonString(Json));
                 await connectorConfigurations.SaveConfigurationAsync(ConnectorName, document, subject.ToString(), ct);
             }

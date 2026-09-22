@@ -295,12 +295,17 @@ public class GoogleHealthTests
     public async Task Purging_a_disconnected_account_removes_its_resume_watermark()
     {
         var store = new TestConnectorStore();
-        store.SetConfiguration("""{"enabled":false,"lastSyncedTo":"2026-09-01T00:00:00Z","syncIntervalMinutes":30}""");
+        store.SetConfiguration("""{"enabled":false,"lastSyncedTo":"2026-09-01T00:00:00Z","backfillCursorDate":"2026-06-06T00:00:00Z","backfillFloorDate":"2026-01-01T00:00:00Z","backfillComplete":true,"backfillChunkDays":4,"backfillDaysSinceRefresh":2,"syncIntervalMinutes":30}""");
         var service = Service(store, new StubHandler(_ => Json("{}")), Guid.NewGuid());
 
         await service.PurgeAsync(Guid.NewGuid(), default);
 
         Assert.False(store.Configuration.TryGetProperty("lastSyncedTo", out _));
+        Assert.False(store.Configuration.TryGetProperty("backfillCursorDate", out _));
+        Assert.False(store.Configuration.TryGetProperty("backfillFloorDate", out _));
+        Assert.False(store.Configuration.TryGetProperty("backfillComplete", out _));
+        Assert.False(store.Configuration.TryGetProperty("backfillChunkDays", out _));
+        Assert.False(store.Configuration.TryGetProperty("backfillDaysSinceRefresh", out _));
         Assert.False(store.Configuration.GetProperty("enabled").GetBoolean());
         Assert.Equal(30, store.Configuration.GetProperty("syncIntervalMinutes").GetInt32());
     }

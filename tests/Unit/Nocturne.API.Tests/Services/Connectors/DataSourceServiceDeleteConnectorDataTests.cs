@@ -247,7 +247,7 @@ public class DataSourceServiceDeleteConnectorDataTests : IDisposable
     [Fact]
     public async Task DeleteGoogleHealthData_ClearsTheHistoricalImportCursor()
     {
-        const string googleHealth = "googlehealth";
+        const string googleHealth = "google-health";
         using var configuration = JsonDocument.Parse("""
             {
               "enabled": false,

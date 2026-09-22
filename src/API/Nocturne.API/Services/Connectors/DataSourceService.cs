@@ -926,7 +926,7 @@ public class DataSourceService : IDataSourceService
             // writes health records outside the generic data-source tables above. Deleting this
             // connector's data is explicitly a reset for a fresh import, so clear both the
             // records and the persisted completion state.
-            if (metadata.ConnectorId.Equals("googlehealth", StringComparison.OrdinalIgnoreCase))
+            if (metadata.ConnectorId.Equals("google-health", StringComparison.OrdinalIgnoreCase))
             {
                 var healthDeletedCounts = await ResetGoogleHealthImportAsync(
                     metadata.ConnectorName, deviceId, cancellationToken);

@@ -8,6 +8,7 @@ using Nocturne.API.Services.Auth;
 using Nocturne.Connectors.Core.Utilities;
 using Nocturne.Core.Contracts.Auth;
 using Nocturne.Core.Contracts.Identity;
+using Nocturne.Core.Contracts.Multitenancy;
 using Nocturne.Core.Models;
 using Nocturne.Infrastructure.Data;
 using Nocturne.Infrastructure.Data.Entities;
@@ -15,6 +16,7 @@ using Nocturne.Infrastructure.Data.Extensions;
 using AuthRole = Nocturne.Core.Models.Authorization.Role;
 using AuthSubject = Nocturne.Core.Models.Authorization.Subject;
 using OAuthGrantTypes = Nocturne.Core.Models.Authorization.OAuthGrantTypes;
+using Scope = Nocturne.Core.Models.Authorization.Scope;
 using ScopeTranslator = Nocturne.Core.Models.Authorization.ScopeTranslator;
 
 namespace Nocturne.API.Services.Identity;
@@ -35,6 +37,7 @@ public class AuthorizationService : IAuthorizationService, IDisposable
     private readonly IDirectGrantService _directGrantService;
     private readonly IJwtService _jwtService;
     private readonly NocturneDbContext _dbContext;
+    private readonly ICategoryReadContext _categoryReadContext;
     private readonly PermissionTrie _permissionTrie;
     private readonly Dictionary<string, Permission> _seenPermissions = new();
     private readonly object _permissionsLock = new();
@@ -56,7 +59,8 @@ public class AuthorizationService : IAuthorizationService, IDisposable
         IRoleService roleService,
         IDirectGrantService directGrantService,
         IJwtService jwtService,
-        NocturneDbContext dbContext
+        NocturneDbContext dbContext,
+        ICategoryReadContext categoryReadContext
     )
     {
         _configuration = configuration;
@@ -66,6 +70,7 @@ public class AuthorizationService : IAuthorizationService, IDisposable
         _directGrantService = directGrantService;
         _jwtService = jwtService;
         _dbContext = dbContext;
+        _categoryReadContext = categoryReadContext;
         _permissionTrie = new PermissionTrie();
 
         // Initialize with common permissions
@@ -97,7 +102,7 @@ public class AuthorizationService : IAuthorizationService, IDisposable
 
     /// <summary>
     /// Exchange a noc_ direct-grant token for a JWT. Direct grants authorize by scope,
-    /// so the minted JWT carries the grant's scopes and tenant pin rather than the
+    /// so the minted JWT carries the grant's scopes, tenant pin and 24-hour limit rather than the
     /// subject's roles/permissions, and downstream requests authenticate through
     /// <see cref="Middleware.Handlers.OAuthAccessTokenHandler"/>.
     /// The grants query relies on the tenant-pinned scoped context's global query
@@ -148,6 +153,7 @@ public class AuthorizationService : IAuthorizationService, IDisposable
             permissions: [],
             roles: [],
             scopes: grant.Scopes,
+            limitTo24Hours: grant.LimitTo24Hours,
             tenantId: grant.TenantId,
             lifetime: ExchangedJwtLifetime,
             grantId: grant.Id
@@ -457,6 +463,9 @@ public class AuthorizationService : IAuthorizationService, IDisposable
                 label,
                 [.. scopes],
                 expiresAt: null,
+                // A clamped caller may not mint a token wider than itself; see
+                // HttpContextExtensions.IsCallerHistoryClamped.
+                limitTo24Hours: _categoryReadContext.IsHistoryClamped,
                 ipAddress: null,
                 userAgent: null);
 
@@ -539,7 +548,7 @@ public class AuthorizationService : IAuthorizationService, IDisposable
                         nameof(subject));
                 }
 
-                grant.Scopes = [.. scopes];
+                grant.Scopes = Scope.NormalizeForStorage(scopes);
             }
 
             await _dbContext.SaveChangesAsync();

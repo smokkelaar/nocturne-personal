@@ -67,10 +67,10 @@ public class ConnectorConfigurationService : IConnectorConfigurationService
         string connectorName,
         CancellationToken ct = default)
     {
-        var connectorNameLower = connectorName.ToLowerInvariant();
+        var canonicalName = ConnectorNames.Canonical(connectorName);
         var entity = await _context.ConnectorConfigurations
             .AsNoTracking()
-            .FirstOrDefaultAsync(c => c.ConnectorName.ToLower() == connectorNameLower, ct);
+            .FirstOrDefaultAsync(c => c.ConnectorName == canonicalName, ct);
 
         if (entity == null)
         {
@@ -153,9 +153,9 @@ public class ConnectorConfigurationService : IConnectorConfigurationService
     {
         await EnsureNotDemoSubjectAsync(connectorName, ct);
 
-        var connectorNameLower = connectorName.ToLowerInvariant();
+        var canonicalName = ConnectorNames.Canonical(connectorName);
         var entity = await _context.ConnectorConfigurations
-            .FirstOrDefaultAsync(c => c.ConnectorName.ToLower() == connectorNameLower, ct);
+            .FirstOrDefaultAsync(c => c.ConnectorName == canonicalName, ct);
 
         var configJson = configuration.RootElement.GetRawText();
 
@@ -166,7 +166,7 @@ public class ConnectorConfigurationService : IConnectorConfigurationService
         {
             entity = new ConnectorConfigurationEntity
             {
-                ConnectorName = connectorName,
+                ConnectorName = canonicalName,
                 ConfigurationJson = configJson,
                 SecretsJson = "{}",
                 LastModified = DateTimeOffset.UtcNow,
@@ -184,12 +184,12 @@ public class ConnectorConfigurationService : IConnectorConfigurationService
         }
 
         await _context.SaveChangesAsync(ct);
-        InvalidateCaches(connectorName);
+        InvalidateCaches(canonicalName);
 
         // Broadcast configuration change
         await _broadcastService.BroadcastConfigChangeAsync(new ConfigurationChangeEvent
         {
-            ConnectorName = connectorName,
+            ConnectorName = canonicalName,
             ChangeType = "updated",
             ModifiedBy = modifiedBy
         });
@@ -220,9 +220,9 @@ public class ConnectorConfigurationService : IConnectorConfigurationService
                 "Secret encryption is not configured. Ensure api-secret is set in configuration.");
         }
 
-        var connectorNameLower = connectorName.ToLowerInvariant();
+        var canonicalName = ConnectorNames.Canonical(connectorName);
         var entity = await _context.ConnectorConfigurations
-            .FirstOrDefaultAsync(c => c.ConnectorName.ToLower() == connectorNameLower, ct);
+            .FirstOrDefaultAsync(c => c.ConnectorName == canonicalName, ct);
 
         var encryptedSecrets = _encryptionService.EncryptSecrets(secrets);
         var secretsJson = JsonSerializer.Serialize(encryptedSecrets, _jsonOptions);
@@ -231,7 +231,7 @@ public class ConnectorConfigurationService : IConnectorConfigurationService
         {
             entity = new ConnectorConfigurationEntity
             {
-                ConnectorName = connectorName,
+                ConnectorName = canonicalName,
                 ConfigurationJson = "{}",
                 SecretsJson = secretsJson,
                 LastModified = DateTimeOffset.UtcNow,
@@ -249,7 +249,7 @@ public class ConnectorConfigurationService : IConnectorConfigurationService
         }
 
         await _context.SaveChangesAsync(ct);
-        InvalidateCaches(connectorName);
+        InvalidateCaches(canonicalName);
 
         // When saving Nightscout connector secrets that include an API secret,
         // create a DirectGrant with the SHA-1 hash so existing uploaders keep working.
@@ -258,7 +258,7 @@ public class ConnectorConfigurationService : IConnectorConfigurationService
         // Broadcast secrets update (note: doesn't reveal actual secrets)
         await _broadcastService.BroadcastConfigChangeAsync(new ConfigurationChangeEvent
         {
-            ConnectorName = connectorName,
+            ConnectorName = canonicalName,
             ChangeType = "secrets_updated",
             ModifiedBy = modifiedBy
         });
@@ -309,21 +309,11 @@ public class ConnectorConfigurationService : IConnectorConfigurationService
             return;
         }
 
-        var normalizedScopes = Scope.Normalize([Scope.HealthReadWrite]).ToList();
-
-        var grant = new OAuthGrantEntity
-        {
-            Id = Guid.CreateVersion7(),
-            ClientEntityId = null,
-            SubjectId = subjectId.Value,
-            GrantType = OAuthGrantTypes.Direct,
-            Scopes = normalizedScopes,
-            Label = "Nightscout (migrated)",
-            TokenHash = null,
-            LegacySecretHash = sha1Hash,
-            IsMigrated = true,
-            CreatedAt = DateTime.UtcNow,
-        };
+        var grant = OAuthGrantEntity.AdoptedLegacyCredential(
+            subjectId.Value,
+            "Nightscout (migrated)",
+            [Scope.HealthReadWrite],
+            legacySecretHash: sha1Hash);
 
         _context.OAuthGrants.Add(grant);
         await _context.SaveChangesAsync(ct);
@@ -344,10 +334,10 @@ public class ConnectorConfigurationService : IConnectorConfigurationService
             return new Dictionary<string, string>();
         }
 
-        var connectorNameLower = connectorName.ToLowerInvariant();
+        var canonicalName = ConnectorNames.Canonical(connectorName);
         var entity = await _context.ConnectorConfigurations
             .AsNoTracking()
-            .FirstOrDefaultAsync(c => c.ConnectorName.ToLower() == connectorNameLower, ct);
+            .FirstOrDefaultAsync(c => c.ConnectorName == canonicalName, ct);
 
         if (entity == null || string.IsNullOrEmpty(entity.SecretsJson) || entity.SecretsJson == "{}")
         {
@@ -451,9 +441,9 @@ public class ConnectorConfigurationService : IConnectorConfigurationService
     {
         await EnsureNotDemoSubjectAsync(connectorName, ct);
 
-        var connectorNameLower = connectorName.ToLowerInvariant();
+        var canonicalName = ConnectorNames.Canonical(connectorName);
         var entity = await _context.ConnectorConfigurations
-            .FirstOrDefaultAsync(c => c.ConnectorName.ToLower() == connectorNameLower, ct);
+            .FirstOrDefaultAsync(c => c.ConnectorName == canonicalName, ct);
 
         // Create the config JSON with the enabled field
         var configWithEnabled = CreateConfigWithEnabled(entity?.ConfigurationJson ?? "{}", isActive);
@@ -462,7 +452,7 @@ public class ConnectorConfigurationService : IConnectorConfigurationService
         {
             entity = new ConnectorConfigurationEntity
             {
-                ConnectorName = connectorName,
+                ConnectorName = canonicalName,
                 ConfigurationJson = configWithEnabled,
                 SecretsJson = "{}",
                 LastModified = DateTimeOffset.UtcNow,
@@ -478,13 +468,13 @@ public class ConnectorConfigurationService : IConnectorConfigurationService
         }
 
         await _context.SaveChangesAsync(ct);
-        InvalidateCaches(connectorName);
+        InvalidateCaches(canonicalName);
         _logger.LogInformation("Set connector {ConnectorName} active={IsActive}", connectorName, isActive);
 
         // Broadcast enable/disable change
         await _broadcastService.BroadcastConfigChangeAsync(new ConfigurationChangeEvent
         {
-            ConnectorName = connectorName,
+            ConnectorName = canonicalName,
             ChangeType = isActive ? "enabled" : "disabled",
             ModifiedBy = modifiedBy
         });
@@ -528,9 +518,9 @@ public class ConnectorConfigurationService : IConnectorConfigurationService
     {
         await EnsureNotDemoSubjectAsync(connectorName, ct);
 
-        var connectorNameLower = connectorName.ToLowerInvariant();
+        var canonicalName = ConnectorNames.Canonical(connectorName);
         var entity = await _context.ConnectorConfigurations
-            .FirstOrDefaultAsync(c => c.ConnectorName.ToLower() == connectorNameLower, ct);
+            .FirstOrDefaultAsync(c => c.ConnectorName == canonicalName, ct);
 
         if (entity == null)
         {
@@ -539,13 +529,13 @@ public class ConnectorConfigurationService : IConnectorConfigurationService
 
         _context.ConnectorConfigurations.Remove(entity);
         await _context.SaveChangesAsync(ct);
-        InvalidateCaches(connectorName);
+        InvalidateCaches(canonicalName);
         _logger.LogInformation("Deleted configuration for connector {ConnectorName}", connectorName);
 
         // Broadcast deletion
         await _broadcastService.BroadcastConfigChangeAsync(new ConfigurationChangeEvent
         {
-            ConnectorName = connectorName,
+            ConnectorName = canonicalName,
             ChangeType = "deleted"
         });
 
@@ -894,10 +884,10 @@ public class ConnectorConfigurationService : IConnectorConfigurationService
         CancellationToken ct = default
     )
     {
-        var connectorNameLower = connectorName.ToLowerInvariant();
+        var canonicalName = ConnectorNames.Canonical(connectorName);
         var config = await _context.ConnectorConfigurations
             .AsNoTracking()
-            .FirstOrDefaultAsync(c => c.ConnectorName.ToLower() == connectorNameLower, ct);
+            .FirstOrDefaultAsync(c => c.ConnectorName == canonicalName, ct);
 
         if (config == null)
             return null;
@@ -928,9 +918,9 @@ public class ConnectorConfigurationService : IConnectorConfigurationService
         CancellationToken ct = default
     )
     {
-        var connectorNameLower = connectorName.ToLowerInvariant();
+        var canonicalName = ConnectorNames.Canonical(connectorName);
         var config = await _context.ConnectorConfigurations
-            .FirstOrDefaultAsync(c => c.ConnectorName.ToLower() == connectorNameLower, ct);
+            .FirstOrDefaultAsync(c => c.ConnectorName == canonicalName, ct);
 
         if (config == null)
         {

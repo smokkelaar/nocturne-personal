@@ -112,7 +112,6 @@ public class EHbA1cPoint
     /// <summary>ADAG estimate using an unweighted mean over the trailing 14 days.</summary>
     [JsonPropertyName("unweighted14DayPercent")]
     public double? Unweighted14DayPercent { get; set; }
-
     [JsonPropertyName("weightedAverageGlucoseMgdl")]
     public double WeightedAverageGlucoseMgdl { get; set; }
 

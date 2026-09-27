@@ -51,6 +51,7 @@ public enum ConnectorPropertyKey
 
     // Nightscout-specific
     Url,
+    RealtimeUrl,
     ApiSecret,
     MaxCount,
 
@@ -103,4 +104,6 @@ public enum ConnectorPropertyKey
     SyncHeartRate,
     SyncBodyWeight,
     SyncSleep,
+    // Glooko-specific (appended so earlier members keep their values)
+    AutoClockCorrection,
 }

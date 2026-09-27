@@ -772,4 +772,27 @@ onMount(() => {
       {/snippet}
     </ConfirmDialog>
   {/if}
+  {#if status?.configured}
+    <Card>
+      <CardHeader>
+        <CardTitle>Import recovery</CardTitle>
+        <CardDescription>
+          If a historical import stops or needs to be repeated, reset the Google Health connector
+          from a chosen date. The reset re-reads the range and keeps the normal duplicate protection.
+        </CardDescription>
+      </CardHeader>
+      <CardContent class="space-y-3">
+        <p class="text-sm text-muted-foreground">
+          The reset runs in the background. Platform administrators can monitor or cancel it from
+          the connector reset page.
+        </p>
+        <a
+          class="inline-flex items-center rounded-md border px-3 py-2 text-sm font-medium underline-offset-4 hover:underline"
+          href={resolve("/settings/admin/connector-cursors")}
+        >
+          Open connector reset
+        </a>
+      </CardContent>
+    </Card>
+  {/if}
 </section>

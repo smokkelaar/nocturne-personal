@@ -1,5 +1,4 @@
 <script module lang="ts">
-  import { resolve } from "$app/paths";
   import type { ConnectorStatusDto } from "$lib/api/generated/nocturne-api-client";
 
   export interface ConnectorStatusWithDescription extends ConnectorStatusDto {

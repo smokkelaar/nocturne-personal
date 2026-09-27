@@ -8,6 +8,7 @@
   } from "$lib/components/ui/card";
   import { Button } from "$lib/components/ui/button";
   import { Badge } from "$lib/components/ui/badge";
+  import { Item } from "$lib/components/ui/item";
   import { Separator } from "$lib/components/ui/separator";
   import { Switch } from "$lib/components/ui/switch";
   import { Label } from "$lib/components/ui/label";
@@ -39,7 +40,7 @@
   import IssueCreatorDialog from "$lib/components/support/IssueCreatorDialog.svelte";
   import { getCoachMarkContext } from "@nocturne/coach";
   import { toast } from "svelte-sonner";
-  import { copyToClipboard } from "$lib/utils";
+  import { createCopyFeedback } from "$lib/hooks/copy-feedback.svelte";
   import { describeSubmitError } from "$lib/forms/submit-error";
   import {
     buildDiagnosticReport,
@@ -48,7 +49,7 @@
 
   let includeDeviceInfo = $state(true);
   let additionalDetails = $state("");
-  let logsCopied = $state(false);
+  const copy = createCopyFeedback();
 
   let dialogOpen = $state(false);
   let selectedTemplate = $state("bug");
@@ -106,7 +107,7 @@
       name: "Documentation",
       description: "Guides, tutorials, and API reference",
       icon: BookOpen,
-      href: "https://docs.nightscout.info/",
+      href: "https://getnocturne.dev/docs",
     },
     {
       name: "Nightscout Foundation",
@@ -145,13 +146,7 @@
   ];
 
   async function copyLogs() {
-    const logs = generateDiagnosticReport();
-    if (!(await copyToClipboard(logs))) {
-      toast.error("Couldn't copy to the clipboard. Copy it manually instead.");
-      return;
-    }
-    logsCopied = true;
-    setTimeout(() => (logsCopied = false), 2000);
+    await copy.copy(generateDiagnosticReport());
   }
 
   function downloadLogs() {
@@ -212,11 +207,11 @@
       <CardDescription>Connect with the Nightscout community</CardDescription>
     </CardHeader>
     <CardContent class="space-y-4">
-      {#each communityLinks as link}
+      {#each communityLinks as link (link.name)}
         <a
           href={link.href}
           target="_blank"
-          rel="noopener noreferrer"
+          rel="external noopener noreferrer"
           class="flex items-center justify-between p-4 rounded-lg border hover:border-primary/50 hover:bg-accent/50 transition-colors"
         >
           <div class="flex items-center gap-4">
@@ -229,7 +224,7 @@
               <div class="flex items-center gap-2">
                 <span class="font-medium">{link.name}</span>
                 {#if link.badge}
-                  <Badge variant="secondary" class="text-xs">
+                  <Badge variant="secondary">
                     {link.badge}
                   </Badge>
                 {/if}
@@ -254,44 +249,52 @@
     </CardHeader>
     <CardContent class="space-y-4">
       <div class="grid gap-4 @xl:grid-cols-2">
-        {#each supportOptions as option}
+        {#each supportOptions as option (option.name)}
           {#if option.template === "account" && supportConfig?.accountBilling?.mode === "redirect"}
-            <a
+            <Item
+              variant="outline"
+              size="lg"
+              class="flex-col"
               href={supportConfig.accountBilling.url}
               target="_blank"
-              rel="noopener noreferrer"
-              class="flex flex-col items-center text-center p-4 rounded-lg border hover:border-primary/50 hover:bg-accent/50 transition-colors"
+              rel="external noopener noreferrer"
             >
               <div
-                class="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 mb-3"
+                class="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10"
               >
                 <ExternalLink class="h-6 w-6 text-primary" />
               </div>
-              <span class="font-medium">{supportConfig.accountBilling.label ?? option.name}</span>
-              <p class="text-sm text-muted-foreground mt-1">
-                {option.description}
-              </p>
-            </a>
+              <div class="text-center">
+                <span class="font-medium">{supportConfig.accountBilling.label ?? option.name}</span>
+                <p class="text-sm text-muted-foreground mt-1">
+                  {option.description}
+                </p>
+              </div>
+            </Item>
           {:else}
             <!-- The account tile's routing depends on the operator config; keep it inert until
                  the config resolves so a click during the fetch window can't misroute a
                  redirect/api-mode tenant to the generic community dialog. Other templates route
                  the same regardless of config, so they stay interactive. -->
-            <button
-              class="flex flex-col items-center text-center p-4 rounded-lg border hover:border-primary/50 hover:bg-accent/50 transition-colors disabled:pointer-events-none disabled:opacity-60"
+            <Item
+              variant="outline"
+              size="lg"
+              class="flex-col"
               disabled={option.template === "account" && supportConfig === undefined}
               onclick={() => handleSupportAction(option.template, supportConfig?.accountBilling?.mode)}
             >
               <div
-                class="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 mb-3"
+                class="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10"
               >
                 <option.icon class="h-6 w-6 text-primary" />
               </div>
-              <span class="font-medium">{option.name}</span>
-              <p class="text-sm text-muted-foreground mt-1">
-                {option.description}
-              </p>
-            </button>
+              <div class="text-center">
+                <span class="font-medium">{option.name}</span>
+                <p class="text-sm text-muted-foreground mt-1">
+                  {option.description}
+                </p>
+              </div>
+            </Item>
           {/if}
         {/each}
       </div>
@@ -302,7 +305,7 @@
           target="_blank"
           rel="noopener noreferrer"
         >
-          <Button variant="outline" class="gap-2">
+          <Button variant="outline">
             <Users class="h-4 w-4" />
             Get Help on Discord
             <ExternalLink class="h-3 w-3" />
@@ -331,7 +334,6 @@
         </div>
         <Button
           variant="outline"
-          class="gap-2"
           onclick={resetTutorials}
           disabled={resettingTutorials}
         >
@@ -392,33 +394,31 @@
       </div>
 
       <div class="flex flex-wrap gap-2">
-        <Button variant="outline" class="gap-2" onclick={copyLogs}>
-          {#if logsCopied}
-            <CheckCircle class="h-4 w-4 text-green-500" />
+        <Button variant="outline" onclick={copyLogs}>
+          {#if copy.isCopied()}
+            <CheckCircle class="h-4 w-4 text-success" />
             Copied!
           {:else}
             <Copy class="h-4 w-4" />
             Copy to Clipboard
           {/if}
         </Button>
-        <Button variant="outline" class="gap-2" onclick={downloadLogs}>
+        <Button variant="outline" onclick={downloadLogs}>
           <Download class="h-4 w-4" />
           Download Logs
         </Button>
       </div>
 
-      <Card
-        class="border-blue-200 bg-blue-50/50 dark:border-blue-900 dark:bg-blue-950/20"
-      >
+      <Card variant="info">
         <CardContent class="flex items-start gap-3 pt-6">
           <Shield
-            class="h-5 w-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5"
+            class="h-5 w-5 text-info shrink-0 mt-0.5"
           />
           <div>
-            <p class="font-medium text-blue-900 dark:text-blue-100">
+            <p class="font-medium text-info">
               Privacy Note
             </p>
-            <p class="text-sm text-blue-800 dark:text-blue-200">
+            <p class="text-sm text-info">
               Logs never include your glucose data, API tokens, or passwords.
               Only diagnostic information is shared.
             </p>
@@ -473,7 +473,7 @@
 
       <div class="text-center text-sm text-muted-foreground">
         <p>
-          Made with <Heart class="h-4 w-4 inline text-red-500" /> by the Nightscout
+          Made with <Heart class="h-4 w-4 inline text-destructive" /> by the Nightscout
           community
         </p>
         <p class="mt-2">
@@ -488,7 +488,7 @@
           target="_blank"
           rel="noopener noreferrer"
         >
-          <Button variant="ghost" size="sm" class="gap-2">
+          <Button variant="ghost" size="sm">
             <GithubIcon class="h-4 w-4" />
             Star on GitHub
           </Button>
@@ -498,7 +498,7 @@
           target="_blank"
           rel="noopener noreferrer"
         >
-          <Button variant="ghost" size="sm" class="gap-2">
+          <Button variant="ghost" size="sm">
             <Heart class="h-4 w-4" />
             Donate
           </Button>

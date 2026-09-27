@@ -198,4 +198,15 @@ describe("Google Health connector page", () => {
     await expect.element(page.getByRole("button", { name: "Sync now" })).toBeDisabled();
     expect(googleHealthMocks.preview).not.toHaveBeenCalled();
   });
+
+  it("exposes the shared connector reset page for configured imports", async () => {
+    googleHealthMocks.status.mockResolvedValue(status({ configured: true, connected: true }));
+    googleHealthMocks.preview.mockResolvedValue({ items: [] });
+    render(GoogleHealthPage);
+
+    await expect.element(page.getByText("Import recovery", { exact: true })).toBeVisible();
+    await expect
+      .element(page.getByRole("link", { name: "Open connector reset" }))
+      .toHaveAttribute("href", "/settings/admin/connector-cursors");
+  });
 });

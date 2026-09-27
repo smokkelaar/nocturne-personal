@@ -23,16 +23,14 @@
   } from "$lib/components/ui/card";
   import { Button } from "$lib/components/ui/button";
   import { Badge } from "$lib/components/ui/badge";
-  import {
-    Cloud,
-    RefreshCw,
-    Loader2,
-    Download,
-    Database,
-    ExternalLink,
-    ChevronRight,
-    HeartPulse,
-  } from "lucide-svelte";
+  import Cloud from "@lucide/svelte/icons/cloud";
+  import RefreshCw from "@lucide/svelte/icons/refresh-cw";
+  import Loader2 from "@lucide/svelte/icons/loader-circle";
+  import Download from "@lucide/svelte/icons/download";
+  import Database from "@lucide/svelte/icons/database";
+  import ExternalLink from "@lucide/svelte/icons/external-link";
+  import ChevronRight from "@lucide/svelte/icons/chevron-right";
+  import HeartPulse from "@lucide/svelte/icons/heart-pulse";
   import DataSourceRow from "$lib/components/settings/DataSourceRow.svelte";
   import GoogleHealthSourceRow from "./GoogleHealthSourceRow.svelte";
   import AppLogo from "$lib/components/ui/AppLogo.svelte";

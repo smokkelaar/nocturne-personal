@@ -1,7 +1,10 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { resolve } from "$app/paths";
-  import { ArrowLeft, HeartPulse, RefreshCw, Unplug } from "lucide-svelte";
+  import ArrowLeft from "@lucide/svelte/icons/arrow-left";
+  import HeartPulse from "@lucide/svelte/icons/heart-pulse";
+  import RefreshCw from "@lucide/svelte/icons/refresh-cw";
+  import Unplug from "@lucide/svelte/icons/unplug";
   import {
     BiologicalSex,
     GoogleHealthSyncPhase,

@@ -275,6 +275,8 @@ jobs:
         run: dotnet build -c Release
       - name: Typecheck app
         run: pnpm --filter @nocturne/app run check
+      - name: Google Health request validation
+        run: pnpm --filter @nocturne/app exec vitest --config vitest.config.ts --run src/lib/api/google-health-schema.test.ts
       - name: Typecheck portal
         run: pnpm --filter @nocturne/portal run check
 

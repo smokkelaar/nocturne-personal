@@ -2,6 +2,7 @@
   import {
     bolusMarkerPoints,
     BOLUS_LABEL_Y,
+    PRINT_BOLUS_LABEL_Y,
     MARKER_HEIGHT,
     MARKER_HEIGHT_OVERRIDE,
   } from "$lib/components/icons/marker-shapes";
@@ -15,6 +16,13 @@
     bolusType?: string;
     treatmentId: string;
     onMarkerClick: (treatmentId: string) => void;
+    /**
+     * Whether to draw the units label. The track turns it off where the text
+     * would collide with a neighbour's; the glyph itself always draws.
+     */
+    showLabel?: boolean;
+    /** Laid out for paper: the label prints larger and in ink. */
+    printed?: boolean;
   }
 
   let {
@@ -25,6 +33,8 @@
     bolusType,
     treatmentId,
     onMarkerClick,
+    showLabel = true,
+    printed = false,
   }: Props = $props();
 
   // Algorithm-delivered doses (SMBs / auto-boluses) render outlined so they read
@@ -62,13 +72,15 @@
       class="opacity-90 fill-insulin-bolus hover:opacity-100 transition-opacity"
     />
   {/if}
-  <text
-    y={BOLUS_LABEL_Y}
-    dy="-0.355em"
-    text-anchor="middle"
-    pointer-events="none"
-    class="text-[8px] fill-insulin-bolus font-medium"
-  >
-    {insulin.toFixed(1)}U
-  </text>
+  {#if showLabel}
+    <text
+      y={printed ? PRINT_BOLUS_LABEL_Y : BOLUS_LABEL_Y}
+      dy="-0.355em"
+      text-anchor="middle"
+      pointer-events="none"
+      class="{printed ? 'text-2xs fill-foreground' : 'text-3xs fill-insulin-bolus'} font-medium"
+    >
+      {insulin.toFixed(1)}U
+    </text>
+  {/if}
 </g>

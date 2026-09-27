@@ -114,18 +114,12 @@ public static class TestDatabaseSeeder
         //    so ApiKeyHandler can resolve it (replaces the old TenantEntity.ApiSecretHash lookup)
         if (apiSecretHash != null)
         {
-            db.OAuthGrants.Add(new OAuthGrantEntity
-            {
-                Id = Guid.NewGuid(),
-                TenantId = TenantId,
-                SubjectId = TestSubjectId,
-                GrantType = OAuthGrantTypes.Direct,
-                LegacySecretHash = apiSecretHash,
-                IsMigrated = true,
-                Scopes = [Scope.FullAccess],
-                Label = "Legacy API Secret",
-                CreatedAt = DateTime.UtcNow,
-            });
+            var legacyGrant = OAuthGrantEntity.AdoptedLegacyCredential(
+                TestSubjectId, "Legacy API Secret", [Scope.FullAccess],
+                legacySecretHash: apiSecretHash);
+            legacyGrant.TenantId = TenantId;
+
+            db.OAuthGrants.Add(legacyGrant);
         }
 
         // 6. Assign roles
@@ -160,7 +154,6 @@ public static class TestDatabaseSeeder
         string? name = null,
         bool isActive = true,
         bool isSystemSubject = false,
-        DateTime? revokedAt = null,
         DateTime? joinedAt = null,
         string? preferences = null)
     {
@@ -171,7 +164,6 @@ public static class TestDatabaseSeeder
             Id = Guid.CreateVersion7(),
             TenantId = tenantId,
             SubjectId = subjectId,
-            RevokedAt = revokedAt,
         };
 
         db.Subjects.Add(new SubjectEntity

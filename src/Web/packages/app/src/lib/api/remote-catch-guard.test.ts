@@ -3,11 +3,16 @@ import { readdirSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
 /**
- * A `catch` binding nothing around a generated remote call throws the server's
- * reason away and assigns fixed copy in its place, so someone is told "please
- * try again" about a duplicate name or a validation failure that retrying
- * cannot fix. `describeSubmitError` and `remoteErrorMessage` both take that
- * copy as their fallback, so converting a site never loses the wording it had.
+ * A `catch` around a generated remote call that never reads the reason throws
+ * it away and assigns fixed copy in its place, so someone is told "please try
+ * again" about a duplicate name or a validation failure that retrying cannot
+ * fix. `describeSubmitError` and `remoteErrorMessage` both take that copy as
+ * their fallback, so converting a site never loses the wording it had.
+ *
+ * Binding nothing is one way; binding a name and never reading it is the same
+ * loss, and the one a grep for `catch {` does not see. Reading it only in a
+ * `console` call beside fixed copy is the third. All three are asked the same
+ * question here.
  *
  * Swallowing is sometimes right — a poll that runs again, an optimistic
  * rollback that reports itself by reappearing — and those say why in a comment
@@ -15,7 +20,14 @@ import { fileURLToPath } from "node:url";
  * knowing the limits:
  *
  * - It reads text, pairing a bare `catch` with the nearest `try` by brace depth,
- *   so a brace inside a string or comment can mispair it.
+ *   so a brace inside a string or comment can mispair it, and a `}` inside a
+ *   string ends the catch body early.
+ * - Whether a binding is read is a word match over that body text, so naming it
+ *   in a string or a comment counts — `catch (e)` beside copy containing a
+ *   standalone "e", or a `// TODO surface err`, passes without surfacing
+ *   anything. A destructured binding, `catch ({ status })`, is not matched at
+ *   all and so is never asked. Closing these needs an AST, which this is
+ *   deliberately not.
  * - A comment satisfies it. It cannot tell a reason from an excuse; a site that
  *   keeps its fixed copy and adds a comment passes, and only review catches
  *   that.
@@ -71,11 +83,67 @@ function callsRemote(block: string, imported: string[]): boolean {
   return imported.some((name) => new RegExp(`\\b${name}\\s*[(.]`).test(block));
 }
 
+/** The catch body at `catchIndex`, without its braces. */
+function catchBody(source: string, catchIndex: number): string {
+  const open = source.indexOf("{", catchIndex);
+  let depth = 0;
+
+  for (let i = open; i < source.length; i++) {
+    const char = source[i];
+    if (char === "{") depth++;
+    else if (char === "}") {
+      depth--;
+      if (depth === 0) return source.slice(open + 1, i);
+    }
+  }
+
+  return source.slice(open + 1);
+}
+
 /** Whether the catch body opens with a comment explaining the silence. */
 function explainsItself(source: string, catchIndex: number): boolean {
-  const body = source.slice(source.indexOf("{", catchIndex) + 1);
-  return /^\s*(\/\/|\/\*)/.test(body);
+  return /^\s*(\/\/|\/\*)/.test(catchBody(source, catchIndex));
 }
+
+/**
+ * A binding the body never reads discards the reason exactly as a bare `catch`
+ * does, and costs a grep for `catch {` nothing to miss. Both forms are held to
+ * the same rule below.
+ */
+function readsBinding(
+  source: string,
+  catchIndex: number,
+  binding: string
+): boolean {
+  return new RegExp(`\\b${binding}\\b`).test(catchBody(source, catchIndex));
+}
+
+/**
+ * A `console` call whose arguments nest at most one level of parentheses. An
+ * unbalanced parenthesis inside a string it logs, as in
+ * `console.error("oops (", err)`, stops the match, so that call's read of the
+ * binding is counted as a display.
+ */
+const CONSOLE_CALL = /\bconsole\.\w+\((?:[^()]|\([^()]*\))*\)/g;
+
+/**
+ * A reason handed only to `console` reaches the developer, not the person who
+ * asked, so a body that logs it and then shows a sentence of its own loses it
+ * as surely as one that never reads it. Any string literal left once the
+ * `console` calls are gone counts as that sentence, which keeps a quiet retry
+ * out of it. Limits: a sentence held in a constant is not seen, and a string
+ * used for something other than display is.
+ */
+function onlyLogsReason(
+  source: string,
+  catchIndex: number,
+  binding: string
+): boolean {
+  const shown = catchBody(source, catchIndex).replace(CONSOLE_CALL, "");
+  return !new RegExp(`\\b${binding}\\b`).test(shown) && /["'`]/.test(shown);
+}
+
+const CATCH = /\}\s*catch\s*(?:\(\s*(\w+)[^)]*\)\s*)?\{/g;
 
 interface Offence {
   file: string;
@@ -118,17 +186,27 @@ function sources(): SourceFile[] {
  */
 const WALK_TIMEOUT_MS = 60_000;
 
-function offences(): { found: Offence[]; scanned: number } {
+function offences(files: SourceFile[] = sources()): {
+  found: Offence[];
+  scanned: number;
+} {
   const found: Offence[] = [];
   let scanned = 0;
 
-  for (const { file, source } of sources()) {
+  for (const { file, source } of files) {
     const imported = remoteImports(source);
     if (imported.length === 0) continue;
     scanned++;
 
-    for (const match of source.matchAll(/\}\s*catch\s*\{/g)) {
+    for (const match of source.matchAll(CATCH)) {
       const index = match.index!;
+      const binding = match[1];
+      if (
+        binding &&
+        readsBinding(source, index, binding) &&
+        !onlyLogsReason(source, index, binding)
+      )
+        continue;
       if (!callsRemote(tryBlockBefore(source, index), imported)) continue;
       if (explainsItself(source, index)) continue;
 
@@ -238,6 +316,107 @@ describe("catches around generated remote calls", () => {
       true
     );
     expect(explainsItself(lossy, index)).toBe(false);
+  });
+
+  it("recognises a bound reason the body never reads", () => {
+    const lossy = `
+      import { revoke } from "$api/generated/sessions.generated.remote";
+      async function handle() {
+        try {
+          await revoke(id);
+        } catch (err) {
+          errorMessage = "Failed to sign out the session. Please try again.";
+        }
+      }
+    `;
+
+    const index = lossy.indexOf("} catch (err) {");
+    const [match] = [...lossy.matchAll(CATCH)];
+
+    expect(match[1]).toBe("err");
+    expect(readsBinding(lossy, index, "err")).toBe(false);
+    expect(callsRemote(tryBlockBefore(lossy, index), ["revoke"])).toBe(true);
+  });
+
+  it("leaves a bound reason the body reads alone", () => {
+    const routed = `
+      import { revoke } from "$api/generated/sessions.generated.remote";
+      async function handle() {
+        try {
+          await revoke(id);
+        } catch (err) {
+          errorMessage = describeSubmitError(err, "Failed to sign out.");
+        }
+      }
+    `;
+
+    const index = routed.indexOf("} catch (err) {");
+    expect(readsBinding(routed, index, "err")).toBe(true);
+    expect(onlyLogsReason(routed, index, "err")).toBe(false);
+  });
+
+  it("recognises a reason that only reaches the console", () => {
+    const lossy = `
+      import { getTenants } from "$api/generated/tenants.generated.remote";
+      async function load() {
+        try {
+          tenants = await getTenants().run();
+        } catch (err) {
+          console.error("Failed to load tenants:", String(err));
+          loadError = "Failed to load tenants.";
+        }
+      }
+    `;
+
+    const index = lossy.indexOf("} catch (err) {");
+    expect(readsBinding(lossy, index, "err")).toBe(true);
+    expect(onlyLogsReason(lossy, index, "err")).toBe(true);
+  });
+
+  it("reports a reason that only reaches the console as an offence", () => {
+    const lossy = `
+      import { getAll } from "$api/generated/tenants.generated.remote";
+      async function load() {
+        try {
+          tenants = await getAll().run();
+        } catch (err) {
+          console.error("Failed to load tenants:", err);
+          loadError = "Failed to load tenants.";
+        }
+      }
+    `;
+
+    const { found } = offences([{ file: "tenants.svelte", source: lossy }]);
+
+    expect(found).toEqual([{ file: "tenants.svelte", line: 6 }]);
+  });
+
+  it("leaves a logged reason that is also shown alone", () => {
+    const routed = `
+      try {
+        tenants = await getTenants().run();
+      } catch (err) {
+        console.error("Failed to load tenants:", err);
+        loadError = remoteErrorMessage(err, "Failed to load tenants.");
+      }
+    `;
+
+    const index = routed.indexOf("} catch (err) {");
+    expect(onlyLogsReason(routed, index, "err")).toBe(false);
+  });
+
+  it("leaves a logged reason with no copy beside it alone", () => {
+    const quiet = `
+      try {
+        await getStatus().refresh();
+      } catch (err) {
+        console.error("Failed to poll:", err);
+        polling = false;
+      }
+    `;
+
+    const index = quiet.indexOf("} catch (err) {");
+    expect(onlyLogsReason(quiet, index, "err")).toBe(false);
   });
 
   it("passes a swallow that explains itself", () => {

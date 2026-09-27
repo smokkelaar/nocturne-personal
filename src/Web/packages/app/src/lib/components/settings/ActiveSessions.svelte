@@ -19,6 +19,7 @@
     revoke,
     revokeOthers,
   } from "$lib/api/generated/sessions.generated.remote";
+  import { describeSubmitError } from "$lib/forms/submit-error";
 
   type SessionInfo = {
     sessionId?: string;
@@ -74,7 +75,10 @@
       successMessage = "Session signed out.";
       clearMessages();
     } catch (err) {
-      errorMessage = "Failed to sign out the session. Please try again.";
+      errorMessage = describeSubmitError(
+        err,
+        "Failed to sign out the session. Please try again."
+      );
       clearMessages();
     } finally {
       isRevoking = null;
@@ -90,7 +94,10 @@
       successMessage = "All other sessions signed out.";
       clearMessages();
     } catch (err) {
-      errorMessage = "Failed to sign out other sessions. Please try again.";
+      errorMessage = describeSubmitError(
+        err,
+        "Failed to sign out other sessions. Please try again."
+      );
       clearMessages();
     } finally {
       isRevokingOthers = false;
@@ -154,10 +161,10 @@
 
   {#if successMessage}
     <div
-      class="flex items-start gap-3 rounded-md border border-green-200 bg-green-50 p-3 dark:border-green-900/50 dark:bg-green-900/20"
+      class="flex items-start gap-3 rounded-md border border-success/30 bg-success/10 p-3"
     >
-      <Check class="mt-0.5 h-4 w-4 shrink-0 text-green-600 dark:text-green-400" />
-      <p class="text-sm text-green-800 dark:text-green-200">
+      <Check class="mt-0.5 h-4 w-4 shrink-0 text-success" />
+      <p class="text-sm text-success">
         {successMessage}
       </p>
     </div>
@@ -231,9 +238,9 @@
                 <Button
                   {...props}
                   type="button"
-                  variant="outline"
+                  variant="outline-destructive"
                   size="sm"
-                  class="text-destructive border-destructive/30 hover:bg-destructive/10 shrink-0"
+                  class="shrink-0"
                   disabled={isRevoking === session.sessionId}
                 >
                   {#if isRevoking === session.sessionId}

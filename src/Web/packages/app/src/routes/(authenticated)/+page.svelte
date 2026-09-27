@@ -9,9 +9,10 @@
   import { getSettingsStore } from "$lib/stores/settings-store.svelte";
   import { dashboardTopWidgets } from "$lib/stores/appearance-store.svelte";
   import { WidgetId } from "$lib/api/generated/nocturne-api-client";
-  import { isWidgetEnabled } from "$lib/types/dashboard-widgets";
+  import { isMainSectionEnabled } from "$lib/types/dashboard-widgets";
   import { coachmark } from "@nocturne/coach";
   import TenantsOverview from "$lib/components/tenants/TenantsOverview.svelte";
+  import HistoryLimitNotice from "$lib/components/layout/HistoryLimitNotice.svelte";
   import FirstReadingChartArea from "$lib/components/dashboard/first-reading/FirstReadingChartArea.svelte";
   import { tryGetRealtimeStore } from "$lib/stores/realtime-store.svelte";
   import type { PageData } from "./$types";
@@ -39,12 +40,7 @@
       (realtimeStore ? realtimeStore.currentBG > 0 : false)
   );
 
-  // Get widgets array from settings (for main section visibility)
   const widgets = $derived(settingsStore.features?.widgets);
-
-  // Helper to check if a main section is enabled
-  const isMainEnabled = (id: (typeof WidgetId)[keyof typeof WidgetId]) =>
-    isWidgetEnabled(widgets, id);
 
   // Get enabled top widgets from persisted appearance store
   const topWidgets = $derived(dashboardTopWidgets.current);
@@ -64,6 +60,8 @@
   <TenantsOverview />
 {:else}
   <div class="@container p-3 @md:p-6 space-y-3 @md:space-y-6">
+    <HistoryLimitNotice />
+
     <div
       {@attach coachmark({
         key: "quick-tour.current-bg",
@@ -75,8 +73,12 @@
       <CurrentBGDisplay />
     </div>
 
-  <div class="flex flex-col-reverse @md:flex-col gap-3 @md:gap-6">
-    {#if isMainEnabled(WidgetId.Statistics)}
+    <div class="flex flex-col-reverse @md:flex-col gap-3 @md:gap-6">
+      <!--
+        Ungated: the grid's contents are a per-user preference
+        (`dashboardTopWidgets`), and tenant settings carry no top-placement row
+        to gate it with.
+      -->
       <div
         {@attach coachmark({
           key: "quick-tour.widgets",
@@ -87,10 +89,9 @@
       >
         <WidgetGrid widgets={topWidgets} maxWidgets={3} />
       </div>
-    {/if}
 
-      {#if isMainEnabled(WidgetId.GlucoseChart)}
-        {#snippet glucoseChart(chartVisible)}
+      {#if isMainSectionEnabled(widgets, WidgetId.GlucoseChart)}
+        {#snippet glucoseChart(chartVisible: boolean)}
           <div
             {@attach chartVisible
               ? coachmark({
@@ -102,8 +103,10 @@
               : undefined}
           >
             <GlucoseChartCard
-              showPredictions={isMainEnabled(WidgetId.Predictions) &&
-                predictionEnabled}
+              showPredictions={isMainSectionEnabled(
+                widgets,
+                WidgetId.Predictions
+              ) && predictionEnabled}
               defaultFocusHours={focusHours}
               initialChartData={data.initialChartData}
               streamedHistoricalData={data.streamed?.historicalChartData}
@@ -120,11 +123,11 @@
       {/if}
     </div>
 
-    {#if isMainEnabled(WidgetId.DailyStats)}
+    {#if isMainSectionEnabled(widgets, WidgetId.DailyStats)}
       <RecentEntriesCard />
     {/if}
 
-    {#if isMainEnabled(WidgetId.Treatments)}
+    {#if isMainSectionEnabled(widgets, WidgetId.Treatments)}
       <RecentTreatmentsCard />
     {/if}
   </div>

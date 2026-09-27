@@ -1,10 +1,20 @@
 <script lang="ts">
-  import { Area, Axis, ChartClipPath, Highlight, getChartContext } from "layerchart";
+  import { Area, ChartClipPath, Highlight, getChartContext } from "layerchart";
   import { curveMonotoneX } from "d3";
   import BolusMarker from "../markers/BolusMarker.svelte";
   import CarbMarker from "../markers/CarbMarker.svelte";
   import { getGlucoseChartContext } from "../chart-context.svelte";
   import type { SeriesPoint } from "../engine/chart-data-engine.svelte";
+  import {
+    placeCenteredLabels,
+    placeTrailingLabels,
+    PRINT_LABEL_CHAR_WIDTH,
+    type LabelCandidate,
+  } from "../engine/marker-label-layout";
+  import { MARKER_HALF_WIDTH } from "$lib/components/icons/marker-shapes";
+  import { patternClass } from "$lib/components/charts/print/chart-print-patterns";
+  import TrackAxis from "./TrackAxis.svelte";
+  import TrackLabel from "./TrackLabel.svelte";
 
   interface Props {
     carbRatio?: number;
@@ -28,14 +38,76 @@
   const showBolus = $derived(ctx.legend?.bolus ?? true);
   const showCarbs = $derived(ctx.legend?.carbs ?? true);
 
-
-
   const effectiveOnPointClick = $derived(
     onPointClick ?? ((time: Date) => ctx.inspection?.inspectFromTrack(time))
   );
   const effectiveOnMarkerClick = $derived(
     onMarkerClick ?? ((_treatmentId: string) => {})
   );
+
+  // ---- Label declutter ----
+  // Which markers get their text at this zoom. Only the markers inside the
+  // plot compete: the rest are clipped, labels and all. Recomputed on every
+  // pan or zoom because it reads the x scale.
+  type BolusMarkerItem = (typeof bolusMarkers)[number];
+  type CarbMarkerItem = (typeof carbMarkers)[number];
+
+  const onScreen = (x: number) => x >= 0 && x <= chartCtx.width;
+
+  /** The track's own "IOB/COB" name, drawn at x=4 in the label rows; on paper it is in the gutter. */
+  const TRACK_NAME_SPAN = { left: 0, right: 44 };
+  const labelObstacles = $derived(ctx.printing ? [] : [TRACK_NAME_SPAN]);
+  const amountCharWidth = $derived(ctx.printing ? PRINT_LABEL_CHAR_WIDTH : undefined);
+  /** Space between a glyph's edge and its meal name (see CarbMarker). */
+  const MEAL_LABEL_GAP = 3;
+
+  const bolusLabelCandidates = $derived.by(() => {
+    const out: LabelCandidate<BolusMarkerItem>[] = [];
+    for (const m of bolusMarkers) {
+      const x = chartCtx.xScale(m.time);
+      if (!onScreen(x)) continue;
+      const insulin = m.insulin ?? 0;
+      out.push({ item: m, x, text: `${insulin.toFixed(1)}U`, priority: insulin });
+    }
+    return out;
+  });
+
+  const carbLabelCandidates = $derived.by(() => {
+    const out: LabelCandidate<CarbMarkerItem>[] = [];
+    for (const m of carbMarkers) {
+      const x = chartCtx.xScale(m.time);
+      if (!onScreen(x)) continue;
+      const carbs = m.carbs ?? 0;
+      out.push({ item: m, x, text: `${carbs}g`, priority: carbs });
+    }
+    return out;
+  });
+
+  // The two amount rows are stacked, so a meal's carb and bolus labels never
+  // contest one another and each row is placed on its own.
+  const bolusLabelVisible = $derived(
+    showBolus
+      ? placeCenteredLabels(bolusLabelCandidates, labelObstacles, amountCharWidth)
+      : new Set<BolusMarkerItem>()
+  );
+  const carbLabelVisible = $derived(
+    showCarbs
+      ? placeCenteredLabels(carbLabelCandidates, labelObstacles, amountCharWidth)
+      : new Set<CarbMarkerItem>()
+  );
+
+  // A meal name hangs beside the waist, where every visible glyph is drawn.
+  const mealLabelVisible = $derived.by(() => {
+    if (!showCarbs) return new Set<CarbMarkerItem>();
+    const glyphXs = [
+      ...(showBolus ? bolusLabelCandidates.map((c) => c.x) : []),
+      ...carbLabelCandidates.map((c) => c.x),
+    ];
+    const named = carbLabelCandidates
+      .filter((c) => c.item.label)
+      .map((c) => ({ ...c, text: c.item.label ?? "" }));
+    return placeTrailingLabels(named, glyphXs, MARKER_HALF_WIDTH, MEAL_LABEL_GAP, amountCharWidth);
+  });
 
   // Bisector for finding nearest data point
   function findSeriesValue(
@@ -64,30 +136,14 @@
 {#if iobCobLayout}
   {@const iobScale = iobCobLayout.scale}
   {@const iobZero = iobCobLayout.zero}
-  {@const iobTrackTop = iobCobLayout.top}
   {@const iobAxisScale = iobCobLayout.axisScale}
   <!-- Treatment markers share one baseline so a carb entry (rising above it) and
        a bolus (hanging below it) at the same time compose into one diamond.
        Magnitude is conveyed by the marker labels, not height. -->
   {@const markerBaselineY = (iobCobLayout.top + iobCobLayout.bottom) / 2}
 
-  <!-- IOB axis on right -->
-  <Axis
-    placement="right"
-    scale={iobAxisScale}
-    ticks={2}
-    tickLabelProps={{ class: "text-[9px] fill-muted-foreground" }}
-  />
-
-  <!-- IOB/COB track label -->
-  <text
-    x={4}
-    y={iobTrackTop + 12}
-    dy="-0.355em"
-    class="text-[8px] fill-muted-foreground font-medium"
-  >
-    IOB/COB
-  </text>
+  <TrackAxis scale={iobAxisScale} unit="U" />
+  <TrackLabel label="IOB/COB" top={iobCobLayout.top} bottom={iobCobLayout.bottom} />
 
   <ChartClipPath>
     <!-- COB area (scaled by carb ratio to show on IOB-equivalent scale) -->
@@ -100,7 +156,7 @@
         motion="spring"
         curve={curveMonotoneX}
         fill=""
-        class="fill-carbs/40"
+        class="fill-carbs/40 {patternClass('carbs')}"
       />
     {/if}
 
@@ -133,6 +189,8 @@
           bolusType={marker.bolusType}
           treatmentId={marker.treatmentId ?? ""}
           onMarkerClick={effectiveOnMarkerClick}
+          showLabel={bolusLabelVisible.has(marker)}
+          printed={ctx.printing}
         />
       {/each}
     {/if}
@@ -146,9 +204,11 @@
           {xPos}
           {yPos}
           carbs={marker.carbs ?? 0}
-          label={marker.label ?? null}
+          label={mealLabelVisible.has(marker) ? (marker.label ?? null) : null}
           treatmentId={marker.treatmentId ?? ""}
           onMarkerClick={effectiveOnMarkerClick}
+          showLabel={carbLabelVisible.has(marker)}
+          printed={ctx.printing}
         />
       {/each}
     {/if}

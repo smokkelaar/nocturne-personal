@@ -210,11 +210,11 @@ public class DataSourceServiceDeleteConnectorDataTests : IDisposable
 
         // The dedup that guards bulk-create treats every user-deleted row as blocking, so the next
         // sync cannot re-import them.
-        (await assertCtx.GetBlockingLegacyIdsAsync<BolusEntity>(["bolus-1"])).Should().Contain("bolus-1");
-        (await assertCtx.GetBlockingLegacyIdsAsync<CarbIntakeEntity>(["carb-1"])).Should().Contain("carb-1");
-        (await assertCtx.GetBlockingLegacyIdsAsync<BGCheckEntity>(["bgcheck-1"])).Should().Contain("bgcheck-1");
-        (await assertCtx.GetBlockingLegacyIdsAsync<NoteEntity>(["note-1"])).Should().Contain("note-1");
-        (await assertCtx.GetBlockingLegacyIdsAsync<ApsSnapshotEntity>(["aps-1"])).Should().Contain("aps-1");
+        (await assertCtx.GetBlockingLegacyIdsAsync<BolusEntity>(["bolus-1"])).Held.Should().Contain("bolus-1");
+        (await assertCtx.GetBlockingLegacyIdsAsync<CarbIntakeEntity>(["carb-1"])).Held.Should().Contain("carb-1");
+        (await assertCtx.GetBlockingLegacyIdsAsync<BGCheckEntity>(["bgcheck-1"])).Held.Should().Contain("bgcheck-1");
+        (await assertCtx.GetBlockingLegacyIdsAsync<NoteEntity>(["note-1"])).Held.Should().Contain("note-1");
+        (await assertCtx.GetBlockingLegacyIdsAsync<ApsSnapshotEntity>(["aps-1"])).Held.Should().Contain("aps-1");
     }
 
     [Fact]
@@ -247,7 +247,7 @@ public class DataSourceServiceDeleteConnectorDataTests : IDisposable
     [Fact]
     public async Task DeleteGoogleHealthData_ClearsTheHistoricalImportCursor()
     {
-        const string googleHealth = "google-health";
+        const string googleHealth = "googlehealth";
         using var configuration = JsonDocument.Parse("""
             {
               "enabled": false,
@@ -274,9 +274,20 @@ public class DataSourceServiceDeleteConnectorDataTests : IDisposable
             .ReturnsAsync(new ConnectorConfigurationResponse());
 
         await using var ctx = NewContext();
+        var otherTenant = Guid.NewGuid();
+        ctx.Tenants.Add(new TenantEntity { Id = otherTenant, Slug = "other" });
+        var source = ConnectorMetadataService.GetByConnectorId(googleHealth)!.DataSourceId;
+        var ownId = Guid.NewGuid();
+        var otherId = Guid.NewGuid();
+        ctx.HeartRates.AddRange(
+            new HeartRateEntity { Id = ownId, TenantId = TenantId, Timestamp = DateTime.UtcNow, Bpm = 70, DataSource = source },
+            new HeartRateEntity { Id = otherId, TenantId = otherTenant, Timestamp = DateTime.UtcNow, Bpm = 80, DataSource = source });
+        await ctx.SaveChangesAsync();
         var result = await CreateService(ctx).DeleteConnectorDataAsync(googleHealth);
 
-        result.Success.Should().BeTrue();
+        result.Success.Should().BeTrue("{0}: {1}", result.ErrorCode, result.Error);
+        (await ctx.HeartRates.IgnoreQueryFilters().AnyAsync(r => r.Id == ownId)).Should().BeFalse();
+        (await ctx.HeartRates.IgnoreQueryFilters().AnyAsync(r => r.Id == otherId)).Should().BeTrue();
         saved.Should().NotBeNull();
         saved!.RootElement.TryGetProperty("backfillCursorDate", out _).Should().BeFalse();
         saved.RootElement.TryGetProperty("backfillFloorDate", out _).Should().BeFalse();

@@ -1,13 +1,18 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { resolve } from "$app/paths";
-  import { ArrowLeft, HeartPulse, RefreshCw, Unplug } from "lucide-svelte";
+  import ArrowLeft from "@lucide/svelte/icons/arrow-left";
+  import HeartPulse from "@lucide/svelte/icons/heart-pulse";
+  import RefreshCw from "@lucide/svelte/icons/refresh-cw";
+  import Unplug from "@lucide/svelte/icons/unplug";
   import {
     BiologicalSex,
     GoogleHealthSyncPhase,
     type GoogleHealthPreview,
     type GoogleHealthStatus,
   } from "$lib/api";
+  import { Input } from "$lib/components/ui/input";
+  import { Checkbox } from "$lib/components/ui/checkbox";
   import { Button } from "$lib/components/ui/button";
   import { Badge } from "$lib/components/ui/badge";
   import { Progress } from "$lib/components/ui/progress";
@@ -228,7 +233,9 @@
       // Keep the original sync failure if reloading the saved settings also fails.
       try {
         await refresh();
-      } catch {}
+      } catch {
+        // Keep the original operation error if refreshing status also fails.
+      }
       operation = failedOperation;
       throw error;
     }
@@ -282,9 +289,7 @@
       return "Updating Nocturne health records";
     return "Preparing the import";
   }
-  const timestamp = (value?: string | Date | null) =>
-    value ? new Date(value).toLocaleString() : "-";
-  onMount(() => {
+onMount(() => {
     let disposed = false;
     let timer: ReturnType<typeof setTimeout>;
     async function pollStatus() {
@@ -436,16 +441,16 @@
           >
             <label class="block text-sm font-medium">
               Google client ID
-              <input
-                class="mt-1 w-full rounded border bg-background p-2"
+              <Input
+                class="mt-1 w-full"
                 required
                 bind:value={clientId}
               />
             </label>
             <label class="block text-sm font-medium">
               Client secret
-              <input
-                class="mt-1 w-full rounded border bg-background p-2"
+              <Input
+                class="mt-1 w-full"
                 type="password"
                 required
                 bind:value={clientSecret}
@@ -453,8 +458,8 @@
             </label>
             <label class="block text-sm font-medium">
               Callback URL
-              <input
-                class="mt-1 w-full rounded border bg-background p-2"
+              <Input
+                class="mt-1 w-full"
                 type="url"
                 required
                 bind:value={callbackUrl}
@@ -462,8 +467,8 @@
             </label>
             <label class="block text-sm font-medium">
               Import data from
-              <input
-                class="mt-1 block rounded border bg-background p-2"
+              <Input
+                class="mt-1 block"
                 type="date"
                 min="2000-01-01"
                 max={day(new Date())}
@@ -511,16 +516,16 @@
             >
               <label class="block text-sm font-medium">
                 Google client ID
-                <input
-                  class="mt-1 w-full rounded border bg-background p-2"
+                <Input
+                  class="mt-1 w-full"
                   required
                   bind:value={clientId}
                 />
               </label>
               <label class="block text-sm font-medium">
                 Client secret
-                <input
-                  class="mt-1 w-full rounded border bg-background p-2"
+                <Input
+                  class="mt-1 w-full"
                   type="password"
                   bind:value={clientSecret}
                   placeholder="Leave empty to keep the saved secret"
@@ -528,8 +533,8 @@
               </label>
               <label class="block text-sm font-medium">
                 Callback URL
-                <input
-                  class="mt-1 w-full rounded border bg-background p-2"
+                <Input
+                  class="mt-1 w-full"
                   type="url"
                   required
                   bind:value={callbackUrl}
@@ -537,8 +542,8 @@
               </label>
               <label class="block text-sm font-medium">
                 Import data from
-                <input
-                  class="mt-1 block rounded border bg-background p-2"
+                <Input
+                  class="mt-1 block"
                   type="date"
                   min="2000-01-01"
                   max={day(new Date())}
@@ -603,14 +608,14 @@
           onsubmit={(event) => {
             event.preventDefault();
             const sync =
-              (event.submitter as HTMLButtonElement | null)?.value === "sync";
+              event.submitter instanceof HTMLButtonElement && event.submitter.value === "sync";
             void run(() => saveChanges(sync));
           }}
         >
           <label class="block text-sm font-medium">
             Import data from
-            <input
-              class="mt-1 block rounded border bg-background p-2"
+            <Input
+              class="mt-1 block"
               type="date"
               min="2000-01-01"
               max={day(new Date())}
@@ -631,9 +636,7 @@
                   data-testid={`google-health-category-${group.category}`}
                   open={expandedGroups[group.category] ?? group.hasSelectableItem}
                   ontoggle={(event) => {
-                    expandedGroups[group.category] = (
-                      event.currentTarget as HTMLDetailsElement
-                    ).open;
+                    expandedGroups[group.category] = event.currentTarget.open;
                   }}
                 >
                   <summary
@@ -660,11 +663,16 @@
                           {@const { item, capability } = entry}
                           <tr class="border-b last:border-b-0">
                             <td class="p-3">
-                              <input
+                              <Checkbox
                                 aria-label={`Import ${capability?.displayName ?? item.dataType}`}
-                                type="checkbox"
-                                bind:group={selected}
-                                value={item.dataType}
+                                checked={selected.includes(item.dataType ?? "")}
+                                onCheckedChange={(checked) => {
+                                  const dataType = item.dataType;
+                                  if (!dataType) return;
+                                  selected = checked
+                                    ? [...selected, dataType]
+                                    : selected.filter((value) => value !== dataType);
+                                }}
                                 disabled={busy ||
                                   status.isSyncing ||
                                   (!selected.includes(item.dataType ?? "") &&

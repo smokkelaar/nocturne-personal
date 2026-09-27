@@ -36,6 +36,7 @@
     <ProjectReference Include="../../../src/API/Nocturne.API/Nocturne.API.csproj" />
     <ProjectReference Include="../../../src/Aspire/Nocturne.Aspire.Host/Nocturne.Aspire.Host.csproj" />
     <ProjectReference Include="../../../src/Infrastructure/Nocturne.Infrastructure.Data/Nocturne.Infrastructure.Data.csproj" />
+    <ProjectReference Include="../../../src/Infrastructure/Nocturne.Infrastructure.Data.Migrations/Nocturne.Infrastructure.Data.Migrations.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Migration\Fixtures\*.json">

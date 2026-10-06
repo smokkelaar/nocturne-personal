@@ -33,7 +33,7 @@
   });
 </script>
 
-<div style="width: 600px">
+<div class="w-150">
   <Actogram {data} {bgData} days={[day]} {thresholds} rowHeight={64}>
     {#snippet row(ctx)}
       {#each ctx.data as { point, hoursFromStart }, index (index)}

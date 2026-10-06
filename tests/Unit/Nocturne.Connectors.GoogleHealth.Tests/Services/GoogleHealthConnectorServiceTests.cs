@@ -213,12 +213,15 @@ public class GoogleHealthConnectorServiceTests
     public async Task Sync_writes_each_page_before_reconciling_the_completed_type()
     {
         var calls = 0;
+        // Relative to now so the samples stay inside the 30-day history window.
+        var firstSample = DateTimeOffset.UtcNow.AddDays(-1).ToString("O");
+        var secondSample = DateTimeOffset.UtcNow.AddDays(-1).AddHours(1).ToString("O");
         var fixture = new Fixture(request => request.RequestUri!.AbsolutePath switch
         {
             "/token" => Json($$"""{"access_token":"access","refresh_token":"refresh","expires_in":3600,"token_type":"Bearer","scope":"{{GoogleHealthClient.MetricsScope}}"}"""),
             var path when path.Contains("/weight/") => Json(++calls == 1
-                ? """{"dataPoints":[{"name":"first","weight":{"sampleTime":{"physicalTime":"2026-09-01T10:00:00Z"},"weightGrams":70000}}],"nextPageToken":"next"}"""
-                : """{"dataPoints":[{"name":"second","weight":{"sampleTime":{"physicalTime":"2026-09-01T11:00:00Z"},"weightGrams":71000}}]}"""),
+                ? $$"""{"dataPoints":[{"name":"first","weight":{"sampleTime":{"physicalTime":"{{firstSample}}"},"weightGrams":70000}}],"nextPageToken":"next"}"""
+                : $$"""{"dataPoints":[{"name":"second","weight":{"sampleTime":{"physicalTime":"{{secondSample}}"},"weightGrams":71000}}]}"""),
             _ => throw new InvalidOperationException($"Unexpected request: {request.RequestUri}")
         });
         var config = fixture.Configuration();
@@ -240,11 +243,13 @@ public class GoogleHealthConnectorServiceTests
     public async Task Sync_does_not_reconcile_when_a_later_page_fails()
     {
         var calls = 0;
+        // Relative to now so the samples stay inside the 30-day history window.
+        var firstSample = DateTimeOffset.UtcNow.AddDays(-1).ToString("O");
         var fixture = new Fixture(request => request.RequestUri!.AbsolutePath switch
         {
             "/token" => Json($$"""{"access_token":"access","refresh_token":"refresh","expires_in":3600,"token_type":"Bearer","scope":"{{GoogleHealthClient.MetricsScope}}"}"""),
             var path when path.Contains("/weight/") => ++calls == 1
-                ? Json("""{"dataPoints":[{"name":"first","weight":{"sampleTime":{"physicalTime":"2026-09-01T10:00:00Z"},"weightGrams":70000}}],"nextPageToken":"next"}""")
+                ? Json($$"""{"dataPoints":[{"name":"first","weight":{"sampleTime":{"physicalTime":"{{firstSample}}"},"weightGrams":70000}}],"nextPageToken":"next"}""")
                 : new HttpResponseMessage(HttpStatusCode.ServiceUnavailable),
             _ => throw new InvalidOperationException($"Unexpected request: {request.RequestUri}")
         });

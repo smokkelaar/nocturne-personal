@@ -220,8 +220,8 @@ public class GoogleHealthConnectorServiceTests
         {
             "/token" => Json($$"""{"access_token":"access","refresh_token":"refresh","expires_in":3600,"token_type":"Bearer","scope":"{{GoogleHealthClient.MetricsScope}}"}"""),
             var path when path.Contains("/weight/") => Json(++calls == 1
-                ? $$"""{"dataPoints":[{"name":"first","weight":{"sampleTime":{"physicalTime":"{{firstSample}}"},"weightGrams":70000}}],"nextPageToken":"next"}"""
-                : $$"""{"dataPoints":[{"name":"second","weight":{"sampleTime":{"physicalTime":"{{secondSample}}"},"weightGrams":71000}}]}"""),
+                ? $$$"""{"dataPoints":[{"name":"first","weight":{"sampleTime":{"physicalTime":"{{{firstSample}}}"},"weightGrams":70000}}],"nextPageToken":"next"}"""
+                : $$$"""{"dataPoints":[{"name":"second","weight":{"sampleTime":{"physicalTime":"{{{secondSample}}}"},"weightGrams":71000}}]}"""),
             _ => throw new InvalidOperationException($"Unexpected request: {request.RequestUri}")
         });
         var config = fixture.Configuration();
@@ -249,7 +249,7 @@ public class GoogleHealthConnectorServiceTests
         {
             "/token" => Json($$"""{"access_token":"access","refresh_token":"refresh","expires_in":3600,"token_type":"Bearer","scope":"{{GoogleHealthClient.MetricsScope}}"}"""),
             var path when path.Contains("/weight/") => ++calls == 1
-                ? Json($$"""{"dataPoints":[{"name":"first","weight":{"sampleTime":{"physicalTime":"{{firstSample}}"},"weightGrams":70000}}],"nextPageToken":"next"}""")
+                ? Json($$$"""{"dataPoints":[{"name":"first","weight":{"sampleTime":{"physicalTime":"{{{firstSample}}}"},"weightGrams":70000}}],"nextPageToken":"next"}""")
                 : new HttpResponseMessage(HttpStatusCode.ServiceUnavailable),
             _ => throw new InvalidOperationException($"Unexpected request: {request.RequestUri}")
         });

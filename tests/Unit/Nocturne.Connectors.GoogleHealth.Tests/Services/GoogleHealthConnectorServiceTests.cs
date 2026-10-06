@@ -380,6 +380,53 @@ public class GoogleHealthConnectorServiceTests
     }
 
     [Fact]
+    public async Task Heart_rate_backfill_retains_only_bounded_minute_aggregates()
+    {
+        const int pageCount = 100;
+        const int samplesPerPage = 10_000;
+        var pageData = string.Join(",", Enumerable.Range(0, samplesPerPage).Select(index =>
+            $$"""{"name":"sample-{{index}}","heartRate":{"sampleTime":{"physicalTime":"2026-09-01T10:00:05Z"},"beatsPerMinute":"60"}}"""));
+        var pagesRead = 0;
+        long firstPageMemory = 0;
+        long lastPageMemory = 0;
+        var fixture = new Fixture(request =>
+        {
+            var path = request.RequestUri!.AbsolutePath;
+            if (path == "/token")
+                return Json($$"""{"access_token":"access","refresh_token":"refresh","expires_in":3600,"token_type":"Bearer","scope":"{{GoogleHealthClient.MetricsScope}}"}""");
+            if (!path.Contains("/heart-rate/"))
+                throw new InvalidOperationException($"Unexpected request: {request.RequestUri}");
+
+            var page = ++pagesRead;
+            if (page == 1)
+                firstPageMemory = GC.GetTotalMemory(forceFullCollection: true);
+            if (page == pageCount)
+                lastPageMemory = GC.GetTotalMemory(forceFullCollection: true);
+
+            var nextPage = page < pageCount ? ",\"nextPageToken\":\"page-" + page + "\"" : "";
+            return Json("{\"dataPoints\":[" + pageData + "]" + nextPage + "}");
+        });
+        var config = fixture.Configuration();
+        config.SyncBodyWeight = false;
+        config.SyncHeartRate = true;
+        var from = new DateTime(2026, 9, 1, 0, 0, 0, DateTimeKind.Utc);
+
+        var result = await fixture.Service.SyncDataAsync(
+            new SyncRequest { From = from, To = from.AddDays(1) }, config, CancellationToken.None);
+
+        Assert.True(result.Success);
+        Assert.Equal(pageCount, pagesRead);
+        Assert.Equal(1, result.ItemsSynced[SyncDataType.HeartRate]);
+        Assert.True(lastPageMemory - firstPageMemory < 16 * 1024 * 1024,
+            $"Heart-rate sync retained {(lastPageMemory - firstPageMemory) / 1024 / 1024} MiB across pages.");
+        fixture.Writer.Verify(value => value.WriteAsync(
+            It.Is<IReadOnlyCollection<GoogleHealthReading>>(items =>
+                items.Count == 1 && items.Single().Value == 60m),
+            It.IsAny<IReadOnlyCollection<Nocturne.Core.Models.SleepSession>>(),
+            2, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
     public async Task Sleep_import_preserves_overnight_stages_and_completes_repeated_runs()
     {
         var fixture = new Fixture(request => request.RequestUri!.AbsolutePath switch

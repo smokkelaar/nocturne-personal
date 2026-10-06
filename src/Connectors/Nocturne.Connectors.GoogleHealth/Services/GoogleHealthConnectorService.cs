@@ -495,13 +495,12 @@ public sealed class GoogleHealthConnectorService(
                     else if (type == "heart-rate")
                     {
                         // Google Health reports heart rate at near-continuous (often per-beat) cadence.
-                        // Storing every sample is not useful for reports and multiplies row counts far
-                        // beyond what's needed, so the whole day's readings are aggregated to one
-                        // average-bpm value per UTC minute before staging and writing them.
-                        var raw = new List<GoogleHealthReading>();
+                        // Backfill windows can span a month, so retain only each UTC minute's running
+                        // total rather than every raw sample until the complete window has been read.
+                        var buckets = new Dictionary<long, HeartRateBucket>();
                         await foreach (var page in google.ReadPagesAsync(accessToken, type, from, to, ct, PageRead))
-                            raw.AddRange(page);
-                        var unique = AggregateHeartRatePerMinute(raw);
+                            AccumulateHeartRatePage(buckets, page);
+                        var unique = AggregateHeartRatePerMinute(buckets);
                         await writer.StageReconciliationIdsAsync(
                             reconciliationRun, type,
                             unique.Select(GoogleHealthClient.Key).ToArray(), ct);
@@ -571,31 +570,53 @@ public sealed class GoogleHealthConnectorService(
     }
 
     /// <summary>
-    ///     Collapses near-continuous raw heart-rate samples into one representative average-bpm
-    ///     reading per UTC minute, keyed by a stable per-minute identifier so a re-import of the same
-    ///     day updates the same aggregated record instead of accumulating duplicates.
+    ///     Running totals keep memory proportional to the number of UTC minutes in a sync window,
+    ///     even when a page contains hundreds of thousands of raw heart-rate samples.
     /// </summary>
-    private static List<GoogleHealthReading> AggregateHeartRatePerMinute(IReadOnlyList<GoogleHealthReading> readings)
+    private readonly record struct HeartRateBucket(
+        decimal Sum, int Count, GoogleHealthReading Representative);
+
+    private static void AccumulateHeartRatePage(
+        Dictionary<long, HeartRateBucket> buckets,
+        IReadOnlyCollection<GoogleHealthReading> readings)
     {
         const long bucketMillis = 60_000L;
-        return readings
-            .GroupBy(reading => reading.Mills - (reading.Mills % bucketMillis))
+        foreach (var reading in readings)
+        {
+            var minute = reading.Mills - (reading.Mills % bucketMillis);
+            if (buckets.TryGetValue(minute, out var bucket))
+            {
+                var representative = reading.Mills < bucket.Representative.Mills
+                    ? reading
+                    : bucket.Representative;
+                buckets[minute] = new HeartRateBucket(
+                    bucket.Sum + reading.Value, bucket.Count + 1, representative);
+            }
+            else
+            {
+                buckets.Add(minute, new HeartRateBucket(reading.Value, 1, reading));
+            }
+        }
+    }
+
+    private static List<GoogleHealthReading> AggregateHeartRatePerMinute(
+        IReadOnlyDictionary<long, HeartRateBucket> buckets) =>
+        buckets.OrderBy(bucket => bucket.Key)
             .Select(bucket =>
             {
-                var representative = bucket.OrderBy(reading => reading.Mills).First();
+                var representative = bucket.Value.Representative;
                 return new GoogleHealthReading
                 {
                     DataType = representative.DataType,
                     OriginalId = $"minute:{bucket.Key}",
                     Mills = bucket.Key,
                     UtcOffsetMinutes = representative.UtcOffsetMinutes,
-                    Value = Math.Round(bucket.Average(reading => reading.Value), MidpointRounding.AwayFromZero),
+                    Value = Math.Round(bucket.Value.Sum / bucket.Value.Count,
+                        MidpointRounding.AwayFromZero),
                     Unit = representative.Unit
                 };
             })
-            .OrderBy(reading => reading.Mills)
             .ToList();
-    }
 
     private static void AddCount(SyncResult result, string type, int count) =>
         result.ItemsSynced[GoogleHealthClient.TryGetSyncDataType(type, out var dataType)

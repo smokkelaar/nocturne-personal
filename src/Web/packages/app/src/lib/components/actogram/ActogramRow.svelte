@@ -76,7 +76,7 @@
       {#if bgChartData.length > 1 && thresholds}
         {@const target = resolveTargetRange(thresholds)}
         <!-- The dots' range colour is lost in black and white; these limits carry it instead. -->
-        {#each [target.low, target.high] as limit (limit)}
+        {#each [target.low, target.high] as limit, index (index)}
           <line
             x1={0}
             x2={context.width}

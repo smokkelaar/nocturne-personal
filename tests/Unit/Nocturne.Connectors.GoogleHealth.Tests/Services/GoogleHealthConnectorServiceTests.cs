@@ -108,12 +108,14 @@ public class GoogleHealthConnectorServiceTests
             _ => throw new InvalidOperationException($"Unexpected request: {request.RequestUri}")
         });
         fixture.StoredConfiguration = JsonSerializer.Serialize(new { importFrom = (string?)null, lastSyncedTo = watermark });
+        var config = fixture.Configuration();
 
-        var result = await fixture.Service.SyncDataAsync(fixture.Configuration(), CancellationToken.None);
+        var result = await fixture.Service.SyncDataAsync(config, CancellationToken.None);
 
         Assert.True(result.Success);
         Assert.Equal(new DateTimeOffset(2026, 9, 10, 9, 55, 0, TimeSpan.Zero), requestedFrom[0]);
-        Assert.Equal(DateTimeOffset.UtcNow.Date.AddDays(-7), requestedFrom[1].UtcDateTime.Date);
+        var today = DateTimeOffset.UtcNow.Date;
+        Assert.Equal(ExpectedFirstBackfillFrom(today, config.HistoryDays), requestedFrom[1].UtcDateTime.Date);
     }
 
     [Theory]
@@ -234,13 +236,16 @@ public class GoogleHealthConnectorServiceTests
         });
         var config = fixture.Configuration();
         config.HistoryDays = 7;
+        var today = DateTimeOffset.UtcNow.Date;
+        var initialBackfillFrom = ExpectedFirstBackfillFrom(today, config.HistoryDays);
+        var expectedChunkDays = Math.Max(1, (int)Math.Ceiling((today - initialBackfillFrom).TotalDays / 2));
 
         var failed = await fixture.Service.SyncDataAsync(config, CancellationToken.None);
 
         Assert.False(failed.Success);
         using (var stored = JsonDocument.Parse(fixture.StoredConfiguration))
         {
-            Assert.Equal(4, stored.RootElement.GetProperty("backfillChunkDays").GetInt32());
+            Assert.Equal(expectedChunkDays, stored.RootElement.GetProperty("backfillChunkDays").GetInt32());
             Assert.True(stored.RootElement.TryGetProperty("lastSyncedTo", out _));
         }
 
@@ -250,7 +255,7 @@ public class GoogleHealthConnectorServiceTests
 
         Assert.True(retried.Success);
         Assert.InRange(retryRanges[0], DateTimeOffset.UtcNow.AddMinutes(-6), DateTimeOffset.UtcNow);
-        Assert.Equal(DateTimeOffset.UtcNow.Date.AddDays(-4), retryRanges[1].UtcDateTime.Date);
+        Assert.Equal(today.AddDays(-expectedChunkDays), retryRanges[1].UtcDateTime.Date);
     }
 
     [Fact]
@@ -646,6 +651,15 @@ public class GoogleHealthConnectorServiceTests
         var timestamp = filter.Split('"')[1];
         capture(DateTimeOffset.Parse(timestamp));
         return Json("{\"dataPoints\":[]}");
+    }
+
+    private static DateTime ExpectedFirstBackfillFrom(DateTime today, int historyDays)
+    {
+        var cursor = today.Date;
+        var floor = cursor.AddDays(-historyDays);
+        var monthStart = new DateTime(cursor.Year, cursor.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+        if (monthStart == cursor) monthStart = monthStart.AddMonths(-1);
+        return floor > monthStart ? floor : monthStart;
     }
 
     private sealed class StubHandler(Func<HttpRequestMessage, HttpResponseMessage> responder)

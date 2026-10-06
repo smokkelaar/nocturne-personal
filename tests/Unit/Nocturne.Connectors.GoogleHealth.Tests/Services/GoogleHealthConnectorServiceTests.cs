@@ -385,7 +385,8 @@ public class GoogleHealthConnectorServiceTests
         const int pageCount = 100;
         const int samplesPerPage = 10_000;
         var pageData = string.Join(",", Enumerable.Range(0, samplesPerPage).Select(index =>
-            $$"""{"name":"sample-{{index}}","heartRate":{"sampleTime":{"physicalTime":"2026-09-01T10:00:05Z"},"beatsPerMinute":"60"}}"""));
+            "{\"name\":\"sample-" + index +
+            "\",\"heartRate\":{\"sampleTime\":{\"physicalTime\":\"2026-09-01T10:00:05Z\"},\"beatsPerMinute\":\"60\"}}"));
         var pagesRead = 0;
         long firstPageMemory = 0;
         long lastPageMemory = 0;

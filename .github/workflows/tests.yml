@@ -277,6 +277,24 @@ jobs:
         run: pnpm --filter @nocturne/app run check
       - name: Google Health request validation
         run: pnpm --filter @nocturne/app exec vitest --config vitest.config.ts --run src/lib/api/google-health-schema.test.ts
+      - name: Install Chromium for actogram regression tests
+        run: pnpm --filter @nocturne/app exec playwright install --with-deps chromium
+      - name: Verify the actogram regression reproduces the original crash
+        run: |
+          set -euo pipefail
+          component=packages/app/src/lib/components/actogram/ActogramRow.svelte
+          cp "$component" "$RUNNER_TEMP/ActogramRow.fixed.svelte"
+          trap 'cp "$RUNNER_TEMP/ActogramRow.fixed.svelte" "$component"' EXIT
+          sed -i 's/as limit, index (index)/as limit (limit)/' "$component"
+          if pnpm --filter @nocturne/app run test:browser --run src/lib/components/actogram/actogram.svelte.test.ts > "$RUNNER_TEMP/actogram-before.log" 2>&1; then
+            cat "$RUNNER_TEMP/actogram-before.log"
+            echo "::error::The original actogram unexpectedly passed the regression"
+            exit 1
+          fi
+          cat "$RUNNER_TEMP/actogram-before.log"
+          grep -q 'each_key_duplicate' "$RUNNER_TEMP/actogram-before.log"
+      - name: Steps and heart rate actogram browser regression
+        run: pnpm --filter @nocturne/app run test:browser --run src/lib/components/actogram/actogram.svelte.test.ts
       - name: Typecheck portal
         run: pnpm --filter @nocturne/portal run check
 

@@ -1,5 +1,13 @@
 # Personal source versions
 
+## 0.3.28 — 2026-10-09
+
+Updated to the newest published upstream main snapshot `df000c33e15d3809591261d78a22135bb0176ffd`.
+Includes dashboard/chart refresh fixes (PR #2019), v3 history and user-deletion
+fixes (#1825), and uploader-origin handling for temporary basals (#1570).
+Personal extensions remain present. The later translation-only upstream commit
+`d106f6085` skips image publication and is not part of this compiled snapshot.
+
 ## 0.3.27 — 2026-10-09
 
 Updated to upstream Nocturne main `ef8850840c349fa9519a7f3022599ec9adddff82`

@@ -344,6 +344,76 @@ public class V4ToLegacyProjectionServiceTests
     }
 
     [Fact]
+    public async Task GetProjectedTreatments_ReportsServerClockNotEventTime()
+    {
+        // A meal is created when its first constituent was and modified when its last one was, so
+        // srvCreated never runs ahead of srvModified.
+        var correlationId = Guid.CreateVersion7();
+        var eventTime = new DateTime(2025, 01, 01, 12, 0, 0, DateTimeKind.Utc);
+        var mealBolus = new Bolus
+        {
+            Id = Guid.CreateVersion7(),
+            CorrelationId = correlationId,
+            Timestamp = eventTime,
+            Insulin = 4.0,
+            CreatedAt = eventTime.AddDays(2),
+            ModifiedAt = eventTime.AddDays(4),
+        };
+        var carb = new CarbIntake
+        {
+            Id = Guid.CreateVersion7(),
+            CorrelationId = correlationId,
+            Timestamp = eventTime,
+            Carbs = 30.0,
+            CreatedAt = eventTime.AddDays(1),
+            ModifiedAt = eventTime.AddDays(3),
+        };
+        var correction = new Bolus
+        {
+            Id = Guid.CreateVersion7(),
+            Timestamp = eventTime.AddHours(1),
+            Insulin = 1.0,
+            CreatedAt = eventTime.AddDays(5),
+            ModifiedAt = eventTime.AddDays(6),
+        };
+        SetupBoluses(new[] { mealBolus, correction });
+        SetupCarbs(new[] { carb });
+
+        var result = (await _service.GetProjectedTreatmentsAsync(null, null, 100)).ToList();
+
+        var meal = result.Single(t => t.EventType == TreatmentTypes.MealBolus);
+        meal.SrvCreated.Should().Be(ToMills(carb.CreatedAt));
+        meal.SrvModified.Should().Be(ToMills(mealBolus.ModifiedAt));
+
+        var single = result.Single(t => t.EventType == TreatmentTypes.CorrectionBolus);
+        single.SrvCreated.Should().Be(ToMills(correction.CreatedAt));
+        single.SrvModified.Should().Be(ToMills(correction.ModifiedAt));
+        single.Mills.Should().Be(ToMills(correction.Timestamp));
+    }
+
+    [Fact]
+    public async Task GetProjectedTreatmentsModifiedSince_ReportsSrvCreatedAsTheRowCreationTime()
+    {
+        var bolus = new BolusEntity
+        {
+            Id = Guid.CreateVersion7(),
+            TenantId = TenantId,
+            Timestamp = Cursor.AddYears(-1),
+            Insulin = 1.0,
+        };
+        await AddModifiedAsync((bolus, Cursor.AddMinutes(1)));
+
+        var result = (await _service.GetProjectedTreatmentsModifiedSinceAsync(CursorMills, 100)).ToList();
+
+        result.Should().ContainSingle();
+        result[0].SrvCreated.Should().Be(ToMills(bolus.SysCreatedAt));
+        result[0].SrvCreated.Should().NotBe(result[0].Mills);
+    }
+
+    private static long ToMills(DateTime value) =>
+        new DateTimeOffset(value, TimeSpan.Zero).ToUnixTimeMilliseconds();
+
+    [Fact]
     public async Task GetProjectedTreatmentsModifiedSince_ExcludesRecordAtCursor()
     {
         // AAPS passes the timestamp of the newest record it already holds as the cursor.
@@ -484,9 +554,10 @@ public class V4ToLegacyProjectionServiceTests
     }
 
     [Fact]
-    public async Task GetProjectedTreatmentsModifiedSince_FailingType_StillProjectsTheOthers()
+    public async Task GetProjectedTreatmentsModifiedSince_FailingType_FailsTheRead()
     {
-        // One type's read blowing up must degrade that type only, exactly as the range path does.
+        // A database failure on one type fails the read: serving the page without that type would
+        // advance a history client's cursor past records it never received.
         var bolus = new BolusEntity
         {
             Id = Guid.CreateVersion7(),
@@ -509,14 +580,39 @@ public class V4ToLegacyProjectionServiceTests
         await abandoned.DisposeAsync();
         _dbContext.Boluses = abandonedSet;
 
-        var result = (await _service.GetProjectedTreatmentsModifiedSinceAsync(CursorMills, 100)).ToList();
+        var read = () => _service.GetProjectedTreatmentsModifiedSinceAsync(CursorMills, 100);
 
-        result.Should().ContainSingle();
-        result[0].Id.Should().Be(note.Id.ToString());
+        await read.Should().ThrowAsync<ObjectDisposedException>();
     }
 
     [Fact]
-    public async Task GetProjectedTreatments_FailingType_StillProjectsTheOthers()
+    public async Task GetProjectedTreatmentsModifiedSince_UntranslatableType_StillProjectsTheOthers()
+    {
+        // The in-memory provider cannot translate the served-span JSON filter, so the three span
+        // types are skipped and every record type still serves.
+        var bolus = new BolusEntity
+        {
+            Id = Guid.CreateVersion7(),
+            TenantId = TenantId,
+            Timestamp = Cursor,
+            Insulin = 1.0,
+        };
+        var note = new NoteEntity
+        {
+            Id = Guid.CreateVersion7(),
+            TenantId = TenantId,
+            Timestamp = Cursor,
+            Text = "survivor",
+        };
+        await AddModifiedAsync((bolus, Cursor.AddMinutes(1)), (note, Cursor.AddMinutes(1)));
+
+        var result = (await _service.GetProjectedTreatmentsModifiedSinceAsync(CursorMills, 100)).ToList();
+
+        result.Select(t => t.Id).Should().BeEquivalentTo(new[] { bolus.Id.ToString(), note.Id.ToString() });
+    }
+
+    [Fact]
+    public async Task GetProjectedTreatments_UntranslatableType_StillProjectsTheOthers()
     {
         SetupBoluses(Enumerable.Empty<Bolus>());
         _bolusRepo
@@ -544,6 +640,53 @@ public class V4ToLegacyProjectionServiceTests
 
         result.Should().ContainSingle();
         result[0].Id.Should().Be(note.Id.ToString());
+    }
+
+    public static TheoryData<Exception> UnguardedReadFailures => new()
+    {
+        new OperationCanceledException("request aborted"),
+        new TimeoutException("database timed out"),
+    };
+
+    /// <summary>
+    /// Only a read the provider cannot translate is skipped; a cancellation or a database failure
+    /// fails the read instead of serving a page with that type silently missing.
+    /// </summary>
+    [Theory]
+    [MemberData(nameof(UnguardedReadFailures))]
+    public async Task GetProjectedTreatments_ReadFailureOtherThanTranslation_Propagates(Exception failure)
+    {
+        _bolusRepo
+            .Setup(r => r.GetAsync(
+                It.IsAny<DateTime?>(), It.IsAny<DateTime?>(),
+                It.IsAny<string?>(), It.IsAny<string?>(),
+                It.IsAny<int>(), It.IsAny<int>(),
+                It.IsAny<bool>(), It.IsAny<bool>(),
+                It.IsAny<BolusKind?>(),
+                It.IsAny<DateTime?>(), It.IsAny<Guid?>(),
+                It.IsAny<CancellationToken>()))
+            .ThrowsAsync(failure);
+
+        var read = () => _service.GetProjectedTreatmentsAsync(null, null, 100);
+
+        (await read.Should().ThrowAsync<Exception>()).Which.Should().BeSameAs(failure);
+    }
+
+    /// <summary>
+    /// Resolving a span by id is not guarded: a failed lookup must not read as "no such treatment",
+    /// which would answer a GET, PUT or DELETE by that id with 404.
+    /// </summary>
+    [Fact]
+    public async Task GetProjectedStateSpanTreatment_LookupFailure_Propagates()
+    {
+        using var abandoned = TestDbContextFactory.CreateInMemoryContext();
+        var abandonedSet = abandoned.Set<StateSpanEntity>();
+        await abandoned.DisposeAsync();
+        _dbContext.StateSpans = abandonedSet;
+
+        var lookup = () => _service.GetProjectedStateSpanTreatmentAsync(Guid.NewGuid().ToString());
+
+        await lookup.Should().ThrowAsync<ObjectDisposedException>();
     }
 
     [Fact]

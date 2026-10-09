@@ -73,7 +73,7 @@ public sealed class ActogramReportService : IActogramReportService
         // rejects overlapping operations on a single context. Npgsql also
         // serializes commands per connection, so Task.WhenAll buys no real
         // throughput here even when it doesn't crash.
-        var glucoseRecords = await _sensorGlucoseRepository.GetAsync(
+        var glucoseRecords = await _sensorGlucoseRepository.GetForAnalyticsAsync(
             from: fromDt,
             to: toDt,
             device: null,
@@ -92,11 +92,11 @@ public sealed class ActogramReportService : IActogramReportService
             includeStages: true,
             cancellationToken: cancellationToken);
 
-        var stepRecords = await _stepCountService.GetStepCountsByDateRangeAsync(
+        var stepRecords = (await _stepCountService.GetStepCountsByDateRangeAsync(
             fromDt,
             toDt,
             cancellationToken: cancellationToken
-        );
+        )).Where(s => !s.IsPossibleRunningTotal()).ToList();
 
         var heartRateRecords = await _heartRateService.GetHeartRatesByDateRangeAsync(
             fromDt,

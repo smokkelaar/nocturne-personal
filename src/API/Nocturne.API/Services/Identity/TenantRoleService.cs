@@ -64,7 +64,6 @@ public partial class TenantRoleService(
         List<string> permissions,
         CancellationToken ct = default)
     {
-        var now = DateTime.UtcNow;
         var entity = new TenantRoleEntity
         {
             Id = Guid.CreateVersion7(),
@@ -74,7 +73,6 @@ public partial class TenantRoleService(
             Description = description,
             Permissions = permissions,
             IsSystem = false,
-            SysUpdatedAt = now,
         };
 
         context.TenantRoles.Add(entity);
@@ -154,14 +152,7 @@ public partial class TenantRoleService(
 
             foreach (var member in affectedMembers)
             {
-                // Compute remaining permissions without this role
-                var remainingPermissions = member.MemberRoles
-                    .Where(mr => mr.TenantRoleId != roleId)
-                    .SelectMany(mr => mr.TenantRole.Permissions)
-                    .Union(member.DirectPermissions ?? [])
-                    .ToList();
-
-                if (remainingPermissions.Count == 0)
+                if (!member.EffectivePermissions(excludingRoleId: roleId).Any())
                 {
                     return new DeleteRoleResult(
                         false,
@@ -199,8 +190,6 @@ public partial class TenantRoleService(
             .Select(r => r.Slug)
             .ToListAsync(ct);
 
-        var now = DateTime.UtcNow;
-
         foreach (var (slug, permissions) in RoleSeeds.Permissions)
         {
             if (existingSlugs.Contains(slug))
@@ -216,7 +205,6 @@ public partial class TenantRoleService(
                 Description = null,
                 Permissions = new List<string>(permissions),
                 IsSystem = true,
-                SysUpdatedAt = now,
             });
         }
 
@@ -270,14 +258,7 @@ public partial class TenantRoleService(
         if (member is null)
             return [];
 
-        var rolePermissions = member.MemberRoles
-            .SelectMany(mr => mr.TenantRole.Permissions);
-
-        var directPermissions = member.DirectPermissions ?? [];
-
-        return rolePermissions
-            .Union(directPermissions)
-            .ToList();
+        return member.EffectivePermissions().ToList();
     }
 
     /// <inheritdoc />

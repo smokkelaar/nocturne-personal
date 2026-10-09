@@ -9,6 +9,7 @@
   import { getDataTypeLabel } from "$lib/utils/data-type-labels";
 
   interface Props {
+    disabled?: boolean;
     availableDataSources: string[];
     selectedDataSources: string[];
     presentDataTypes: string[];
@@ -18,6 +19,7 @@
   }
 
   let {
+    disabled = false,
     availableDataSources,
     selectedDataSources = $bindable([]),
     presentDataTypes,
@@ -38,7 +40,6 @@
       <CalendarDays class="h-5 w-5 text-primary" />
     </div>
     <div>
-      <h1 class="text-2xl font-bold tracking-tight">Year Overview</h1>
       <p class="text-sm text-muted-foreground">
         Multi-year heatmap of all your data
       </p>
@@ -56,7 +57,7 @@
         onValueChange={(v) => {
           selectedDataSources = v ?? [];
         }}
-        disabled={availableDataSources.length === 0}
+        disabled={disabled || availableDataSources.length === 0}
       >
         <Select.Trigger class="w-[200px]">
           <span class="truncate">

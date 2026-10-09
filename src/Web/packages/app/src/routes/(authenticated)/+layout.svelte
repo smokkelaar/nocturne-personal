@@ -1,5 +1,10 @@
 <script lang="ts">
   import { createRealtimeStore } from "$lib/stores/realtime-store.svelte";
+  import {
+    displayedGlucose,
+    refreshSummaryOnNewReading,
+  } from "$lib/stores/current-glucose-status.svelte";
+  import { getGlucoseTileVariant } from "$lib/utils/glucose-status";
   import { createSettingsStore } from "$lib/stores/settings-store.svelte";
   import { createAuthStore } from "$lib/stores/auth-store.svelte";
   import { authInterceptorState } from "$lib/api/auth-interceptor";
@@ -31,7 +36,6 @@
   import CoachParamHandler from "$lib/coach-marks/CoachParamHandler.svelte";
   import { STALE_THRESHOLD_MS } from "$lib/constants/staleness";
   import ChartPrintPatterns from "$lib/components/charts/print/ChartPrintPatterns.svelte";
-  import { createConnectionIndicator } from "$lib/stores/connection-indicator.svelte";
 
   // LocalStorage key for title/favicon settings
   const SETTINGS_STORAGE_KEY = "nocturne-title-favicon-settings";
@@ -59,6 +63,7 @@
   const tenantless: boolean = data.tenantless === true;
 
   const realtimeStore = createRealtimeStore(config);
+  refreshSummaryOnNewReading(() => realtimeStore.currentEntry?.mills);
   createAuthStore(); // Initialize auth store in context
 
   // Suppress the auth interceptor's login redirect for guest and public
@@ -72,6 +77,7 @@
   createSettingsStore(!tenantless);
 
   let commandPaletteOpen = $state(false);
+  let bannerStripHeight = $state(0);
 
   const coachMarkAdapter = createCoachMarkAdapter(tenantless);
   const coachRouter: CoachRouter = { beforeNavigate, goto };
@@ -149,21 +155,20 @@
   const lastUpdated = $derived(realtimeStore.lastUpdated);
   const timeSinceReading = $derived(realtimeStore.timeSinceReading);
 
-  const connection = createConnectionIndicator(
-    () => realtimeStore.connectionStatus
-  );
-  const isDisconnected = $derived(connection.isDisconnected);
+  const isDisconnected = $derived(realtimeStore.connectionUnavailable);
   const isStale = $derived(now - lastUpdated > STALE_THRESHOLD_MS);
+  const glucose = displayedGlucose(realtimeStore);
 
   $effect(() => {
     // Determine if we should update
     const enabled = titleFaviconSettings.enabled;
-    const bg = realtimeStore.currentBG;
+    const bg = glucose.currentBG;
 
     // Explicit dependencies for visual updates
     const title = timeSinceReading;
-    const delta = realtimeStore.bgDelta;
-    const dir = realtimeStore.direction;
+    const delta = glucose.bgDelta;
+    const dir = glucose.direction;
+    const variant = getGlucoseTileVariant(glucose.status);
 
     if (enabled && bg > 0) {
       titleFaviconService.update(
@@ -171,7 +176,7 @@
         dir,
         delta,
         titleFaviconSettings,
-        defaultSettings.thresholds,
+        variant,
         isDisconnected,
         isStale,
         title
@@ -179,38 +184,23 @@
     }
   });
 
-  // Handle alarm events for flashing
-  // When an alarm is active, start flashing with the alarm's visual settings
+  const alarmVisual: AlarmVisualSettings = {
+    screenFlash: true,
+    flashColor: "",
+    flashIntervalMs: 1000,
+    persistentBanner: true,
+    wakeScreen: true,
+    showEmergencyContacts: false,
+  };
+
   $effect(() => {
-    const bg = realtimeStore.currentBG;
+    const bg = glucose.currentBG;
     if (
       bg &&
       titleFaviconSettings.enabled &&
       titleFaviconSettings.flashOnAlarm
     ) {
-      const status = titleFaviconService.getGlucoseStatus(
-        bg,
-        defaultSettings.thresholds
-      );
-      if (status === "very-low" || status === "very-high") {
-        // Start flashing with default alarm visual settings if not already flashing
-        if (!titleFaviconService.isFlashing) {
-          const alarmVisual: AlarmVisualSettings = {
-            screenFlash: true,
-            flashColor: "",
-            flashIntervalMs: 1000,
-            persistentBanner: true,
-            wakeScreen: true,
-            showEmergencyContacts: false,
-          };
-          titleFaviconService.startFlashing(alarmVisual);
-        }
-      } else {
-        // Stop flashing if no longer in alarm state
-        if (titleFaviconService.isFlashing) {
-          titleFaviconService.stopFlashing();
-        }
-      }
+      titleFaviconService.syncAlarmFlash(glucose.status, alarmVisual);
     }
   });
 </script>
@@ -220,9 +210,18 @@
   <ChartPrintPatterns />
   <Sidebar.Provider>
     <AppSidebar user={data.user} isPlatformAdmin={data.isPlatformAdmin} isPlatformAccessGrant={data.isPlatformAccessGrant} isGuestSession={data.isGuestSession} currentSlug={data.tenantSlug} baseDomain={data.baseDomain} tenantless={data.tenantless} />
-    <Sidebar.Inset>
+    <!-- --app-sticky-top is the top of the usable viewport below the app chrome (the visible
+         MobileHeader plus the banner strip); page-level sticky bars pin to it with the
+         header's 300ms transition. -->
+    <Sidebar.Inset
+      class="min-w-0 [--app-sticky-top:calc(var(--mobile-header-offset,0px)_+_var(--app-banner-height))] md:[--app-sticky-top:var(--app-banner-height)]"
+      style="--app-banner-height: {bannerStripHeight}px"
+    >
       <MobileHeader />
-      <div class="sticky top-(--mobile-header-offset,0px) z-40 transition-all duration-300 md:top-0">
+      <div
+        class="sticky top-(--mobile-header-offset,0px) z-40 transition-all duration-300 md:top-0"
+        bind:offsetHeight={bannerStripHeight}
+      >
           {#if data.isDemo}
             <DemoBanner nextResetAt={data.nextResetAt} />
           {/if}
@@ -243,7 +242,7 @@
         />
         <AlertSurfaces />
       {/if}
-      <main class="flex-1 overflow-auto">
+      <main class="flex-1 overflow-x-clip">
         <svelte:boundary>
           {@render children()}
 

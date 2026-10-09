@@ -1,8 +1,8 @@
 // Real-time data store using Svelte 5 Runes and WebSocket integration
 import { WebSocketClient } from "$lib/websocket/websocket-client.svelte";
-import { entryIdentity, unseenEntries } from "./entry-identity";
+import { entryIdentity, isSameEntry, unseenEntries } from "./entry-identity";
 import { markedRead } from "./notification-read";
-import { untilNow } from "$lib/utils/now";
+import { startOfLocalDay, untilNow } from "$lib/utils/now";
 import { toDate } from "$lib/utils/formatting";
 import type {
   Entry,
@@ -37,11 +37,13 @@ export interface DeviceStatus extends PillsDeviceStatus {
   uploader?: Record<string, unknown>;
 }
 import { NotificationUrgency } from "$lib/api";
+import { reachedStep } from "$lib/components/trackers/schedule";
 import {
   mergeEntryRecords,
   type EntryRecord,
 } from "$lib/constants/entry-categories";
 import { toast } from "svelte-sonner";
+import { isErrorStatus, presentConnection } from "./connection-indicator.svelte";
 import * as alarmState from "$lib/stores/alarm-state.svelte";
 import { getContext, setContext } from "svelte";
 import { getApiClient } from "$lib/api/client";
@@ -54,11 +56,18 @@ import { isEntryDocument } from "$lib/websocket/payloads";
 import { isRecord } from "$lib/utils/type-guards";
 import { toIsoString } from "$lib/utils/api-date";
 
+/** The tracker levels loud enough for the notifications list; Info stays on the pill. */
+const TRACKER_NOTIFICATION_LEVELS: Partial<Record<NotificationUrgency, "warn" | "hazard" | "urgent">> = {
+  [NotificationUrgency.Warn]: "warn",
+  [NotificationUrgency.Hazard]: "hazard",
+  [NotificationUrgency.Urgent]: "urgent",
+};
+
 /**
  * Normalize a V4 SensorGlucose DTO (REST shape: `id` + `mgdl`, no `_id`/`sgv`) into the Entry
- * shape the store uses. `_id` is set to the reading's GUID — the value the API's realtime
- * broadcast also uses for `Entry._id` — so REST-backfilled and live-pushed copies of a reading
- * dedupe on `_id`.
+ * shape the store uses. `_id` is the reading's uuid, which is not the ObjectId-form `_id` the
+ * realtime broadcast carries, so REST-backfilled and live-pushed copies pair up through
+ * {@link isSameEntry}.
  */
 export function sensorGlucoseToEntry(sg: SensorGlucose): Entry {
   // `trend` is dropped: SensorGlucose names it (GlucoseTrend) where Entry holds
@@ -72,6 +81,34 @@ export function sensorGlucoseToEntry(sg: SensorGlucose): Entry {
     sgv: sg.mgdl,
     data_source: sg.dataSource,
   };
+}
+
+/** How many readings the recent-readings list shows, and so the fewest the store starts from. */
+export const RECENT_READINGS = 5;
+
+/**
+ * The readings the store starts from: those since `from`, which the caller sets to cover today and
+ * the last day. The window is left open-ended so a reading stamped ahead of the browser's clock is
+ * still the current one. An uploader that has been quiet for most of the window still has a
+ * current reading, delta and recent list to show, so a sparse window is topped up with the newest
+ * readings.
+ */
+export async function loadInitialGlucose(
+  apiClient: ReturnType<typeof getApiClient>,
+  from: string
+): Promise<Entry[]> {
+  try {
+    const recent = ((await apiClient.sensorGlucose.getAll(from, undefined, 1000)).data ?? []).map(
+      sensorGlucoseToEntry
+    );
+    if (recent.length >= RECENT_READINGS) return recent;
+    const latest = ((await apiClient.sensorGlucose.getAll(undefined, undefined, RECENT_READINGS)).data ?? []).map(
+      sensorGlucoseToEntry
+    );
+    return [...recent, ...unseenEntries(recent, latest)];
+  } catch {
+    return [];
+  }
 }
 
 const REALTIME_STORE_KEY = Symbol("realtime-store");
@@ -121,12 +158,9 @@ export class RealtimeStore {
   private backgroundPollInterval: ReturnType<typeof setInterval> | null = null;
   private static readonly BACKGROUND_POLL_MS = 30_000; // 30s — browsers throttle setInterval to ~60s in hidden tabs, so aim for ~1 poll per minute worst-case
 
-  /** Whether a working socket has ever been established this session, so the
-   *  expected first connect isn't announced as a recovery. */
-  private hasEverConnected = false;
   /** Whether the user has been told the connection is down, so the recovery
    *  notice only appears if there was a loss to recover from. */
-  private announcedDisconnect = false;
+  private announcedDisconnect = $state(false);
   private disconnectNoticeTimer: ReturnType<typeof setTimeout> | null = null;
   /** Socket.io disconnects on transport churn and page teardown, so wait to see
    *  whether the loss is real before interrupting the user. */
@@ -167,6 +201,19 @@ export class RealtimeStore {
   );
   isConnected = $derived(this.websocketClient?.isConnected || false);
   connectionError = $derived(this.websocketClient?.lastError || null);
+  /** The user-facing "Connection Error": latched only once the socket has stayed
+   *  in an error status for `DISCONNECT_NOTICE_DELAY_MS` while the page is
+   *  visible, so a background-tab suspension never presents as an outage. A
+   *  definitive denial ends it: that session is shown as not live, not failed. */
+  connectionUnavailable = $derived(
+    this.announcedDisconnect &&
+      this.connectionStatus !== "connected" &&
+      this.connectionStatus !== "unauthorized"
+  );
+  /** The one connection state every indicator renders. */
+  connectionPresentation = $derived(
+    presentConnection(this.connectionStatus, this.connectionUnavailable)
+  );
   connectionStats = $derived(
     this.websocketClient?.stats || {
       connectedClients: 0,
@@ -177,22 +224,21 @@ export class RealtimeStore {
     }
   );
 
-  /** Latest glucose data computations */
-  currentEntry = $derived.by(() => {
-    const sorted = [...this.entries].sort(
-      (a, b) => (b.mills || 0) - (a.mills || 0)
-    );
-    return sorted[0] || null;
-  });
+  /**
+   * Meter and calibration entries share the entries collection, but the current reading, its
+   * delta and its trend are the CGM's, matching the summary's `current` on `mills`.
+   */
+  private sensorReadingsNewestFirst = $derived(
+    this.entries
+      .filter((e) => e.type === "sgv")
+      .sort((a, b) => (b.mills || 0) - (a.mills || 0))
+  );
+
+  currentEntry = $derived(this.sensorReadingsNewestFirst[0] ?? null);
 
   demoMode = $derived(this.entries.some((e) => e.data_source === "demo-service"));
 
-  previousEntry = $derived.by(() => {
-    const sorted = [...this.entries].sort(
-      (a, b) => (b.mills || 0) - (a.mills || 0)
-    );
-    return sorted[1] || null;
-  });
+  previousEntry = $derived(this.sensorReadingsNewestFirst[1] ?? null);
 
   /** Current glucose values */
   currentBG = $derived(this.currentEntry?.sgv ?? this.currentEntry?.mgdl ?? 0);
@@ -259,39 +305,27 @@ export class RealtimeStore {
   trackerNotifications = $derived.by(() => {
     return this.trackerInstances
       .map((instance) => {
-        const def = this.trackerDefinitions.find((d) => d.id === instance.definitionId);
-        if (!def || !def.notificationThresholds) return null;
+        const step = reachedStep(instance, this.now);
+        const level = step?.urgency ? TRACKER_NOTIFICATION_LEVELS[step.urgency] : undefined;
+        if (!step || !level) return null;
 
-        // Compute age dynamically from startedAt and current time
-        // This ensures notifications update in real-time as time passes
         const age = instance.startedAt
           ? (this.now - (toDate(instance.startedAt)?.getTime() ?? this.now)) / (1000 * 60 * 60)
           : instance.ageHours ?? 0;
-
-        if (!age || age <= 0) return null;
-
-        // Determine level from notificationThresholds
-        let level: Lowercase<NotificationUrgency> | null = null;
-
-        // Sort thresholds by hours descending to find the highest triggered level
-        const sortedThresholds = [...def.notificationThresholds].sort(
-          (a, b) => (b.hours ?? 0) - (a.hours ?? 0)
-        );
-
-        for (const threshold of sortedThresholds) {
-          if (threshold.hours && age >= threshold.hours) {
-            const urgency = threshold.urgency;
-            if (urgency === NotificationUrgency.Urgent) { level = "urgent"; break; }
-            if (urgency === NotificationUrgency.Hazard) { level = "hazard"; break; }
-            if (urgency === NotificationUrgency.Warn) { level = "warn"; break; }
-            if (urgency === NotificationUrgency.Info) { level = "info"; break; }
-          }
-        }
-
-        if (!level || level === "info") return null;
-        return { ...instance, level, ageHours: age };
+        return {
+          ...instance,
+          level,
+          reachedDescription: step.description,
+          ageHours: age,
+        };
       })
-      .filter((n): n is TrackerInstanceDto & { level: "warn" | "hazard" | "urgent"; ageHours: number } => n !== null);
+      .filter(
+        (n): n is TrackerInstanceDto & {
+          level: "warn" | "hazard" | "urgent";
+          reachedDescription: string | undefined;
+          ageHours: number;
+        } => n !== null
+      );
   });
 
   constructor(config: WebSocketConfig) {
@@ -328,11 +362,15 @@ export class RealtimeStore {
           // Snap now immediately so time-since displays don't lag
           this.now = Date.now();
           this.stopBackgroundPolling();
+          this.clearDisconnectNotice();
+          this.websocketClient.ensureConnected();
+          if (!this.websocketClient.isConnected) this.scheduleDisconnectNotice();
           console.log('[RealtimeStore] Page became visible, backfilling missed data...');
           // Always backfill on return — timers are unreliable in hidden tabs
           // so we can't trust lastDataReceived to be meaningful
           this.performBackfillIfNeeded(true);
         } else {
+          this.clearDisconnectNotice();
           console.log('[RealtimeStore] Page hidden, starting background polling...');
           this.startBackgroundPolling();
         }
@@ -357,6 +395,9 @@ export class RealtimeStore {
       // Fetch historical data using the properly configured API client
       const apiClient = getApiClient();
       const { from: oneDayAgo, to: now } = untilNow(Date.now() - 24 * 60 * 60 * 1000);
+      const glucoseFrom = untilNow(
+        Math.min(startOfLocalDay(Date.now()), Date.parse(oneDayAgo))
+      ).from;
       const [
         historicalEntries,
         deviceStatusData,
@@ -372,7 +413,7 @@ export class RealtimeStore {
         historicalApsSnapshots,
         currentTherapyState,
       ] = await Promise.all([
-        apiClient.sensorGlucose.getAll(undefined, undefined, 1000).then((r) => (r.data ?? []).map(sensorGlucoseToEntry)).catch((): Entry[] => []),
+        loadInitialGlucose(apiClient, glucoseFrom),
         Promise.resolve<DeviceStatus[]>([]),
         apiClient.profile.getProfileSummary().catch(() => null),
         apiClient.trackers.getDefinitions().catch(() => []),
@@ -476,26 +517,19 @@ export class RealtimeStore {
       // report a recovery from a loss the user was actually told about.
       if (this.announcedDisconnect) {
         toast.success("Reconnected to real-time data");
-        this.announcedDisconnect = false;
       }
-      this.hasEverConnected = true;
+      this.announcedDisconnect = false;
       // Always force backfill on reconnection — any disconnection may have
       // caused missed data, even if the gap was under 5 minutes.
       this.performBackfillIfNeeded(true);
     });
 
     this.websocketClient.on("disconnect", () => {
-      if (!this.hasEverConnected || this.announcedDisconnect) return;
-      if (this.disconnectNoticeTimer) return;
-      this.disconnectNoticeTimer = setTimeout(() => {
-        this.disconnectNoticeTimer = null;
-        this.announcedDisconnect = true;
-        toast.warning("Real-time data disconnected");
-      }, RealtimeStore.DISCONNECT_NOTICE_DELAY_MS);
+      this.scheduleDisconnectNotice();
     });
 
     this.websocketClient.on("connect_error", () => {
-      toast.error("Failed to connect to real-time data");
+      this.scheduleDisconnectNotice();
     });
 
     this.websocketClient.on("dataUpdate", (event: DataUpdateEvent) => {
@@ -639,7 +673,7 @@ export class RealtimeStore {
     const { colName, doc } = event;
 
     if (colName === "entries" && this.isEntry(doc)) {
-      const index = this.entries.findIndex((entry) => entry._id === doc._id);
+      const index = this.entries.findIndex((entry) => isSameEntry(entry, doc));
       if (index !== -1) {
         this.entries = [
           ...this.entries.slice(0, index),
@@ -659,7 +693,7 @@ export class RealtimeStore {
 
     if (colName === "entries" && isEntryDocument(doc)) {
       this.pendingEntryCreates.delete(entryIdentity(doc));
-      this.entries = this.entries.filter((entry) => entry._id !== doc._id);
+      this.entries = this.entries.filter((entry) => !isSameEntry(entry, doc));
     }
   }
 
@@ -897,6 +931,18 @@ export class RealtimeStore {
       clearTimeout(this.disconnectNoticeTimer);
       this.disconnectNoticeTimer = null;
     }
+  }
+
+  private scheduleDisconnectNotice(): void {
+    if (this.announcedDisconnect || this.disconnectNoticeTimer) return;
+    if (typeof document !== "undefined" && document.visibilityState !== "visible") return;
+    this.disconnectNoticeTimer = setTimeout(() => {
+      this.disconnectNoticeTimer = null;
+      if (!isErrorStatus(this.websocketClient.connectionStatus)) return;
+      if (typeof document !== "undefined" && document.visibilityState !== "visible") return;
+      this.announcedDisconnect = true;
+      toast.warning("Real-time data unavailable");
+    }, RealtimeStore.DISCONNECT_NOTICE_DELAY_MS);
   }
 
   /** Cleanup */

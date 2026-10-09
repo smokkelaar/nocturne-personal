@@ -29,7 +29,6 @@ msgstr "Fehler-ID: {0}"
 #: src/lib/components/connectors/DataSourceSelectionView.svelte
 #: src/lib/components/connectors/DataSourceSelectionView.svelte
 #: src/lib/components/dashboard/widgets/ConnectionStatusWidget.svelte
-#: src/routes/(authenticated)/settings/connectors/google-health/google-health-page.svelte
 #: src/routes/(unauthenticated)/auth/bot/authorize/done/+page.svelte
 msgid "Connected"
 msgstr "Verbunden"
@@ -49,15 +48,11 @@ msgstr "Verbinde..."
 msgid "Establishing connection"
 msgstr "Verbindung wird hergestellt"
 
-#: src/lib/components/WebSocketStatus.svelte
-#: src/lib/components/dashboard/widgets/ConnectionStatusWidget.svelte
-msgid "Reconnecting..."
-msgstr "Verbinde erneut..."
+#~ msgid "Reconnecting..."
+#~ msgstr "Verbinde erneut..."
 
-#: src/lib/components/WebSocketStatus.svelte
-#: src/lib/components/dashboard/widgets/ConnectionStatusWidget.svelte
-msgid "Attempting to reconnect"
-msgstr "Versuche erneut zu verbinden"
+#~ msgid "Attempting to reconnect"
+#~ msgstr "Versuche erneut zu verbinden"
 
 #: src/lib/components/WebSocketStatus.svelte
 #: src/lib/components/dashboard/widgets/ConnectionStatusWidget.svelte
@@ -69,12 +64,10 @@ msgstr "Getrennt"
 msgid "Using cached data"
 msgstr "Verwende zwischengespeicherte Daten"
 
-#: src/lib/components/WebSocketStatus.svelte
 #: src/lib/components/connectors/ConnectorDetailsDialog.svelte
 #: src/lib/components/connectors/ConnectorSelectionGrid.svelte
 #: src/lib/components/connectors/ConnectorSetup.svelte
 #: src/lib/components/connectors/DeduplicationDialog.svelte
-#: src/lib/components/dashboard/widgets/ConnectionStatusWidget.svelte
 #: src/lib/components/settings/DataSourceRow.svelte
 #: src/lib/components/status-pills/LoopPill.svelte
 #: src/routes/(authenticated)/compatibility/[id]/+page.svelte
@@ -85,8 +78,6 @@ msgstr "Verwende zwischengespeicherte Daten"
 msgid "Error"
 msgstr "Fehler"
 
-#: src/lib/components/WebSocketStatus.svelte
-#: src/lib/components/dashboard/widgets/ConnectionStatusWidget.svelte
 #: src/routes/(authenticated)/settings/migration/+page.svelte
 msgid "Connection failed"
 msgstr "Verbindung fehlgeschlagen"
@@ -345,13 +336,11 @@ msgstr "Fehler beim Laden der Verlaufsdaten"
 #~ msgid "Connected to real-time data"
 #~ msgstr ""
 
-#: src/lib/stores/realtime-store.svelte.ts
-msgid "Real-time data disconnected"
-msgstr "Verbindung zu Echtzeitdaten getrennt"
+#~ msgid "Real-time data disconnected"
+#~ msgstr "Verbindung zu Echtzeitdaten getrennt"
 
-#: src/lib/stores/realtime-store.svelte.ts
-msgid "Failed to connect to real-time data"
-msgstr "Fehler beim Verbinden mit Echtzeitdaten"
+#~ msgid "Failed to connect to real-time data"
+#~ msgstr "Fehler beim Verbinden mit Echtzeitdaten"
 
 #: src/lib/components/connectors/ConnectorDetailsDialog.svelte
 #: src/lib/components/connectors/ServerConnectorsCard.svelte
@@ -1577,7 +1566,6 @@ msgstr "Typen suchen..."
 #: src/routes/(authenticated)/compatibility/+page.svelte
 #: src/routes/(authenticated)/reports/data-quality/compression-lows/+page.svelte
 #: src/routes/(authenticated)/settings/admin/tenants/+page.svelte
-#: src/routes/(authenticated)/settings/connectors/google-health/google-health-page.svelte
 msgid "Status"
 msgstr "Status"
 
@@ -1812,8 +1800,6 @@ msgstr "Bolus:"
 #. 0: snapshot.enactedBolusVolume.toFixed(2)
 #. 0: snapshot.recommendedBolus.toFixed(2)
 #. 0: formatInsulinDisplay(treatmentSummary?.totals?.insulin?.bolus)
-#. 0: formatInsulinDisplay(treatmentSummary?.totals?.insulin?.basal)
-#. 0: formatInsulinDisplay((treatmentSummary?.totals?.insulin?.bolus ?? 0) + (treatmentSummary?.totals?.insulin?.basal ?? 0))
 #. 0: d.value.toFixed(2)
 #. 0: (row.insulin ?? 0).toFixed(2)
 #: src/lib/components/calendar/CalendarDayCell.svelte
@@ -1827,8 +1813,6 @@ msgstr "Bolus:"
 #: src/lib/components/reports/ApsStateCard.svelte
 #: src/lib/components/reports/ApsStateCard.svelte
 #: src/lib/components/reports/ApsStateCard.svelte
-#: src/lib/components/reports/DailyInsulinSummary.svelte
-#: src/lib/components/reports/DailyInsulinSummary.svelte
 #: src/lib/components/reports/DailyInsulinSummary.svelte
 #: src/lib/components/reports/InsulinDonutChart.svelte
 #: src/routes/(authenticated)/reports/day-in-review/+page.svelte
@@ -1848,6 +1832,7 @@ msgid "Click to view full day report"
 msgstr "Klicken, um den Tagesbericht anzuzeigen"
 
 #: src/lib/components/calendar/CalendarHeader.svelte
+#: src/lib/navigation/app-navigation.svelte.ts
 msgid "Calendar"
 msgstr "Kalender"
 
@@ -2460,6 +2445,7 @@ msgstr "Unbekanntes Gerät"
 #: src/lib/components/treatments/FoodSearchCombobox.svelte
 #: src/lib/components/treatments/TreatmentFoodSelectorDialog.svelte
 #: src/lib/components/treatments/TreatmentFoodSelectorDialog.svelte
+#: src/lib/navigation/app-navigation.svelte.ts
 msgid "Food"
 msgstr "Lebensmittel"
 
@@ -2565,7 +2551,6 @@ msgstr "Connector offline"
 #: src/lib/components/admin/IntegrationsTabContent.svelte
 #: src/lib/components/connectors/ConnectorDetailsDialog.svelte
 #: src/lib/components/settings/ConnectorConfigForm.svelte
-#: src/routes/(authenticated)/settings/connectors/google-health/google-health-page.svelte
 msgid "Configured"
 msgstr "Konfiguriert"
 
@@ -2581,6 +2566,7 @@ msgstr "Dieser Connector unterstützt nur die Synchronisierung aktueller Daten."
 msgid "Select a date range to re-sync specific data."
 msgstr "Wähle einen Zeitraum aus, um bestimmte Daten erneut zu synchronisieren."
 
+#: ../portal/src/lib/components/docs/alert-simulator/ConditionEditor.svelte
 #: src/lib/components/connectors/ConnectorDetailsDialog.svelte
 #: src/routes/(authenticated)/alerts/dnd/+page.svelte
 #: src/routes/(authenticated)/settings/audit/+page.svelte
@@ -2588,6 +2574,7 @@ msgstr "Wähle einen Zeitraum aus, um bestimmte Daten erneut zu synchronisieren.
 msgid "From"
 msgstr "Von"
 
+#: ../portal/src/lib/components/docs/alert-simulator/ConditionEditor.svelte
 #: src/lib/components/connectors/ConnectorDetailsDialog.svelte
 #: src/routes/(authenticated)/alerts/dnd/+page.svelte
 #: src/routes/(authenticated)/settings/audit/+page.svelte
@@ -3207,8 +3194,6 @@ msgid "<0/> Has Data"
 msgstr "<0/> Hat Daten"
 
 #: src/lib/components/connectors/ServerConnectorsCard.svelte
-#: src/lib/components/connectors/ServerConnectorsCard.svelte
-#: src/routes/(authenticated)/settings/connectors/google-health/google-health-page.svelte
 msgid "Not Configured"
 msgstr "Nicht konfiguriert"
 
@@ -3473,11 +3458,13 @@ msgstr "Insuline"
 #: src/lib/components/rbac/PermissionCategorySelector.svelte
 #: src/lib/components/rbac/PermissionSummary.svelte
 #: src/lib/components/settings/TokenScopeSelector.svelte
+#: src/lib/navigation/app-navigation.svelte.ts
 #: src/routes/(authenticated)/alerts/+page.svelte
 #: src/routes/(unauthenticated)/setup/steps/Finish.svelte
 msgid "Alerts"
 msgstr "Alarme"
 
+#: src/lib/navigation/app-navigation.svelte.ts
 #: src/routes/(authenticated)/settings/members/+page.svelte
 msgid "Sharing & Privacy"
 msgstr "Teilen & Datenschutz"
@@ -3846,6 +3833,7 @@ msgstr "Sensor"
 msgid "<0/> BG Check"
 msgstr "<0/> Blutzuckermessung"
 
+#: ../portal/src/lib/components/docs/alert-simulator/ConditionEditor.svelte
 #: src/lib/components/entries/BGCheckSection.svelte
 #: src/lib/components/trackers/ReservoirReportDialog.svelte
 #: src/lib/components/treatments/edit-dialog/BGCheckFormFields.svelte
@@ -4236,9 +4224,9 @@ msgstr "Pumpenbatteriewechsel"
 #: src/lib/components/dashboard/glucose-chart/ChartLegend.svelte
 #: src/lib/components/dashboard/glucose-chart/ChartLegend.svelte
 #: src/lib/components/dashboard/glucose-chart/ChartLegend.svelte
-#: src/lib/components/dashboard/glucose-chart/engine/chart-data-engine.svelte.ts
-#: src/lib/components/dashboard/glucose-chart/engine/chart-data-engine.svelte.ts
-#: src/lib/components/dashboard/glucose-chart/engine/chart-data-engine.svelte.ts
+#: src/lib/components/dashboard/glucose-chart/engine/chart-data-view.svelte.ts
+#: src/lib/components/dashboard/glucose-chart/engine/chart-data-view.svelte.ts
+#: src/lib/components/dashboard/glucose-chart/engine/chart-data-view.svelte.ts
 #: src/lib/components/icons/PumpModeIcon.svelte
 #: src/lib/components/treatments/edit-dialog/BolusFormFields.svelte
 msgid "Automatic"
@@ -4266,7 +4254,6 @@ msgstr "Boost"
 #: src/lib/components/settings/TokenScopeSelector.svelte
 #: src/lib/navigation/report-navigation.svelte.ts
 #: src/routes/(authenticated)/reports/sleep/+page.svelte
-#: src/routes/(authenticated)/settings/connectors/google-health/google-health-page.svelte
 msgid "Sleep"
 msgstr "Schlaf"
 
@@ -4449,55 +4436,68 @@ msgstr "Protokollierte Zeit"
 msgid "Accept"
 msgstr "Akzeptieren"
 
-#~ msgid "Dashboard"
-#~ msgstr ""
+#: src/lib/navigation/app-navigation.svelte.ts
+msgid "Dashboard"
+msgstr ""
 
-#~ msgid "Time Spans"
-#~ msgstr ""
+#: src/lib/navigation/app-navigation.svelte.ts
+msgid "Time Spans"
+msgstr ""
 
 #: ../portal/src/routes/features/+page.svelte
 #: src/lib/components/rbac/PermissionCategorySelector.svelte
 #: src/lib/components/rbac/PermissionSummary.svelte
 #: src/lib/components/settings/TokenScopeSelector.svelte
+#: src/lib/navigation/app-navigation.svelte.ts
 #: src/routes/(authenticated)/reports/+layout.svelte
 #: src/routes/(authenticated)/reports/+page.svelte
 msgid "Reports"
 msgstr "Berichte"
 
 #: src/lib/components/dashboard/widgets/ClockWidget.svelte
+#: src/lib/navigation/app-navigation.svelte.ts
 msgid "Clock"
 msgstr "Uhr"
 
+#: src/lib/navigation/app-navigation.svelte.ts
 #: src/routes/(authenticated)/compatibility/[id]/+page.svelte
 msgid "Overview"
 msgstr "Übersicht"
 
+#: src/lib/navigation/app-navigation.svelte.ts
 #: src/routes/(authenticated)/meals/+page.svelte
 msgid "Meals"
 msgstr "Mahlzeiten"
 
+#: src/lib/navigation/app-navigation.svelte.ts
 #: src/routes/(authenticated)/tools/+page.svelte
 msgid "Tools"
 msgstr "Werkzeuge"
 
-#~ msgid "Packing"
-#~ msgstr ""
+#: src/lib/navigation/app-navigation.svelte.ts
+msgid "Packing"
+msgstr ""
 
-#~ msgid "Dev Tools"
-#~ msgstr ""
+#: src/lib/navigation/app-navigation.svelte.ts
+msgid "Dev Tools"
+msgstr ""
 
-#~ msgid "Compatibility"
-#~ msgstr ""
+#: src/lib/navigation/app-navigation.svelte.ts
+msgid "Compatibility"
+msgstr ""
 
-#~ msgid "Test Endpoint Compatibility"
-#~ msgstr ""
+#: src/lib/navigation/app-navigation.svelte.ts
+msgid "Test Endpoint Compatibility"
+msgstr ""
 
 #: src/lib/components/layout/UserMenu.svelte
 #: src/lib/components/support/IssueCreatorDialog.svelte
+#: src/lib/navigation/app-navigation.svelte.ts
 #: src/routes/(authenticated)/settings/+page.svelte
 msgid "Settings"
 msgstr "Einstellungen"
 
+#: src/lib/navigation/app-navigation.svelte.ts
 #: src/routes/(unauthenticated)/setup/+page@.svelte
 msgid "Setup"
 msgstr "Einrichtung"
@@ -4505,33 +4505,39 @@ msgstr "Einrichtung"
 #: src/lib/components/layout/UserMenu.svelte
 #: src/lib/components/rbac/PermissionCategorySelector.svelte
 #: src/lib/components/settings/TokenScopeSelector.svelte
+#: src/lib/navigation/app-navigation.svelte.ts
 #: src/routes/(authenticated)/settings/account/+page.svelte
 #: src/routes/(unauthenticated)/setup/+page@.svelte
 msgid "Account"
 msgstr "Konto"
 
 #: src/lib/components/rbac/PermissionCategorySelector.svelte
+#: src/lib/navigation/app-navigation.svelte.ts
 #: src/routes/(authenticated)/settings/patient/+page.svelte
 msgid "Patient Record"
 msgstr "Patientenakte"
 
+#: src/lib/navigation/app-navigation.svelte.ts
 #: src/routes/(authenticated)/settings/appearance/+page.svelte
 msgid "Appearance"
 msgstr "Aussehen"
 
-#~ msgid "Therapy"
-#~ msgstr ""
+#: src/lib/navigation/app-navigation.svelte.ts
+msgid "Therapy"
+msgstr ""
 
+#: src/lib/navigation/app-navigation.svelte.ts
 #: src/lib/navigation/report-navigation.svelte.ts
-#: src/routes/(authenticated)/reports/data-quality/+page.svelte
 #: src/routes/(authenticated)/settings/data-quality/+page.svelte
 msgid "Data Quality"
 msgstr "Datenqualität"
 
+#: src/lib/navigation/app-navigation.svelte.ts
 #: src/routes/(authenticated)/settings/trackers/+page.svelte
 msgid "Notifications & Trackers"
 msgstr "Benachrichtigungen & Tracker"
 
+#: src/lib/navigation/app-navigation.svelte.ts
 #: src/routes/(authenticated)/settings/connectors/+page.svelte
 msgid "Connectors & Apps"
 msgstr "Konnektoren & Apps"
@@ -4541,10 +4547,12 @@ msgstr "Konnektoren & Apps"
 msgid "Audit Log"
 msgstr "Audit-Log"
 
+#: src/lib/navigation/app-navigation.svelte.ts
 #: src/routes/(authenticated)/settings/support/+page.svelte
 msgid "Support & Community"
 msgstr "Support & Community"
 
+#: src/lib/navigation/app-navigation.svelte.ts
 #: src/routes/(authenticated)/settings/admin/tenants/+page.svelte
 msgid "Tenant Management"
 msgstr "Mandantenverwaltung"
@@ -4763,7 +4771,6 @@ msgstr "Keine Mahlzeiten entsprechen den aktuellen Filtern."
 
 #: src/lib/components/meals/MealsTable.svelte
 #: src/lib/components/reports/year-overview/YearHeatmap.svelte
-#: src/lib/components/treatments/TreatmentStatsCard.svelte
 #: src/lib/components/treatments/edit-dialog/BolusFormFields.svelte
 #: src/routes/(authenticated)/reports/day-in-review/+page.svelte
 #: src/routes/(authenticated)/settings/appearance/+page.svelte
@@ -5061,6 +5068,8 @@ msgstr "Stunden"
 msgid "Peak"
 msgstr "Wirkspitze"
 
+#: ../portal/src/lib/components/docs/alert-simulator/ConditionEditor.svelte
+#: ../portal/src/lib/components/docs/alert-simulator/ConditionEditor.svelte
 #: src/lib/components/alerts/RuleBuilderLeafEditor.svelte
 #: src/lib/components/alerts/RuleBuilderLeafEditor.svelte
 #: src/lib/components/alerts/RuleBuilderLeafEditor.svelte
@@ -5884,13 +5893,11 @@ msgstr "{0} mg/dL"
 msgid "Bolus insulin:"
 msgstr "Bolusinsulin:"
 
-#: src/lib/components/reports/DailyInsulinSummary.svelte
-msgid "Total basal insulin:"
-msgstr "Gesamtbasalinsulin:"
+#~ msgid "Total basal insulin:"
+#~ msgstr "Gesamtbasalinsulin:"
 
-#: src/lib/components/reports/DailyInsulinSummary.svelte
-msgid "Total daily insulin:"
-msgstr "Gesamtes Tagesinsulin:"
+#~ msgid "Total daily insulin:"
+#~ msgstr "Gesamtes Tagesinsulin:"
 
 #: src/lib/components/reports/DailyInsulinSummary.svelte
 msgid "Total carbs:"
@@ -6349,6 +6356,7 @@ msgstr "Median-75. Perzentil"
 #~ msgid "Avg Before"
 #~ msgstr "Durchschnitt vorher"
 
+#: ../portal/src/lib/components/docs/alert-simulator/AlertSimulator.svelte
 #: src/lib/components/settings/alarm-profile/AlarmGeneralTab.svelte
 #: src/lib/components/treatments/edit-dialog/BGCheckFormFields.svelte
 #: src/routes/(authenticated)/settings/appearance/+page.svelte
@@ -6408,10 +6416,8 @@ msgstr "Sehr hoch"
 msgid "Overall Treatment Summary"
 msgstr "Gesamtübersicht der Behandlungen"
 
-#. 0: formatInsulinDisplay(totalInsulin)
-#: src/lib/components/reports/TreatmentSummary.svelte
-msgid "Insulin: {0}U"
-msgstr "Insulin: {0}U"
+#~ msgid "Insulin: {0}U"
+#~ msgstr "Insulin: {0}U"
 
 #. 0: formatCarbDisplay(totalCarbs)
 #: src/lib/components/reports/TreatmentSummary.svelte
@@ -7138,7 +7144,6 @@ msgstr "Titel und Favicon bei dringenden Glukosewerten blinken lassen"
 #: src/lib/components/settings/TokenScopeSelector.svelte
 #: src/lib/navigation/report-navigation.svelte.ts
 #: src/routes/(authenticated)/reports/heart-rate/+page.svelte
-#: src/routes/(authenticated)/reports/heart-rate/+page.svelte
 msgid "Heart Rate"
 msgstr "Herzfrequenz"
 
@@ -7146,7 +7151,6 @@ msgstr "Herzfrequenz"
 #: src/lib/components/rbac/PermissionSummary.svelte
 #: src/lib/components/settings/TokenScopeSelector.svelte
 #: src/lib/navigation/report-navigation.svelte.ts
-#: src/routes/(authenticated)/reports/steps/+page.svelte
 msgid "Step Count"
 msgstr "Schrittzahl"
 
@@ -7224,7 +7228,6 @@ msgstr "Basal-IOB"
 #: src/lib/components/dashboard/glucose-chart/tracks/SwimLaneTrack.svelte
 #: src/lib/components/status-pills/IOBPill.svelte
 #: src/routes/(authenticated)/reports/year-overview/+page.svelte
-#: src/routes/(authenticated)/settings/connectors/google-health/google-health-page.svelte
 msgid "Activity"
 msgstr "Aktivität"
 
@@ -7663,20 +7666,16 @@ msgstr "Wann dieser Tracker als Pille auf dem Dashboard angezeigt werden soll"
 msgid "Public Visibility"
 msgstr "Öffentliche Sichtbarkeit"
 
-#: src/lib/components/trackers/TrackerEditorDialog.svelte
-#: src/lib/components/trackers/TrackerEditorDialog.svelte
-#: src/lib/components/trackers/TrackerEditorDialog.svelte
-msgid "Public - Visible to everyone"
-msgstr "Öffentlich – Für alle sichtbar"
+#~ msgid "Public - Visible to everyone"
+#~ msgstr "Öffentlich – Für alle sichtbar"
 
 #: src/lib/components/trackers/TrackerEditorDialog.svelte
 #: src/lib/components/trackers/TrackerEditorDialog.svelte
 msgid "Private - Only you can see"
 msgstr "Privat – Nur du kannst es sehen"
 
-#: src/lib/components/trackers/TrackerEditorDialog.svelte
-msgid "Controls whether this tracker is visible to unauthenticated users"
-msgstr "Steuert, ob dieser Tracker für nicht angemeldete Benutzer sichtbar ist"
+#~ msgid "Controls whether this tracker is visible to unauthenticated users"
+#~ msgstr "Steuert, ob dieser Tracker für nicht angemeldete Benutzer sichtbar ist"
 
 #: src/lib/components/trackers/TrackerEditorDialog.svelte
 msgid "Event Integration (Nightscout)"
@@ -7770,6 +7769,7 @@ msgid "<0/> Start"
 msgstr "<0/> Start"
 
 #: src/lib/components/trackers/TrackerHistoryTab.svelte
+#: src/lib/navigation/app-navigation.svelte.ts
 msgid "History"
 msgstr "Verlauf"
 
@@ -8802,24 +8802,17 @@ msgstr "<0/> Änderungen speichern"
 msgid "Failed to load notification data"
 msgstr "Benachrichtigungsdaten konnten nicht geladen werden"
 
-#: src/routes/(authenticated)/notifications/+page.svelte
-msgid "Tracker active"
-msgstr "Tracker aktiv"
+#~ msgid "Tracker active"
+#~ msgstr "Tracker aktiv"
 
-#. 0: thresholdHours ?? "?"
-#: src/routes/(authenticated)/notifications/+page.svelte
-msgid "Exceeded {0}h - change urgently!"
-msgstr "{0}h überschritten - dringend wechseln!"
+#~ msgid "Exceeded {0}h - change urgently!"
+#~ msgstr "{0}h überschritten - dringend wechseln!"
 
-#. 0: thresholdHours ?? "?"
-#: src/routes/(authenticated)/notifications/+page.svelte
-msgid "Exceeded {0}h - change soon"
-msgstr "{0}h überschritten - bald wechseln"
+#~ msgid "Exceeded {0}h - change soon"
+#~ msgstr "{0}h überschritten - bald wechseln"
 
-#. 0: thresholdHours ?? def.lifespanHours ?? "?"
-#: src/routes/(authenticated)/notifications/+page.svelte
-msgid "Approaching {0}h limit"
-msgstr "{0}h-Grenze wird erreicht"
+#~ msgid "Approaching {0}h limit"
+#~ msgstr "{0}h-Grenze wird erreicht"
 
 #. 0: Math.floor(instance.ageHours ?? 0)
 #: src/routes/(authenticated)/notifications/+page.svelte
@@ -9870,7 +9863,6 @@ msgstr "Verbinden"
 msgid "Import your history"
 msgstr "Importiere deinen Verlauf"
 
-#: src/routes/(authenticated)/settings/connectors/google-health/google-health-page.svelte
 #: src/routes/(unauthenticated)/setup/+page@.svelte
 msgid "Import"
 msgstr "Importieren"
@@ -10080,7 +10072,6 @@ msgid "No data today"
 msgstr "Keine Daten heute"
 
 #: src/lib/components/dashboard/widgets/ConnectionStatusWidget.svelte
-#: src/routes/(authenticated)/settings/connectors/google-health/google-health-page.svelte
 msgid "Connection"
 msgstr "Verbindung"
 
@@ -10246,7 +10237,6 @@ msgstr "Kontaktname"
 msgid "Close Emergency View"
 msgstr "Notfallansicht schließen"
 
-#: src/lib/components/reports/year-overview/YearOverviewFilters.svelte
 #: src/lib/navigation/report-navigation.svelte.ts
 #: src/routes/(authenticated)/reports/year-overview/+page.svelte
 msgid "Year Overview"
@@ -10310,6 +10300,7 @@ msgstr "Aktive Zeiträume"
 msgid "+ Add Range"
 msgstr "+ Bereich hinzufügen"
 
+#: ../portal/src/lib/components/docs/alert-simulator/ConditionEditor.svelte
 #: src/lib/components/settings/alarm-profile/AlarmScheduleTab.svelte
 #: src/routes/(authenticated)/reports/site-change-impact/+page.svelte
 msgid "to"
@@ -10643,6 +10634,7 @@ msgstr "MgDl"
 msgid "Mmol"
 msgstr "Mmol"
 
+#: ../portal/src/lib/components/docs/alert-simulator/AlertSimulator.svelte
 #: src/lib/components/treatments/edit-dialog/BGCheckFormFields.svelte
 #: src/routes/(authenticated)/settings/appearance/+page.svelte
 msgid "mmol/L"
@@ -11131,9 +11123,8 @@ msgstr "Ambulantes Glukoseprofil – Nocturne-Berichte"
 msgid "Standard AGP report with glucose pattern overlay, percentile bands, and time-in-range analysis"
 msgstr "Standard-AGP-Bericht mit überlagerten Glukosemustern, Perzentilbereichen und Analyse der Zeit im Zielbereich"
 
-#: src/routes/(authenticated)/reports/agp/+page.svelte
-msgid "<0/> Ambulatory Glucose Profile"
-msgstr "<0/> Ambulantes Glukoseprofil"
+#~ msgid "<0/> Ambulatory Glucose Profile"
+#~ msgstr "<0/> Ambulantes Glukoseprofil"
 
 #: src/routes/(authenticated)/reports/agp/+page.svelte
 msgid "Your typical daily glucose pattern — a standardized clinical report"
@@ -11298,9 +11289,8 @@ msgstr "Basalraten-Analyse - Nocturne-Berichte"
 msgid "Analyze your basal insulin delivery patterns with percentile visualization"
 msgstr "Analysiere deine Basalinsulin-Abgabemuster mit Perzentilvisualisierung"
 
-#: src/routes/(authenticated)/reports/basal-analysis/BasalAnalysisContent.svelte
-msgid "<0/> Basal Rate Analysis"
-msgstr "<0/> Basalraten-Analyse"
+#~ msgid "<0/> Basal Rate Analysis"
+#~ msgstr "<0/> Basalraten-Analyse"
 
 #: src/routes/(authenticated)/reports/basal-analysis/BasalAnalysisContent.svelte
 msgid "Understand your background insulin delivery patterns over time"
@@ -11415,7 +11405,6 @@ msgstr "Bericht zur Insulinabgabe <0/>"
 #: src/lib/navigation/report-navigation.svelte.ts
 #: src/routes/(authenticated)/reports/basal-analysis/BasalAnalysisContent.svelte
 #: src/routes/(authenticated)/reports/insulin-delivery/+page.svelte
-#: src/routes/(authenticated)/reports/treatments/+page.svelte
 msgid "Treatment Log"
 msgstr "Behandlungsprotokoll"
 
@@ -11437,9 +11426,8 @@ msgstr "Batteriebericht - Nocturne"
 msgid "Device battery statistics and charge cycle history"
 msgstr "Batteriestatistik des Geräts und Ladezyklus-Verlauf"
 
-#: src/routes/(authenticated)/reports/battery/+page.svelte
-msgid "Battery Report"
-msgstr "Batteriebericht"
+#~ msgid "Battery Report"
+#~ msgstr "Batteriebericht"
 
 #: src/routes/(authenticated)/reports/battery/+page.svelte
 msgid "No Battery Data Available"
@@ -11566,7 +11554,6 @@ msgid "Data Quality Categories"
 msgstr "Datenqualitätskategorien"
 
 #: src/routes/(authenticated)/reports/data-quality/+page.svelte
-#: src/routes/(authenticated)/reports/data-quality/compression-lows/+page.svelte
 #: src/routes/(authenticated)/reports/data-quality/compression-lows/+page.svelte
 msgid "Compression Lows"
 msgstr "Kompressionstiefs"
@@ -11773,7 +11760,6 @@ msgstr "<0/> Glukosestatistik"
 
 #: src/lib/navigation/report-navigation.svelte.ts
 #: src/routes/(authenticated)/reports/executive-summary/+page.svelte
-#: src/routes/(authenticated)/reports/glucose-distribution/+page.svelte
 msgid "Glucose Distribution"
 msgstr "Glukoseverteilung"
 
@@ -11962,9 +11948,8 @@ msgstr "Insulinabgabe-Bericht – Nocturne-Berichte"
 msgid "Analyze your insulin delivery patterns including basal/bolus ratios and TDD trends"
 msgstr "Analysiere deine Insulinabgabemuster einschließlich Basal/Bolus-Verhältnissen und TDD-Trends"
 
-#: src/routes/(authenticated)/reports/insulin-delivery/+page.svelte
-msgid "<0/> Insulin Delivery Report"
-msgstr "<0/> Insulinabgabe-Bericht"
+#~ msgid "<0/> Insulin Delivery Report"
+#~ msgstr "<0/> Insulinabgabe-Bericht"
 
 #: src/routes/(authenticated)/reports/insulin-delivery/+page.svelte
 msgid "Comprehensive analysis of your basal and bolus insulin patterns"
@@ -12153,9 +12138,8 @@ msgstr "Insulin-Dosierungsprofil - Nocturne-Berichte"
 msgid "Insulin Dosing Profile report with delivery statistics, glucose metrics, basal analysis, and bolus distribution"
 msgstr "Insulin-Dosierungsprofil-Bericht mit Abgabestatistiken, Glukose-Messwerten, Basalanalyse und Bolusverteilung"
 
-#: src/routes/(authenticated)/reports/idp/+page.svelte
-msgid "<0/> Insulin Dosing Profile"
-msgstr "<0/> Insulin-Dosierungsprofil"
+#~ msgid "<0/> Insulin Dosing Profile"
+#~ msgstr "<0/> Insulin-Dosierungsprofil"
 
 #: src/routes/(authenticated)/reports/idp/+page.svelte
 msgid "Comprehensive insulin delivery analysis with glucose context"
@@ -12288,7 +12272,6 @@ msgid "Sleep pattern actogram with glucose overlay"
 msgstr "Aktogramm des Schlafmusters mit Glukose-Überlagerung"
 
 #: src/lib/navigation/report-navigation.svelte.ts
-#: src/routes/(authenticated)/reports/sleep/+page.svelte
 msgid "Sleep & Overnight"
 msgstr "Schlaf & Nacht"
 
@@ -12329,9 +12312,8 @@ msgstr "Auswirkung des Katheterwechsels - Nocturne Berichte"
 msgid "Analyze how pump site changes affect your glucose control"
 msgstr "Analysiere, wie sich Katheterwechsel auf deine Glukosekontrolle auswirken"
 
-#: src/routes/(authenticated)/reports/site-change-impact/+page.svelte
-msgid "<0/> Site Change Impact"
-msgstr "<0/> Auswirkung des Katheterwechsels"
+#~ msgid "<0/> Site Change Impact"
+#~ msgstr "<0/> Auswirkung des Katheterwechsels"
 
 #: src/routes/(authenticated)/reports/site-change-impact/+page.svelte
 msgid "Analyze glucose patterns before and after pump site changes"
@@ -12446,6 +12428,7 @@ msgstr "Zurücksetzen"
 msgid "No data available for this week"
 msgstr "Keine Daten für diese Woche verfügbar"
 
+#: src/routes/(authenticated)/reports/treatments/+page.svelte
 #: src/routes/(authenticated)/reports/treatments/+page.svelte
 msgid "Error Loading Treatments"
 msgstr "Fehler beim Laden der Behandlungen"
@@ -15322,7 +15305,7 @@ msgstr "<0/> Läuft…"
 msgid "Window: {0}"
 msgstr "Fenster: {0}"
 
-#: src/lib/components/alerts/ReplayPanel.svelte
+#: src/lib/components/alerts/ReplayView.svelte
 msgid "No events would have fired in this window."
 msgstr "In diesem Fenster wären keine Ereignisse ausgelöst worden."
 
@@ -15334,6 +15317,7 @@ msgstr "Schweregrad: {0}"
 #: src/lib/components/alerts/DndPanel.svelte
 #: src/lib/components/alerts/SidebarDndToggle.svelte
 #: src/lib/components/ui/dropdown-menu/nested-in-popover.test.svelte
+#: src/lib/navigation/app-navigation.svelte.ts
 msgid "Do Not Disturb"
 msgstr "Nicht stören"
 
@@ -15620,10 +15604,12 @@ msgstr "Leite eine automatische Auflösung vom Auslösebaum ab"
 msgid "<0/> Suggest"
 msgstr "<0/> Vorschlagen"
 
+#: ../portal/src/lib/components/docs/alert-simulator/ConditionEditor.svelte
 #: src/lib/components/alerts/RuleBuilder.svelte
 msgid "Notify when"
 msgstr "Benachrichtigen, wenn"
 
+#: ../portal/src/lib/components/docs/alert-simulator/ConditionEditor.svelte
 #: src/lib/components/alerts/RuleBuilder.svelte
 msgid "these are true:"
 msgstr "diese Bedingungen zutreffen:"
@@ -15653,6 +15639,7 @@ msgstr "<0/> Gruppe entfernen"
 msgid "NOT"
 msgstr "NOT"
 
+#: ../portal/src/lib/components/docs/alert-simulator/ConditionEditor.svelte
 #: src/lib/components/alerts/RuleBuilderRow.svelte
 msgid "for at least"
 msgstr "für mindestens"
@@ -15754,11 +15741,13 @@ msgid "Toggle Do Not Disturb"
 msgstr "'Nicht stören' umschalten"
 
 #: ../portal/src/lib/components/features/AlarmsDemo.svelte
+#: src/lib/navigation/app-navigation.svelte.ts
 msgid "Rules"
 msgstr "Regeln"
 
-#~ msgid "Simulator"
-#~ msgstr ""
+#: src/lib/navigation/app-navigation.svelte.ts
+msgid "Simulator"
+msgstr ""
 
 #: src/routes/(authenticated)/alerts/history/+page.svelte
 msgid "Every real fire from this tenant. Test fires aren't shown."
@@ -15801,10 +15790,12 @@ msgstr "Spiele diesen Alarm (und alle zugehörigen) gegen historische Glukosewer
 msgid "Shift"
 msgstr "Shift"
 
+#: ../portal/src/lib/components/docs/alert-simulator/ConditionEditor.svelte
 #: src/lib/components/alerts/OperatorToggle.svelte
 msgid "All conditions must hold"
 msgstr "Alle Bedingungen müssen erfüllt sein"
 
+#: ../portal/src/lib/components/docs/alert-simulator/ConditionEditor.svelte
 #: src/lib/components/alerts/OperatorToggle.svelte
 msgid "Any condition is enough"
 msgstr "Eine beliebige Bedingung genügt"
@@ -15822,7 +15813,7 @@ msgstr "Zum Umsortieren ziehen"
 msgid "Turn off"
 msgstr "Ausschalten"
 
-#: src/lib/components/alerts/ReplayPanel.svelte
+#: src/lib/components/alerts/ReplayView.svelte
 msgid "No events yet — playhead at start of window."
 msgstr "Noch keine Ereignisse – die Wiedergabemarke befindet sich am Anfang des Fensters."
 
@@ -15885,7 +15876,7 @@ msgid "No leaves to evaluate."
 msgstr "Keine Blätter zum Auswerten."
 
 #: ../portal/src/lib/components/features/AlarmsDemo.svelte
-#: src/lib/components/alerts/ReplayPanel.svelte
+#: src/lib/components/alerts/ReplayView.svelte
 msgid "Resolved"
 msgstr "Behoben"
 
@@ -16773,6 +16764,7 @@ msgstr ""
 #~ msgid "Alerts, reminders, and tracked events."
 #~ msgstr ""
 
+#: src/lib/navigation/app-navigation.svelte.ts
 #: src/routes/(authenticated)/settings/access/+page.svelte
 msgid "Active Access"
 msgstr ""
@@ -18214,7 +18206,6 @@ msgstr ""
 
 #: src/routes/(authenticated)/reports/data-quality/+page.svelte
 #: src/routes/(authenticated)/reports/data-quality/sensor-integrity/+page.svelte
-#: src/routes/(authenticated)/reports/data-quality/sensor-integrity/+page.svelte
 msgid "Signal Integrity"
 msgstr ""
 
@@ -18837,10 +18828,9 @@ msgstr ""
 msgid "Weight History - Settings - Nocturne"
 msgstr ""
 
-#: src/routes/(authenticated)/settings/connectors/google-health/google-health-page.svelte
 #: src/routes/(authenticated)/settings/weight/+page.svelte
 msgid "Weight history"
-msgstr "Gewichtsverlauf"
+msgstr ""
 
 #: src/routes/(authenticated)/settings/weight/+page.svelte
 msgid "Your weight over time. Each entry is dated when it was recorded — editing your current weight on the Patient Record page adds a new entry here rather than overwriting the last one."
@@ -19948,9 +19938,8 @@ msgstr ""
 #~ msgid "Authentication"
 #~ msgstr ""
 
-#: src/routes/(authenticated)/settings/connectors/google-health/google-health-page.svelte
-msgid "Sign in with Google"
-msgstr "Melden Sie sich mit Google an"
+#~ msgid "Sign in with Google"
+#~ msgstr ""
 
 #~ msgid "Sign in with GitHub"
 #~ msgstr ""
@@ -21994,7 +21983,6 @@ msgstr ""
 
 #: src/routes/(authenticated)/reports/data-quality/+page.svelte
 #: src/routes/(authenticated)/reports/data-quality/cgm-comparison/+page.svelte
-#: src/routes/(authenticated)/reports/data-quality/cgm-comparison/+page.svelte
 msgid "CGM Comparison"
 msgstr ""
 
@@ -22433,9 +22421,8 @@ msgstr ""
 msgid "Ports <0/> and <1/> open to the internet. The bundled proxy uses them to obtain and serve TLS certificates."
 msgstr ""
 
-#: ../portal/src/routes/docs/installation/docker-compose/+page.svelte
-msgid "Download the <0/> bundle from the <1>latest GitHub Release</1>. The bundle is self-contained: just <2/> and the environment template, which GitHub lists as <3/>. The database init script and the TLS proxy config are embedded directly in the compose file, so there are no extra directories to keep alongside it. The bundle also ships a <4/> override for operators who run their own reverse proxy (see below)."
-msgstr ""
+#~ msgid "Download the <0/> bundle from the <1>latest GitHub Release</1>. The bundle is self-contained: just <2/> and the environment template, which GitHub lists as <3/>. The database init script and the TLS proxy config are embedded directly in the compose file, so there are no extra directories to keep alongside it. The bundle also ships a <4/> override for operators who run their own reverse proxy (see below)."
+#~ msgstr ""
 
 #: ../portal/src/routes/docs/installation/docker-compose/+page.svelte
 msgid "Edit <0/> and fill in your values. The required fields come first and are left blank; optional bot integrations are commented out. Use the generator below for each password field and <1/>."
@@ -22921,15 +22908,11 @@ msgstr ""
 msgid "Charlie target"
 msgstr ""
 
-#: src/lib/components/WebSocketStatus.svelte
-#: src/lib/components/dashboard/widgets/ConnectionStatusWidget.svelte
-msgid "Starting"
-msgstr ""
+#~ msgid "Starting"
+#~ msgstr ""
 
-#: src/lib/components/WebSocketStatus.svelte
-#: src/lib/components/dashboard/widgets/ConnectionStatusWidget.svelte
-msgid "Waiting to connect"
-msgstr ""
+#~ msgid "Waiting to connect"
+#~ msgstr ""
 
 #: src/lib/components/WebSocketStatus.svelte
 #: src/lib/components/dashboard/widgets/ConnectionStatusWidget.svelte
@@ -23062,125 +23045,126 @@ msgstr ""
 
 #: src/routes/(authenticated)/reports/ehba1c/+page.svelte
 msgid "Non-diabetic range"
-msgstr "Nicht-diabetischer Bereich"
+msgstr ""
 
 #: src/routes/(authenticated)/reports/ehba1c/+page.svelte
 msgid "Type 1 diabetes target"
-msgstr "Typ-1-Diabetes-Ziel"
+msgstr ""
 
 #: src/routes/(authenticated)/reports/ehba1c/+page.svelte
 msgid "Elevated"
-msgstr "Erhöht"
+msgstr ""
 
 #: src/routes/(authenticated)/reports/ehba1c/+page.svelte
 msgid "Very high"
-msgstr "Sehr hoch"
+msgstr ""
 
 #: src/routes/(authenticated)/reports/ehba1c/+page.svelte
 msgid "Failed to save lab result"
-msgstr "Laborergebnis konnte nicht gespeichert werden"
+msgstr ""
 
 #: src/routes/(authenticated)/reports/ehba1c/+page.svelte
 msgid "Failed to delete lab result"
-msgstr "Fehler beim Löschen des Laborergebnisses"
+msgstr ""
 
 #: src/routes/(authenticated)/reports/ehba1c/+page.svelte
 msgid "<0/> Estimated HbA1c (eHbA1c)"
-msgstr "<0/> Geschätzter HbA1c (eHbA1c)"
+msgstr ""
 
-#~ msgid "eHbA1c estimates what a lab HbA1c test would read on a given day. For each day, it takes the average glucose from every reading in the trailing 90 days and weights each day's contribution by recency — the most recent ~30 days count for roughly half the estimate, tapering off exponentially for older days, similar to how glycated hemoglobin reflects glucose exposure over a red blood cell's ~90–120 day lifespan. That weighted average glucose is then converted to %HbA1c with the ADAG formula: HbA1c (%) = (average glucose in mg/dL + 46.7) / 28.7."
-#~ msgstr ""
+#: src/routes/(authenticated)/reports/ehba1c/+page.svelte
+msgid "eHbA1c estimates what a lab HbA1c test would read on a given day. For each day, it takes the average glucose from every reading in the trailing 90 days and weights each day's contribution by recency — the most recent ~30 days count for roughly half the estimate, tapering off exponentially for older days, similar to how glycated hemoglobin reflects glucose exposure over a red blood cell's ~90–120 day lifespan. That weighted average glucose is then converted to %HbA1c with the ADAG formula: HbA1c (%) = (average glucose in mg/dL + 46.7) / 28.7."
+msgstr ""
 
 #: src/routes/(authenticated)/reports/ehba1c/+page.svelte
 msgid "Show as percent"
-msgstr "In Prozent anzeigen"
+msgstr ""
 
 #: src/routes/(authenticated)/reports/ehba1c/+page.svelte
 msgid "Show as mmol/mol"
-msgstr "Als mmol/mol anzeigen"
+msgstr ""
 
 #: src/routes/(authenticated)/reports/ehba1c/+page.svelte
 msgid "mmol/mol"
-msgstr "mmol/mol"
+msgstr ""
 
 #: src/routes/(authenticated)/reports/ehba1c/+page.svelte
 msgid "<0/> Loading eHbA1c timeline..."
-msgstr "<0/> eHbA1c-Timeline wird geladen..."
+msgstr ""
 
 #: src/routes/(authenticated)/reports/ehba1c/+page.svelte
 msgid "Failed to load eHbA1c data. Please try again later."
-msgstr "Fehler beim Laden der eHbA1c-Daten. Bitte versuchen Sie es später erneut."
+msgstr ""
 
 #: src/routes/(authenticated)/reports/ehba1c/+page.svelte
 msgid "Not enough glucose history yet — each point needs at least a month of readings within the trailing 90 days."
-msgstr "Noch nicht genug Glukoseverlauf — jeder Punkt benötigt mindestens einen Monat Messwerte innerhalb der letzten 90 Tage."
+msgstr ""
 
 #. 0: formatLongDate(latest.date)
 #: src/routes/(authenticated)/reports/ehba1c/+page.svelte
 msgid "latest estimate ({0})"
-msgstr "letzte Schätzung ({0})"
+msgstr ""
 
 #. 0: bg(latest.weightedAverageGlucoseMgdl); 1: bgLabel()
 #: src/routes/(authenticated)/reports/ehba1c/+page.svelte
 msgid "Weighted mean glucose: {0} {1}"
-msgstr "Gewichtete mittlere Glukose: {0} {1}"
+msgstr ""
 
 #. 0: formatLongDate(extremes.highest.date)
 #: src/routes/(authenticated)/reports/ehba1c/+page.svelte
 msgid "Highest: <0/> ({0})"
-msgstr "Höchste: <0/> ({0})"
+msgstr ""
 
 #. 0: formatLongDate(extremes.lowest.date)
 #: src/routes/(authenticated)/reports/ehba1c/+page.svelte
 msgid "Lowest: <0/> ({0})"
-msgstr "Am niedrigsten: <0/> ({0})"
+msgstr ""
 
 #: src/routes/(authenticated)/reports/ehba1c/+page.svelte
 msgid "Lab result (not included in the calculation)"
-msgstr "Laborergebnis (nicht in der Berechnung enthalten)"
+msgstr ""
 
 #: src/routes/(authenticated)/reports/ehba1c/+page.svelte
 msgid "Lab results"
-msgstr "Laborwerte"
+msgstr ""
 
 #: src/routes/(authenticated)/reports/ehba1c/+page.svelte
 msgid "Enter a lab HbA1c result here — shown as a triangle marker on the chart above, so you can see how closely the eHbA1c estimate tracks an actual lab draw. Lab results are not included in the eHbA1c calculation itself. The date below is the date the blood was drawn, not the date you enter it here."
-msgstr "Geben Sie hier ein Labor-HbA1c-Ergebnis ein — dargestellt als Dreiecksmarkierung auf dem obigen Diagramm, damit Sie sehen können, wie genau die eHbA1c-Schätzung eine tatsächliche Laborzeichnung verfolgt. Laborergebnisse sind nicht in der eHbA1c-Berechnung selbst enthalten. Das folgende Datum ist das Datum, an dem das Blut entnommen wurde, nicht das Datum, an dem Sie es hier eingeben."
+msgstr ""
 
 #: src/routes/(authenticated)/reports/ehba1c/+page.svelte
 msgid "No lab results added yet."
-msgstr "Noch keine Laborergebnisse hinzugefügt."
+msgstr ""
 
 #: src/routes/(authenticated)/reports/ehba1c/+page.svelte
 msgid "Delete lab result"
-msgstr "Laborergebnis löschen"
+msgstr ""
 
 #: src/routes/(authenticated)/reports/ehba1c/+page.svelte
 msgid "Date of blood draw"
-msgstr "Datum der Blutentnahme"
+msgstr ""
 
 #. 0: a1cUnit === "percent" ? "%" \\: "mmol/mol"
 #: src/routes/(authenticated)/reports/ehba1c/+page.svelte
 msgid "Result ({0})"
-msgstr "Ergebnis ({0})"
+msgstr ""
 
 #: src/routes/(authenticated)/reports/ehba1c/+page.svelte
 msgid "<0/> Add lab result"
-msgstr "<0/> Laborergebnis hinzufügen"
+msgstr ""
 
 #. 0: formatA1c(point.data.valuePercent); 1: formatLongDate(point.data.date); 2: point.data.note ? ` — ${point.data.note}` \\: ""
 #: src/routes/(authenticated)/reports/ehba1c/+page.svelte
 msgid "Lab result: {0} ({1}){2}"
-msgstr "Laborergebnis: {0} ({1}){2}"
+msgstr ""
 
 #: src/routes/(authenticated)/reports/ehba1c/+page.svelte
 msgid "Delete this lab result?"
-msgstr "Dieses Laborergebnis löschen?"
+msgstr ""
 
 #. 0: formatA1c(pendingDeleteLabResult.valuePercent ?? 0); 1: formatLongDate(toDate(pendingDeleteLabResult.measuredAt))
 #: src/routes/(authenticated)/reports/ehba1c/+page.svelte
 msgid "Delete the {0} lab result from {1}."
-msgstr "Löschen Sie das {0}-Laborergebnis aus {1}."
+msgstr ""
 
 #: src/routes/(authenticated)/settings/access/+page.svelte
 msgid "The browsers signed in to this account, and where to find everything else that can reach your data."
@@ -23862,8 +23846,10 @@ msgstr ""
 msgid "Energy <0>auto</0>"
 msgstr ""
 
+#. 0: rule.name
 #. 0: perm
 #. 0: item.l
+#: ../portal/src/lib/components/docs/alert-simulator/AlertSimulator.svelte
 #: src/lib/components/admin/RoleDialog.svelte
 #: src/routes/(authenticated)/tools/packing/list/+page.svelte
 msgid "Remove {0}"
@@ -24052,15 +24038,15 @@ msgstr ""
 
 #: src/routes/(authenticated)/reports/ehba1c/+page.svelte
 msgid "Shown in % (NGSP)"
-msgstr "Angezeigt in % (NGSP)"
+msgstr ""
 
 #: src/routes/(authenticated)/reports/ehba1c/+page.svelte
 msgid "Shown in mmol/mol (IFCC)"
-msgstr "Angegeben in mmol/mol (IFCC)"
+msgstr ""
 
 #: src/routes/(authenticated)/reports/ehba1c/+page.svelte
 msgid "Lab HbA1c draws, shown as triangles on the chart above. They are not included in the eHbA1c calculation."
-msgstr "Lab HbA1c-Zeichnungen, die in der obigen Tabelle als Dreiecke dargestellt sind. Sie werden nicht in die eHbA1c-Berechnung einbezogen."
+msgstr ""
 
 #: src/routes/(authenticated)/reports/glucose-distribution/+page.svelte
 msgid "Est. A1c (DCCT %)"
@@ -24377,12 +24363,12 @@ msgstr ""
 msgid "TIR after"
 msgstr ""
 
-#. 0: treatmentSummary.bolusCount ?? 0; 1: (treatmentSummary.dailyBoluses ?? 0).toFixed(1); 2: (treatmentSummary.averagePerBolus ?? 0).toFixed(1)
+#. 0: treatmentSummary?.bolusCount ?? 0; 1: (treatmentSummary?.dailyBoluses ?? 0).toFixed(1); 2: (treatmentSummary?.averagePerBolus ?? 0).toFixed(1)
 #: src/lib/components/treatments/TreatmentStatsCard.svelte
 msgid "{0} boluses · {1}/day · {2}U avg"
 msgstr ""
 
-#. 0: treatmentSummary.carbEntryCount ?? 0; 1: (treatmentSummary.dailyCarbs ?? 0).toFixed(0); 2: (treatmentSummary.averageCarbsPerEntry ?? 0).toFixed(0)
+#. 0: treatmentSummary?.carbEntryCount ?? 0; 1: (treatmentSummary?.dailyCarbs ?? 0).toFixed(0); 2: (treatmentSummary?.averageCarbsPerEntry ?? 0).toFixed(0)
 #: src/lib/components/treatments/TreatmentStatsCard.svelte
 msgid "{0} meals · {1}g/day · {2}g avg/meal"
 msgstr ""
@@ -25528,6 +25514,408 @@ msgstr ""
 
 #: src/lib/components/members/InviteSummary.svelte
 msgid "You can press Mute for me on an alert to stop it reaching you. Other people keep getting it until someone who manages alerts acknowledges it, or it ends."
+msgstr ""
+
+#~ msgid "NOT applies to: "
+#~ msgstr ""
+
+#~ msgid "No alert over this trace."
+#~ msgstr ""
+
+#~ msgid "Glucose readings for the {0} example, with the times each rule was alerting shaded."
+#~ msgstr ""
+
+#~ msgid "Whole rule is true"
+#~ msgstr ""
+
+#~ msgid "Alerting"
+#~ msgstr ""
+
+#. 0: issues[index].map((i) => issueText[i.reason] ?? i.reason).join(", ")
+#: ../portal/src/lib/components/docs/alert-simulator/AlertSimulator.svelte
+msgid "A save would be refused: this rule needs {0}."
+msgstr ""
+
+#~ msgid "· last reading {0} min ago"
+#~ msgstr ""
+
+#~ msgid "· no reading yet"
+#~ msgstr ""
+
+#~ msgid "<0/> Reset the example"
+#~ msgstr ""
+
+#. 0: failure
+#: ../portal/src/lib/components/docs/alert-simulator/AlertSimulator.svelte
+msgid "The alert engine could not run here ({0}). The rest of this page still applies."
+msgstr ""
+
+#~ msgid "This runs Nocturne's own alert engine in your browser, one check every 5 minutes, as <0>Replay</0> does in the app. The readings are made up to show one behaviour; they are not anyone's data, and nothing here is medical advice."
+#~ msgstr ""
+
+#: ../portal/src/lib/components/docs/alert-simulator/ConditionEditor.svelte
+msgid "Group: match"
+msgstr ""
+
+#: ../portal/src/lib/components/docs/alert-simulator/ConditionEditor.svelte
+msgid "all of"
+msgstr ""
+
+#: ../portal/src/lib/components/docs/alert-simulator/ConditionEditor.svelte
+msgid "any of"
+msgstr ""
+
+#: ../portal/src/lib/components/docs/alert-simulator/ConditionEditor.svelte
+msgid "Remove group"
+msgstr ""
+
+#: ../portal/src/lib/components/docs/alert-simulator/ConditionEditor.svelte
+msgid "NOT: the opposite of this condition"
+msgstr ""
+
+#: ../portal/src/lib/components/docs/alert-simulator/ConditionEditor.svelte
+msgid "Glucose value"
+msgstr ""
+
+#: ../portal/src/lib/components/docs/alert-simulator/ConditionEditor.svelte
+msgid "Rate"
+msgstr ""
+
+#: ../portal/src/lib/components/docs/alert-simulator/ConditionEditor.svelte
+msgid "at least"
+msgstr ""
+
+#: ../portal/src/lib/components/docs/alert-simulator/ConditionEditor.svelte
+msgid "Minutes without a reading"
+msgstr ""
+
+#: ../portal/src/lib/components/docs/alert-simulator/ConditionEditor.svelte
+msgid "no reading for"
+msgstr ""
+
+#: ../portal/src/lib/components/docs/alert-simulator/ConditionEditor.svelte
+msgid "Only when true for a while"
+msgstr ""
+
+#: ../portal/src/lib/components/docs/alert-simulator/ConditionEditor.svelte
+msgid "Minutes it must hold"
+msgstr ""
+
+#: ../portal/src/lib/components/docs/alert-simulator/ConditionEditor.svelte
+msgid "Remove condition"
+msgstr ""
+
+#: ../portal/src/lib/components/docs/alert-simulator/ConditionEditor.svelte
+msgid "not"
+msgstr ""
+
+#: ../portal/src/lib/components/docs/alert-simulator/ConditionEditor.svelte
+msgid "<0/> Group"
+msgstr ""
+
+#: ../portal/src/lib/components/docs/alert-simulator/ConditionEditor.svelte
+msgid "<0/> Condition"
+msgstr ""
+
+#: src/lib/navigation/app-navigation.svelte.ts
+msgid "Tenants"
+msgstr ""
+
+#: src/lib/navigation/app-navigation.svelte.ts
+msgid "Translations"
+msgstr ""
+
+#: src/lib/components/connectors/ConnectorSetup.svelte
+msgid "Only members who can manage this site's settings can configure or enable this connector."
+msgstr ""
+
+#. 0: formatInsulinDisplay(totalInsulin)
+#: src/lib/components/reports/TreatmentSummary.svelte
+msgid "Bolus insulin: {0}U"
+msgstr ""
+
+#. 0: def.name
+#: src/lib/components/trackers/TrackerDefinitionsTab.svelte
+msgid "Edit {0}"
+msgstr ""
+
+#: src/lib/components/trackers/TrackerEditorDialog.svelte
+msgid "Restart automatically on"
+msgstr ""
+
+#: src/lib/components/trackers/TrackerEditorDialog.svelte
+msgid "When your pump, loop or a connector reports one of these, the running tracker is completed and a new one starts at that moment."
+msgstr ""
+
+#: src/lib/components/trackers/TrackerEditorDialog.svelte
+msgid "Only when the event's notes contain (optional)"
+msgstr ""
+
+#: src/lib/components/trackers/TrackerEditorDialog.svelte
+msgid "Use this to keep two trackers that listen for the same event apart, such as a left and a right site."
+msgstr ""
+
+#: src/lib/components/trackers/TrackerEditorDialog.svelte
+#: src/lib/components/trackers/TrackerEditorDialog.svelte
+msgid "Public - Other members can see it"
+msgstr ""
+
+#: src/lib/components/trackers/TrackerEditorDialog.svelte
+msgid "Whether other people signed in to this site can see it running. Trackers are never shown on a public share link."
+msgstr ""
+
+#: src/lib/components/treatments/TreatmentStatsCard.svelte
+msgid "Bolus insulin"
+msgstr ""
+
+#: src/routes/(authenticated)/notifications/+page.svelte
+msgid "Change urgently"
+msgstr ""
+
+#: src/routes/(authenticated)/notifications/+page.svelte
+msgid "Change soon"
+msgstr ""
+
+#: src/routes/(authenticated)/notifications/+page.svelte
+msgid "Change coming up"
+msgstr ""
+
+#: src/lib/components/dashboard/glucose-chart/engine/chart-data-engine.svelte.ts
+msgid "The chart data could not be loaded."
+msgstr ""
+
+#: ../portal/src/lib/components/docs/alert-simulator/AlertSimulator.svelte
+msgid "<0/> Add an example rule"
+msgstr ""
+
+#: ../portal/src/lib/components/docs/alert-simulator/AlertSimulator.svelte
+msgid "<0/> Start over"
+msgstr ""
+
+#: ../portal/src/lib/components/docs/alert-simulator/AlertSimulator.svelte
+msgid "Nocturne's own alert engine and Replay, running in your browser on made-up readings. Not anyone's data, and not medical advice."
+msgstr ""
+
+#: ../portal/src/lib/components/docs/alert-simulator/ConditionEditor.svelte
+msgid "Grams"
+msgstr ""
+
+#: ../portal/src/lib/components/docs/alert-simulator/ConditionEditor.svelte
+msgid "Minutes since carbs"
+msgstr ""
+
+#: ../portal/src/lib/components/docs/alert-simulator/ConditionEditor.svelte
+msgid "min ago"
+msgstr ""
+
+#: ../portal/src/routes/docs/installation/portainer/+page.svelte
+msgid "PostgreSQL host-directory storage"
+msgstr ""
+
+#: ../portal/src/routes/docs/installation/portainer/+page.svelte
+msgid "Portainer's stack editor and app template use the default named Docker volume; Portainer does not apply Compose override files. To put PostgreSQL data in a host directory, deploy the Docker Compose bundle from the command line with both <0/> and <1/>. See the <2>Docker Compose guide</2> for setup and existing-database migration precautions."
+msgstr ""
+
+#: ../portal/src/routes/docs/installation/docker-compose/+page.svelte
+msgid "POSTGRES_DATA_PATH=/srv/nocturne/postgres-data"
+msgstr ""
+
+#: ../portal/src/routes/docs/installation/docker-compose/+page.svelte
+msgid "Create the directory on the machine running the Docker daemon, not merely on the computer where you run the Docker CLI. Use an absolute path and ensure the PostgreSQL container can write to it. For example: <0/>"
+msgstr ""
+
+#: ../portal/src/routes/docs/installation/docker-compose/+page.svelte
+msgid "Add the path to <0/>: <1/>"
+msgstr ""
+
+#: ../portal/src/routes/docs/installation/docker-compose/+page.svelte
+msgid "This replaces the default <0/> command in Step 3 below; do not run both commands. Start the stack with both files. Keep both <1/> arguments on every later Compose command, including updates and shutdown: <2/>"
+msgstr ""
+
+#: ../portal/src/routes/docs/installation/docker-compose/+page.svelte
+msgid "Changing the path does not move your database"
+msgstr ""
+
+#: ../portal/src/routes/docs/installation/docker-compose/+page.svelte
+msgid "A new or empty directory initializes a separate, empty PostgreSQL database. For an existing install, take and verify a backup, stop the stack, and migrate the existing PostgreSQL data before starting with the override. Preserve file ownership and use the same PostgreSQL major version. Keep the original named volume until the new location has been verified. There is no automatic volume migration. Do not use <0/> while the original volume is your only copy."
+msgstr ""
+
+#: ../portal/src/routes/docs/installation/docker-compose/+page.svelte
+msgid "Stop the stack without removing its containers or volumes, then record the stopped PostgreSQL container: <0/>"
+msgstr ""
+
+#: ../portal/src/routes/docs/installation/docker-compose/+page.svelte
+msgid "Create and inspect a root-owned backup archive while the database is stopped: <0/> Keep this archive somewhere safe before continuing."
+msgstr ""
+
+#: ../portal/src/routes/docs/installation/docker-compose/+page.svelte
+msgid "Create the host directory and copy the stopped data directory, preserving its contents and ownership: <0/>"
+msgstr ""
+
+#: ../portal/src/routes/docs/installation/docker-compose/+page.svelte
+msgid "Set <0/> in <1/> and start with both Compose files: <2/> If you also use the BYO-proxy override, include it as well: <3/>"
+msgstr ""
+
+#: ../portal/src/routes/docs/installation/docker-compose/+page.svelte
+msgid "Verify the PostgreSQL logs and your existing Nocturne data before allowing writes. Keep the original named volume and backup archive until verification is complete. To roll back before new writes, stop the override stack without deleting volumes, then start the original Compose file again: <0/> For a stack that also uses BYO proxy, keep that override when stopping and when returning to the named-volume configuration: <1/>"
+msgstr ""
+
+#: ../portal/src/routes/docs/installation/docker-compose/+page.svelte
+msgid "Schedule downtime first. This copies PostgreSQL's physical data directory, so the source server must be stopped and the destination must use the same PostgreSQL major version. These commands assume Docker runs on this Linux host and you are in the directory containing the Compose files and <0/>."
+msgstr ""
+
+#: ../portal/src/routes/docs/installation/docker-compose/+page.svelte
+msgid "Do not use <0/> during migration or rollback. It deletes named volumes. If the new database has accepted writes, it is no longer equivalent to the untouched original volume; plan any rollback or restore before reopening the service to users."
+msgstr ""
+
+#: ../portal/src/routes/docs/installation/docker-compose/+page.svelte
+msgid "Move an existing database from the named volume"
+msgstr ""
+
+#: ../portal/src/routes/docs/installation/docker-compose/+page.svelte
+msgid "View docker-compose.bind-data.yaml"
+msgstr ""
+
+#: ../portal/src/routes/docs/installation/docker-compose/+page.svelte
+msgid "Download the <0/> bundle from the <1>latest GitHub Release</1>. The bundle is self-contained: just <2/> and the environment template, which GitHub lists as <3/>. The database init script and the TLS proxy config are embedded directly in the compose file, so there are no extra directories to keep alongside it. The bundle also ships a <4/> override for operators who run their own reverse proxy (see below). A second, optional override lets PostgreSQL store its data in a directory on the Docker host."
+msgstr ""
+
+#: ../portal/src/routes/docs/installation/docker-compose/+page.svelte
+msgid "Optional: use a host directory for PostgreSQL"
+msgstr ""
+
+#: ../portal/src/routes/docs/installation/docker-compose/+page.svelte
+msgid "The default named Docker volume is recommended for most installs and needs no extra configuration. To place PostgreSQL's data on a specific disk or host directory, use the separate bind-data override. It fixes the mount type to <0/> and requires one path, so the mount type and source cannot be accidentally mismatched."
+msgstr ""
+
+#: ../portal/src/routes/docs/installation/docker-compose/+page.svelte
+msgid "Keep every active override in the same ordered <0/> list on every Compose command for this stack. Include the bind-data file, the BYO-proxy file, and any local override file you use. Omitting an active override can restore the named-volume mount or bundled proxy configuration."
+msgstr ""
+
+#: ../portal/src/routes/docs/installation/docker-compose/+page.svelte
+msgid "The override requires <0/> and refuses to create a missing host directory. If the variable is unset or the path does not exist, Compose reports an error instead of silently starting PostgreSQL in a newly created directory. A path that exists but contains no database is still a new database."
+msgstr ""
+
+#: ../portal/src/routes/docs/installation/docker-compose/+page.svelte
+msgid "If you also use the bind-data override, include both overrides in the same command:"
+msgstr ""
+
+#: ../portal/src/routes/docs/installation/docker-compose/+page.svelte
+msgid "Keep every active override in both the pull and update commands. For bind-data only:"
+msgstr ""
+
+#: ../portal/src/routes/docs/installation/docker-compose/+page.svelte
+msgid "For bind-data with the BYO-proxy override:"
+msgstr ""
+
+#: ../portal/src/routes/docs/installation/docker-compose/+page.svelte
+msgid "Omitting the bind-data override changes the declared storage back to the named volume."
+msgstr ""
+
+#: src/lib/stores/realtime-store.svelte.ts
+msgid "Real-time data unavailable"
+msgstr ""
+
+#: src/lib/components/WebSocketStatus.svelte
+#: src/lib/components/dashboard/widgets/ConnectionStatusWidget.svelte
+msgid "Reconnecting..."
+msgstr "Verbinde erneut..."
+
+#: src/lib/components/WebSocketStatus.svelte
+#: src/lib/components/dashboard/widgets/ConnectionStatusWidget.svelte
+msgid "Attempting to reconnect"
+msgstr "Versuche erneut zu verbinden"
+
+#: src/lib/stores/realtime-store.svelte.ts
+msgid "Real-time data disconnected"
+msgstr "Verbindung zu Echtzeitdaten getrennt"
+
+#: src/lib/stores/realtime-store.svelte.ts
+msgid "Failed to connect to real-time data"
+msgstr "Fehler beim Verbinden mit Echtzeitdaten"
+
+#: src/lib/components/reports/DailyInsulinSummary.svelte
+msgid "Total basal insulin:"
+msgstr "Gesamtbasalinsulin:"
+
+#: src/lib/components/reports/DailyInsulinSummary.svelte
+msgid "Total daily insulin:"
+msgstr "Gesamtes Tagesinsulin:"
+
+#. 0: formatInsulinDisplay(totalInsulin)
+#: src/lib/components/reports/TreatmentSummary.svelte
+msgid "Insulin: {0}U"
+msgstr "Insulin: {0}U"
+
+#: src/lib/components/trackers/TrackerEditorDialog.svelte
+#: src/lib/components/trackers/TrackerEditorDialog.svelte
+#: src/lib/components/trackers/TrackerEditorDialog.svelte
+msgid "Public - Visible to everyone"
+msgstr "Öffentlich – Für alle sichtbar"
+
+#: src/lib/components/trackers/TrackerEditorDialog.svelte
+msgid "Controls whether this tracker is visible to unauthenticated users"
+msgstr "Steuert, ob dieser Tracker für nicht angemeldete Benutzer sichtbar ist"
+
+#: src/routes/(authenticated)/notifications/+page.svelte
+msgid "Tracker active"
+msgstr "Tracker aktiv"
+
+#. 0: thresholdHours ?? "?"
+#: src/routes/(authenticated)/notifications/+page.svelte
+msgid "Exceeded {0}h - change urgently!"
+msgstr "{0}h überschritten - dringend wechseln!"
+
+#. 0: thresholdHours ?? "?"
+#: src/routes/(authenticated)/notifications/+page.svelte
+msgid "Exceeded {0}h - change soon"
+msgstr "{0}h überschritten - bald wechseln"
+
+#. 0: thresholdHours ?? def.lifespanHours ?? "?"
+#: src/routes/(authenticated)/notifications/+page.svelte
+msgid "Approaching {0}h limit"
+msgstr "{0}h-Grenze wird erreicht"
+
+#: src/routes/(authenticated)/reports/agp/+page.svelte
+msgid "<0/> Ambulatory Glucose Profile"
+msgstr "<0/> Ambulantes Glukoseprofil"
+
+#: src/routes/(authenticated)/reports/basal-analysis/BasalAnalysisContent.svelte
+msgid "<0/> Basal Rate Analysis"
+msgstr "<0/> Basalraten-Analyse"
+
+#: src/routes/(authenticated)/reports/battery/+page.svelte
+msgid "Battery Report"
+msgstr "Batteriebericht"
+
+#: src/routes/(authenticated)/reports/insulin-delivery/+page.svelte
+msgid "<0/> Insulin Delivery Report"
+msgstr "<0/> Insulinabgabe-Bericht"
+
+#: src/routes/(authenticated)/reports/idp/+page.svelte
+msgid "<0/> Insulin Dosing Profile"
+msgstr "<0/> Insulin-Dosierungsprofil"
+
+#: src/routes/(authenticated)/reports/site-change-impact/+page.svelte
+msgid "<0/> Site Change Impact"
+msgstr "<0/> Auswirkung des Katheterwechsels"
+
+#: src/routes/(authenticated)/settings/connectors/google-health/google-health-page.svelte
+msgid "Sign in with Google"
+msgstr "Melden Sie sich mit Google an"
+
+#: ../portal/src/routes/docs/installation/docker-compose/+page.svelte
+msgid "Download the <0/> bundle from the <1>latest GitHub Release</1>. The bundle is self-contained: just <2/> and the environment template, which GitHub lists as <3/>. The database init script and the TLS proxy config are embedded directly in the compose file, so there are no extra directories to keep alongside it. The bundle also ships a <4/> override for operators who run their own reverse proxy (see below)."
+msgstr ""
+
+#: src/lib/components/WebSocketStatus.svelte
+#: src/lib/components/dashboard/widgets/ConnectionStatusWidget.svelte
+msgid "Starting"
+msgstr ""
+
+#: src/lib/components/WebSocketStatus.svelte
+#: src/lib/components/dashboard/widgets/ConnectionStatusWidget.svelte
+msgid "Waiting to connect"
 msgstr ""
 
 #: src/lib/components/connectors/GoogleHealthSourceRow.svelte

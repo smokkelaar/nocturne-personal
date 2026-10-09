@@ -24,7 +24,8 @@
     prefersHour12,
   } from "$lib/utils/formatting";
   import Clock from "@lucide/svelte/icons/clock";
-  import { createConnectionIndicator } from "$lib/stores/connection-indicator.svelte";
+  import { displayedGlucose } from "$lib/stores/current-glucose-status.svelte";
+  import { getGlucoseTileVariant } from "$lib/utils/glucose-status";
 
   interface ComponentProps {
     /** Show status pills (COB, IOB, CAGE, SAGE, etc.) */
@@ -41,12 +42,13 @@
     settingsStore.features?.trackerPills?.enabled ?? true
   );
 
-  const rawCurrentBG = $derived(realtimeStore.currentBG);
-  const rawBgDelta = $derived(realtimeStore.bgDelta);
+  const glucose = displayedGlucose(realtimeStore);
+  const rawCurrentBG = $derived(glucose.currentBG);
+  const rawBgDelta = $derived(glucose.bgDelta);
   const lastUpdated = $derived(realtimeStore.lastUpdated);
-
-  const connection = createConnectionIndicator(() => realtimeStore.connectionStatus);
-
+  const tileVariant = $derived(
+    getGlucoseTileVariant(glucose.status)
+  );
 
   // Format values based on user's unit preference
   const units = $derived(glucoseUnits.current);
@@ -61,7 +63,7 @@
   const isStale = $derived(
     currentTime.getTime() - lastUpdated > STALE_THRESHOLD_MS
   );
-  const isDisconnected = $derived(connection.isDisconnected);
+  const isDisconnected = $derived(realtimeStore.connectionUnavailable);
 
   // Loading state - no data received yet
   const isLoading = $derived(
@@ -132,7 +134,7 @@
     <div class="flex shrink-0 items-center gap-3">
       <GlucoseValueIndicator
         displayValue={displayCurrentBG}
-        rawBgMgdl={rawCurrentBG}
+        variant={tileVariant}
         {isLoading}
         {isStale}
         {isDisconnected}
@@ -145,7 +147,7 @@
       </div>
     </div>
 
-    <div class="flex min-w-0 flex-1 flex-wrap items-center gap-x-2 gap-y-1">
+    <div class="flex min-w-0 flex-1 flex-wrap items-center gap-x-2 gap-y-1" data-testid="status-pills">
       {#if displayDemoMode}
         <Badge variant="demo">
           <span class="size-2 rounded-full bg-demo animate-pulse" aria-hidden="true"></span>
@@ -166,6 +168,7 @@
         <TrackerPillBar
           instances={realtimeStore.trackerInstances}
           definitions={realtimeStore.trackerDefinitions}
+          now={realtimeStore.now}
           onComplete={handleTrackerComplete}
           class="contents"
         />

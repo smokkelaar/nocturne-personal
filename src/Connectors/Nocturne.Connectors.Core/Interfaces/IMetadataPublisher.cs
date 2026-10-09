@@ -40,6 +40,17 @@ public interface IMetadataPublisher
         string source,
         WriteOrigin origin, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Publishes the activities a source may already have delivered that nothing stored holds yet
+    /// under their id. A held activity is left as it is stored, and one the user deleted does not come back.
+    /// </summary>
+    /// <returns>How many were written, or null when the write failed.</returns>
+    Task<int?> PublishRecentActivityAsync(
+        IEnumerable<Activity> activities,
+        string source,
+        WriteOrigin origin,
+        CancellationToken cancellationToken = default);
+
     Task<bool> PublishStateSpansAsync(
         IEnumerable<StateSpan> stateSpans,
         string source,
@@ -90,6 +101,17 @@ public interface IMetadataPublisher
     /// <param name="source">The connector data source (e.g. <c>nightscout-connector</c>).</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     Task<DateTime?> GetLatestActivityTimestampAsync(
+        string source,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Returns the start of the most recent state span <paramref name="source"/> published through
+    /// <see cref="PublishStateSpansAsync"/>, or <c>null</c> when it has published none. Activity
+    /// spans share the table but not this watermark; see <see cref="GetLatestActivityTimestampAsync"/>.
+    /// </summary>
+    /// <param name="source">The connector data source (e.g. <c>nocturne-remote-connector</c>).</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    Task<DateTime?> GetLatestStateSpanTimestampAsync(
         string source,
         CancellationToken cancellationToken = default);
 

@@ -16,6 +16,7 @@
   import PairedGlucoseScatter from "$lib/components/reports/cgm-comparison/PairedGlucoseScatter.svelte";
   import { bg, bgDelta, bgLabel } from "$lib/utils/formatting";
   import { setReportPrintMeta } from "$lib/components/reports/print/report-print.svelte";
+  import { remoteErrorMessage } from "$lib/api/remote-error";
 
   setReportPrintMeta(() => ({ title: "CGM Comparison" }));
 
@@ -66,6 +67,9 @@
 
   const comparison = $derived(query?.current);
   const metrics = $derived(comparison?.metrics);
+  const comparisonError = $derived(
+    query?.error ? remoteErrorMessage(query.error, "The comparison could not be loaded.") : null
+  );
 
   const toleranceOptions = [5, 10, 15];
 
@@ -78,7 +82,7 @@
 </svelte:head>
 
 {#if resource.current}
-  <div class="@container container mx-auto max-w-5xl space-y-6 p-3 @md:p-6">
+  <div class="@container space-y-6">
     <div class="space-y-3">
       <a
         href={resolve("/reports/data-quality")}
@@ -92,7 +96,6 @@
           <GitCompareArrows class="h-5 w-5 text-primary" />
         </div>
         <div>
-          <h1 class="text-2xl font-bold tracking-tight print:hidden">CGM Comparison</h1>
           <p class="text-muted-foreground">
             Readings from two sensors matched to the same moment
           </p>
@@ -165,10 +168,10 @@
             Pick two different devices to compare.
           </CardContent>
         </Card>
-      {:else if query?.error}
+      {:else if comparisonError}
         <Card>
-          <CardContent variant="muted" class="pt-6">
-            The comparison could not be loaded.
+          <CardContent variant="muted" class="pt-6" role="alert">
+            {comparisonError}
           </CardContent>
         </Card>
       {:else if comparison}

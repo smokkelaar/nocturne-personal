@@ -796,12 +796,16 @@ namespace Nocturne.Infrastructure.Data.Migrations
                         .HasColumnName("sync_identifier");
 
                     b.Property<DateTime>("SysCreatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("sys_created_at");
+                        .HasColumnName("sys_created_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<DateTime>("SysUpdatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("sys_updated_at");
+                        .HasColumnName("sys_updated_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uuid")
@@ -1299,12 +1303,16 @@ namespace Nocturne.Infrastructure.Data.Migrations
                         .HasColumnName("sync_cursors");
 
                     b.Property<DateTime>("SysCreatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("sys_created_at");
+                        .HasColumnName("sys_created_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<DateTime>("SysUpdatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("sys_updated_at");
+                        .HasColumnName("sys_updated_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uuid")
@@ -1405,8 +1413,10 @@ namespace Nocturne.Infrastructure.Data.Migrations
                         .HasColumnName("status");
 
                     b.Property<DateTime>("SysCreatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("sys_created_at");
+                        .HasColumnName("sys_created_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<DateTime>("SysUpdatedAt")
                         .ValueGeneratedOnAdd()
@@ -1980,8 +1990,10 @@ namespace Nocturne.Infrastructure.Data.Migrations
                         .HasColumnName("subcategory");
 
                     b.Property<DateTime>("SysCreatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("sys_created_at");
+                        .HasColumnName("sys_created_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<DateTime>("SysUpdatedAt")
                         .ValueGeneratedOnAdd()
@@ -2030,6 +2042,9 @@ namespace Nocturne.Infrastructure.Data.Migrations
                         .IsUnique()
                         .HasDatabaseName("ix_foods_tenant_external")
                         .HasFilter("external_source IS NOT NULL AND external_id IS NOT NULL");
+
+                    b.HasIndex("TenantId", "SysUpdatedAt", "Id")
+                        .HasDatabaseName("ix_foods_tenant_sys_updated_at");
 
                     b.ToTable("foods");
                 });
@@ -2085,8 +2100,10 @@ namespace Nocturne.Infrastructure.Data.Migrations
                         .HasColumnName("sync_identifier");
 
                     b.Property<DateTime>("SysCreatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("sys_created_at");
+                        .HasColumnName("sys_created_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<DateTime>("SysUpdatedAt")
                         .ValueGeneratedOnAdd()
@@ -2102,6 +2119,10 @@ namespace Nocturne.Infrastructure.Data.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("timestamp");
 
+                    b.Property<string>("Type")
+                        .HasColumnType("text")
+                        .HasColumnName("type");
+
                     b.Property<int?>("UtcOffset")
                         .HasColumnType("integer")
                         .HasColumnName("utc_offset");
@@ -2114,6 +2135,10 @@ namespace Nocturne.Infrastructure.Data.Migrations
                     b.HasIndex("Timestamp")
                         .IsDescending()
                         .HasDatabaseName("ix_heart_rates_timestamp");
+
+                    b.HasIndex("TenantId", "OriginalId")
+                        .HasDatabaseName("ix_heart_rates_tenant_original_id")
+                        .HasFilter("original_id IS NOT NULL");
 
                     b.HasIndex("TenantId", "Timestamp")
                         .HasDatabaseName("ix_heart_rates_tenant_timestamp");
@@ -3445,12 +3470,16 @@ namespace Nocturne.Infrastructure.Data.Migrations
                         .HasColumnName("encrypted_json");
 
                     b.Property<DateTime>("SysCreatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("sys_created_at");
+                        .HasColumnName("sys_created_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<DateTime>("SysUpdatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("sys_updated_at");
+                        .HasColumnName("sys_updated_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.HasKey("Id");
 
@@ -3808,8 +3837,10 @@ namespace Nocturne.Infrastructure.Data.Migrations
                         .HasColumnName("srv_modified");
 
                     b.Property<DateTime>("SysCreatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("sys_created_at");
+                        .HasColumnName("sys_created_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<DateTime>("SysUpdatedAt")
                         .ValueGeneratedOnAdd()
@@ -3931,6 +3962,16 @@ namespace Nocturne.Infrastructure.Data.Migrations
                     b.Property<long?>("DeepSleepMs")
                         .HasColumnType("bigint")
                         .HasColumnName("deep_sleep_ms");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<bool>("DeletedByUser")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("deleted_by_user");
 
                     b.Property<string>("DetectionMethod")
                         .IsRequired()
@@ -4105,8 +4146,10 @@ namespace Nocturne.Infrastructure.Data.Migrations
                         .HasColumnName("category");
 
                     b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("timestamp with time zone")
@@ -4155,8 +4198,10 @@ namespace Nocturne.Infrastructure.Data.Migrations
                         .HasColumnName("tenant_id");
 
                     b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at");
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.HasKey("Id");
 
@@ -4183,6 +4228,10 @@ namespace Nocturne.Infrastructure.Data.Migrations
                     b.HasIndex("Category", "StartTimestamp")
                         .IsDescending(false, true)
                         .HasDatabaseName("ix_state_spans_category_start");
+
+                    b.HasIndex("TenantId", "Category", "UpdatedAt", "Id")
+                        .HasDatabaseName("ix_state_spans_tenant_category_updated_at")
+                        .HasFilter("deleted_at IS NULL");
 
                     b.HasIndex("TenantId", "Source", "Category", "StartTimestamp")
                         .IsDescending(false, false, false, true)
@@ -4242,8 +4291,10 @@ namespace Nocturne.Infrastructure.Data.Migrations
                         .HasColumnName("sync_identifier");
 
                     b.Property<DateTime>("SysCreatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("sys_created_at");
+                        .HasColumnName("sys_created_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<DateTime>("SysUpdatedAt")
                         .ValueGeneratedOnAdd()
@@ -4259,6 +4310,10 @@ namespace Nocturne.Infrastructure.Data.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("timestamp");
 
+                    b.Property<string>("Type")
+                        .HasColumnType("text")
+                        .HasColumnName("type");
+
                     b.Property<int?>("UtcOffset")
                         .HasColumnType("integer")
                         .HasColumnName("utc_offset");
@@ -4271,6 +4326,10 @@ namespace Nocturne.Infrastructure.Data.Migrations
                     b.HasIndex("Timestamp")
                         .IsDescending()
                         .HasDatabaseName("ix_step_counts_timestamp");
+
+                    b.HasIndex("TenantId", "OriginalId")
+                        .HasDatabaseName("ix_step_counts_tenant_original_id")
+                        .HasFilter("original_id IS NOT NULL");
 
                     b.HasIndex("TenantId", "Timestamp")
                         .HasDatabaseName("ix_step_counts_tenant_timestamp");
@@ -4819,12 +4878,16 @@ namespace Nocturne.Infrastructure.Data.Migrations
                         .HasColumnName("slug");
 
                     b.Property<DateTime>("SysCreatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("sys_created_at");
+                        .HasColumnName("sys_created_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<DateTime>("SysUpdatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("sys_updated_at");
+                        .HasColumnName("sys_updated_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.HasKey("Id");
 
@@ -4884,12 +4947,16 @@ namespace Nocturne.Infrastructure.Data.Migrations
                         .HasColumnName("subject_id");
 
                     b.Property<DateTime>("SysCreatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("sys_created_at");
+                        .HasColumnName("sys_created_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<DateTime>("SysUpdatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("sys_updated_at");
+                        .HasColumnName("sys_updated_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uuid")
@@ -4930,7 +4997,7 @@ namespace Nocturne.Infrastructure.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("sys_created_at")
-                        .HasDefaultValueSql("now()");
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<Guid>("TenantMemberId")
                         .HasColumnType("uuid")
@@ -4987,13 +5054,13 @@ namespace Nocturne.Infrastructure.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("sys_created_at")
-                        .HasDefaultValueSql("now()");
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<DateTime>("SysUpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("sys_updated_at")
-                        .HasDefaultValueSql("now()");
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uuid")
@@ -5521,8 +5588,10 @@ namespace Nocturne.Infrastructure.Data.Migrations
                         .HasColumnName("portions");
 
                     b.Property<DateTime>("SysCreatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("sys_created_at");
+                        .HasColumnName("sys_created_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<DateTime>("SysUpdatedAt")
                         .ValueGeneratedOnAdd()
@@ -5752,12 +5821,16 @@ namespace Nocturne.Infrastructure.Data.Migrations
                         .HasColumnName("sync_identifier");
 
                     b.Property<DateTime>("SysCreatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("sys_created_at");
+                        .HasColumnName("sys_created_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<DateTime>("SysUpdatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("sys_updated_at");
+                        .HasColumnName("sys_updated_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<double?>("TargetBg")
                         .HasColumnType("double precision")
@@ -5882,12 +5955,16 @@ namespace Nocturne.Infrastructure.Data.Migrations
                         .HasColumnName("sync_identifier");
 
                     b.Property<DateTime>("SysCreatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("sys_created_at");
+                        .HasColumnName("sys_created_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<DateTime>("SysUpdatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("sys_updated_at");
+                        .HasColumnName("sys_updated_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uuid")
@@ -5923,6 +6000,11 @@ namespace Nocturne.Infrastructure.Data.Migrations
                         .IsUnique()
                         .HasDatabaseName("ix_bg_checks_tenant_legacy_id")
                         .HasFilter("legacy_id IS NOT NULL AND deleted_at IS NULL");
+
+                    b.HasIndex("TenantId", "DataSource", "SyncIdentifier")
+                        .IsUnique()
+                        .HasDatabaseName("ix_bg_checks_tenant_source_sync_id")
+                        .HasFilter("sync_identifier IS NOT NULL AND deleted_at IS NULL");
 
                     b.HasIndex("TenantId", "DataSource", "Timestamp")
                         .IsDescending(false, false, true)
@@ -6004,12 +6086,16 @@ namespace Nocturne.Infrastructure.Data.Migrations
                         .HasColumnName("sync_identifier");
 
                     b.Property<DateTime>("SysCreatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("sys_created_at");
+                        .HasColumnName("sys_created_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<DateTime>("SysUpdatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("sys_updated_at");
+                        .HasColumnName("sys_updated_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uuid")
@@ -6119,12 +6205,16 @@ namespace Nocturne.Infrastructure.Data.Migrations
                         .HasColumnName("profile_name");
 
                     b.Property<DateTime>("SysCreatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("sys_created_at");
+                        .HasColumnName("sys_created_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<DateTime>("SysUpdatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("sys_updated_at");
+                        .HasColumnName("sys_updated_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uuid")
@@ -6163,6 +6253,10 @@ namespace Nocturne.Infrastructure.Data.Migrations
                     b.HasIndex("TenantId", "ProfileName", "Timestamp")
                         .IsDescending(false, false, true)
                         .HasDatabaseName("ix_basal_schedules_tenant_profile_timestamp");
+
+                    b.HasIndex("TenantId", "SysUpdatedAt", "Id")
+                        .HasDatabaseName("ix_basal_schedules_tenant_sys_updated_at")
+                        .HasFilter("deleted_at IS NULL");
 
                     b.HasIndex(new[] { "TenantId", "LegacyId" }, "ix_basal_schedules_tenant_legacy_id_user_deleted")
                         .HasDatabaseName("ix_basal_schedules_tenant_legacy_id_user_deleted")
@@ -6271,12 +6365,16 @@ namespace Nocturne.Infrastructure.Data.Migrations
                         .HasColumnName("split_now");
 
                     b.Property<DateTime>("SysCreatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("sys_created_at");
+                        .HasColumnName("sys_created_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<DateTime>("SysUpdatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("sys_updated_at");
+                        .HasColumnName("sys_updated_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uuid")
@@ -6436,12 +6534,16 @@ namespace Nocturne.Infrastructure.Data.Migrations
                         .HasColumnName("sync_identifier");
 
                     b.Property<DateTime>("SysCreatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("sys_created_at");
+                        .HasColumnName("sys_created_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<DateTime>("SysUpdatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("sys_updated_at");
+                        .HasColumnName("sys_updated_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uuid")
@@ -6568,12 +6670,16 @@ namespace Nocturne.Infrastructure.Data.Migrations
                         .HasColumnName("slope");
 
                     b.Property<DateTime>("SysCreatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("sys_created_at");
+                        .HasColumnName("sys_created_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<DateTime>("SysUpdatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("sys_updated_at");
+                        .HasColumnName("sys_updated_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uuid")
@@ -6607,6 +6713,10 @@ namespace Nocturne.Infrastructure.Data.Migrations
                     b.HasIndex("TenantId", "DataSource", "Timestamp")
                         .IsDescending(false, false, true)
                         .HasDatabaseName("ix_calibrations_tenant_source_timestamp")
+                        .HasFilter("deleted_at IS NULL");
+
+                    b.HasIndex("TenantId", "SysUpdatedAt", "Id")
+                        .HasDatabaseName("ix_calibrations_tenant_sys_updated_at")
                         .HasFilter("deleted_at IS NULL");
 
                     b.HasIndex(new[] { "TenantId", "LegacyId" }, "ix_calibrations_tenant_legacy_id_user_deleted")
@@ -6687,12 +6797,16 @@ namespace Nocturne.Infrastructure.Data.Migrations
                         .HasColumnName("sync_identifier");
 
                     b.Property<DateTime>("SysCreatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("sys_created_at");
+                        .HasColumnName("sys_created_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<DateTime>("SysUpdatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("sys_updated_at");
+                        .HasColumnName("sys_updated_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uuid")
@@ -6806,12 +6920,16 @@ namespace Nocturne.Infrastructure.Data.Migrations
                         .HasColumnName("profile_name");
 
                     b.Property<DateTime>("SysCreatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("sys_created_at");
+                        .HasColumnName("sys_created_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<DateTime>("SysUpdatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("sys_updated_at");
+                        .HasColumnName("sys_updated_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uuid")
@@ -6850,6 +6968,10 @@ namespace Nocturne.Infrastructure.Data.Migrations
                     b.HasIndex("TenantId", "ProfileName", "Timestamp")
                         .IsDescending(false, false, true)
                         .HasDatabaseName("ix_carb_ratio_schedules_tenant_profile_timestamp");
+
+                    b.HasIndex("TenantId", "SysUpdatedAt", "Id")
+                        .HasDatabaseName("ix_carb_ratio_schedules_tenant_sys_updated_at")
+                        .HasFilter("deleted_at IS NULL");
 
                     b.HasIndex(new[] { "TenantId", "LegacyId" }, "ix_carb_ratio_schedules_tenant_legacy_id_user_deleted")
                         .HasDatabaseName("ix_carb_ratio_schedules_tenant_legacy_id_user_deleted")
@@ -6989,12 +7111,16 @@ namespace Nocturne.Infrastructure.Data.Migrations
                         .HasColumnName("sync_identifier");
 
                     b.Property<DateTime>("SysCreatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("sys_created_at");
+                        .HasColumnName("sys_created_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<DateTime>("SysUpdatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("sys_updated_at");
+                        .HasColumnName("sys_updated_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uuid")
@@ -7029,6 +7155,11 @@ namespace Nocturne.Infrastructure.Data.Migrations
                         .IsUnique()
                         .HasDatabaseName("ix_device_events_tenant_legacy_id")
                         .HasFilter("legacy_id IS NOT NULL AND deleted_at IS NULL");
+
+                    b.HasIndex("TenantId", "DataSource", "SyncIdentifier")
+                        .IsUnique()
+                        .HasDatabaseName("ix_device_events_tenant_source_sync_id")
+                        .HasFilter("sync_identifier IS NOT NULL AND deleted_at IS NULL");
 
                     b.HasIndex("TenantId", "DataSource", "Timestamp")
                         .IsDescending(false, false, true)
@@ -7076,12 +7207,16 @@ namespace Nocturne.Infrastructure.Data.Migrations
                         .HasColumnName("extras");
 
                     b.Property<DateTime>("SysCreatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("sys_created_at");
+                        .HasColumnName("sys_created_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<DateTime>("SysUpdatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("sys_updated_at");
+                        .HasColumnName("sys_updated_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uuid")
@@ -7155,12 +7290,16 @@ namespace Nocturne.Infrastructure.Data.Migrations
                         .HasColumnName("patient_device_id");
 
                     b.Property<DateTime>("SysCreatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("sys_created_at");
+                        .HasColumnName("sys_created_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<DateTime>("SysUpdatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("sys_updated_at");
+                        .HasColumnName("sys_updated_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uuid")
@@ -7198,6 +7337,10 @@ namespace Nocturne.Infrastructure.Data.Migrations
                     b.HasIndex("TenantId", "DataSource", "Timestamp")
                         .IsDescending(false, false, true)
                         .HasDatabaseName("ix_meter_glucose_tenant_source_timestamp")
+                        .HasFilter("deleted_at IS NULL");
+
+                    b.HasIndex("TenantId", "SysUpdatedAt", "Id")
+                        .HasDatabaseName("ix_meter_glucose_tenant_sys_updated_at")
                         .HasFilter("deleted_at IS NULL");
 
                     b.HasIndex(new[] { "TenantId", "LegacyId" }, "ix_meter_glucose_tenant_legacy_id_user_deleted")
@@ -7267,12 +7410,16 @@ namespace Nocturne.Infrastructure.Data.Migrations
                         .HasColumnName("sync_identifier");
 
                     b.Property<DateTime>("SysCreatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("sys_created_at");
+                        .HasColumnName("sys_created_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<DateTime>("SysUpdatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("sys_updated_at");
+                        .HasColumnName("sys_updated_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uuid")
@@ -7309,6 +7456,11 @@ namespace Nocturne.Infrastructure.Data.Migrations
                         .IsUnique()
                         .HasDatabaseName("ix_notes_tenant_legacy_id")
                         .HasFilter("legacy_id IS NOT NULL AND deleted_at IS NULL");
+
+                    b.HasIndex("TenantId", "DataSource", "SyncIdentifier")
+                        .IsUnique()
+                        .HasDatabaseName("ix_notes_tenant_source_sync_id")
+                        .HasFilter("sync_identifier IS NOT NULL AND deleted_at IS NULL");
 
                     b.HasIndex("TenantId", "DataSource", "Timestamp")
                         .IsDescending(false, false, true)
@@ -7402,12 +7554,16 @@ namespace Nocturne.Infrastructure.Data.Migrations
                         .HasColumnName("start_date");
 
                     b.Property<DateTime>("SysCreatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("sys_created_at");
+                        .HasColumnName("sys_created_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<DateTime>("SysUpdatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("sys_updated_at");
+                        .HasColumnName("sys_updated_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uuid")
@@ -7503,12 +7659,16 @@ namespace Nocturne.Infrastructure.Data.Migrations
                         .HasColumnName("start_date");
 
                     b.Property<DateTime>("SysCreatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("sys_created_at");
+                        .HasColumnName("sys_created_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<DateTime>("SysUpdatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("sys_updated_at");
+                        .HasColumnName("sys_updated_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uuid")
@@ -7578,12 +7738,16 @@ namespace Nocturne.Infrastructure.Data.Migrations
                         .HasColumnName("sex");
 
                     b.Property<DateTime>("SysCreatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("sys_created_at");
+                        .HasColumnName("sys_created_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<DateTime>("SysUpdatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("sys_updated_at");
+                        .HasColumnName("sys_updated_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uuid")
@@ -7721,12 +7885,16 @@ namespace Nocturne.Infrastructure.Data.Migrations
                         .HasColumnName("sync_identifier");
 
                     b.Property<DateTime>("SysCreatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("sys_created_at");
+                        .HasColumnName("sys_created_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<DateTime>("SysUpdatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("sys_updated_at");
+                        .HasColumnName("sys_updated_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uuid")
@@ -7840,12 +8008,16 @@ namespace Nocturne.Infrastructure.Data.Migrations
                         .HasColumnName("profile_name");
 
                     b.Property<DateTime>("SysCreatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("sys_created_at");
+                        .HasColumnName("sys_created_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<DateTime>("SysUpdatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("sys_updated_at");
+                        .HasColumnName("sys_updated_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uuid")
@@ -7884,6 +8056,10 @@ namespace Nocturne.Infrastructure.Data.Migrations
                     b.HasIndex("TenantId", "ProfileName", "Timestamp")
                         .IsDescending(false, false, true)
                         .HasDatabaseName("ix_sensitivity_schedules_tenant_profile_timestamp");
+
+                    b.HasIndex("TenantId", "SysUpdatedAt", "Id")
+                        .HasDatabaseName("ix_sensitivity_schedules_tenant_sys_updated_at")
+                        .HasFilter("deleted_at IS NULL");
 
                     b.HasIndex(new[] { "TenantId", "LegacyId" }, "ix_sensitivity_schedules_tenant_legacy_id_user_deleted")
                         .HasDatabaseName("ix_sensitivity_schedules_tenant_legacy_id_user_deleted")
@@ -7977,12 +8153,16 @@ namespace Nocturne.Infrastructure.Data.Migrations
                         .HasColumnName("sync_identifier");
 
                     b.Property<DateTime>("SysCreatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("sys_created_at");
+                        .HasColumnName("sys_created_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<DateTime>("SysUpdatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("sys_updated_at");
+                        .HasColumnName("sys_updated_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uuid")
@@ -8038,6 +8218,10 @@ namespace Nocturne.Infrastructure.Data.Migrations
                     b.HasIndex("TenantId", "DataSource", "Timestamp")
                         .IsDescending(false, false, true)
                         .HasDatabaseName("ix_sensor_glucose_tenant_source_timestamp")
+                        .HasFilter("deleted_at IS NULL");
+
+                    b.HasIndex("TenantId", "SysUpdatedAt", "Id")
+                        .HasDatabaseName("ix_sensor_glucose_tenant_sys_updated_at")
                         .HasFilter("deleted_at IS NULL");
 
                     b.HasIndex(new[] { "TenantId", "LegacyId" }, "ix_sensor_glucose_tenant_legacy_id_user_deleted")
@@ -8104,12 +8288,16 @@ namespace Nocturne.Infrastructure.Data.Migrations
                         .HasColumnName("profile_name");
 
                     b.Property<DateTime>("SysCreatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("sys_created_at");
+                        .HasColumnName("sys_created_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<DateTime>("SysUpdatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("sys_updated_at");
+                        .HasColumnName("sys_updated_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uuid")
@@ -8148,6 +8336,10 @@ namespace Nocturne.Infrastructure.Data.Migrations
                     b.HasIndex("TenantId", "ProfileName", "Timestamp")
                         .IsDescending(false, false, true)
                         .HasDatabaseName("ix_target_range_schedules_tenant_profile_timestamp");
+
+                    b.HasIndex("TenantId", "SysUpdatedAt", "Id")
+                        .HasDatabaseName("ix_target_range_schedules_tenant_sys_updated_at")
+                        .HasFilter("deleted_at IS NULL");
 
                     b.HasIndex(new[] { "TenantId", "LegacyId" }, "ix_target_range_schedules_tenant_legacy_id_user_deleted")
                         .HasDatabaseName("ix_target_range_schedules_tenant_legacy_id_user_deleted")
@@ -8240,26 +8432,30 @@ namespace Nocturne.Infrastructure.Data.Migrations
                         .HasColumnType("double precision")
                         .HasColumnName("scheduled_rate");
 
-                    b.Property<DateTime>("StartTimestamp")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("start_timestamp");
-
                     b.Property<string>("SyncIdentifier")
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)")
                         .HasColumnName("sync_identifier");
 
                     b.Property<DateTime>("SysCreatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("sys_created_at");
+                        .HasColumnName("sys_created_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<DateTime>("SysUpdatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("sys_updated_at");
+                        .HasColumnName("sys_updated_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uuid")
                         .HasColumnName("tenant_id");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("start_timestamp");
 
                     b.Property<string>("UpstreamFingerprint")
                         .HasColumnType("text")
@@ -8280,7 +8476,7 @@ namespace Nocturne.Infrastructure.Data.Migrations
 
                     b.HasIndex("PatientDeviceId");
 
-                    b.HasIndex("StartTimestamp")
+                    b.HasIndex("Timestamp")
                         .IsDescending()
                         .HasDatabaseName("ix_temp_basals_start_timestamp");
 
@@ -8289,7 +8485,7 @@ namespace Nocturne.Infrastructure.Data.Migrations
                         .HasDatabaseName("ix_temp_basals_tenant_legacy_id")
                         .HasFilter("legacy_id IS NOT NULL AND deleted_at IS NULL");
 
-                    b.HasIndex("TenantId", "StartTimestamp")
+                    b.HasIndex("TenantId", "Timestamp")
                         .IsDescending(false, true)
                         .HasDatabaseName("ix_temp_basals_tenant_start_timestamp");
 
@@ -8423,12 +8619,16 @@ namespace Nocturne.Infrastructure.Data.Migrations
                         .HasColumnName("start_date");
 
                     b.Property<DateTime>("SysCreatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("sys_created_at");
+                        .HasColumnName("sys_created_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<DateTime>("SysUpdatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("sys_updated_at");
+                        .HasColumnName("sys_updated_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uuid")
@@ -8476,6 +8676,10 @@ namespace Nocturne.Infrastructure.Data.Migrations
                     b.HasIndex("TenantId", "DataSource", "Timestamp")
                         .IsDescending(false, false, true)
                         .HasDatabaseName("ix_therapy_settings_tenant_source_timestamp")
+                        .HasFilter("deleted_at IS NULL");
+
+                    b.HasIndex("TenantId", "SysUpdatedAt", "Id")
+                        .HasDatabaseName("ix_therapy_settings_tenant_sys_updated_at")
                         .HasFilter("deleted_at IS NULL");
 
                     b.HasIndex(new[] { "TenantId", "LegacyId" }, "ix_therapy_settings_tenant_legacy_id_user_deleted")
@@ -8557,12 +8761,16 @@ namespace Nocturne.Infrastructure.Data.Migrations
                         .HasColumnName("sync_identifier");
 
                     b.Property<DateTime>("SysCreatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("sys_created_at");
+                        .HasColumnName("sys_created_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<DateTime>("SysUpdatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("sys_updated_at");
+                        .HasColumnName("sys_updated_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<double?>("Temperature")
                         .HasColumnType("double precision")
@@ -8804,24 +9012,12 @@ namespace Nocturne.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("Nocturne.Infrastructure.Data.Entities.AuthAuditLogEntity", b =>
                 {
-                    b.HasOne("Nocturne.Infrastructure.Data.Entities.SubjectEntity", null)
-                        .WithMany()
-                        .HasForeignKey("ActorSubjectId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
                     b.HasOne("Nocturne.Infrastructure.Data.Entities.RefreshTokenEntity", "RefreshToken")
                         .WithMany()
                         .HasForeignKey("RefreshTokenId")
                         .OnDelete(DeleteBehavior.SetNull);
 
-                    b.HasOne("Nocturne.Infrastructure.Data.Entities.SubjectEntity", "Subject")
-                        .WithMany()
-                        .HasForeignKey("SubjectId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
                     b.Navigation("RefreshToken");
-
-                    b.Navigation("Subject");
                 });
 
             modelBuilder.Entity("Nocturne.Infrastructure.Data.Entities.BodyWeightEntity", b =>

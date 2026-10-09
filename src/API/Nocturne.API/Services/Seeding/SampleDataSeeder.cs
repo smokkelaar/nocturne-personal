@@ -2,6 +2,7 @@ using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Nocturne.API.Services.Alerts;
+using Nocturne.API.Services.Platform;
 using Nocturne.Core.Contracts.Glucose;
 using Nocturne.Core.Contracts.Health;
 using Nocturne.Core.Contracts.Multitenancy;
@@ -11,6 +12,7 @@ using Nocturne.Core.Contracts.Treatments;
 using Nocturne.Core.Contracts.V4;
 using Nocturne.Core.Models;
 using Nocturne.Core.Models.Alerts;
+using Nocturne.Core.Models.Configuration;
 using Nocturne.Infrastructure.Data;
 using Nocturne.Infrastructure.Data.Abstractions;
 using Nocturne.Infrastructure.Data.Entities;
@@ -71,6 +73,8 @@ public class SampleDataSeeder
     private readonly IRuleScopeClassifier _scopeClassifier;
     private readonly IProfileWriteService _profileWriteService;
     private readonly IDeviceStatusDecomposer _deviceStatusDecomposer;
+    private readonly ITreatmentDecomposer _treatmentDecomposer;
+    private readonly ITreatmentCache _treatmentCache;
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger<SampleDataSeeder> _logger;
 
@@ -106,6 +110,8 @@ public class SampleDataSeeder
         IRuleScopeClassifier scopeClassifier,
         IProfileWriteService profileWriteService,
         IDeviceStatusDecomposer deviceStatusDecomposer,
+        ITreatmentDecomposer treatmentDecomposer,
+        ITreatmentCache treatmentCache,
         ILoggerFactory loggerFactory,
         ILogger<SampleDataSeeder> logger)
     {
@@ -120,6 +126,8 @@ public class SampleDataSeeder
         _scopeClassifier = scopeClassifier;
         _profileWriteService = profileWriteService;
         _deviceStatusDecomposer = deviceStatusDecomposer;
+        _treatmentDecomposer = treatmentDecomposer;
+        _treatmentCache = treatmentCache;
         _loggerFactory = loggerFactory;
         _logger = logger;
     }
@@ -177,7 +185,6 @@ public class SampleDataSeeder
             var entryBatch = new List<Entry>(BatchSize);
             var treatmentBatch = new List<Treatment>(BatchSize);
             var statusBatch = new List<DeviceStatus>(BatchSize);
-            var requestedTreatments = 0;
 
             async Task FlushEntriesAsync()
             {
@@ -190,23 +197,35 @@ public class SampleDataSeeder
                 entryBatch.Clear();
             }
 
+            // The batch decomposer a migration backfills treatments through, rather than the
+            // service's one-at-a-time live path. That path's insulin-context stamping has nothing
+            // to stamp yet: the patient's insulins are seeded after the timeline.
             async Task FlushTreatmentsAsync()
             {
                 if (treatmentBatch.Count == 0) return;
-                requestedTreatments += treatmentBatch.Count;
-                var created = await _treatmentService.CreateTreatmentsAsync(treatmentBatch, ct);
-                treatmentCount += created.Count();
+                var decomposed = await _treatmentDecomposer.DecomposeBatchAsync(
+                    treatmentBatch, WriteOrigin.Backfill, ct);
+                // Every shape the demo generator emits is one Nocturne stores, so a skip is a
+                // generator/decomposer mismatch that would leave the tenant without that history.
+                if (decomposed.SkippedUnsupported > 0)
+                {
+                    throw new InvalidOperationException(
+                        $"Sample-data seeding skipped {decomposed.SkippedUnsupported} generated "
+                        + "treatments whose event type the decomposer does not store.");
+                }
+                treatmentCount += treatmentBatch.Count;
                 treatmentBatch.Clear();
             }
 
+            // One batch per flush, as a migration backfills device statuses: decomposed one at a
+            // time, each status is several round trips with a duplicate check per snapshot, and
+            // a week of them outlasts a client's request timeout.
             async Task FlushStatusesAsync()
             {
-                foreach (var status in statusBatch)
-                {
-                    await _deviceStatusDecomposer.DecomposeAsync(
-                        status, dataSource, WriteOrigin.Backfill, ct);
-                    deviceStatusCount++;
-                }
+                if (statusBatch.Count == 0) return;
+                await _deviceStatusDecomposer.DecomposeBatchAsync(
+                    statusBatch, dataSource, WriteOrigin.Backfill, ct);
+                deviceStatusCount += statusBatch.Count;
                 statusBatch.Clear();
             }
 
@@ -246,7 +265,7 @@ public class SampleDataSeeder
                         config.TargetGlucose,
                         DemoTherapyProfile.ScheduledRateAt(step.Time, config.BasalRate),
                         step.Scenario);
-                    // Deterministic legacy id so re-seeding updates in place.
+                    // Deterministic legacy id, so a re-seed skips the statuses it already wrote.
                     status.Id = status.Mills.ToString("x24");
                     statusBatch.Add(status);
                 }
@@ -259,21 +278,7 @@ public class SampleDataSeeder
             await FlushEntriesAsync();
             await FlushTreatmentsAsync();
             await FlushStatusesAsync();
-
-            // CreateTreatmentsAsync decomposes each treatment into its v4 canonical
-            // records and swallows per-record decomposition failures, returning only
-            // the ones that persisted. A shortfall means treatments threw and were
-            // dropped, leaving a tenant that looks seeded but carries no bolus/carb/
-            // basal history. Fail loudly rather than report a hollow success — the
-            // demo generator's shapes all decompose cleanly, so any drop is a real
-            // fault (e.g. a poisoned DB connection), not expected data.
-            if (treatmentCount < requestedTreatments)
-            {
-                throw new InvalidOperationException(
-                    $"Sample-data seeding persisted only {treatmentCount} of {requestedTreatments} "
-                    + $"treatments; {requestedTreatments - treatmentCount} were dropped during "
-                    + "decomposition (see preceding 'Failed to decompose treatment' errors).");
-            }
+            await _treatmentCache.InvalidateAsync(ct);
 
             await StampTempBasalScheduledRatesAsync(dataSource, config.BasalRate, ct);
         }
@@ -722,7 +727,7 @@ public class SampleDataSeeder
             .ToListAsync(ct);
         foreach (var temp in temps)
         {
-            var local = DateTime.SpecifyKind(temp.StartTimestamp, DateTimeKind.Utc).ToLocalTime();
+            var local = DateTime.SpecifyKind(temp.Timestamp, DateTimeKind.Utc).ToLocalTime();
             temp.ScheduledRate = DemoTherapyProfile.ScheduledRateAt(local, baseRate);
         }
         await _db.SaveChangesAsync(ct);
@@ -947,13 +952,20 @@ public class SampleDataSeeder
         if (exists)
             return 0;
 
+        var ownerPreferences = await _db.Subjects
+            .AsNoTracking()
+            .Where(s => s.Id == owner)
+            .Select(s => s.Preferences)
+            .FirstOrDefaultAsync(ct);
+
         _db.ClockFaces.Add(new ClockFaceEntity
         {
             Id = Guid.CreateVersion7(),
             TenantId = _db.TenantId,
             UserId = userId,
             Name = "Bedside Clock",
-            ConfigJson = DemoLifestyleSeeds.DefaultClockFaceConfigJson,
+            ConfigJson = ClockFaceService.Serialize(
+                ClockFaceConfig.Starter(UserDisplayPreferences.Deserialize(ownerPreferences))),
         });
         await _db.SaveChangesAsync(ct);
         return 1;

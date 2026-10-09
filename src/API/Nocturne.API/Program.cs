@@ -163,7 +163,10 @@ builder.Services.AddControllers(options =>
 })
 .ConfigureApplicationPartManager(manager =>
     AuthorizationConfiguration.ConfigureControllerDiscovery(
-        manager, builder.Environment.IsDevelopment()));
+        manager, DevOnlyEndpoints.AreEnabled(builder.Environment, builder.Configuration)));
+builder.Services.AddTransient<
+    Microsoft.Extensions.Options.IConfigureOptions<Microsoft.AspNetCore.Mvc.MvcOptions>,
+    NightscoutJsonInputFormatterSetup>();
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 builder.Services.AddProblemDetails();
@@ -347,6 +350,11 @@ app.UseResponseCaching();
 // the TreatmentsController route /api/v1/treatments. Must run before
 // UseRouting so the rewritten path is what the router sees.
 app.UseMiddleware<JsonExtensionMiddleware>();
+
+// Serve v1 under /api/v2 wherever v2 has no route of its own, as Nightscout does. After the
+// .json strip so /api/v2/entries.json is judged as /api/v2/entries, and before UseRouting so
+// the rewritten path is what the router sees.
+app.UseMiddleware<V2FallbackMiddleware>();
 
 // Routing must run here, not where minimal hosting would insert it, so that
 // TenantSetupMiddleware below can read endpoint metadata such as [AllowDuringSetup].
@@ -592,6 +600,15 @@ if (!isNSwagGeneration && !app.Environment.IsEnvironment("Testing"))
         var bootstrap = scope.ServiceProvider.GetRequiredService<PlatformAdminBootstrapService>();
         await bootstrap.BootstrapAsync(CancellationToken.None);
     }
+}
+
+if (!app.Environment.IsDevelopment() && DevOnlyEndpoints.IsOptedIn(app.Configuration))
+{
+    app.Logger.LogWarning(
+        "{Variable} is set: the unauthenticated dev-only endpoints (api/v4/dev-only) are enabled in "
+        + "the {Environment} environment. This is for the end-to-end test stack only; never set it "
+        + "on a real deployment.",
+        DevOnlyEndpoints.EnableVariable, app.Environment.EnvironmentName);
 }
 
 // Development only: re-seed the committed dev identity fixture (real WebAuthn

@@ -5,6 +5,7 @@ using Nocturne.Core.Contracts.Events;
 using Nocturne.Core.Contracts.V4;
 using Nocturne.Core.Contracts.V4.Repositories;
 using Nocturne.Core.Models;
+using Nocturne.Core.Models.Queries;
 
 namespace Nocturne.API.Services.Glucose;
 
@@ -108,21 +109,18 @@ public class EntryService : IEntryService
     public async Task<Entry?> CheckForDuplicateEntryAsync(
         string? device,
         string type,
-        double? sgv,
         long mills,
-        int windowMinutes = 5,
         CancellationToken cancellationToken = default)
     {
-        return await _store.CheckDuplicateAsync(device, type, sgv, mills, windowMinutes, cancellationToken);
+        return await _store.CheckDuplicateAsync(device, type, mills, cancellationToken);
     }
 
     /// <inheritdoc />
     public async Task<IReadOnlyList<Entry?>> CheckForDuplicateEntriesAsync(
         IReadOnlyList<EntryDuplicateProbe> probes,
-        int windowMinutes = 5,
         CancellationToken cancellationToken = default)
     {
-        return await _store.CheckDuplicatesAsync(probes, windowMinutes, cancellationToken);
+        return await _store.CheckDuplicatesAsync(probes, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -132,6 +130,13 @@ public class EntryService : IEntryService
             () => _store.GetCurrentAsync(cancellationToken),
             cancellationToken);
     }
+
+    /// <inheritdoc />
+    public Task<ModifiedSincePage<Entry>> GetEntriesModifiedSinceAsync(
+        long cursorMills,
+        int limit,
+        CancellationToken cancellationToken = default) =>
+        _store.GetModifiedSinceAsync(cursorMills, limit, cancellationToken);
 
     /// <inheritdoc />
     public async Task<IEnumerable<Entry>> GetEntriesWithAdvancedFilterAsync(
@@ -277,17 +282,18 @@ public class EntryService : IEntryService
 
     /// <inheritdoc />
     /// <remarks>
-    /// Deletes the entry's V4 records via <see cref="IEntryDecomposer.DeleteByLegacyIdAsync"/>,
-    /// which routes through the repository chokepoint that fires the deletion broadcast.
+    /// Resolves <paramref name="id"/> to the stored record <see cref="GetEntryByIdAsync"/> returns, then
+    /// deletes that record via <see cref="IEntryDecomposer.DeleteStoredAsync"/>, which routes through the
+    /// repository chokepoint that fires the deletion broadcast.
     /// </remarks>
     public async Task<bool> DeleteEntryAsync(
         string id,
         CancellationToken cancellationToken = default)
     {
-        var deletedCount = await _decomposer.DeleteByLegacyIdAsync(id, WriteOrigin.Live, cancellationToken);
+        if (await _store.GetStoredByIdAsync(id, cancellationToken) is not { } stored)
+            return false;
 
-        var deleted = deletedCount > 0;
-        return deleted;
+        return await _decomposer.DeleteStoredAsync(stored, WriteOrigin.Live, cancellationToken) > 0;
     }
 
     /// <inheritdoc />

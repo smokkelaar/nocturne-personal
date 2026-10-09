@@ -438,6 +438,36 @@ public class TreatmentDecomposerTests : IDisposable
             Times.Once);
     }
 
+    /// <summary>
+    /// The temp basal path shares the other types' legacy-id upsert, so a refusal from the
+    /// repository is counted like theirs rather than escaping the decomposition.
+    /// </summary>
+    [Fact]
+    public async Task DecomposeAsync_TempBasal_CountsARefusedCreateAsSkipped()
+    {
+        var treatment = new Treatment
+        {
+            Id = "deleted-temp-basal",
+            EventType = "Temp Basal",
+            Mills = 1700000000000,
+            Rate = 1.5,
+            Duration = 30
+        };
+
+        _tempBasalRepoMock
+            .Setup(r => r.GetByLegacyIdAsync("deleted-temp-basal", It.IsAny<CancellationToken>()))
+            .ReturnsAsync((V4Models.TempBasal?)null);
+        _tempBasalRepoMock
+            .Setup(r => r.CreateAsync(It.IsAny<V4Models.TempBasal>(), It.IsAny<WriteOrigin>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new RecreationBlockedException(
+                nameof(V4Models.TempBasal), RecreationBlockedException.LegacyIdIdentity("deleted-temp-basal")));
+
+        var result = await _decomposer.DecomposeAsync(treatment, WriteOrigin.Live);
+
+        result.CreatedRecords.Should().BeEmpty();
+        result.SkippedDeleted.Should().Be(1);
+    }
+
     #endregion
 
     #region Profile Switch → Delegates to IStateSpanService
@@ -1184,7 +1214,9 @@ public class TreatmentDecomposerTests : IDisposable
                     && ss.Metadata.ContainsKey("targetTop")
                     && ss.Metadata.ContainsKey("targetBottom")
                     && ss.Metadata.ContainsKey("insulinNeedsScaleFactor")
-                    && ss.Metadata.ContainsKey("enteredBy")),
+                    && ss.Metadata.ContainsKey("enteredBy")
+                    && ss.Metadata.TryReadString(StateSpanMetadataExtensions.CollectionKey)
+                        == StateSpanMetadataExtensions.TreatmentsCollection),
                 It.IsAny<CancellationToken>()),
             Times.Once);
     }
@@ -1870,6 +1902,61 @@ public class TreatmentDecomposerTests : IDisposable
                     ss.EndMills == 1700000000000 + (60 * 60 * 1000)),
                 It.IsAny<CancellationToken>()),
             Times.Once);
+    }
+
+    #endregion
+
+    #region Served span fields
+
+    [Theory]
+    [InlineData("Temporary Override")]
+    [InlineData("Temporary Target")]
+    [InlineData("Profile Switch")]
+    public async Task DecomposeAsync_SpanTreatmentWithNotes_KeepsThemOnTheSpanAndWritesNoNote(string eventType)
+    {
+        var treatment = new Treatment
+        {
+            Id = $"span-notes-{eventType}",
+            EventType = eventType,
+            Mills = 1700000000000,
+            Duration = 30,
+            Profile = "Weekend",
+            Reason = "Synthetic",
+            Notes = "Synthetic note",
+            SyncIdentifier = "synthetic-sync",
+        };
+        StateSpan? written = null;
+        _stateSpanServiceMock
+            .Setup(s => s.UpsertStateSpanAsync(It.IsAny<StateSpan>(), It.IsAny<CancellationToken>()))
+            .Callback<StateSpan, CancellationToken>((span, _) => written = span)
+            .ReturnsAsync((StateSpan span, CancellationToken _) => span);
+
+        var result = await _decomposer.DecomposeAsync(treatment, WriteOrigin.Live);
+
+        result.CreatedRecords.Should().ContainSingle().Which.Should().BeOfType<StateSpan>();
+        result.CreatedRecords.OfType<V4Models.Note>().Should().BeEmpty();
+        written!.Metadata!["notes"].Should().Be("Synthetic note");
+        written.Metadata!["syncIdentifier"].Should().Be("synthetic-sync");
+    }
+
+    [Fact]
+    public async Task DecomposeAsync_LoopOverride_KeepsCorrectionRangeAndRemoteAddressAsUploaded()
+    {
+        var treatment = JsonSerializer.Deserialize<Treatment>(
+            """
+            {"_id":"loop-override","eventType":"Temporary Override","mills":1700000000000,"duration":60,
+             "reason":"Running","correctionRange":[140,160],"remoteAddress":"synthetic-remote"}
+            """)!;
+        StateSpan? written = null;
+        _stateSpanServiceMock
+            .Setup(s => s.UpsertStateSpanAsync(It.IsAny<StateSpan>(), It.IsAny<CancellationToken>()))
+            .Callback<StateSpan, CancellationToken>((span, _) => written = span)
+            .ReturnsAsync((StateSpan span, CancellationToken _) => span);
+
+        await _decomposer.DecomposeAsync(treatment, WriteOrigin.Live);
+
+        JsonSerializer.Serialize(written!.Metadata!["correctionRange"]).Should().Be("[140,160]");
+        JsonSerializer.Serialize(written.Metadata!["remoteAddress"]).Should().Be("\"synthetic-remote\"");
     }
 
     #endregion
@@ -2859,7 +2946,7 @@ public class TreatmentDecomposerTests : IDisposable
         profileDecompResult.CreatedRecords.Add(new V4Models.TherapySettings { ProfileName = "Day Profile@@@@@1700000000000" });
 
         _profileDecomposerMock
-            .Setup(d => d.DecomposeAsync(It.IsAny<Profile>(), It.IsAny<WriteOrigin>(), It.IsAny<CancellationToken>()))
+            .Setup(d => d.DecomposeProfileSwitchAsync(It.IsAny<Profile>(), It.IsAny<WriteOrigin>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(profileDecompResult);
 
         // Act
@@ -2881,7 +2968,7 @@ public class TreatmentDecomposerTests : IDisposable
 
         // Verify profile decomposer was called with the synthetic profile
         _profileDecomposerMock.Verify(
-            d => d.DecomposeAsync(
+            d => d.DecomposeProfileSwitchAsync(
                 It.Is<Profile>(p =>
                     p.Id == "profile-switch-json-1"
                     && p.Mills == 1700000000000
@@ -2920,7 +3007,7 @@ public class TreatmentDecomposerTests : IDisposable
 
         // Assert -- profile decomposer should NOT be called
         _profileDecomposerMock.Verify(
-            d => d.DecomposeAsync(It.IsAny<Profile>(), It.IsAny<WriteOrigin>(), It.IsAny<CancellationToken>()),
+            d => d.DecomposeProfileSwitchAsync(It.IsAny<Profile>(), It.IsAny<WriteOrigin>(), It.IsAny<CancellationToken>()),
             Times.Never);
     }
 
@@ -3158,7 +3245,7 @@ public class TreatmentDecomposerTests : IDisposable
             .ReturnsAsync((StateSpan ss, CancellationToken _) => ss);
 
         _tempBasalRepoMock
-            .Setup(r => r.BulkCreateAsync(It.IsAny<IEnumerable<V4Models.TempBasal>>(), It.IsAny<WriteOrigin>(), It.IsAny<CancellationToken>()))
+            .Setup(r => r.BulkUpsertAsync(It.IsAny<IEnumerable<V4Models.TempBasal>>(), It.IsAny<WriteOrigin>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((IEnumerable<V4Models.TempBasal> list, WriteOrigin origin, CancellationToken _) => [.. list]);
 
         // Act

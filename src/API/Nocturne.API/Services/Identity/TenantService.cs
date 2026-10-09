@@ -301,7 +301,6 @@ public partial class TenantService : ITenantService
             DirectPermissions = directPermissions,
             Label = label,
             LimitTo24Hours = limitTo24Hours,
-            SysUpdatedAt = DateTime.UtcNow,
         };
 
         context.TenantMembers.Add(member);
@@ -375,7 +374,6 @@ public partial class TenantService : ITenantService
         await using var context = await _factory.CreateSubjectPinnedContextAsync(subjectId, ct);
         return await context.TenantMembers.AsNoTracking()
             .Where(tm => tm.SubjectId == subjectId)
-            .Include(tm => tm.Tenant)
             .OrderByDescending(tm => tm.MemberRoles.Any(mr => mr.TenantRole!.Slug == RoleSeeds.Owner))
             .ThenBy(tm => tm.SysCreatedAt)
             .ThenBy(tm => tm.Tenant!.Slug)
@@ -453,7 +451,6 @@ public partial class TenantService : ITenantService
             await context.PinTenantAsync(tenant.Id, token);
 
             // Seed default roles for this tenant (inline to share transaction context)
-            var now = DateTime.UtcNow;
             foreach (var (roleSlug, permissions) in RoleSeeds.Permissions)
             {
                 var name = RoleSeeds.DisplayNames[roleSlug];
@@ -466,7 +463,6 @@ public partial class TenantService : ITenantService
                     Description = null,
                     Permissions = new List<string>(permissions),
                     IsSystem = true,
-                    SysUpdatedAt = now,
                 });
             }
             await context.SaveChangesAsync(token);
@@ -484,7 +480,6 @@ public partial class TenantService : ITenantService
                     SubjectId = publicSubject.Id,
                     LimitTo24Hours = true,
                     Label = "Public Access",
-                    SysUpdatedAt = now,
                 });
                 await context.SaveChangesAsync(token);
             }
@@ -596,7 +591,6 @@ public partial class TenantService : ITenantService
                 Id = Guid.CreateVersion7(),
                 TenantId = tenant.Id,
                 SubjectId = subject.Id,
-                SysUpdatedAt = now,
             };
             context.TenantMembers.Add(member);
             context.TenantMemberRoles.Add(new TenantMemberRoleEntity
@@ -629,7 +623,6 @@ public partial class TenantService : ITenantService
                 SubjectId = publicSubject.Id,
                 LimitTo24Hours = true,
                 Label = "Public Access",
-                SysUpdatedAt = DateTime.UtcNow,
             });
             await context.SaveChangesAsync(ct);
         }
@@ -690,7 +683,6 @@ public partial class TenantService : ITenantService
                 DisplayName = entry.DisplayName,
                 IsKnown = true,
                 RedirectUris = JsonSerializer.Serialize(entry.RedirectUris),
-                UpdatedAt = DateTime.UtcNow,
             });
             added++;
         }

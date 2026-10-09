@@ -45,6 +45,16 @@ public class NocturneDbContext : DbContext, IDataProtectionKeyContext
     public const int SystemTimestampGroupSize = 1000;
 
     /// <summary>
+    /// The current UTC time truncated to the microsecond a PostgreSQL <c>timestamptz</c> stores, so
+    /// that a stamp held in memory equals the one read back from its row.
+    /// </summary>
+    public static DateTime UtcNowAtStoredPrecision()
+    {
+        var now = DateTime.UtcNow;
+        return now.AddTicks(-(now.Ticks % TimeSpan.TicksPerMicrosecond));
+    }
+
+    /// <summary>
     /// Initializes a new instance of the NocturneDbContext class
     /// </summary>
     /// <param name="options">The options for this context</param>
@@ -518,8 +528,11 @@ public class NocturneDbContext : DbContext, IDataProtectionKeyContext
         [.. V4LegacyIdRecordEntities, typeof(DeviceStatusExtrasEntity)];
 
     /// <summary>
-    /// Tables a v3 history endpoint pages through <see cref="HistoryPage"/>: the treatment
-    /// projection's <c>LegacyTreatmentTables.All</c> and the device-status projection's APS snapshots.
+    /// Tables a v3 history endpoint pages through <see cref="HistoryPage"/> on <c>sys_updated_at</c>:
+    /// the V4 record tables of the treatment projection's <c>LegacyTreatmentTables.All</c> (its state
+    /// spans page on <c>ix_state_spans_tenant_category_updated_at</c>), the device-status
+    /// projection's APS snapshots, the three glucose types the entry projection reads and the five
+    /// profile-decomposition tables.
     /// </summary>
     internal static readonly Type[] V4HistoryPagedEntities =
     [
@@ -531,6 +544,14 @@ public class NocturneDbContext : DbContext, IDataProtectionKeyContext
         typeof(TempBasalEntity),
         typeof(BolusCalculationEntity),
         typeof(ApsSnapshotEntity),
+        typeof(SensorGlucoseEntity),
+        typeof(MeterGlucoseEntity),
+        typeof(CalibrationEntity),
+        typeof(TherapySettingsEntity),
+        typeof(BasalScheduleEntity),
+        typeof(CarbRatioScheduleEntity),
+        typeof(SensitivityScheduleEntity),
+        typeof(TargetRangeScheduleEntity),
     ];
 
     /// <summary>
@@ -553,10 +574,10 @@ public class NocturneDbContext : DbContext, IDataProtectionKeyContext
 
     /// <summary>
     /// Tables carrying the <see cref="ISyncDedupable"/> upsert key. Listed rather than discovered
-    /// from the interface, which neither implies the index nor is implied by it: several tables carry
-    /// the two columns without declaring the interface, and <see cref="DeviceEventEntity"/> and
-    /// <see cref="NoteEntity"/> declare it for keyed lookup and delete without ever upserting on the
-    /// key, so they need no uniqueness. Adding a table here is a migration.
+    /// from the interface, which does not imply the index: several tables carry the two columns
+    /// without declaring the interface. Every entity a
+    /// <see cref="Repositories.V4.SyncKeyedRepositoryBase{TModel,TEntity}"/> serves must be here, so
+    /// its keyed delete names at most one live row. Adding a table here is a migration.
     /// </summary>
     internal static readonly Type[] SyncDedupedEntities =
     [
@@ -568,20 +589,31 @@ public class NocturneDbContext : DbContext, IDataProtectionKeyContext
         typeof(BasalInjectionEntity),
         typeof(CarbIntakeEntity),
         typeof(TempBasalEntity),
+        typeof(BGCheckEntity),
+        typeof(NoteEntity),
+        typeof(DeviceEventEntity),
         .. V4SnapshotEntities,
     ];
 
     /// <summary>
-    /// The timestamp columns whose database default is <c>CURRENT_TIMESTAMP</c>, grouped by the
-    /// column the default lands on. Listed rather than discovered from the
-    /// <see cref="ISystemCreated"/>, <see cref="ISystemTimestamped"/>, <see cref="IEntityCreated"/>
-    /// and <see cref="IEntityTimestamped"/> markers <see cref="UpdateTimestamps"/> switches on,
-    /// which neither imply the default nor are implied by it: the record, snapshot and schedule
-    /// tables declare the sys_* markers with no default behind them, while the alert, audit and
-    /// tenant-config tables carry the default without declaring a marker at all. The three
-    /// off-convention column names each govern a single table. <see cref="TenantRoleEntity"/> and
-    /// <see cref="TenantMemberRoleEntity"/> are absent because their defaults are spelled
-    /// <c>now()</c>. Adding a table here is a migration.
+    /// The marker-declared timestamp columns, by the marker that declares them. Every column here
+    /// gets a <c>CURRENT_TIMESTAMP</c> default, so a write that bypasses <see cref="UpdateTimestamps"/>
+    /// — raw SQL, <c>ExecuteUpdate</c>-style bulk paths, a manual fix in psql — still lands a real
+    /// time rather than <c>0001-01-01</c> in a non-nullable column.
+    /// </summary>
+    internal static readonly (Type Marker, string Property)[] MarkerTimestampColumns =
+    [
+        (typeof(ISystemCreated), nameof(ISystemCreated.SysCreatedAt)),
+        (typeof(ISystemTimestamped), nameof(ISystemTimestamped.SysUpdatedAt)),
+        (typeof(IEntityCreated), nameof(IEntityCreated.CreatedAt)),
+        (typeof(IEntityTimestamped), nameof(IEntityTimestamped.UpdatedAt)),
+    ];
+
+    /// <summary>
+    /// The timestamp columns outside <see cref="MarkerTimestampColumns"/> whose database default is
+    /// also <c>CURRENT_TIMESTAMP</c>, grouped by the column the default lands on: tables that carry
+    /// the default without declaring the marker for it, and three off-convention column names that
+    /// each govern a single table. Adding a table here is a migration.
     /// </summary>
     internal static readonly (string Property, Type[] Entities)[] CurrentTimestampDefaults =
     [
@@ -589,27 +621,15 @@ public class NocturneDbContext : DbContext, IDataProtectionKeyContext
         [
             typeof(AlertCustomSoundEntity),
             typeof(AlertDeliveryEntity),
-            typeof(AlertExcursionMuteEntity),
             typeof(AlertInviteEntity),
             typeof(AlertRuleChannelEntity),
             typeof(AlertRuleEntity),
-            typeof(AuthAuditLogEntity),
             typeof(ClientDeviceEntity),
-            typeof(ClockFaceEntity),
             typeof(DndWindowEntity),
             typeof(InAppNotificationEntity),
-            typeof(LoginCodeEntity),
             typeof(MutationAuditLogEntity),
-            typeof(OAuthAuthorizationCodeEntity),
-            typeof(OAuthClientEntity),
-            typeof(OAuthDeviceCodeEntity),
-            typeof(OAuthGrantEntity),
-            typeof(OidcProviderEntity),
             typeof(ReadAccessLogEntity),
-            typeof(RefreshTokenEntity),
-            typeof(RoleEntity),
             typeof(SubjectAvatarEntity),
-            typeof(SubjectEntity),
             typeof(TenantAlertSettingsEntity),
             typeof(TenantDataRetentionConfigEntity),
         ]),
@@ -619,31 +639,8 @@ public class NocturneDbContext : DbContext, IDataProtectionKeyContext
             typeof(AlertTrackerStateEntity),
             typeof(ClientDeviceEntity),
             typeof(ClockFaceEntity),
-            typeof(OAuthClientEntity),
-            typeof(OidcProviderEntity),
-            typeof(RefreshTokenEntity),
-            typeof(RoleEntity),
-            typeof(SubjectEntity),
             typeof(TenantAlertSettingsEntity),
             typeof(TenantDataRetentionConfigEntity),
-        ]),
-        (nameof(ISystemCreated.SysCreatedAt),
-        [
-            typeof(ClockFaceEntity),
-            typeof(LinkedRecordEntity),
-            typeof(TenantAuditConfigEntity),
-            typeof(UserFoodFavoriteEntity),
-        ]),
-        (nameof(ISystemTimestamped.SysUpdatedAt),
-        [
-            typeof(ClockFaceEntity),
-            typeof(ConnectorFoodEntryEntity),
-            typeof(FoodEntity),
-            typeof(HeartRateEntity),
-            typeof(SettingsEntity),
-            typeof(StepCountEntity),
-            typeof(TenantAuditConfigEntity),
-            typeof(TreatmentFoodEntity),
         ]),
         (nameof(SubjectRoleEntity.AssignedAt), [typeof(SubjectRoleEntity)]),
         (nameof(OAuthRefreshTokenEntity.IssuedAt), [typeof(OAuthRefreshTokenEntity)]),
@@ -651,10 +648,20 @@ public class NocturneDbContext : DbContext, IDataProtectionKeyContext
     ];
 
     /// <summary>
-    /// Applies <see cref="CurrentTimestampDefaults"/>.
+    /// Applies <see cref="MarkerTimestampColumns"/> to every mapped entity declaring the marker,
+    /// then <see cref="CurrentTimestampDefaults"/>.
     /// </summary>
     private static void ConfigureCurrentTimestampDefaults(ModelBuilder modelBuilder)
     {
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes().Where(e => !e.IsOwned()).ToList())
+        {
+            foreach (var (marker, property) in MarkerTimestampColumns)
+            {
+                if (marker.IsAssignableFrom(entityType.ClrType))
+                    modelBuilder.Entity(entityType.ClrType).Property(property).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            }
+        }
+
         foreach (var (property, entities) in CurrentTimestampDefaults)
         {
             foreach (var entity in entities.Select(t => modelBuilder.Entity(t)))
@@ -826,6 +833,13 @@ public class NocturneDbContext : DbContext, IDataProtectionKeyContext
             .HasIndex(f => f.SysCreatedAt)
             .HasDatabaseName("ix_foods_sys_created_at");
 
+        // The v3 food history page; see the V4HistoryPagedEntities index. Foods are hard-deleted,
+        // so there is no deleted_at filter.
+        modelBuilder
+            .Entity<FoodEntity>()
+            .HasIndex(f => new { f.TenantId, f.SysUpdatedAt, f.Id })
+            .HasDatabaseName("ix_foods_tenant_sys_updated_at");
+
         modelBuilder
             .Entity<FoodEntity>()
             .HasIndex(f => new { f.TenantId, f.ExternalSource, f.ExternalId })
@@ -942,6 +956,20 @@ public class NocturneDbContext : DbContext, IDataProtectionKeyContext
             .HasIndex(s => new { s.TenantId, s.DataSource, s.Timestamp })
             .HasDatabaseName("ix_step_counts_tenant_source_timestamp")
             .IsDescending(false, false, true);
+
+        // The activity id a heart rate or step count was decomposed from, read (tombstones included)
+        // on every activity write and connector reconcile.
+        modelBuilder
+            .Entity<StepCountEntity>()
+            .HasIndex(s => new { s.TenantId, s.OriginalId })
+            .HasDatabaseName("ix_step_counts_tenant_original_id")
+            .HasFilter("original_id IS NOT NULL");
+
+        modelBuilder
+            .Entity<HeartRateEntity>()
+            .HasIndex(h => new { h.TenantId, h.OriginalId })
+            .HasDatabaseName("ix_heart_rates_tenant_original_id")
+            .HasFilter("original_id IS NOT NULL");
 
         modelBuilder
             .Entity<HeartRateEntity>()
@@ -1265,6 +1293,14 @@ public class NocturneDbContext : DbContext, IDataProtectionKeyContext
             .HasIndex(s => new { s.TenantId, s.Source, s.Category, s.StartTimestamp })
             .HasDatabaseName("ix_state_spans_tenant_source_category_start")
             .IsDescending(false, false, false, true);
+
+        // HistoryPage's (updated_at, id) order for the legacy treatment projection's state-span
+        // categories, as the sys_updated_at history index serves the V4 record tables.
+        modelBuilder
+            .Entity<StateSpanEntity>()
+            .HasIndex(s => new { s.TenantId, s.Category, s.UpdatedAt, s.Id })
+            .HasDatabaseName("ix_state_spans_tenant_category_updated_at")
+            .HasFilter("deleted_at IS NULL");
 
         modelBuilder
             .Entity<StateSpanEntity>()
@@ -1737,13 +1773,13 @@ public class NocturneDbContext : DbContext, IDataProtectionKeyContext
 
         modelBuilder
             .Entity<TempBasalEntity>()
-            .HasIndex(e => e.StartTimestamp)
+            .HasIndex(e => e.Timestamp)
             .HasDatabaseName("ix_temp_basals_start_timestamp")
             .IsDescending();
 
         modelBuilder
             .Entity<TempBasalEntity>()
-            .HasIndex(e => new { e.TenantId, e.StartTimestamp })
+            .HasIndex(e => new { e.TenantId, e.Timestamp })
             .HasDatabaseName("ix_temp_basals_tenant_start_timestamp")
             .IsDescending(false, true);
 
@@ -2157,21 +2193,9 @@ public class NocturneDbContext : DbContext, IDataProtectionKeyContext
             entity.Property(e => e.Success).HasDefaultValue(true);
 
             entity
-                .HasOne(e => e.Subject)
-                .WithMany()
-                .HasForeignKey(e => e.SubjectId)
-                .OnDelete(DeleteBehavior.SetNull);
-
-            entity
                 .HasOne(e => e.RefreshToken)
                 .WithMany()
                 .HasForeignKey(e => e.RefreshTokenId)
-                .OnDelete(DeleteBehavior.SetNull);
-
-            entity
-                .HasOne<SubjectEntity>()
-                .WithMany()
-                .HasForeignKey(e => e.ActorSubjectId)
                 .OnDelete(DeleteBehavior.SetNull);
         });
 
@@ -2384,14 +2408,11 @@ public class NocturneDbContext : DbContext, IDataProtectionKeyContext
         modelBuilder.Entity<TenantRoleEntity>(entity =>
         {
             entity.HasIndex(e => new { e.TenantId, e.Slug }).IsUnique();
-            entity.Property(e => e.SysCreatedAt).HasDefaultValueSql("now()");
-            entity.Property(e => e.SysUpdatedAt).HasDefaultValueSql("now()");
         });
 
         modelBuilder.Entity<TenantMemberRoleEntity>(entity =>
         {
             entity.HasIndex(e => new { e.TenantMemberId, e.TenantRoleId }).IsUnique();
-            entity.Property(e => e.SysCreatedAt).HasDefaultValueSql("now()");
         });
 
         modelBuilder.Entity<AlertRuleEntity>(entity =>
@@ -2687,7 +2708,7 @@ public class NocturneDbContext : DbContext, IDataProtectionKeyContext
     /// </summary>
     private void UpdateTimestamps()
     {
-        var utcNow = DateTime.UtcNow;
+        var utcNow = UtcNowAtStoredPrecision();
         // Column types are a relational concept: asking the InMemory provider for one throws.
         var isRelational = Database.IsRelational();
         var stampedUpdated = new Dictionary<Type, int>();

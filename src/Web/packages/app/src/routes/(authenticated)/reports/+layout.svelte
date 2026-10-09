@@ -16,6 +16,8 @@
     import Calendar from "@lucide/svelte/icons/calendar";
     import ChevronDown from "@lucide/svelte/icons/chevron-down";
     import Printer from "@lucide/svelte/icons/printer";
+    import { toast } from "svelte-sonner";
+    import { onMount } from "svelte";
     import {useDateParams, setDateParamsContext, createSharedRangeUse} from "$lib/hooks/date-params.svelte";
     import {createResourceContext} from "$lib/hooks/resource-context.svelte";
 
@@ -47,6 +49,35 @@
     const useResourceGuard = $derived(page.url.pathname !== "/reports");
 
     const printCtx = createReportPrintContext();
+
+    async function handlePrint() {
+        if (printCtx.printing) return;
+        printCtx.printing = true;
+        const url = page.url.href;
+        const preparationVersion = printCtx.preparationVersion;
+        try {
+            await printReport(
+                () => printCtx.prepare(),
+                () => page.url.href === url && printCtx.preparationVersion === preparationVersion,
+            );
+        } catch (error) {
+            console.error("Failed to prepare report for printing:", error);
+            toast.error("Unable to load the complete report. Please try again before printing.");
+        } finally {
+            printCtx.printing = false;
+        }
+    }
+
+    onMount(() => {
+        const keydown = (event: KeyboardEvent) => {
+            if ((event.ctrlKey || event.metaKey) && !event.altKey && !event.shiftKey && event.key.toLowerCase() === "p") {
+                event.preventDefault();
+                void handlePrint();
+            }
+        };
+        window.addEventListener("keydown", keydown);
+        return () => window.removeEventListener("keydown", keydown);
+    });
 
     let reportRoot = $state<HTMLElement | null>(null);
     $effect(() => installPrintFitFallback(() => reportRoot));
@@ -105,15 +136,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 </svelte:head>
 
-<div class="relative min-h-full bg-background" bind:this={reportRoot} data-report-root>
+<div class="@container relative min-h-full bg-background" bind:this={reportRoot} data-report-root>
     {#if page.url.pathname !== "/reports"}
         <ReportPrintHeader title={reportName} period={printPeriod} />
 
-        <!-- top-0 at every width: <main> (overflow-auto) is the sticky container and already
-             starts below the fixed MobileHeader, so an extra top-14 pushed this bar onto the
-             page heading on phones. -->
         <div
-                class="sticky top-0 z-20 border-b border-border bg-card/95 backdrop-blur supports-backdrop-filter:bg-card/60 print:hidden"
+                class="sticky top-(--app-sticky-top,0px) z-20 transition-all duration-300 border-b border-border bg-card/95 backdrop-blur supports-backdrop-filter:bg-card/60 print:hidden"
         >
             <div class="flex h-14 items-center justify-between gap-2 px-3 @md:px-6">
                 <div class="flex items-center gap-2">
@@ -140,7 +168,8 @@
                     <Button
                             variant="outline"
                             size="sm"
-                            onclick={printReport}
+                            onclick={handlePrint}
+                            disabled={printCtx.printing}
                             aria-label="Print report"
                     >
                         <Printer class="w-4 h-4"/>
@@ -165,7 +194,7 @@
     <HistoryLimitNotice class="mx-3 mt-3 w-auto @md:mx-6 print:hidden" />
 
     <!-- Main Content -->
-    <div class="relative">
+    <div class={useResourceGuard ? "relative mx-auto w-full max-w-7xl p-3 @md:p-6 print:max-w-none print:p-3" : "relative"}>
         {#if useResourceGuard}
             <ResourceGuard
                 loading={resourceCtx.loading}

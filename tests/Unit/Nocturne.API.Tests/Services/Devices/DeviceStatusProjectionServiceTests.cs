@@ -335,12 +335,13 @@ public class DeviceStatusProjectionServiceTests
     }
 
     [Fact]
-    public void ProjectAsync_WithClientSrvModifiedInExtras_ReportsWriteClockAndDoesNotReEmit()
+    public void ProjectAsync_WithClientSrvTimestampsInExtras_ReportsServerClockAndDoesNotReEmit()
     {
-        // The record reports the server write clock, so a client-supplied srvModified must not
-        // override it. Re-emitting the extra would also serialize the key twice, which strict
+        // The record reports the server clock, so client-supplied srvCreated/srvModified must not
+        // override it. Re-emitting the extras would also serialize each key twice, which strict
         // client parsers reject.
         var aps = CreateApsSnapshot(AidAlgorithm.OpenAps);
+        aps.CreatedAt = ReferenceTime.AddMinutes(3);
         aps.ModifiedAt = ReferenceTime.AddMinutes(5);
         aps.SuggestedJson = JsonSerializer.Serialize(new OpenApsSuggested { Bg = 120 }, JsonOptions);
 
@@ -359,25 +360,48 @@ public class DeviceStatusProjectionServiceTests
         var result = DeviceStatusProjectionService.ProjectFromSnapshots(aps, null, null, null, extras);
 
         result.SrvModified.Should().Be(Mills(aps.ModifiedAt));
-        result.SrvCreated.Should().Be(1_722_945_500_000L);
+        result.SrvCreated.Should().Be(Mills(aps.CreatedAt));
         result.ExtensionData.Should().NotContainKey("srvModified");
         result.ExtensionData.Should().NotContainKey("srvCreated");
     }
 
     [Fact]
-    public void ProjectAsync_WithoutApsSnapshot_ReportsAnchorWriteClock()
+    public void ProjectAsync_WrittenLongAfterTheEvent_ReportsCreatedAtAsTheEventTime()
     {
-        // Orphan pump/uploader records (xDrip+) have no APS anchor; the write clock comes from the
+        var aps = CreateApsSnapshot(AidAlgorithm.OpenAps);
+        aps.CreatedAt = ReferenceTime.AddDays(400);
+        aps.ModifiedAt = ReferenceTime.AddDays(400);
+        var pump = CreatePumpSnapshot();
+        pump.CreatedAt = ReferenceTime.AddDays(30);
+
+        var fromAps = DeviceStatusProjectionService.ProjectFromSnapshots(aps, null, null, null, null);
+        fromAps.CreatedAt.Should().Be("2024-01-15T12:00:00.000Z");
+        fromAps.Mills.Should().Be(ReferenceMillis);
+        fromAps.SrvCreated.Should().Be(Mills(aps.CreatedAt));
+
+        DeviceStatusProjectionService.ProjectFromSnapshots(null, pump, null, null, null)
+            .CreatedAt.Should().Be("2024-01-15T12:00:00.000Z");
+    }
+
+    [Fact]
+    public void ProjectAsync_WithoutApsSnapshot_ReportsAnchorServerClock()
+    {
+        // Orphan pump/uploader records (xDrip+) have no APS anchor; the server clock comes from the
         // same anchor the timestamp uses, in the same precedence.
         var pump = CreatePumpSnapshot();
+        pump.CreatedAt = ReferenceTime.AddMinutes(1);
         pump.ModifiedAt = ReferenceTime.AddMinutes(2);
         var uploader = CreateUploaderSnapshot();
+        uploader.CreatedAt = ReferenceTime.AddMinutes(8);
         uploader.ModifiedAt = ReferenceTime.AddMinutes(9);
 
-        DeviceStatusProjectionService.ProjectFromSnapshots(null, pump, uploader, null, null)
-            .SrvModified.Should().Be(Mills(pump.ModifiedAt));
-        DeviceStatusProjectionService.ProjectFromSnapshots(null, null, uploader, null, null)
-            .SrvModified.Should().Be(Mills(uploader.ModifiedAt));
+        var fromPump = DeviceStatusProjectionService.ProjectFromSnapshots(null, pump, uploader, null, null);
+        fromPump.SrvCreated.Should().Be(Mills(pump.CreatedAt));
+        fromPump.SrvModified.Should().Be(Mills(pump.ModifiedAt));
+
+        var fromUploader = DeviceStatusProjectionService.ProjectFromSnapshots(null, null, uploader, null, null);
+        fromUploader.SrvCreated.Should().Be(Mills(uploader.CreatedAt));
+        fromUploader.SrvModified.Should().Be(Mills(uploader.ModifiedAt));
     }
 
     [Fact]
@@ -688,7 +712,7 @@ public class DeviceStatusProjectionServiceTests
 
         device.Should().BeNull();
         from.Should().Be(new DateTime(2024, 1, 15, 0, 0, 0, DateTimeKind.Utc));
-        to.Should().Be(new DateTime(2024, 1, 16, 0, 0, 0, DateTimeKind.Utc));
+        to.Should().Be(new DateTime(2024, 1, 16, 0, 0, 0, DateTimeKind.Utc).AddMilliseconds(-1));
     }
 
     [Fact]
@@ -710,7 +734,7 @@ public class DeviceStatusProjectionServiceTests
 
         device.Should().BeNull();
         from.Should().Be(new DateTime(2024, 1, 15, 0, 0, 0, DateTimeKind.Utc));
-        to.Should().Be(new DateTime(2024, 1, 16, 0, 0, 0, DateTimeKind.Utc));
+        to.Should().Be(new DateTime(2024, 1, 16, 0, 0, 0, DateTimeKind.Utc).AddMilliseconds(-1));
     }
 
     [Fact]
@@ -721,7 +745,7 @@ public class DeviceStatusProjectionServiceTests
 
         device.Should().Be("openaps://rpi");
         from.Should().Be(new DateTime(2024, 1, 15, 0, 0, 0, DateTimeKind.Utc));
-        to.Should().Be(new DateTime(2024, 1, 16, 0, 0, 0, DateTimeKind.Utc));
+        to.Should().Be(new DateTime(2024, 1, 16, 0, 0, 0, DateTimeKind.Utc).AddMilliseconds(-1));
     }
 
     [Fact]
@@ -734,6 +758,145 @@ public class DeviceStatusProjectionServiceTests
         to.Should().BeNull();
     }
 
+    [Theory]
+    [InlineData("""{"created_at":{"$gte":1705276800000,"$lte":1705363200000}}""")]
+    [InlineData("""{"created_at":{"$lte":1705363200000,"$gte":1705276800000}}""")]
+    public void ParseFindQuery_WithJsonMillsWindow_ExtractsBothBounds(string find)
+    {
+        var (_, from, to) = DeviceStatusProjectionService.ParseFindQuery(find);
+
+        from.Should().Be(new DateTime(2024, 1, 15, 0, 0, 0, DateTimeKind.Utc));
+        to.Should().Be(new DateTime(2024, 1, 16, 0, 0, 0, DateTimeKind.Utc));
+    }
+
+    [Fact]
+    public void ParseFindQuery_WithJsonBareMills_IsAnExactInstant()
+    {
+        var (_, from, to) = DeviceStatusProjectionService.ParseFindQuery(
+            """{"created_at":1705320000000}""");
+
+        var instant = new DateTime(2024, 1, 15, 12, 0, 0, DateTimeKind.Utc);
+        from.Should().Be(instant);
+        to.Should().Be(instant);
+    }
+
+    [Theory]
+    [InlineData("""{"created_at":{"$eq":1705320000000,"$gte":1705276800000}}""")]
+    [InlineData("""{"created_at":{"$gte":1705276800000,"$eq":1705320000000}}""")]
+    [InlineData("""{"created_at":{"$eq":1705320000000,"$lte":1705363200000}}""")]
+    [InlineData("""{"created_at":{"$lte":1705363200000,"$eq":1705320000000}}""")]
+    public void ParseFindQuery_WithEqualityInsideBound_NarrowsToTheInstant(string find)
+    {
+        var (_, from, to) = DeviceStatusProjectionService.ParseFindQuery(find);
+
+        var instant = new DateTime(2024, 1, 15, 12, 0, 0, DateTimeKind.Utc);
+        from.Should().Be(instant);
+        to.Should().Be(instant);
+    }
+
+    [Theory]
+    [InlineData("""{"created_at":{"$eq":1705276800000,"$gte":1705320000000}}""")]
+    [InlineData("""{"created_at":{"$gte":1705320000000,"$eq":1705276800000}}""")]
+    public void ParseFindQuery_WithEqualityOutsideBound_KeepsTheEmptyIntersection(string find)
+    {
+        var (_, from, to) = DeviceStatusProjectionService.ParseFindQuery(find);
+
+        from.Should().Be(new DateTime(2024, 1, 15, 12, 0, 0, DateTimeKind.Utc));
+        to.Should().Be(new DateTime(2024, 1, 15, 0, 0, 0, DateTimeKind.Utc));
+    }
+
+    [Fact]
+    public void ParseFindQuery_WithJsonDeviceEqualityOperator_ExtractsDevice()
+    {
+        var (device, _, _) = DeviceStatusProjectionService.ParseFindQuery(
+            """{"device":{"$eq":"loop://iPhone"}}""");
+
+        device.Should().Be("loop://iPhone");
+    }
+
+    [Theory]
+    [InlineData("""{"device":{"$eq":"loop://iPhone","$ne":"openaps://rpi"}}""")]
+    [InlineData("""{"device":{"$ne":"openaps://rpi"}}""")]
+    [InlineData("""{"created_at":{"$gte":1705276800000,"$ne":1705320000000}}""")]
+    [InlineData("""{"created_at":{"$gte":true}}""")]
+    [InlineData("""{"created_at":{"$gte":9223372036854775807}}""")]
+    [InlineData("""{"created_at":{"$lte":-9223372036854775808}}""")]
+    [InlineData("""{"created_at":{"$gte":1e300}}""")]
+    [InlineData("""{"created_at":{"$gte":"9223372036854775807"}}""")]
+    [InlineData("""{"created_at":99999999999999999}""")]
+    [InlineData("""{"device":{"$ne":"openaps://rpi","$eq":"loop://iPhone"}}""")]
+    [InlineData("""{"device":{},"created_at":{"$gte":1705276800000}}""")]
+    public void ParseDeleteFind_WithUnsupportedJsonCondition_Refuses(string find)
+    {
+        DeviceStatusProjectionService.ParseDeleteFind(find).Should().BeNull();
+    }
+
+    [Theory]
+    [InlineData("""{"device":{"$eq":"loop://iPhone","$ne":"openaps://rpi"}}""")]
+    [InlineData("""{"device":{"$ne":"openaps://rpi","$eq":"loop://iPhone"}}""")]
+    public void ParseFindQuery_WithDeviceEqualityBesideAnotherOperator_KeepsTheDevice(string find)
+    {
+        var (device, _, _) = DeviceStatusProjectionService.ParseFindQuery(find);
+
+        device.Should().Be("loop://iPhone");
+    }
+
+    [Theory]
+    [InlineData("""{"created_at":{"$gt":1705276800000,"$lt":1705363200000}}""")]
+    [InlineData("""{"created_at":{"$lt":1705363200000,"$gt":1705276800000}}""")]
+    [InlineData("find[created_at][$gt]=1705276800000&find[created_at][$lt]=1705363200000")]
+    [InlineData("find[created_at][$lt]=2024-01-16T00:00:00Z&find[created_at][$gt]=2024-01-15T00:00:00Z")]
+    public void ParseFindQuery_WithStrictBounds_ExcludesTheBoundaryInstants(string find)
+    {
+        var (_, from, to) = DeviceStatusProjectionService.ParseFindQuery(find);
+
+        from.Should().Be(new DateTime(2024, 1, 15, 0, 0, 0, 1, DateTimeKind.Utc));
+        to.Should().Be(new DateTime(2024, 1, 15, 23, 59, 59, 999, DateTimeKind.Utc));
+    }
+
+    [Theory]
+    [InlineData("find[created_at][$gte]=2024-01-15T00:00:00Z&find[created_at][$gt]=2024-01-15T12:00:00Z"
+        + "&find[created_at][$lte]=2024-01-16T00:00:00Z&find[created_at][$lt]=2024-01-15T18:00:00Z")]
+    [InlineData("find[created_at][$lt]=2024-01-15T18:00:00Z&find[created_at][$lte]=2024-01-16T00:00:00Z"
+        + "&find[created_at][$gt]=2024-01-15T12:00:00Z&find[created_at][$gte]=2024-01-15T00:00:00Z")]
+    public void ParseFindQuery_WithQueryStringBoundsOnBothSides_Intersects(string find)
+    {
+        var (_, from, to) = DeviceStatusProjectionService.ParseFindQuery(find);
+
+        from.Should().Be(new DateTime(2024, 1, 15, 12, 0, 0, 1, DateTimeKind.Utc));
+        to.Should().Be(new DateTime(2024, 1, 15, 17, 59, 59, 999, DateTimeKind.Utc));
+    }
+
+    [Fact]
+    public void ParseDeleteFind_WithStrictQueryStringBounds_DeletesTheExactWindow()
+    {
+        var filters = DeviceStatusProjectionService.ParseDeleteFind(
+            "find[device]=openaps://rpi&find[created_at][$gt]=1705276800000&find[created_at][$lt]=1705363200000");
+
+        filters.Should().Be(("openaps://rpi",
+            (DateTime?)new DateTime(2024, 1, 15, 0, 0, 0, 1, DateTimeKind.Utc),
+            (DateTime?)new DateTime(2024, 1, 15, 23, 59, 59, 999, DateTimeKind.Utc)));
+    }
+
+    [Theory]
+    [InlineData("""{"created_at":{"$gt":253402300799999}}""")]
+    [InlineData("""{"created_at":{"$lt":-62135596800000}}""")]
+    [InlineData("""{"created_at":{"$gt":"9999-12-31T23:59:59.9999999Z"}}""")]
+    [InlineData("find[created_at][$gt]=253402300799999")]
+    [InlineData("find[created_at][$lt]=0001-01-01T00:00:00Z")]
+    public void ParseDeleteFind_WithStrictBoundBeyondTheDateRange_Refuses(string find)
+    {
+        DeviceStatusProjectionService.ParseDeleteFind(find).Should().BeNull();
+    }
+
+    [Theory]
+    [InlineData("""{"created_at":{"$gte":253402300799999}}""")]
+    [InlineData("find[created_at][$lte]=0001-01-01T00:00:00Z")]
+    public void ParseDeleteFind_WithInclusiveBoundAtTheDateRangeEdge_Applies(string find)
+    {
+        DeviceStatusProjectionService.ParseDeleteFind(find).Should().NotBeNull();
+    }
+
     #endregion
 
     #region CountAsync
@@ -742,15 +905,14 @@ public class DeviceStatusProjectionServiceTests
     public async Task CountAsync_WithNoFilter_ReturnsSumOfApsAndOrphanPump()
     {
         _apsRepo
-            .Setup(r => r.CountAsync(null, null, It.IsAny<CancellationToken>()))
+            .Setup(r => r.CountAsync(null, null, null, It.IsAny<CancellationToken>()))
             .ReturnsAsync(10);
         _pumpRepo
-            .Setup(r => r.CountAsync(null, null, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(12);
+            .Setup(r => r.CountUncorrelatedAsync(null, null, null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(2);
 
         var count = await _service.CountAsync(null, CancellationToken.None);
 
-        // 10 APS + max(0, 12 - 10) orphan pumps = 12
         count.Should().Be(12);
     }
 
@@ -761,12 +923,14 @@ public class DeviceStatusProjectionServiceTests
             .Setup(r => r.CountAsync(
                 It.Is<DateTime?>(d => d.HasValue),
                 It.Is<DateTime?>(d => d.HasValue),
+                null,
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(5);
         _pumpRepo
-            .Setup(r => r.CountAsync(
+            .Setup(r => r.CountUncorrelatedAsync(
                 It.Is<DateTime?>(d => d.HasValue),
                 It.Is<DateTime?>(d => d.HasValue),
+                null,
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(3);
 
@@ -774,24 +938,22 @@ public class DeviceStatusProjectionServiceTests
             "find[created_at][$gte]=2024-01-15T00:00:00Z&find[created_at][$lt]=2024-01-16T00:00:00Z",
             CancellationToken.None);
 
-        // 5 APS + max(0, 3 - 5) orphan pumps = 5
-        count.Should().Be(5);
+        count.Should().Be(8);
     }
 
     [Fact]
-    public async Task CountAsync_WhenPumpsExceedAps_IncludesOrphanEstimate()
+    public async Task CountAsync_WithDeviceFilter_PassesDeviceToRepos()
     {
         _apsRepo
-            .Setup(r => r.CountAsync(null, null, It.IsAny<CancellationToken>()))
+            .Setup(r => r.CountAsync(null, null, "openaps://rpi", It.IsAny<CancellationToken>()))
             .ReturnsAsync(3);
         _pumpRepo
-            .Setup(r => r.CountAsync(null, null, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(8);
+            .Setup(r => r.CountUncorrelatedAsync(null, null, "openaps://rpi", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(1);
 
-        var count = await _service.CountAsync(null, CancellationToken.None);
+        var count = await _service.CountAsync("find[device]=openaps://rpi", CancellationToken.None);
 
-        // 3 APS + max(0, 8 - 3) orphan pumps = 8
-        count.Should().Be(8);
+        count.Should().Be(4);
     }
 
     #endregion
@@ -823,7 +985,7 @@ public class DeviceStatusProjectionServiceTests
         aps.SuggestedJson = JsonSerializer.Serialize(new OpenApsSuggested { Bg = 120 }, JsonOptions);
 
         var expectedFrom = new DateTime(2024, 1, 15, 0, 0, 0, DateTimeKind.Utc);
-        var expectedTo = new DateTime(2024, 1, 16, 0, 0, 0, DateTimeKind.Utc);
+        var expectedTo = new DateTime(2024, 1, 16, 0, 0, 0, DateTimeKind.Utc).AddMilliseconds(-1);
 
         _apsRepo
             .Setup(r => r.GetAsync(expectedFrom, expectedTo, null, null,

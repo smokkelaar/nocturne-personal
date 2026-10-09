@@ -16,7 +16,8 @@
   import { Tween, prefersReducedMotion } from "svelte/motion";
   import { cubicOut } from "svelte/easing";
   import ArrowRight from "@lucide/svelte/icons/arrow-right";
-  import { createConnectionIndicator } from "$lib/stores/connection-indicator.svelte";
+  import { displayedGlucose } from "$lib/stores/current-glucose-status.svelte";
+  import { getGlucoseTileVariant } from "$lib/utils/glucose-status";
 
   const realtimeStore = tryGetRealtimeStore();
 
@@ -47,15 +48,16 @@
   };
 
   // Collapsed state needs basic BG info
-  const rawCurrentBG = $derived(realtimeStore?.currentBG ?? 0);
+  const glucose = displayedGlucose(realtimeStore);
+  const rawCurrentBG = $derived(glucose.currentBG);
   const lastUpdated = $derived(realtimeStore?.lastUpdated ?? 0);
+  const tileVariant = $derived(
+    getGlucoseTileVariant(glucose.status)
+  );
   const now = $derived(realtimeStore?.now ?? Date.now());
   const isStale = $derived(now - lastUpdated > STALE_THRESHOLD_MS);
 
-  const connection = createConnectionIndicator(
-    () => realtimeStore?.connectionStatus ?? "idle"
-  );
-  const isDisconnected = $derived(connection.isDisconnected);
+  const isDisconnected = $derived(realtimeStore?.connectionUnavailable ?? false);
   const isLoading = $derived(
     rawCurrentBG === 0 && (realtimeStore?.entries.length ?? 0) === 0
   );
@@ -63,8 +65,8 @@
   const displayBG = $derived(formatGlucoseValue(rawCurrentBG, units));
 
   // Trend metadata
-  const bgDelta = $derived(realtimeStore?.bgDelta ?? 0);
-  const direction = $derived(realtimeStore?.direction ?? "");
+  const bgDelta = $derived(glucose.bgDelta);
+  const direction = $derived(glucose.direction);
   const timeSinceReading = $derived(realtimeStore?.timeSinceReading ?? "");
   const displayDelta = $derived(formatGlucoseDelta(bgDelta, units));
   const hasData = $derived(!isLoading && rawCurrentBG > 0);
@@ -84,7 +86,7 @@
     <div class="flex items-center justify-center gap-2">
       <GlucoseValueIndicator
         displayValue={displayBG}
-        rawBgMgdl={rawCurrentBG}
+        variant={tileVariant}
         {isLoading}
         {isStale}
         {isDisconnected}
@@ -134,7 +136,7 @@
 <div class="hidden group-data-[collapsible=icon]:flex flex-col items-center gap-0.5">
   <GlucoseValueIndicator
     displayValue={displayBG}
-    rawBgMgdl={rawCurrentBG}
+    variant={tileVariant}
     {isLoading}
     {isStale}
     {isDisconnected}

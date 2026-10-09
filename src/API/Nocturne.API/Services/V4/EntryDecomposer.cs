@@ -152,8 +152,7 @@ public class EntryDecomposer : DecomposerBase, IEntryDecomposer, IDecomposer<Ent
         if (entries.Count == 0)
             return new DecompositionResult();
 
-        var correlationId = Guid.CreateVersion7();
-        var result = new DecompositionResult { CorrelationId = correlationId };
+        var result = new DecompositionResult();
 
         var sgvList = new List<SensorGlucose>();
         var mbgList = new List<MeterGlucose>();
@@ -162,22 +161,31 @@ public class EntryDecomposer : DecomposerBase, IEntryDecomposer, IDecomposer<Ent
 
         foreach (var entry in entries)
         {
+            var correlationId = Guid.CreateVersion7();
             switch (entry.Type?.ToLowerInvariant())
             {
                 case "sgv":
+                    if (await EchoesUnkeyedRecordAsync(_sensorGlucoseRepository, entry.Id, ct))
+                        continue;
                     sgvList.Add(await BuildSensorGlucoseAsync(entry, correlationId, ct));
                     break;
                 case "mbg":
+                    if (await EchoesUnkeyedRecordAsync(_meterGlucoseRepository, entry.Id, ct))
+                        continue;
                     mbgList.Add(MapToMeterGlucose(entry, correlationId));
                     break;
                 case "cal":
+                    if (await EchoesUnkeyedRecordAsync(_calibrationRepository, entry.Id, ct))
+                        continue;
                     calList.Add(MapToCalibration(entry, correlationId));
                     break;
                 default:
                     result.SkippedUnsupported++;
                     unsupportedTypes.Add(SanitizeForLog(entry.Type));
-                    break;
+                    continue;
             }
+
+            result.CorrelationId ??= correlationId;
         }
 
         if (result.SkippedUnsupported > 0)
@@ -194,13 +202,27 @@ public class EntryDecomposer : DecomposerBase, IEntryDecomposer, IDecomposer<Ent
 
         using (SystemAttributedBatchWrites(_auditContext))
         {
-            await BulkCreateAsync(_sensorGlucoseRepository, sgvList, result, origin, ct);
-            await BulkCreateAsync(_meterGlucoseRepository, mbgList, result, origin, ct);
-            await BulkCreateAsync(_calibrationRepository, calList, result, origin, ct);
+            await BulkUpsertAsync(_sensorGlucoseRepository, sgvList, result, origin, ct);
+            await BulkUpsertAsync(_meterGlucoseRepository, mbgList, result, origin, ct);
+            await BulkUpsertAsync(_calibrationRepository, calList, result, origin, ct);
         }
 
         return result;
     }
+
+    /// <summary>
+    /// Whether <paramref name="id"/> is the 24-hex form <see cref="MongoObjectId.FromGuid"/> gave a
+    /// stored record that has no legacy id: the id Nightscout write-back sent it under, now pulled
+    /// back by the connector. Keyed on <c>LegacyId</c>, the bulk upsert cannot see that record and
+    /// would store the reading a second time. A record with a legacy id was written back under that
+    /// id, which the bulk upsert already matches.
+    /// </summary>
+    private static async Task<bool> EchoesUnkeyedRecordAsync<TRecord>(
+        IV4Repository<TRecord> repository, string? id, CancellationToken ct)
+        where TRecord : class, IV4Record
+        => MongoObjectId.IsGuidPrefixShaped(id)
+           && MongoObjectId.TryGetGuidPrefixRange(id, out var low, out var high)
+           && await repository.GetByGuidRangeAsync(low, high, ct) is { LegacyId: null };
 
     /// <inheritdoc />
     public async Task<int> DeleteByLegacyIdAsync(string legacyId, WriteOrigin origin, CancellationToken ct = default)
@@ -214,6 +236,33 @@ public class EntryDecomposer : DecomposerBase, IEntryDecomposer, IDecomposer<Ent
             Logger.LogDebug("Soft-deleted {Count} v4 records for legacy entry {LegacyId}", deleted, legacyId);
 
         return deleted;
+    }
+
+    /// <inheritdoc />
+    public Task<int> DeleteStoredAsync(IV4Record stored, WriteOrigin origin, CancellationToken ct = default)
+        => stored.LegacyId is { } legacyId
+            ? DeleteByLegacyIdAsync(legacyId, origin, ct)
+            : stored switch
+            {
+                SensorGlucose => DeleteUnkeyedAsync(_sensorGlucoseRepository, stored.Id, origin, ct),
+                MeterGlucose => DeleteUnkeyedAsync(_meterGlucoseRepository, stored.Id, origin, ct),
+                Calibration => DeleteUnkeyedAsync(_calibrationRepository, stored.Id, origin, ct),
+                _ => throw new ArgumentException($"{stored.GetType().Name} is not an entry record", nameof(stored)),
+            };
+
+    private static async Task<int> DeleteUnkeyedAsync<TRecord>(
+        IV4Repository<TRecord> repository, Guid id, WriteOrigin origin, CancellationToken ct)
+        where TRecord : class, IV4Record
+    {
+        try
+        {
+            await repository.DeleteAsync(id, origin, ct);
+            return 1;
+        }
+        catch (KeyNotFoundException)
+        {
+            return 0;
+        }
     }
 
     /// <inheritdoc />

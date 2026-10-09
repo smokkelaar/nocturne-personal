@@ -273,6 +273,8 @@ public class StatisticsServiceTests
         result.Should().NotBeNull();
         result.Percentages.Target.Should().Be(0);
         result.Durations.Target.Should().Be(0);
+        result.Durations.BelowRange.Should().Be(0);
+        result.Episodes.BelowRange.Should().Be(0);
     }
 
     [Fact]
@@ -296,6 +298,24 @@ public class StatisticsServiceTests
 
         result.Episodes.Low.Should().Be(0);
         result.Episodes.VeryLow.Should().Be(0);
+    }
+
+    [Theory]
+    [InlineData(1, 3, 0)]
+    [InlineData(5, 15, 1)]
+    public void CalculateTimeInRange_BelowRange_UsesCoveredTimeAndConsensusEpisodes(
+        int cadenceMinutes, double belowMinutes, int episodes
+    )
+    {
+        var result = _statisticsService.CalculateTimeInRange(
+            Sequence(cadenceMinutes, [100, 60, 40, 60, 70, 180, 200, 300])
+        );
+
+        result.Durations.BelowRange.Should().Be(belowMinutes);
+        result.Durations.Low.Should().Be(2 * cadenceMinutes);
+        result.Durations.VeryLow.Should().Be(cadenceMinutes);
+        result.Durations.AboveRange.Should().Be(2 * cadenceMinutes);
+        result.Episodes.BelowRange.Should().Be(episodes);
     }
 
     [Fact]
@@ -1144,42 +1164,64 @@ public class StatisticsServiceTests
         result.Totals.Food.Carbs.Should().Be(60);
     }
 
+    /// <summary>
+    /// Every numeric field reachable from <see cref="TreatmentSummary"/> must be something the
+    /// calculation fills. A field it never writes reads as 0 and is mistaken for a real total.
+    /// </summary>
     [Fact]
-    public void GetTotalInsulin_WithValidSummary_ShouldReturnSum()
+    public void CalculateTreatmentSummary_FillsEveryNumericField()
     {
-        // Arrange
-        var summary = new TreatmentSummary
+        var carbIntake = new CarbIntake { Id = Guid.NewGuid(), Carbs = 60 };
+        var foods = new Dictionary<Guid, List<TreatmentFood>>
         {
-            Totals = new TreatmentTotals
-            {
-                Insulin = new InsulinTotals { Bolus = 10.0, Basal = 5.0 },
-            },
+            [carbIntake.Id] =
+            [
+                new TreatmentFood
+                {
+                    CarbIntakeId = carbIntake.Id,
+                    Portions = 2,
+                    FatPerPortion = 5,
+                    ProteinPerPortion = 8,
+                },
+            ],
         };
 
-        // Act
-        var result = _statisticsService.GetTotalInsulin(summary);
+        var result = _statisticsService.CalculateTreatmentSummary(
+            [new Bolus { Insulin = 6.0 }],
+            [carbIntake],
+            foods,
+            dayCount: 2
+        );
 
-        // Assert
-        result.Should().Be(15.0);
+        var unfilled = NumericLeaves(result, nameof(TreatmentSummary))
+            .Where(leaf => leaf.Value == 0)
+            .Select(leaf => leaf.Path);
+        unfilled.Should().BeEmpty();
+        result.Totals.Insulin.Bolus.Should().Be(6.0);
+        result.CarbToInsulinRatio.Should().Be(10.0, "60 g over 6 U of bolus insulin");
     }
 
-    [Fact]
-    public void GetBolusPercentage_WithValidSummary_ShouldReturnCorrectPercentage()
+    private static IEnumerable<(string Path, double Value)> NumericLeaves(object node, string path)
     {
-        // Arrange
-        var summary = new TreatmentSummary
+        foreach (var property in node.GetType().GetProperties())
         {
-            Totals = new TreatmentTotals
+            var value = property.GetValue(node);
+            var childPath = $"{path}.{property.Name}";
+            switch (value)
             {
-                Insulin = new InsulinTotals { Bolus = 8.0, Basal = 2.0 },
-            },
-        };
-
-        // Act
-        var result = _statisticsService.GetBolusPercentage(summary);
-
-        // Assert
-        result.Should().Be(80.0);
+                case double d:
+                    yield return (childPath, d);
+                    break;
+                case int i:
+                    yield return (childPath, i);
+                    break;
+                case not null when property.PropertyType.Namespace == typeof(TreatmentSummary).Namespace
+                    && property.PropertyType.IsClass:
+                    foreach (var leaf in NumericLeaves(value, childPath))
+                        yield return leaf;
+                    break;
+            }
+        }
     }
 
     #endregion

@@ -1,3 +1,4 @@
+using Nocturne.Core.Constants;
 using Nocturne.Core.Models;
 
 namespace Nocturne.API.Services.Analytics;
@@ -12,7 +13,7 @@ public enum VarianceMode
     /// <summary>Bessel-corrected: <c>n - 1</c>, and zero for fewer than two readings.</summary>
     Sample,
 
-    /// <summary>Uncorrected: <c>n</c>, and <see cref="double.NaN"/> for no readings.</summary>
+    /// <summary>Uncorrected: <c>n</c>, and zero for no readings.</summary>
     Population,
 }
 
@@ -25,11 +26,12 @@ public static class GlucoseStatistics
     /// <summary>
     /// Variance of <paramref name="values"/> about <paramref name="mean"/>. The mean is supplied
     /// rather than derived because callers differ on whether they centre on the raw average or on
-    /// the rounded one <c>StatisticsService.CalculateMean</c> returns.
+    /// the rounded one <c>StatisticsService.CalculateMean</c> returns. A series too short for
+    /// <paramref name="mode"/> to divide by has no spread to report and gives zero, never NaN.
     /// </summary>
     public static double Variance(IReadOnlyCollection<double> values, double mean, VarianceMode mode)
     {
-        if (mode == VarianceMode.Sample && values.Count < 2)
+        if (values.Count < (mode == VarianceMode.Sample ? 2 : 1))
             return 0;
 
         var sumOfSquares = values.Sum(value => Math.Pow(value - mean, 2));
@@ -44,10 +46,11 @@ public static class GlucoseStatistics
     ) => Math.Sqrt(Variance(values, mean, mode));
 
     /// <summary>
-    /// Standard deviation about the raw arithmetic mean of <paramref name="values"/>.
+    /// Standard deviation about the raw arithmetic mean of <paramref name="values"/>, and zero for
+    /// an empty series.
     /// </summary>
     public static double StandardDeviation(IReadOnlyCollection<double> values, VarianceMode mode) =>
-        StandardDeviation(values, values.Average(), mode);
+        values.Count == 0 ? 0 : StandardDeviation(values, values.Average(), mode);
 
     /// <summary>
     /// Median of an already-sorted, non-empty series: the middle reading, or the midpoint of the
@@ -57,6 +60,19 @@ public static class GlucoseStatistics
         sortedValues.Count % 2 == 0
             ? (sortedValues[sortedValues.Count / 2 - 1] + sortedValues[sortedValues.Count / 2]) / 2.0
             : sortedValues[sortedValues.Count / 2];
+
+    /// <summary>
+    /// <paramref name="values"/> in ascending order, for <see cref="Median"/> and percentiles. An
+    /// in-place array sort orders doubles exactly as <c>OrderBy</c> does, NaN first, at a fraction
+    /// of the cost; the two can differ only in the order of equal values, which a median or a
+    /// percentile cannot tell apart.
+    /// </summary>
+    public static double[] Ascending(IEnumerable<double> values)
+    {
+        var sorted = values.ToArray();
+        Array.Sort(sorted);
+        return sorted;
+    }
 
     /// <summary>
     /// Whether <paramref name="mgdl"/> is a glucose reading at all. A <c>&gt; 0</c> test does not
@@ -70,9 +86,11 @@ public static class GlucoseStatistics
 
     /// <summary>
     /// Whether a reading is admitted to the glucose statistics: a reading at all, and below
-    /// 600 mg/dL, above anything a CGM reports as a value.
+    /// <see cref="GlucoseConstants.MaxPlausibleMgdl"/>. Every glucose statistic filters with this
+    /// one predicate, so two endpoints never report different denominators for one upload.
     /// </summary>
-    public static bool IsPlausibleReading(double mgdl) => IsReading(mgdl) && mgdl < 600;
+    public static bool IsPlausibleReading(double mgdl) =>
+        IsReading(mgdl) && mgdl < GlucoseConstants.MaxPlausibleMgdl;
 
     /// <summary>
     /// The <see cref="ExcludingZone"/> scale for <paramref name="thresholds"/>.

@@ -25832,6 +25832,14 @@ msgstr "Real-time data unavailable"
 msgid "Glucose units"
 msgstr "Glucose units"
 
+#: src/lib/components/meals/MealBolusDialog.svelte
+msgid "Edit bolus"
+msgstr "Edit bolus"
+
+#: src/lib/components/meals/MealBolusDialog.svelte
+msgid "Delete bolus"
+msgstr "Delete bolus"
+
 #: src/routes/(authenticated)/reports/+layout.svelte
 msgid "Unable to load the complete report. Please try again before printing."
 msgstr "Unable to load the complete report. Please try again before printing."

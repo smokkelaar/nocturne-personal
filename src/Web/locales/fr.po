@@ -25835,6 +25835,14 @@ msgstr ""
 msgid "Glucose units"
 msgstr ""
 
+#: src/lib/components/meals/MealBolusDialog.svelte
+msgid "Edit bolus"
+msgstr ""
+
+#: src/lib/components/meals/MealBolusDialog.svelte
+msgid "Delete bolus"
+msgstr ""
+
 #: src/routes/(authenticated)/reports/+layout.svelte
 msgid "Unable to load the complete report. Please try again before printing."
 msgstr ""

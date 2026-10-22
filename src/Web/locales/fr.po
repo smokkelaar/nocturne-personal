@@ -436,6 +436,7 @@ msgstr ""
 #: src/routes/(authenticated)/compatibility/test/+page.svelte
 #: src/routes/(authenticated)/settings/appearance/+page.svelte
 #: src/routes/(legal)/+layout.svelte
+#: src/routes/(legal)/privacy/+page.svelte
 #: src/routes/(unauthenticated)/+layout.svelte
 msgid "Nocturne"
 msgstr ""
@@ -9040,370 +9041,281 @@ msgstr ""
 msgid "<0/> Settings"
 msgstr ""
 
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "Privacy Policy - Nocturne"
-msgstr ""
+#~ msgid "Privacy Policy - Nocturne"
+#~ msgstr ""
 
 #: src/routes/(legal)/privacy/+page.svelte
 msgid "Privacy Policy"
 msgstr ""
 
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "Your privacy matters. This policy explains how Nocturne handles your data and protects your privacy."
-msgstr ""
+#~ msgid "Your privacy matters. This policy explains how Nocturne handles your data and protects your privacy."
+#~ msgstr ""
 
-#: src/routes/(legal)/privacy/+page.svelte
 #: src/routes/(legal)/terms/+page.svelte
 msgid "1. Introduction"
 msgstr ""
 
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "Nocturne is a self-hosted, open-source diabetes data management platform. This means <0>you control where your data lives</0>. Unlike cloud-based services, Nocturne runs on your own server or hosting provider, and your data stays in your own database."
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "This privacy policy explains what data Nocturne collects (spoiler: very little), how it's stored, and your rights."
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "2. Data We DON'T Collect"
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "Because Nocturne is self-hosted, we (the Nocturne project developers) do not have access to your data. Specifically:"
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "<0>No analytics:</0> Nocturne does not send usage analytics or telemetry to us by default."
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "<0>No tracking:</0> We don't track your usage, browsing, or behavior."
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "<0>No data collection:</0> Your glucose readings, treatments, meals, and health data never leave your server unless you choose to share them."
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "<0>No selling data:</0> We don't sell your data because we don't have access to it in the first place."
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "<0>No cloud storage:</0> Nocturne doesn't store your data in our cloud or servers. It's all on your infrastructure."
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "3. Data Storage"
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "All your Nocturne data is stored in your own database on your own server or hosting provider. This includes:"
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "Glucose readings (blood sugar, CGM data)"
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "Treatments (insulin, medications)"
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "Meals and nutrition data"
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "Activity and exercise logs"
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "User account information"
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "Settings and preferences"
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "Where your data lives:"
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "<0>Your database:</0> All persistent data is stored in a PostgreSQL database that you control."
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "<0>Your hosting provider:</0> Your hosting provider's privacy policy and security practices apply to your data. Choose a provider you trust."
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "<0>Browser local storage:</0> Some temporary data (like UI preferences) may be stored in your browser's local storage. This never leaves your device."
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "4. Third-Party Services and Connectors"
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "Nocturne can connect to third-party diabetes data services to import your glucose and treatment data. When you use these integrations:"
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "<0>Third-party privacy policies apply:</0> Services like Dexcom, FreeStyle Libre, Glooko, and Tidepool have their own privacy policies. Review them before connecting."
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "<0>We don't control third parties:</0> We cannot control what data these services collect about you or how they use it."
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "<0>Credentials storage:</0> Your API keys and login credentials for third-party services are stored <1>encrypted</1> in your database. Only your Nocturne instance can decrypt them."
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "<0>Data transfer:</0> When you connect to a third-party service, data flows between that service and your Nocturne instance. We (the Nocturne developers) do not see or have access to this data."
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "Third-party services you might connect:"
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "Dexcom (CGM data)"
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "FreeStyle Libre (CGM data)"
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "Glooko (multi-source data aggregation)"
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "Tidepool (open diabetes data platform)"
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "Nightscout (diabetes data platform)"
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "Others via community plugins"
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "5. Optional Analytics and Error Reporting"
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "In the future, Nocturne may offer optional, opt-in features for:"
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "<0>Error reporting:</0> Send crash reports and error logs to help us improve Nocturne"
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "<0>Anonymous usage analytics:</0> Aggregated, anonymized usage statistics"
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "If we add these features:"
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "They will be <0>opt-in only</0> - disabled by default"
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "You'll have clear control to enable or disable them"
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "We'll clearly explain what data would be collected"
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "Data will be anonymized and aggregated when possible"
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "No health data or personally identifiable information will be included"
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "<0>Current status:</0> As of this writing, Nocturne does not include any analytics or error reporting features."
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "6. Your Rights and Data Control"
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "Because you self-host Nocturne, you have complete control over your data:"
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "<0>You own your data:</0> All data belongs to you. We make no claims to it."
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "<0>Export anytime:</0> You can export your data at any time. It's just a PostgreSQL database - you have full access."
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "<0>Delete anytime:</0> You can delete any or all of your data whenever you want."
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "<0>Control access:</0> You decide who can access your Nocturne instance and what they can see."
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "<0>Move your data:</0> You can migrate your database to a different server or hosting provider at any time."
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "<0>Backup your data:</0> You're responsible for backing up your database. We recommend regular backups."
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "7. Security"
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "Nocturne is designed with security best practices:"
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "<0>Encryption:</0> API keys and sensitive credentials are stored encrypted in the database."
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "<0>HTTPS recommended:</0> We strongly recommend running Nocturne behind HTTPS to encrypt data in transit."
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "<0>Authentication:</0> User accounts are protected with password hashing (bcrypt)."
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "<0>Open source:</0> The code is open for security review by the community."
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "<0>Your responsibility:</0> As a self-hosted application, you're responsible for:"
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "Keeping your server and dependencies updated"
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "Using strong passwords"
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "Securing your hosting environment"
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "Configuring HTTPS/SSL certificates"
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "Regular backups"
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "8. Children's Privacy"
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "Nocturne is often used to manage diabetes data for children. Because the software is self-hosted:"
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "Parents/guardians control all data for their children"
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "No data is sent to us (the developers)"
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "All data stays within the family's or caregiver's control"
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "If you're hosting Nocturne for your child, you have full control and responsibility for their data privacy and security."
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "9. Changes to This Privacy Policy"
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "We may update this privacy policy from time to time. When we do:"
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "The updated policy will be posted at this URL"
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "The \"Last updated\" date will change"
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "Major changes will be announced in the GitHub repository"
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "Because Nocturne is self-hosted, privacy policy changes don't affect data you've already collected - it stays under your control regardless."
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "10. Contact"
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "For questions about this privacy policy or Nocturne's privacy practices:"
-msgstr ""
-
-#: src/routes/(legal)/privacy/+page.svelte
+#~ msgid "Nocturne is a self-hosted, open-source diabetes data management platform. This means <0>you control where your data lives</0>. Unlike cloud-based services, Nocturne runs on your own server or hosting provider, and your data stays in your own database."
+#~ msgstr ""
+
+#~ msgid "This privacy policy explains what data Nocturne collects (spoiler: very little), how it's stored, and your rights."
+#~ msgstr ""
+
+#~ msgid "2. Data We DON'T Collect"
+#~ msgstr ""
+
+#~ msgid "Because Nocturne is self-hosted, we (the Nocturne project developers) do not have access to your data. Specifically:"
+#~ msgstr ""
+
+#~ msgid "<0>No analytics:</0> Nocturne does not send usage analytics or telemetry to us by default."
+#~ msgstr ""
+
+#~ msgid "<0>No tracking:</0> We don't track your usage, browsing, or behavior."
+#~ msgstr ""
+
+#~ msgid "<0>No data collection:</0> Your glucose readings, treatments, meals, and health data never leave your server unless you choose to share them."
+#~ msgstr ""
+
+#~ msgid "<0>No selling data:</0> We don't sell your data because we don't have access to it in the first place."
+#~ msgstr ""
+
+#~ msgid "<0>No cloud storage:</0> Nocturne doesn't store your data in our cloud or servers. It's all on your infrastructure."
+#~ msgstr ""
+
+#~ msgid "3. Data Storage"
+#~ msgstr ""
+
+#~ msgid "All your Nocturne data is stored in your own database on your own server or hosting provider. This includes:"
+#~ msgstr ""
+
+#~ msgid "Glucose readings (blood sugar, CGM data)"
+#~ msgstr ""
+
+#~ msgid "Treatments (insulin, medications)"
+#~ msgstr ""
+
+#~ msgid "Meals and nutrition data"
+#~ msgstr ""
+
+#~ msgid "Activity and exercise logs"
+#~ msgstr ""
+
+#~ msgid "User account information"
+#~ msgstr ""
+
+#~ msgid "Settings and preferences"
+#~ msgstr ""
+
+#~ msgid "Where your data lives:"
+#~ msgstr ""
+
+#~ msgid "<0>Your database:</0> All persistent data is stored in a PostgreSQL database that you control."
+#~ msgstr ""
+
+#~ msgid "<0>Your hosting provider:</0> Your hosting provider's privacy policy and security practices apply to your data. Choose a provider you trust."
+#~ msgstr ""
+
+#~ msgid "<0>Browser local storage:</0> Some temporary data (like UI preferences) may be stored in your browser's local storage. This never leaves your device."
+#~ msgstr ""
+
+#~ msgid "4. Third-Party Services and Connectors"
+#~ msgstr ""
+
+#~ msgid "Nocturne can connect to third-party diabetes data services to import your glucose and treatment data. When you use these integrations:"
+#~ msgstr ""
+
+#~ msgid "<0>Third-party privacy policies apply:</0> Services like Dexcom, FreeStyle Libre, Glooko, and Tidepool have their own privacy policies. Review them before connecting."
+#~ msgstr ""
+
+#~ msgid "<0>We don't control third parties:</0> We cannot control what data these services collect about you or how they use it."
+#~ msgstr ""
+
+#~ msgid "<0>Credentials storage:</0> Your API keys and login credentials for third-party services are stored <1>encrypted</1> in your database. Only your Nocturne instance can decrypt them."
+#~ msgstr ""
+
+#~ msgid "<0>Data transfer:</0> When you connect to a third-party service, data flows between that service and your Nocturne instance. We (the Nocturne developers) do not see or have access to this data."
+#~ msgstr ""
+
+#~ msgid "Third-party services you might connect:"
+#~ msgstr ""
+
+#~ msgid "Dexcom (CGM data)"
+#~ msgstr ""
+
+#~ msgid "FreeStyle Libre (CGM data)"
+#~ msgstr ""
+
+#~ msgid "Glooko (multi-source data aggregation)"
+#~ msgstr ""
+
+#~ msgid "Tidepool (open diabetes data platform)"
+#~ msgstr ""
+
+#~ msgid "Nightscout (diabetes data platform)"
+#~ msgstr ""
+
+#~ msgid "Others via community plugins"
+#~ msgstr ""
+
+#~ msgid "5. Optional Analytics and Error Reporting"
+#~ msgstr ""
+
+#~ msgid "In the future, Nocturne may offer optional, opt-in features for:"
+#~ msgstr ""
+
+#~ msgid "<0>Error reporting:</0> Send crash reports and error logs to help us improve Nocturne"
+#~ msgstr ""
+
+#~ msgid "<0>Anonymous usage analytics:</0> Aggregated, anonymized usage statistics"
+#~ msgstr ""
+
+#~ msgid "If we add these features:"
+#~ msgstr ""
+
+#~ msgid "They will be <0>opt-in only</0> - disabled by default"
+#~ msgstr ""
+
+#~ msgid "You'll have clear control to enable or disable them"
+#~ msgstr ""
+
+#~ msgid "We'll clearly explain what data would be collected"
+#~ msgstr ""
+
+#~ msgid "Data will be anonymized and aggregated when possible"
+#~ msgstr ""
+
+#~ msgid "No health data or personally identifiable information will be included"
+#~ msgstr ""
+
+#~ msgid "<0>Current status:</0> As of this writing, Nocturne does not include any analytics or error reporting features."
+#~ msgstr ""
+
+#~ msgid "6. Your Rights and Data Control"
+#~ msgstr ""
+
+#~ msgid "Because you self-host Nocturne, you have complete control over your data:"
+#~ msgstr ""
+
+#~ msgid "<0>You own your data:</0> All data belongs to you. We make no claims to it."
+#~ msgstr ""
+
+#~ msgid "<0>Export anytime:</0> You can export your data at any time. It's just a PostgreSQL database - you have full access."
+#~ msgstr ""
+
+#~ msgid "<0>Delete anytime:</0> You can delete any or all of your data whenever you want."
+#~ msgstr ""
+
+#~ msgid "<0>Control access:</0> You decide who can access your Nocturne instance and what they can see."
+#~ msgstr ""
+
+#~ msgid "<0>Move your data:</0> You can migrate your database to a different server or hosting provider at any time."
+#~ msgstr ""
+
+#~ msgid "<0>Backup your data:</0> You're responsible for backing up your database. We recommend regular backups."
+#~ msgstr ""
+
+#~ msgid "7. Security"
+#~ msgstr ""
+
+#~ msgid "Nocturne is designed with security best practices:"
+#~ msgstr ""
+
+#~ msgid "<0>Encryption:</0> API keys and sensitive credentials are stored encrypted in the database."
+#~ msgstr ""
+
+#~ msgid "<0>HTTPS recommended:</0> We strongly recommend running Nocturne behind HTTPS to encrypt data in transit."
+#~ msgstr ""
+
+#~ msgid "<0>Authentication:</0> User accounts are protected with password hashing (bcrypt)."
+#~ msgstr ""
+
+#~ msgid "<0>Open source:</0> The code is open for security review by the community."
+#~ msgstr ""
+
+#~ msgid "<0>Your responsibility:</0> As a self-hosted application, you're responsible for:"
+#~ msgstr ""
+
+#~ msgid "Keeping your server and dependencies updated"
+#~ msgstr ""
+
+#~ msgid "Using strong passwords"
+#~ msgstr ""
+
+#~ msgid "Securing your hosting environment"
+#~ msgstr ""
+
+#~ msgid "Configuring HTTPS/SSL certificates"
+#~ msgstr ""
+
+#~ msgid "Regular backups"
+#~ msgstr ""
+
+#~ msgid "8. Children's Privacy"
+#~ msgstr ""
+
+#~ msgid "Nocturne is often used to manage diabetes data for children. Because the software is self-hosted:"
+#~ msgstr ""
+
+#~ msgid "Parents/guardians control all data for their children"
+#~ msgstr ""
+
+#~ msgid "No data is sent to us (the developers)"
+#~ msgstr ""
+
+#~ msgid "All data stays within the family's or caregiver's control"
+#~ msgstr ""
+
+#~ msgid "If you're hosting Nocturne for your child, you have full control and responsibility for their data privacy and security."
+#~ msgstr ""
+
+#~ msgid "9. Changes to This Privacy Policy"
+#~ msgstr ""
+
+#~ msgid "We may update this privacy policy from time to time. When we do:"
+#~ msgstr ""
+
+#~ msgid "The updated policy will be posted at this URL"
+#~ msgstr ""
+
+#~ msgid "The \"Last updated\" date will change"
+#~ msgstr ""
+
+#~ msgid "Major changes will be announced in the GitHub repository"
+#~ msgstr ""
+
+#~ msgid "Because Nocturne is self-hosted, privacy policy changes don't affect data you've already collected - it stays under your control regardless."
+#~ msgstr ""
+
+#~ msgid "10. Contact"
+#~ msgstr ""
+
+#~ msgid "For questions about this privacy policy or Nocturne's privacy practices:"
+#~ msgstr ""
+
 #: src/routes/(legal)/terms/+page.svelte
 msgid "GitHub: <0>github.com/nightscout/nocturne</0>"
 msgstr ""
 
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "Open an issue or discussion on GitHub"
-msgstr ""
+#~ msgid "Open an issue or discussion on GitHub"
+#~ msgstr ""
 
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "For questions about your specific Nocturne instance's privacy and data handling, contact your instance administrator (which might be you if you're self-hosting)."
-msgstr ""
+#~ msgid "For questions about your specific Nocturne instance's privacy and data handling, contact your instance administrator (which might be you if you're self-hosting)."
+#~ msgstr ""
 
 #: src/lib/components/members/RolesSection.svelte
 #: src/lib/components/members/RolesSection.svelte
 #: src/routes/(authenticated)/compatibility/[id]/+page.svelte
-#: src/routes/(legal)/privacy/+page.svelte
 msgid "Summary"
 msgstr ""
 
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "The key point: <0>Nocturne is self-hosted, which means you control your data</0>. We (the developers) don't collect it, don't have access to it, and can't sell it or share it. Your privacy is protected by design."
-msgstr ""
+#~ msgid "The key point: <0>Nocturne is self-hosted, which means you control your data</0>. We (the developers) don't collect it, don't have access to it, and can't sell it or share it. Your privacy is protected by design."
+#~ msgstr ""
 
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "See also: <0>Terms of Service</0>"
-msgstr ""
+#~ msgid "See also: <0>Terms of Service</0>"
+#~ msgstr ""
 
-#: src/routes/(legal)/privacy/+page.svelte
-msgid "This privacy policy is effective as of February 21, 2026."
-msgstr ""
+#~ msgid "This privacy policy is effective as of February 21, 2026."
+#~ msgstr ""
 
 #: src/routes/(authenticated)/tools/+page.svelte
 msgid "Utilities to help manage your diabetes."
@@ -9421,6 +9333,7 @@ msgstr ""
 msgid "Terms of Service - Nocturne"
 msgstr ""
 
+#: src/routes/(legal)/privacy/+page.svelte
 #: src/routes/(legal)/terms/+page.svelte
 msgid "Terms of Service"
 msgstr ""
@@ -32139,4 +32052,139 @@ msgstr ""
 
 #: src/lib/components/help/HelpBrowser.svelte
 msgid "Loading dashboard examples..."
+msgstr ""
+
+#. 0: policy.appName ?? "Nocturne"
+#: src/routes/(legal)/privacy/+page.svelte
+msgid "Privacy Policy - {0}"
+msgstr ""
+
+#. 0: policy.appName; 1: policy.operatorName
+#: src/routes/(legal)/privacy/+page.svelte
+msgid "{0} is operated by {1}."
+msgstr ""
+
+#. 0: policy.effectiveDate
+#: src/routes/(legal)/privacy/+page.svelte
+msgid "Effective date: {0}"
+msgstr ""
+
+#: src/routes/(legal)/privacy/+page.svelte
+msgid "This policy describes this operator's Nocturne instance. Other installations have their own operators and data handling practices."
+msgstr ""
+
+#: src/routes/(legal)/privacy/+page.svelte
+msgid "Operator and privacy contact"
+msgstr ""
+
+#: src/routes/(legal)/privacy/+page.svelte
+msgid "This instance has not published its operator's privacy information. The software information below does not replace an instance-specific policy. The operator can configure and publish it in Platform Administration → Integrations → Public privacy policy."
+msgstr ""
+
+#: src/routes/(legal)/privacy/+page.svelte
+msgid "Ask this installation's operator about its retention, recipients and backups before connecting."
+msgstr ""
+
+#: src/routes/(legal)/privacy/+page.svelte
+msgid "Open Settings → Connectors & Apps → Google Health and choose Disconnect."
+msgstr ""
+
+#: src/routes/(legal)/privacy/+page.svelte
+msgid "Then choose Delete imported Google Health data and confirm to remove this connector's imported records from the active tenant database. This does not delete Google's originals."
+msgstr ""
+
+#: src/routes/(legal)/privacy/+page.svelte
+msgid "You can also withdraw access in <0>Google Account connections</0> . This does not remove existing Nocturne copies."
+msgstr ""
+
+#: src/routes/(legal)/privacy/+page.svelte
+msgid "Contact the operator for account deletion, access, correction, export or removal of remaining backup copies."
+msgstr ""
+
+#: src/routes/(legal)/privacy/+page.svelte
+msgid "Data collected and purpose"
+msgstr ""
+
+#: src/routes/(legal)/privacy/+page.svelte
+msgid "Nocturne stores diabetes and health records supplied by its users and configured connectors, such as glucose readings, treatments, meals, activity and account settings. It uses them for the personal histories, charts, reports and sharing features you choose to use."
+msgstr ""
+
+#: src/routes/(legal)/privacy/+page.svelte
+msgid "Google Health access"
+msgstr ""
+
+#: src/routes/(legal)/privacy/+page.svelte
+msgid "Connecting Google Health is optional. After you authorize access, the connector reads permitted data to show your steps, heart rate, weight and sleep history. It also processes timestamps, units, source identifiers, inventory counts and sync progress. It uses a Google account identifier to keep the connection bound to the correct account, and stores OAuth permissions and tokens for background access. It does not receive your Google password."
+msgstr ""
+
+#: src/routes/(legal)/privacy/+page.svelte
+msgid "The current connector requests openid and the read-only Google Health scopes for activity and fitness, health metrics and measurements, and sleep. Google's permission groups are broader than the four import types. Inventory scanning checks availability for permitted types; confirming your selection starts imports. Background synchronization normally runs about every fifteen minutes. The connector does not write to Google Health or request Gmail, Drive, contacts or location access."
+msgstr ""
+
+#: src/routes/(legal)/privacy/+page.svelte
+msgid "Storage, security and tenant access"
+msgstr ""
+
+#: src/routes/(legal)/privacy/+page.svelte
+msgid "Health records are stored in this installation's PostgreSQL database. Connector secrets in the database are encrypted. Authentication, account permissions and tenant isolation control access through Nocturne. A user in one tenant does not gain access to another tenant merely by signing in."
+msgstr ""
+
+#: src/routes/(legal)/privacy/+page.svelte
+msgid "Restoring a complete backup preserves tenant assignments and permissions. These application controls do not make a database backup unreadable to a host administrator with direct storage or database access. Encryption of connector secrets is not a claim that the entire database or every backup is encrypted."
+msgstr ""
+
+#: src/routes/(legal)/privacy/+page.svelte
+msgid "Recipients, sharing and human access"
+msgstr ""
+
+#: src/routes/(legal)/privacy/+page.svelte
+msgid "Google processes authorization and API requests under its <0>privacy policy</0> . Installing Nocturne does not automatically send health records to the Nocturne project developers. Accounts, sharing links, exports and integrations can expose data to the recipients you authorize; disconnecting Google does not recall those copies."
+msgstr ""
+
+#: src/routes/(legal)/privacy/+page.svelte
+msgid "Google Health data may be read by another person only with the user's specific consent, where necessary for security, or to meet a legal obligation."
+msgstr ""
+
+#: src/routes/(legal)/privacy/+page.svelte
+msgid "Google Health Limited Use"
+msgstr ""
+
+#: src/routes/(legal)/privacy/+page.svelte
+msgid "Use of information received from Google Health complies with the <0>Google Health API Developer and User Data Policy</0> , including its Limited Use requirements, and the <1>Google API Services User Data Policy</1> . Google Health data is used for the visible personal history and synchronization features. It is not sold, used for advertising, credit decisions or training general AI models, or supplied for a medical device's regulated function."
+msgstr ""
+
+#: src/routes/(legal)/privacy/+page.svelte
+msgid "Retention and backups"
+msgstr ""
+
+#: src/routes/(legal)/privacy/+page.svelte
+msgid "Disconnecting or withdrawing Google's permission stops future access but does not automatically delete imported history. Nocturne has no automatic expiry for Google Health history. Backup copies and exports require separate handling."
+msgstr ""
+
+#: src/routes/(legal)/privacy/+page.svelte
+msgid "Withdraw access and delete data"
+msgstr ""
+
+#: src/routes/(legal)/privacy/+page.svelte
+msgid "When the same Google account is connected to multiple tenants, a local disconnect may preserve Google's grant for the others. Revoking access in Google can affect all those connections. Deleting one tenant's imported data does not delete other tenants' copies."
+msgstr ""
+
+#: src/routes/(legal)/privacy/+page.svelte
+msgid "Changes and privacy requests"
+msgstr ""
+
+#: src/routes/(legal)/privacy/+page.svelte
+msgid "Material changes to Google data use must be disclosed before they take effect, with renewed consent where required. For privacy requests, use the operator's public contact above rather than posting health details on GitHub. The operator may need to verify that a request belongs to your account."
+msgstr ""
+
+#: src/routes/(legal)/privacy/+page.svelte
+msgid "Session cookies and browser storage support sign-in and preferences. This page contains no health records and requires no Nocturne account to read."
+msgstr ""
+
+#: src/routes/(legal)/privacy/+page.svelte
+msgid "About this instance"
+msgstr ""
+
+#: src/routes/(legal)/privacy/+page.svelte
+msgid "Source code: <0>Nocturne Personal</0> · <1>Upstream Nocturne</1> . Project developers are not automatically the operators of this installation."
 msgstr ""

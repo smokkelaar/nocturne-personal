@@ -5,7 +5,10 @@
   import HeartPulse from "@lucide/svelte/icons/heart-pulse";
   import RefreshCw from "@lucide/svelte/icons/refresh-cw";
   import Unplug from "@lucide/svelte/icons/unplug";
-  import { GoogleHealthConnectionState, type GoogleHealthStatus } from "$lib/api";
+  import {
+    GoogleHealthConnectionState,
+    type GoogleHealthStatus,
+  } from "$lib/api";
   import { Input } from "$lib/components/ui/input";
   import { Button } from "$lib/components/ui/button";
   import { Badge } from "$lib/components/ui/badge";
@@ -56,7 +59,9 @@
   const connection = $derived(
     status?.connectionState ?? GoogleHealthConnectionState.Disconnected
   );
-  const unavailable = $derived(connection === GoogleHealthConnectionState.Unavailable);
+  const unavailable = $derived(
+    connection === GoogleHealthConnectionState.Unavailable
+  );
   const paused = $derived(unavailable && !!status?.connected);
   let inventoryGeneration = 0;
   let purgeDialogOpen = $state(false);
@@ -102,20 +107,36 @@
     inventoryBusy = true;
     try {
       const result = await previewGoogleHealth();
-      if (generation === inventoryGeneration && !disconnecting && status?.connected)
+      if (
+        generation === inventoryGeneration &&
+        !disconnecting &&
+        status?.connected
+      )
         status = result;
     } catch (error) {
-      if (generation !== inventoryGeneration || disconnecting || !status?.connected)
+      if (
+        generation !== inventoryGeneration ||
+        disconnecting ||
+        !status?.connected
+      )
         return;
       if (isGoogleHealthAlreadyRunningError(error)) notice = "alreadyRunning";
-      else message = describeGoogleHealthError(error, "readings", knownErrorMessage);
+      else
+        message = describeGoogleHealthError(
+          error,
+          "readings",
+          knownErrorMessage
+        );
     } finally {
       if (generation === inventoryGeneration) inventoryBusy = false;
     }
   }
 
   async function connect() {
-    if (!status?.configured && !(await run("save", () => saveGoogleHealth(options(true)))))
+    if (
+      !status?.configured &&
+      !(await run("save", () => saveGoogleHealth(options(true))))
+    )
       return;
     await run("signin", async () => {
       const auth = await startGoogleHealth();
@@ -176,7 +197,11 @@
           const next = await getGoogleHealth().run();
           if (disposed) return;
           status = next;
-          if (wasSyncing && !next.isSyncing && importFrom === day(previousImportFrom))
+          if (
+            wasSyncing &&
+            !next.isSyncing &&
+            importFrom === day(previousImportFrom)
+          )
             importFrom = day(next.importFrom);
           if (notice === "statusUnavailable") notice = null;
           if (wasSyncing && !next.isSyncing && next.connected && !disconnecting)
@@ -227,12 +252,18 @@
     </div>
     {#if status}
       <Badge variant={status.connected && !unavailable ? "default" : "outline"}>
-        {unavailable ? "Unavailable" : status.connected ? "Connected" : "Not connected"}
+        {unavailable
+          ? "Unavailable"
+          : status.connected
+            ? "Connected"
+            : "Not connected"}
       </Badge>
     {/if}
   </header>
   {#if message}
-    <p role="alert" class="rounded-lg border border-destructive p-4">{message}</p>
+    <p role="alert" class="rounded-lg border border-destructive p-4">
+      {message}
+    </p>
   {/if}
   {#if disconnecting}
     <p role="status" class="rounded-lg border border-primary/40 p-4">
@@ -249,7 +280,9 @@
       <p>{errorMessage(status.errorCode)}</p>
       <p class="mt-2 text-sm text-muted-foreground">
         Technical code: <code>{status.errorCode}</code>
-        {status.errorDataTypes?.length ? ` · ${status.errorDataTypes.join(", ")}` : ""}
+        {status.errorDataTypes?.length
+          ? ` · ${status.errorDataTypes.join(", ")}`
+          : ""}
       </p>
     </div>
   {/if}
@@ -274,13 +307,17 @@
   <Card>
     <CardHeader>
       <CardTitle>Connection</CardTitle>
-      <CardDescription>Read-only OAuth connection to the Google Health API</CardDescription>
+      <CardDescription>
+        Read-only OAuth connection to the Google Health API
+      </CardDescription>
     </CardHeader>
     <CardContent class="space-y-4">
       {#if !status}
         <p>Loading connection status…</p>
       {:else if unavailable && !status.connected}
-        <p>Your Nocturne operator hasn't enabled Google Health on this server.</p>
+        <p>
+          Your Nocturne operator hasn't enabled Google Health on this server.
+        </p>
         <a
           class="inline-block text-sm underline"
           href="https://getnocturne.dev/docs/data-sources/google-health"
@@ -291,8 +328,17 @@
         </a>
       {:else if !status.connected}
         <p>
-          Link Google Health in the Google Health app first, then connect. Google
-          asks which data to share with Nocturne.
+          Link Google Health in the Google Health app first, then connect.
+          Google asks which data to share with Nocturne.
+        </p>
+        <p class="text-sm text-muted-foreground">
+          With your consent, Nocturne reads steps, heart rate, weight and sleep
+          to show your personal histories. After you confirm the import
+          selection, synchronization can continue in the background. This
+          connector does not write to Google Health.
+          <a class="underline" href={resolve("/privacy")}>
+            Privacy and data deletion
+          </a>
         </p>
         <Button disabled={busy || disconnecting} onclick={() => void connect()}>
           Connect Google Health
@@ -328,7 +374,9 @@
             disabled={busy || disconnecting}
             onclick={() => void run("disconnect", disconnect)}
           >
-            <Unplug class="mr-2 h-4 w-4" />{disconnecting ? "Disconnecting…" : "Disconnect"}
+            <Unplug class="mr-2 h-4 w-4" />{disconnecting
+              ? "Disconnecting…"
+              : "Disconnect"}
           </Button>
         </div>
       {/if}
@@ -336,10 +384,10 @@
         <div class="space-y-2 border-t pt-4">
           <p class="font-medium">Import recovery</p>
           <p class="text-sm text-muted-foreground">
-            If a historical import stops or needs to be repeated, reset the Google
-            Health connector from a chosen date. The reset runs in the background,
-            re-reads the range and keeps the normal duplicate protection; platform
-            administrators can monitor or cancel it.
+            If a historical import stops or needs to be repeated, reset the
+            Google Health connector from a chosen date. The reset runs in the
+            background, re-reads the range and keeps the normal duplicate
+            protection; platform administrators can monitor or cancel it.
           </p>
           <a
             class="inline-flex items-center rounded-md border px-3 py-2 text-sm font-medium underline-offset-4 hover:underline"
@@ -356,7 +404,9 @@
     <Card>
       <CardHeader>
         <CardTitle>Google Health data</CardTitle>
-        <CardDescription>Detected data types and how Nocturne can use them</CardDescription>
+        <CardDescription>
+          Detected data types and how Nocturne can use them
+        </CardDescription>
       </CardHeader>
       <CardContent class="space-y-4">
         <form
@@ -387,8 +437,8 @@
           </p>
           {#if inventoryBusy}
             <p class="text-sm text-muted-foreground">
-              Scanning the selected history in Google Health… The catalog remains
-              available while the inventory is loading.
+              Scanning the selected history in Google Health… The catalog
+              remains available while the inventory is loading.
             </p>
           {/if}
           {#if status.categories?.length}
@@ -403,7 +453,10 @@
             </div>
           {/if}
           <div class="flex flex-wrap gap-2">
-            <Button type="submit" disabled={busy || disconnecting || status.isSyncing}>
+            <Button
+              type="submit"
+              disabled={busy || disconnecting || status.isSyncing}
+            >
               Save import settings
             </Button>
             <Button
@@ -420,7 +473,11 @@
             <Button
               type="button"
               variant="outline"
-              disabled={busy || disconnecting || paused || inventoryBusy || status.isSyncing}
+              disabled={busy ||
+                disconnecting ||
+                paused ||
+                inventoryBusy ||
+                status.isSyncing}
               onclick={() => void loadPreview()}
             >
               <RefreshCw class="mr-2 h-4 w-4" />{inventoryBusy
@@ -452,7 +509,11 @@
         Nocturne. Data stored by Google is unchanged.
       {/snippet}
       {#snippet trigger(props)}
-        <Button variant="destructive" disabled={busy || disconnecting} {...props}>
+        <Button
+          variant="destructive"
+          disabled={busy || disconnecting}
+          {...props}
+        >
           Delete imported Google Health data
         </Button>
       {/snippet}

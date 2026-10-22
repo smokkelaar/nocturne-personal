@@ -46,10 +46,10 @@ public class PlatformSettingsController : ControllerBase
 
     /// <summary>
     /// Upserts platform settings for a category. Blank fields preserve existing values.
-    /// Returns restartRequired: true — the SvelteKit frontend must be restarted for changes to take effect.
+    /// Privacy publication takes effect immediately; bot credentials require a frontend restart.
     /// </summary>
     [HttpPut("{category}")]
-    [RemoteCommand(Invalidates = ["GetAll", "Get"])]
+    [RemoteCommand(Invalidates = ["GetAll", "Get", "GetPublicPrivacySettings"])]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
     public async Task<IActionResult> Upsert(string category, [FromBody] UpsertPlatformSettingsRequest request)
@@ -57,14 +57,14 @@ public class PlatformSettingsController : ControllerBase
         var (success, errors) = await _service.UpsertAsync(category, request.Enabled, request.Fields);
         if (!success)
             return UnprocessableEntity(new { errors });
-        return Ok(new { restartRequired = true });
+        return Ok(new { restartRequired = category != "privacy" });
     }
 
     /// <summary>
     /// Deletes platform settings for a category, removing all stored credentials.
     /// </summary>
     [HttpDelete("{category}")]
-    [RemoteCommand(Invalidates = ["GetAll", "Get"])]
+    [RemoteCommand(Invalidates = ["GetAll", "Get", "GetPublicPrivacySettings"])]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete(string category)

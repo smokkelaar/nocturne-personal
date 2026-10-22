@@ -122,6 +122,19 @@ is hidden until that configuration is repaired.
 Your imported history is kept. An import-cursor reset re-reads historical data; it does not repair
 OAuth credentials or an invalid callback URL, so it is not the remedy for this connection block.
 
+### Home Assistant apps
+
+For a Home Assistant installation, use the Nocturne app's **Configuration** tab and restart the
+app through Home Assistant. The Docker Compose command above is for a Compose installation.
+The Home Assistant app must expose Google client settings and pass them to the API. If there
+are no Google settings, changing Google's callback alone cannot enable the connector; the app
+needs an update that supports the server-level configuration.
+
+For example, [Nocturne Personal Release 1.0.84101](https://github.com/smokkelaar/nocturne-home-assistant/blob/main/nocturne_personal/config.json)
+does not expose Google client options, and its API environment builder does not pass these
+settings. Credentials previously saved through a tenant form do not configure the new
+server-level Google client.
+
 ### 3. Who can connect
 
 Google limits what an unverified app can do, and these limits apply to your client:

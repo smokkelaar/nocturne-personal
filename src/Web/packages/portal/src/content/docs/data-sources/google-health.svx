@@ -80,6 +80,25 @@ secret are set and Nocturne has a redirect URI, from `BASE_DOMAIN` or the variab
 
 ### 3. Who can connect
 
+Before requesting Google verification, publish this installation's privacy information in
+**Platform Administration > Integrations > Public privacy policy**. Enter the public app name,
+operator name, contact email, hosting and access practices, recipients, retention, backup
+handling and effective date (`YYYY-MM-DD`). Review the Google Health Limited Use commitments
+on the page before enabling publication. Every field in this category becomes public; never
+enter credentials, private account information or health records.
+
+Use your installation's public `/about` URL as the Google application home page and `/privacy`
+as its privacy policy URL. Both pages must be reachable without signing in, including through
+any reverse proxy. The pages include links to the source code. Save changes without restarting;
+disabling publication withdraws the configured details and removing the category clears them.
+Blank fields on an existing entry preserve saved values. Google still decides whether the app
+and its actual practices meet verification requirements.
+
+Describe backups accurately: tenant permissions apply through Nocturne and survive a full
+restore, but do not by themselves prevent a privileged host administrator from reading a raw
+database or backup. State actual backup retention and how deletion requests are handled after
+restoration; do not promise protection that the hosting setup does not provide.
+
 Google limits what an unverified app can do, and these limits apply to your client:
 
 - While the consent screen's publishing status is **Testing**, only the Google accounts you add

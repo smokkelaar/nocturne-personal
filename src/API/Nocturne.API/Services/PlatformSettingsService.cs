@@ -1,4 +1,6 @@
 using System.Text.Json;
+using System.Globalization;
+using System.Net.Mail;
 using System.Text.RegularExpressions;
 using Microsoft.EntityFrameworkCore;
 using Nocturne.Core.Contracts.Auth;
@@ -40,6 +42,17 @@ public class PlatformSettingsService
     /// </summary>
     private static readonly Dictionary<string, List<FieldDefinition>> CategorySchemas = new()
     {
+        ["privacy"] =
+        [
+            new("appName", "Application name", true),
+            new("operatorName", "Operator name", true),
+            new("contactEmail", "Public privacy contact email", true),
+            new("hosting", "Hosting and security", true),
+            new("sharing", "Recipients and sharing", true),
+            new("retention", "Retention and deletion", true),
+            new("backups", "Backups and their retention", true),
+            new("effectiveDate", "Effective date (YYYY-MM-DD)", true),
+        ],
         ["discord"] =
         [
             new("botToken", "Bot Token", true),
@@ -108,10 +121,53 @@ public class PlatformSettingsService
         foreach (var (key, value) in fields)
         {
             if (string.IsNullOrWhiteSpace(value)) continue;
+            if (category == "privacy")
+            {
+                var limit = key is "appName" or "operatorName" or "contactEmail" ? 256 : 4000;
+                if (value.Length > limit)
+                    errors[key] = "Value is too long";
+                if (key == "contactEmail" && (!MailAddress.TryCreate(value, out var email) ||
+                    email.Address != value || value.Contains('\r') || value.Contains('\n')))
+                    errors[key] = "Enter a valid email address without a display name";
+                if (key == "effectiveDate" && !DateOnly.TryParseExact(value, "yyyy-MM-dd",
+                        CultureInfo.InvariantCulture, DateTimeStyles.None, out _))
+                    errors[key] = "Use YYYY-MM-DD";
+            }
             if (FieldFormats.TryGetValue((category, key), out var format) && !format.Pattern.IsMatch(value))
                 errors[key] = format.Message;
         }
         return errors;
+    }
+
+    public static PublicPrivacySettings PublishedPrivacy(bool enabled, IReadOnlyDictionary<string, string> fields)
+    {
+        if (!enabled || CategorySchemas["privacy"].Any(field =>
+                !fields.TryGetValue(field.Name, out var value) || string.IsNullOrWhiteSpace(value)) ||
+            ValidateFormats("privacy", fields).Count > 0)
+            return new();
+
+        return new()
+        {
+            Published = true,
+            AppName = fields["appName"],
+            OperatorName = fields["operatorName"],
+            ContactEmail = fields["contactEmail"],
+            Hosting = fields["hosting"],
+            Sharing = fields["sharing"],
+            Retention = fields["retention"],
+            Backups = fields["backups"],
+            EffectiveDate = fields["effectiveDate"],
+        };
+    }
+
+    public async Task<PublicPrivacySettings> GetPublishedPrivacyAsync()
+    {
+        await using var db = await _contexts.CreateAsync();
+        var entity = await db.PlatformSettings.AsNoTracking()
+            .SingleOrDefaultAsync(setting => setting.Category == "privacy" && setting.Enabled);
+        if (entity is null || !_encryption.IsConfigured) return new();
+        var encrypted = JsonSerializer.Deserialize<Dictionary<string, string>>(entity.EncryptedJson, JsonOptions) ?? [];
+        return PublishedPrivacy(true, _encryption.DecryptSecrets(encrypted));
     }
 
     public async Task<List<PlatformSettingsSummary>> GetAllAsync()
@@ -156,7 +212,8 @@ public class PlatformSettingsService
         if (!_encryption.IsConfigured)
             return [];
 
-        var entities = await db.PlatformSettings.AsNoTracking().ToListAsync();
+        var entities = await db.PlatformSettings.AsNoTracking()
+            .Where(entity => entity.Category != "privacy").ToListAsync();
         var results = new List<PlatformCredentials>();
         foreach (var entity in entities)
         {

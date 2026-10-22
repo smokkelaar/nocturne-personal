@@ -109,6 +109,11 @@ export function connectorArticles(): HelpArticle[] {
       text: "Check GOOGLE_HEALTH_CLIENT_ID, GOOGLE_HEALTH_CLIENT_SECRET, and GOOGLE_HEALTH_REDIRECT_URI in the running API's environment without sharing their secret values. In the same Google Cloud OAuth client, add the exact public server callback under Authorized redirect URIs: https://YOUR-HOST:YOUR-PORT/api/v4/google-health/oauth/callback (omit the port for standard HTTPS). If an older configuration uses /settings/connectors/google-health/callback, replace the server setting and register the new API callback in Google. Recreate the API container with the corrected environment, reload this page, and choose Connect Google Health once it appears. Then review the inventory and save your import selection. If Unavailable remains, check the API environment and server logs; if Google reports redirect_uri_mismatch, compare scheme, hostname, port, and path exactly.",
     },
     {
+      title:
+        "Home Assistant app: check whether Google client settings are supported",
+      text: "With Home Assistant, configure and restart the Nocturne app through Home Assistant rather than using Docker Compose commands. The app must offer Google client ID and client secret settings and pass them, together with the correct redirect URI, to the Nocturne API. If its Configuration tab has no Google settings, changing the callback in Google Cloud alone cannot enable the connector. The Home Assistant app needs an update that supports the server-level Google client configuration. For example, Nocturne Personal Release 1.0.84101 does not expose or pass these settings. Existing credentials saved through an older tenant form do not supply the new server configuration.",
+    },
+    {
       title: "Ongoing sync and historical progress",
       text: "Automatic sync uses the default interval shown below unless your server changes it. Managed imports resume recent data from a saved watermark with an overlap, then work backwards through older calendar months towards Import data from. Large or failing periods can be split into smaller windows. Progress describes stages and pages, not an exact remaining time. A restart resumes the saved cursor. Completed older months are not continually rescanned for data that Google uploads late.",
     },

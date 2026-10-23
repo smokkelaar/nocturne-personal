@@ -237,7 +237,7 @@ public class GoogleHealthWorkerTests
         services.AddScoped<ITenantAccessor, TenantAccessor>();
         using var provider = services.BuildServiceProvider();
         using var worker = new GoogleHealthWorker(provider.GetRequiredService<IServiceScopeFactory>(),
-            coordinator, Options.Create(new GoogleHealthPlatformOptions()), NullLogger<GoogleHealthWorker>.Instance);
+            coordinator, new ConfigurationGoogleHealthPlatformSource(Options.Create(new GoogleHealthPlatformOptions())), NullLogger<GoogleHealthWorker>.Instance);
         Assert.True(await coordinator.QueueAsync(tenant, 1, default));
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
         await worker.StartAsync(default);
@@ -252,13 +252,13 @@ public class GoogleHealthWorkerTests
         configurations.VerifyNoOtherCalls();
     }
 
-    private static readonly IOptions<GoogleHealthPlatformOptions> ConfiguredPlatform = Options.Create(
+    private static readonly IGoogleHealthPlatformSource ConfiguredPlatform = new ConfigurationGoogleHealthPlatformSource(Options.Create(
         new GoogleHealthPlatformOptions
         {
             ClientId = "synthetic.apps.googleusercontent.com",
             ClientSecret = "synthetic-secret",
             RedirectUri = "https://example.test" + GoogleHealthPlatformOptions.CallbackPath
-        });
+        }));
 
     private sealed class TenantAccessor : ITenantAccessor
     {

@@ -5,7 +5,7 @@ export function connectorArticles(): HelpArticle[] {
   const google = guide(
     "/settings/connectors/google-health",
     "Google Health",
-    "First install the Google Health app and make sure you can see the data you want to share there. Then follow the Google setup wizard and connect that same account to Nocturne.",
+    "First install the Google Health app and make sure you can see the data you want to share there. The instance administrator configures one Google client under Settings → Admin → Google Health. Each user then connects their own account.",
     "Your device or source app sends data to Google Health. Nocturne reads the selected account through Google's API and stores supported records in this tenant's existing histories. A Google Cloud project provides permission to use the API; it does not generate health data.",
     "Open Settings → Connectors & Apps → Google Health. Keep the Google Cloud console in another tab. The reference panel below shows the callback path, requested read permissions, supported destinations, and default sync interval from this running version.",
     "Imported steps, heart rate, and sleep appear in their reports. Weight appears in Patient Record → Weight history. The supported-destinations table below follows the connector's actual capability catalogue.",
@@ -50,7 +50,7 @@ export function connectorArticles(): HelpArticle[] {
     },
     {
       title: "Open Google's setup wizard",
-      text: "Open the Google Setup documentation linked below. Click its blue button labelled Enable the API and get an OAuth 2.0 Client ID. Use a Google account that can manage your Cloud project. If Google restricts access for your project, resolve that eligibility before continuing. Leave Nocturne open in another tab.",
+      text: "This and the following Google Cloud steps are for the instance administrator, once per server. Regular users can skip to connecting their own account when the server is ready. Open the Google Setup documentation linked below. Click Enable the API and get an OAuth 2.0 Client ID. Use an account that manages the Cloud project and leave Nocturne open in another tab.",
       links: [
         {
           title: "Open the Google Setup documentation",
@@ -72,7 +72,7 @@ export function connectorArticles(): HelpArticle[] {
     },
     {
       title: "Download the client configuration and fill Nocturne's fields",
-      text: "Download the Client configuration/Credentials JSON. Copy Client ID and Client secret into the fields of the same names on Nocturne's Google Health page. The secret is required on first setup; leave it empty only when keeping a secret that was already saved. Check the Callback URL and choose Import data from for the history you want. Keep this form ready while you add the test user in the next step. Store the downloaded file privately: it contains credentials.",
+      text: "Download the Client configuration/Credentials JSON. Open Settings → Admin → Google Health, enable Use Admin overrides and enter Client ID and Client secret. The secret is required on first setup unless deployment configuration supplies it; blank input keeps an existing Admin secret. Check the effective callback URL and save. Admin values take priority over ENV without a restart. The panel shows both sources without revealing secrets. Store the downloaded file privately.",
     },
     {
       title: "Add the Google account as a test user",
@@ -84,7 +84,7 @@ export function connectorArticles(): HelpArticle[] {
     },
     {
       title: "Save and connect with the same account",
-      text: "Return to the prepared Nocturne form and choose Save and connect (or Sign in with Google for an existing configuration). Choose the Google Health account you added as a test user, review and grant the read permissions for the data you want, and confirm you return to Nocturne. Testing grants can expire after seven days and then need reconnection.",
+      text: "Open Settings → Connectors & Apps → Google Health and choose Connect Google Health. Choose the account that holds your Google Health data, review and grant the read permissions, and confirm you return to Nocturne. In Testing, this account must be a test user and grants expire after seven days. In Production removes that testing-specific expiry, but unverified apps still show a warning and have a user cap. Account linked and last successful sync are separate from the administrator's Ready to connect configuration status.",
     },
     {
       title: "Review the inventory and start an import",

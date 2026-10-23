@@ -1187,6 +1187,29 @@ public class GoogleHealthTests : IDisposable
         Assert.False(store.Secrets.ContainsKey("refreshToken"));
     }
 
+    [Theory]
+    [InlineData("clientId")]
+    [InlineData("clientSecret")]
+    [InlineData("redirectUri")]
+    public async Task Changing_platform_credentials_during_sign_in_requires_a_fresh_flow(string field)
+    {
+        var store = new TestConnectorStore();
+        var platform = Platform();
+        var service = Service(store, new StubHandler(_ => throw new InvalidOperationException("Google must not be called with changed credentials.")), Guid.NewGuid(), platform: platform);
+        var subject = Guid.NewGuid();
+        await service.SaveAsync(Options(), subject, default);
+        var query = QueryHelpers.ParseQuery(new Uri((await service.StartAsync(subject, "alice", default)).Url).Query);
+        if (field == "clientId") platform.ClientId = "replacement.apps.googleusercontent.com";
+        if (field == "clientSecret") platform.ClientSecret = "replacement-secret";
+        if (field == "redirectUri") platform.RedirectUri = "https://other.example" + GoogleHealthPlatformOptions.CallbackPath;
+        var error = await Assert.ThrowsAsync<GoogleHealthException>(() => service.CompleteAsync(new()
+        {
+            State = query["state"].ToString(), Code = "synthetic-code",
+        }, subject, default));
+        Assert.Equal("expired_signin", error.Message);
+        Assert.False(store.Secrets.ContainsKey("refreshToken"));
+    }
+
     [Fact]
     public async Task The_session_records_its_client_and_a_rotated_instance_client_requires_reconnection()
     {
@@ -1616,7 +1639,7 @@ public class GoogleHealthTests : IDisposable
         Nocturne.Core.Models.V4.BiologicalSex? sex = null,
         IGoogleHealthGrantHolders? holders = null)
     {
-        var platformOptions = Microsoft.Extensions.Options.Options.Create(platform ?? Platform());
+        var platformOptions = new ConfigurationGoogleHealthPlatformSource(Microsoft.Extensions.Options.Options.Create(platform ?? Platform()));
         var tenant = new Mock<ITenantAccessor>();
         tenant.SetupGet(value => value.IsResolved).Returns(true);
         tenant.SetupGet(value => value.TenantId).Returns(tenantId);

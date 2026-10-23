@@ -67,7 +67,21 @@ afterwards.
 
 ### 2. Give Nocturne the client
 
-Set these in your `.env` and restart Nocturne:
+The instance administrator can open the account/name menu at the bottom, choose
+**Admin**, and open **Google Health** at `/settings/admin`. Enable **Use Admin overrides**,
+enter the client ID and matching secret, and save. Use the displayed effective callback URL
+in Google Cloud; enter a redirect override only when the deployment cannot derive the right
+public address. Admin changes are encrypted in the instance database and apply without a restart.
+
+The panel shows whether each value exists in ENV, deployment configuration and Admin, and
+which source is active. An enabled, nonempty Admin value takes priority per field. Otherwise
+Nocturne uses deployment configuration, with the callback derived from `BASE_DOMAIN` when possible.
+Blank input keeps a saved Admin value; select **Clear this Admin value** to remove it on save.
+Turning Admin overrides off preserves them but uses deployment values. Removing overrides
+clears them and restores deployment fallback. A different client ID needs its matching secret.
+
+ENV configuration remains supported. Set these in your `.env` and restart Nocturne when
+changing deployment variables:
 
 | Variable | Value |
 |----------|-------|
@@ -77,6 +91,18 @@ Set these in your `.env` and restart Nocturne:
 
 The **Connect Google Health** button appears for everyone on the server once the client ID and
 secret are set and Nocturne has a redirect URI, from `BASE_DOMAIN` or the variable.
+
+Admin does not rewrite Home Assistant/Docker's environment or an arbitrary `.env` file.
+Those values are provided by the deployment and can be shared with other services. Changing
+only this process's environment would not update the source or survive container recreation.
+The panel therefore reports both sources and any difference while the same effective
+configuration is used for sign-in, token refresh and synchronization on every API replica.
+Keep the instance encryption key and database available when restoring Admin settings.
+
+**Ready to connect** validates the presence and format of settings, not Google's acceptance of
+the client secret. **Your Google connection** separately shows the current tenant's saved
+account authorization, connector errors and last successful synchronization. Open the connector
+to authorize an account or refresh inventory against Google. Other users' accounts are not shown.
 
 ### 3. Who can connect
 

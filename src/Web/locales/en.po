@@ -92,6 +92,7 @@ msgid "Never"
 msgstr "Never"
 
 #: src/lib/components/WebSocketStatus.svelte
+#: src/lib/components/admin/GoogleHealthAdminPanel.svelte
 #: src/lib/components/clock/ClockFacePreview.svelte
 #: src/lib/components/dashboard/widgets/ConnectionStatusWidget.svelte
 #: src/lib/components/tenants/TenantsOverview.svelte
@@ -941,6 +942,7 @@ msgstr "My Provider"
 msgid "Issuer URL"
 msgstr "Issuer URL"
 
+#: src/lib/components/admin/GoogleHealthAdminPanel.svelte
 #: src/lib/components/admin/OidcProviderDialog.svelte
 msgid "Client ID"
 msgstr "Client ID"
@@ -3643,6 +3645,7 @@ msgid "Add Food"
 msgstr "Add Food"
 
 #: ../cms/src/editor/ContentEditor.svelte
+#: src/lib/components/admin/GoogleHealthAdminPanel.svelte
 #: src/lib/components/admin/IntegrationsTabContent.svelte
 #: src/lib/components/food/AddFoodDialog.svelte
 #: src/lib/components/meal-matching/MealMatchReviewDialog.svelte
@@ -7201,6 +7204,8 @@ msgstr "Activity"
 msgid "Loop"
 msgstr "Loop"
 
+#: src/lib/components/admin/GoogleHealthAdminPanel.svelte
+#: src/lib/components/admin/GoogleHealthAdminPanel.svelte
 #: src/lib/components/admin/IntegrationsTabContent.svelte
 #: src/lib/components/status-pills/TrackerPill.svelte
 #: src/routes/(authenticated)/settings/profile/+page.svelte
@@ -25592,11 +25597,13 @@ msgstr "Minutes since carbs"
 msgid "min ago"
 msgstr "min ago"
 
+#: src/lib/components/admin/GoogleHealthAdminPanel.svelte
 #: src/lib/components/connectors/GoogleHealthSourceRow.svelte
 #: src/lib/components/connectors/ServerConnectorsCard.svelte
 #: src/lib/components/help/HelpReference.svelte
 #: src/lib/components/help/HelpReference.svelte
 #: src/lib/help/connectors.svelte.ts
+#: src/routes/(authenticated)/settings/admin/+page.svelte
 #: src/routes/(authenticated)/settings/connectors/google-health/google-health-page.svelte
 msgid "Google Health"
 msgstr "Google Health"
@@ -29631,9 +29638,8 @@ msgstr "Unpaired readings are excluded. A wider tolerance allows paired readings
 msgid "redirect_uri_mismatch: copy the complete Nocturne Callback URL into the same OAuth client's redirect list. Access blocked or test-user errors: check Audience, exact email, enabled API, and current Google access eligibility. ACCOUNT_NOT_LINKED: complete the Google Health app profile with this account. Missing permission: sign in again and grant the required read access. An expired test grant: reconnect; production verification and quota rules belong to Google and can change."
 msgstr "redirect_uri_mismatch: copy the complete Nocturne Callback URL into the same OAuth client's redirect list. Access blocked or test-user errors: check Audience, exact email, enabled API, and current Google access eligibility. ACCOUNT_NOT_LINKED: complete the Google Health app profile with this account. Missing permission: sign in again and grant the required read access. An expired test grant: reconnect; production verification and quota rules belong to Google and can change."
 
-#: src/lib/help/connectors.svelte.ts
-msgid "First install the Google Health app and make sure you can see the data you want to share there. Then follow the Google setup wizard and connect that same account to Nocturne."
-msgstr "First install the Google Health app and make sure you can see the data you want to share there. Then follow the Google setup wizard and connect that same account to Nocturne."
+#~ msgid "First install the Google Health app and make sure you can see the data you want to share there. Then follow the Google setup wizard and connect that same account to Nocturne."
+#~ msgstr "First install the Google Health app and make sure you can see the data you want to share there. Then follow the Google setup wizard and connect that same account to Nocturne."
 
 #: src/lib/help/connectors.svelte.ts
 msgid "Install Google Health and check your data"
@@ -29671,9 +29677,8 @@ msgstr "Google: device and app connections, including Garmin"
 msgid "Open Google's setup wizard"
 msgstr "Open Google's setup wizard"
 
-#: src/lib/help/connectors.svelte.ts
-msgid "Open the Google Setup documentation linked below. Click its blue button labelled Enable the API and get an OAuth 2.0 Client ID. Use a Google account that can manage your Cloud project. If Google restricts access for your project, resolve that eligibility before continuing. Leave Nocturne open in another tab."
-msgstr "Open the Google Setup documentation linked below. Click its blue button labelled Enable the API and get an OAuth 2.0 Client ID. Use a Google account that can manage your Cloud project. If Google restricts access for your project, resolve that eligibility before continuing. Leave Nocturne open in another tab."
+#~ msgid "Open the Google Setup documentation linked below. Click its blue button labelled Enable the API and get an OAuth 2.0 Client ID. Use a Google account that can manage your Cloud project. If Google restricts access for your project, resolve that eligibility before continuing. Leave Nocturne open in another tab."
+#~ msgstr "Open the Google Setup documentation linked below. Click its blue button labelled Enable the API and get an OAuth 2.0 Client ID. Use a Google account that can manage your Cloud project. If Google restricts access for your project, resolve that eligibility before continuing. Leave Nocturne open in another tab."
 
 #: src/lib/help/connectors.svelte.ts
 msgid "Open the Google Setup documentation"
@@ -29703,9 +29708,8 @@ msgstr "For Where are you calling from? select Web Server. In the manual Clients
 msgid "Download the client configuration and fill Nocturne's fields"
 msgstr "Download the client configuration and fill Nocturne's fields"
 
-#: src/lib/help/connectors.svelte.ts
-msgid "Download the Client configuration/Credentials JSON. Copy Client ID and Client secret into the fields of the same names on Nocturne's Google Health page. The secret is required on first setup; leave it empty only when keeping a secret that was already saved. Check the Callback URL and choose Import data from for the history you want. Keep this form ready while you add the test user in the next step. Store the downloaded file privately: it contains credentials."
-msgstr "Download the Client configuration/Credentials JSON. Copy Client ID and Client secret into the fields of the same names on Nocturne's Google Health page. The secret is required on first setup; leave it empty only when keeping a secret that was already saved. Check the Callback URL and choose Import data from for the history you want. Keep this form ready while you add the test user in the next step. Store the downloaded file privately: it contains credentials."
+#~ msgid "Download the Client configuration/Credentials JSON. Copy Client ID and Client secret into the fields of the same names on Nocturne's Google Health page. The secret is required on first setup; leave it empty only when keeping a secret that was already saved. Check the Callback URL and choose Import data from for the history you want. Keep this form ready while you add the test user in the next step. Store the downloaded file privately: it contains credentials."
+#~ msgstr "Download the Client configuration/Credentials JSON. Copy Client ID and Client secret into the fields of the same names on Nocturne's Google Health page. The secret is required on first setup; leave it empty only when keeping a secret that was already saved. Check the Callback URL and choose Import data from for the history you want. Keep this form ready while you add the test user in the next step. Store the downloaded file privately: it contains credentials."
 
 #: src/lib/help/connectors.svelte.ts
 msgid "Add the Google account as a test user"
@@ -29727,9 +29731,8 @@ msgstr "In Google's Data Access page choose Add or remove scopes, select the Goo
 msgid "Save and connect with the same account"
 msgstr "Save and connect with the same account"
 
-#: src/lib/help/connectors.svelte.ts
-msgid "Return to the prepared Nocturne form and choose Save and connect (or Sign in with Google for an existing configuration). Choose the Google Health account you added as a test user, review and grant the read permissions for the data you want, and confirm you return to Nocturne. Testing grants can expire after seven days and then need reconnection."
-msgstr "Return to the prepared Nocturne form and choose Save and connect (or Sign in with Google for an existing configuration). Choose the Google Health account you added as a test user, review and grant the read permissions for the data you want, and confirm you return to Nocturne. Testing grants can expire after seven days and then need reconnection."
+#~ msgid "Return to the prepared Nocturne form and choose Save and connect (or Sign in with Google for an existing configuration). Choose the Google Health account you added as a test user, review and grant the read permissions for the data you want, and confirm you return to Nocturne. Testing grants can expire after seven days and then need reconnection."
+#~ msgstr "Return to the prepared Nocturne form and choose Save and connect (or Sign in with Google for an existing configuration). Choose the Google Health account you added as a test user, review and grant the read permissions for the data you want, and confirm you return to Nocturne. Testing grants can expire after seven days and then need reconnection."
 
 #: src/lib/help/connectors.svelte.ts
 msgid "In the available-data table, Found means records exist at the source, not that they have been imported. Select supported types and choose Save selection and import. Save import settings only saves; Refresh inventory only checks availability. Not scanned needs a refreshed inventory; No permission needs the relevant consent; No destination yet is unsupported. Leaving the page does not cancel the server import."
@@ -32137,3 +32140,242 @@ msgstr "View explanation: recent treatments"
 #: src/lib/components/help/HelpBrowser.svelte
 msgid "Loading dashboard examples..."
 msgstr "Loading dashboard examples..."
+
+#: src/lib/help/connectors.svelte.ts
+msgid "First install the Google Health app and make sure you can see the data you want to share there. The instance administrator configures one Google client under Settings → Admin → Google Health. Each user then connects their own account."
+msgstr "First install the Google Health app and make sure you can see the data you want to share there. The instance administrator configures one Google client under Settings → Admin → Google Health. Each user then connects their own account."
+
+#: src/lib/help/connectors.svelte.ts
+msgid "This and the following Google Cloud steps are for the instance administrator, once per server. Regular users can skip to connecting their own account when the server is ready. Open the Google Setup documentation linked below. Click Enable the API and get an OAuth 2.0 Client ID. Use an account that manages the Cloud project and leave Nocturne open in another tab."
+msgstr "This and the following Google Cloud steps are for the instance administrator, once per server. Regular users can skip to connecting their own account when the server is ready. Open the Google Setup documentation linked below. Click Enable the API and get an OAuth 2.0 Client ID. Use an account that manages the Cloud project and leave Nocturne open in another tab."
+
+#: src/lib/help/connectors.svelte.ts
+msgid "Download the Client configuration/Credentials JSON. Open Settings → Admin → Google Health, enable Use Admin overrides and enter Client ID and Client secret. The secret is required on first setup unless deployment configuration supplies it; blank input keeps an existing Admin secret. Check the effective callback URL and save. Admin values take priority over ENV without a restart. The panel shows both sources without revealing secrets. Store the downloaded file privately."
+msgstr "Download the Client configuration/Credentials JSON. Open Settings → Admin → Google Health, enable Use Admin overrides and enter Client ID and Client secret. The secret is required on first setup unless deployment configuration supplies it; blank input keeps an existing Admin secret. Check the effective callback URL and save. Admin values take priority over ENV without a restart. The panel shows both sources without revealing secrets. Store the downloaded file privately."
+
+#: src/lib/help/connectors.svelte.ts
+msgid "Open Settings → Connectors & Apps → Google Health and choose Connect Google Health. Choose the account that holds your Google Health data, review and grant the read permissions, and confirm you return to Nocturne. In Testing, this account must be a test user and grants expire after seven days. In Production removes that testing-specific expiry, but unverified apps still show a warning and have a user cap. Account linked and last successful sync are separate from the administrator's Ready to connect configuration status."
+msgstr "Open Settings → Connectors & Apps → Google Health and choose Connect Google Health. Choose the account that holds your Google Health data, review and grant the read permissions, and confirm you return to Nocturne. In Testing, this account must be a test user and grants expire after seven days. In Production removes that testing-specific expiry, but unverified apps still show a warning and have a user cap. Account linked and last successful sync are separate from the administrator's Ready to connect configuration status."
+
+#: src/lib/components/admin/GoogleHealthAdminPanel.svelte
+msgid "Client secret"
+msgstr "Client secret"
+
+#: src/lib/components/admin/GoogleHealthAdminPanel.svelte
+msgid "Redirect URI"
+msgstr "Redirect URI"
+
+#: src/lib/components/admin/GoogleHealthAdminPanel.svelte
+msgid "Configure the instance encryption key before saving credentials."
+msgstr "Configure the instance encryption key before saving credentials."
+
+#: src/lib/components/admin/GoogleHealthAdminPanel.svelte
+msgid "The client ID must end in .apps.googleusercontent.com."
+msgstr "The client ID must end in .apps.googleusercontent.com."
+
+#: src/lib/components/admin/GoogleHealthAdminPanel.svelte
+msgid "Use an HTTPS URL ending in /api/v4/google-health/oauth/callback, without a query or fragment."
+msgstr "Use an HTTPS URL ending in /api/v4/google-health/oauth/callback, without a query or fragment."
+
+#: src/lib/components/admin/GoogleHealthAdminPanel.svelte
+msgid "Provide the required client ID, client secret and callback URL in Admin or deployment configuration."
+msgstr "Provide the required client ID, client secret and callback URL in Admin or deployment configuration."
+
+#: src/lib/components/admin/GoogleHealthAdminPanel.svelte
+msgid "Enter the matching client secret when changing to a different client ID."
+msgstr "Enter the matching client secret when changing to a different client ID."
+
+#: src/lib/components/admin/GoogleHealthAdminPanel.svelte
+msgid "Could not load Google Health administration settings. Try again."
+msgstr "Could not load Google Health administration settings. Try again."
+
+#: src/lib/components/admin/GoogleHealthAdminPanel.svelte
+msgid "Could not save these settings. Check the values and try again."
+msgstr "Could not save these settings. Check the values and try again."
+
+#: src/lib/components/admin/GoogleHealthAdminPanel.svelte
+msgid "Remove all Google Health Admin overrides and use deployment settings instead? Existing accounts may need to reconnect if the effective client changes."
+msgstr "Remove all Google Health Admin overrides and use deployment settings instead? Existing accounts may need to reconnect if the effective client changes."
+
+#: src/lib/components/admin/GoogleHealthAdminPanel.svelte
+msgid "Could not remove the Admin overrides. Try again."
+msgstr "Could not remove the Admin overrides. Try again."
+
+#: src/lib/components/admin/GoogleHealthAdminPanel.svelte
+msgid "Configure one OAuth client for this server. Each user still connects their own Google account."
+msgstr "Configure one OAuth client for this server. Each user still connects their own Google account."
+
+#: src/lib/components/admin/GoogleHealthAdminPanel.svelte
+msgid "Loading Google Health settings..."
+msgstr "Loading Google Health settings..."
+
+#: src/lib/components/admin/GoogleHealthAdminPanel.svelte
+msgid "Settings saved and active. No restart is needed."
+msgstr "Settings saved and active. No restart is needed."
+
+#: src/lib/components/admin/GoogleHealthAdminPanel.svelte
+msgid "Ready to connect"
+msgstr "Ready to connect"
+
+#: src/lib/components/admin/GoogleHealthAdminPanel.svelte
+msgid "Configuration incomplete"
+msgstr "Configuration incomplete"
+
+#: src/lib/components/admin/GoogleHealthAdminPanel.svelte
+msgid "Admin overrides take priority"
+msgstr "Admin overrides take priority"
+
+#: src/lib/components/admin/GoogleHealthAdminPanel.svelte
+msgid "Using deployment settings"
+msgstr "Using deployment settings"
+
+#: src/lib/components/admin/GoogleHealthAdminPanel.svelte
+msgid "ENV: set"
+msgstr "ENV: set"
+
+#: src/lib/components/admin/GoogleHealthAdminPanel.svelte
+msgid "ENV: not set"
+msgstr "ENV: not set"
+
+#: src/lib/components/admin/GoogleHealthAdminPanel.svelte
+msgid "Deployment: set"
+msgstr "Deployment: set"
+
+#: src/lib/components/admin/GoogleHealthAdminPanel.svelte
+msgid "Deployment: not set"
+msgstr "Deployment: not set"
+
+#: src/lib/components/admin/GoogleHealthAdminPanel.svelte
+msgid "Admin: saved"
+msgstr "Admin: saved"
+
+#: src/lib/components/admin/GoogleHealthAdminPanel.svelte
+msgid "Admin: not set"
+msgstr "Admin: not set"
+
+#: src/lib/components/admin/GoogleHealthAdminPanel.svelte
+msgid "Active: Admin"
+msgstr "Active: Admin"
+
+#: src/lib/components/admin/GoogleHealthAdminPanel.svelte
+msgid "Active: deployment"
+msgstr "Active: deployment"
+
+#: src/lib/components/admin/GoogleHealthAdminPanel.svelte
+msgid "Active: BASE_DOMAIN"
+msgstr "Active: BASE_DOMAIN"
+
+#: src/lib/components/admin/GoogleHealthAdminPanel.svelte
+msgid "Active: missing"
+msgstr "Active: missing"
+
+#: src/lib/components/admin/GoogleHealthAdminPanel.svelte
+msgid "The Admin and deployment values differ. The active source above determines which one is used."
+msgstr "The Admin and deployment values differ. The active source above determines which one is used."
+
+#. 0: field.deploymentValue || "Not set"
+#: src/lib/components/admin/GoogleHealthAdminPanel.svelte
+msgid "Deployment value: {0}"
+msgstr "Deployment value: {0}"
+
+#. 0: field.effectiveValue || "Not set"
+#: src/lib/components/admin/GoogleHealthAdminPanel.svelte
+msgid "Effective value: {0}"
+msgstr "Effective value: {0}"
+
+#: src/lib/components/admin/GoogleHealthAdminPanel.svelte
+msgid "Leave blank to keep the saved secret"
+msgstr "Leave blank to keep the saved secret"
+
+#: src/lib/components/admin/GoogleHealthAdminPanel.svelte
+msgid "Enter an Admin override"
+msgstr "Enter an Admin override"
+
+#: src/lib/components/admin/GoogleHealthAdminPanel.svelte
+msgid "<0/> Clear this Admin value on save and use deployment fallback"
+msgstr "<0/> Clear this Admin value on save and use deployment fallback"
+
+#: src/lib/components/admin/GoogleHealthAdminPanel.svelte
+msgid "Save Google Health settings"
+msgstr "Save Google Health settings"
+
+#: src/lib/components/admin/GoogleHealthAdminPanel.svelte
+msgid "Remove Admin overrides"
+msgstr "Remove Admin overrides"
+
+#: src/lib/components/admin/GoogleHealthAdminPanel.svelte
+msgid "<0/> Use Admin overrides"
+msgstr "<0/> Use Admin overrides"
+
+#: src/lib/components/admin/GoogleHealthAdminPanel.svelte
+msgid "For each field: an enabled Admin value wins, otherwise Nocturne uses ENV or deployment configuration. The callback can also come from BASE_DOMAIN. Turning overrides off keeps the saved values for later."
+msgstr "For each field: an enabled Admin value wins, otherwise Nocturne uses ENV or deployment configuration. The callback can also come from BASE_DOMAIN. Turning overrides off keeps the saved values for later."
+
+#: src/lib/components/admin/GoogleHealthAdminPanel.svelte
+msgid "Changing the client ID may require users to reconnect. Imported history is kept. A different client ID needs its matching secret."
+msgstr "Changing the client ID may require users to reconnect. Imported history is kept. A different client ID needs its matching secret."
+
+#: src/lib/components/admin/GoogleHealthAdminPanel.svelte
+msgid "Configure the instance encryption key before saving Admin credentials. Deployment settings can still be used."
+msgstr "Configure the instance encryption key before saving Admin credentials. Deployment settings can still be used."
+
+#: src/lib/components/admin/GoogleHealthAdminPanel.svelte
+msgid "Ready means the required settings are present and valid in format. Google confirms the credentials when an account connects."
+msgstr "Ready means the required settings are present and valid in format. Google confirms the credentials when an account connects."
+
+#: src/lib/components/admin/GoogleHealthAdminPanel.svelte
+msgid "ENV remains managed by Home Assistant, Docker or your deployment. Saving here does not rewrite that external configuration. Admin overrides persist across restarts and apply to every API replica. Removing overrides restores the deployment fallback."
+msgstr "ENV remains managed by Home Assistant, Docker or your deployment. Saving here does not rewrite that external configuration. Admin overrides persist across restarts and apply to every API replica. Removing overrides restores the deployment fallback."
+
+#: src/lib/components/admin/GoogleHealthAdminPanel.svelte
+msgid "Google Cloud clients"
+msgstr "Google Cloud clients"
+
+#: src/lib/components/admin/GoogleHealthAdminPanel.svelte
+msgid "Google setup guide"
+msgstr "Google setup guide"
+
+#: src/lib/components/admin/GoogleHealthAdminPanel.svelte
+msgid "Your Google connection"
+msgstr "Your Google connection"
+
+#: src/lib/components/admin/GoogleHealthAdminPanel.svelte
+msgid "Checking connection status..."
+msgstr "Checking connection status..."
+
+#: src/lib/components/admin/GoogleHealthAdminPanel.svelte
+msgid "Connection status is unavailable here. Select a tenant and open its Google Health connector."
+msgstr "Connection status is unavailable here. Select a tenant and open its Google Health connector."
+
+#: src/lib/components/admin/GoogleHealthAdminPanel.svelte
+msgid "Google account linked"
+msgstr "Google account linked"
+
+#: src/lib/components/admin/GoogleHealthAdminPanel.svelte
+msgid "Google account not connected"
+msgstr "Google account not connected"
+
+#. 0: connection.lastSync.toString()
+#: src/lib/components/admin/GoogleHealthAdminPanel.svelte
+msgid "Last successful Google Health sync: {0}"
+msgstr "Last successful Google Health sync: {0}"
+
+#: src/lib/components/admin/GoogleHealthAdminPanel.svelte
+msgid "No successful synchronization has been recorded yet."
+msgstr "No successful synchronization has been recorded yet."
+
+#: src/lib/components/admin/GoogleHealthAdminPanel.svelte
+msgid "Synchronization is in progress."
+msgstr "Synchronization is in progress."
+
+#: src/lib/components/admin/GoogleHealthAdminPanel.svelte
+msgid "Refresh connection status"
+msgstr "Refresh connection status"
+
+#: src/lib/components/admin/GoogleHealthAdminPanel.svelte
+msgid "Open my Google Health connection"
+msgstr "Open my Google Health connection"
+
+#: src/lib/components/admin/GoogleHealthAdminPanel.svelte
+msgid "This shows your current tenant's saved account authorization and synchronization status. It does not show other users' accounts."
+msgstr "This shows your current tenant's saved account authorization and synchronization status. It does not show other users' accounts."

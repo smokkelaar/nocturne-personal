@@ -275,6 +275,7 @@ msgstr "UrgentHigh"
 #: src/lib/components/reports/sleep/single-night/OvernightLowsCard.svelte
 #: src/lib/components/settings/alarm-profile/AlarmGeneralTab.svelte
 #: src/lib/components/settings/alarm-profile/AlarmGeneralTab.svelte
+#: src/lib/help/reference.svelte.ts
 #: src/lib/stores/alarm-state.svelte.ts
 #: src/lib/stores/alarm-state.svelte.ts
 #: src/lib/stores/alarm-state.svelte.ts
@@ -294,6 +295,7 @@ msgstr "Low"
 #: src/lib/components/reports/TIRStackedChart.svelte
 #: src/lib/components/settings/alarm-profile/AlarmGeneralTab.svelte
 #: src/lib/components/settings/alarm-profile/AlarmGeneralTab.svelte
+#: src/lib/help/reference.svelte.ts
 #: src/lib/stores/alarm-state.svelte.ts
 #: src/lib/stores/alarm-state.svelte.ts
 #: src/routes/(authenticated)/reports/data-quality/compression-lows/+page.svelte
@@ -1231,8 +1233,10 @@ msgid "No condition configured"
 msgstr "No condition configured"
 
 #. 0: mins
+#. 0: facts.googleHealthSyncIntervalMinutes
 #. 0: toleranceMinutes
 #: src/lib/components/alerts/DndPanel.svelte
+#: src/lib/components/help/HelpReference.svelte
 #: src/routes/(authenticated)/reports/data-quality/cgm-comparison/+page.svelte
 msgid "{0} minutes"
 msgstr "{0} minutes"
@@ -1827,6 +1831,7 @@ msgid "Click to view full day report"
 msgstr "Click to view full day report"
 
 #: src/lib/components/calendar/CalendarHeader.svelte
+#: src/lib/help/pages.svelte.ts
 #: src/lib/navigation/app-navigation.svelte.ts
 msgid "Calendar"
 msgstr "Calendar"
@@ -2220,6 +2225,7 @@ msgid "System"
 msgstr "System"
 
 #: src/lib/components/clock-builder/TextStyleControls.svelte
+#: src/lib/components/connectors/google-health-labels.svelte.ts
 #: src/routes/(authenticated)/settings/connectors/google-health/google-health-copy.svelte.ts
 msgid "Weight"
 msgstr "Weight"
@@ -2450,6 +2456,7 @@ msgstr "Unknown Device"
 #: src/lib/components/treatments/FoodSearchCombobox.svelte
 #: src/lib/components/treatments/TreatmentFoodSelectorDialog.svelte
 #: src/lib/components/treatments/TreatmentFoodSelectorDialog.svelte
+#: src/lib/help/pages.svelte.ts
 #: src/lib/navigation/app-navigation.svelte.ts
 msgid "Food"
 msgstr "Food"
@@ -3273,6 +3280,7 @@ msgstr "<0/> Visit {0} Website"
 
 #: src/lib/components/dashboard/BGStatisticsCards.svelte
 #: src/lib/components/dashboard/widgets/BgDeltaWidget.svelte
+#: src/lib/help/dashboard-guide.svelte.ts
 msgid "BG Delta"
 msgstr "BG Delta"
 
@@ -3283,6 +3291,7 @@ msgstr "BG Delta"
 #: src/lib/components/dashboard/widgets/LastUpdatedWidget.svelte
 #: src/lib/components/dashboard/widgets/LastUpdatedWidget.svelte
 #: src/lib/components/dashboard/widgets/LastUpdatedWidget.svelte
+#: src/lib/help/dashboard-guide.svelte.ts
 msgid "Last Updated"
 msgstr "Last Updated"
 
@@ -3458,6 +3467,7 @@ msgstr "Devices"
 msgid "Insulins"
 msgstr "Insulins"
 
+#: src/lib/components/help/DashboardExplanation.svelte
 #: src/lib/constants/scope-labels.svelte.ts
 #: src/lib/navigation/app-navigation.svelte.ts
 #: src/routes/(authenticated)/alerts/+page.svelte
@@ -3465,6 +3475,7 @@ msgstr "Insulins"
 msgid "Alerts"
 msgstr "Alerts"
 
+#: src/lib/help/settings.svelte.ts
 #: src/lib/navigation/app-navigation.svelte.ts
 #: src/routes/(authenticated)/settings/members/+page.svelte
 msgid "Sharing & Privacy"
@@ -3493,6 +3504,7 @@ msgid "Cone of probabilities"
 msgstr "Cone of probabilities"
 
 #: src/lib/components/dashboard/PredictionSettings.svelte
+#: src/lib/components/dashboard/glucose-chart/GlucoseChartCard.svelte
 msgid "Cone"
 msgstr "Cone"
 
@@ -3501,6 +3513,7 @@ msgid "All prediction lines"
 msgstr "All prediction lines"
 
 #: src/lib/components/dashboard/PredictionSettings.svelte
+#: src/lib/components/dashboard/glucose-chart/GlucoseChartCard.svelte
 msgid "Lines"
 msgstr "Lines"
 
@@ -3790,13 +3803,16 @@ msgstr "<0/> Add to {0}"
 #~ msgstr "No unit found."
 
 #: src/lib/components/entries/BGCheckSection.svelte
+#: src/lib/help/dashboard-examples.svelte.ts
 msgid "Finger"
 msgstr "Finger"
 
 #: src/lib/components/dashboard/glucose-chart/ChartLegend.svelte
 #: src/lib/components/entries/BGCheckSection.svelte
+#: src/lib/components/help/HelpDashboard.svelte
 #: src/lib/components/icons/TreatmentTypeIcon.svelte
 #: src/lib/components/trackers/TrackerEditorDialog.svelte
+#: src/lib/help/dashboard-examples.svelte.ts
 #: src/routes/(authenticated)/settings/trackers/+page.svelte
 msgid "Sensor"
 msgstr "Sensor"
@@ -4223,6 +4239,7 @@ msgstr "Boost"
 #: src/lib/components/dashboard/glucose-chart/ChartTooltip.svelte
 #: src/lib/components/icons/PumpModeIcon.svelte
 #: src/lib/constants/scope-labels.svelte.ts
+#: src/lib/help/reports.svelte.ts
 #: src/lib/navigation/report-navigation.svelte.ts
 #: src/routes/(authenticated)/reports/sleep/+page.svelte
 #: src/routes/(authenticated)/settings/connectors/google-health/google-health-copy.svelte.ts
@@ -4234,6 +4251,7 @@ msgstr "Sleep"
 #: src/lib/components/icons/PumpModeIcon.svelte
 #: src/lib/components/reports/loop-analysis/event-labels.svelte.ts
 #: src/lib/components/reports/loop-analysis/filter-labels.svelte.ts
+#: src/lib/help/dashboard-examples.svelte.ts
 msgid "Exercise"
 msgstr "Exercise"
 
@@ -4284,6 +4302,7 @@ msgstr "Snack"
 #: src/lib/components/dashboard/glucose-chart/tracks/BasalTrack.svelte
 #: src/lib/components/dashboard/widgets/TddWidget.svelte
 #: src/lib/components/entries/BasalInjectionSection.svelte
+#: src/lib/components/help/HelpDashboard.svelte
 #: src/lib/components/icons/TreatmentTypeIcon.svelte
 #: src/lib/components/profile/ProfileEditDialog.svelte
 #: src/lib/components/reports/InsulinDeliveryChart.svelte
@@ -4315,6 +4334,7 @@ msgstr "Site"
 #: src/lib/components/dashboard/glucose-chart/ChartLegend.svelte
 #: src/lib/components/icons/TreatmentTypeIcon.svelte
 #: src/lib/components/trackers/TrackerEditorDialog.svelte
+#: src/lib/help/reports.svelte.ts
 #: src/lib/navigation/report-navigation.svelte.ts
 #: src/routes/(authenticated)/settings/trackers/+page.svelte
 msgid "Battery"
@@ -4416,10 +4436,12 @@ msgstr "Logged time"
 msgid "Accept"
 msgstr "Accept"
 
+#: src/lib/help/pages.svelte.ts
 #: src/lib/navigation/app-navigation.svelte.ts
 msgid "Dashboard"
 msgstr "Dashboard"
 
+#: src/lib/help/pages.svelte.ts
 #: src/lib/navigation/app-navigation.svelte.ts
 msgid "Time Spans"
 msgstr "Time Spans"
@@ -4433,6 +4455,8 @@ msgid "Reports"
 msgstr "Reports"
 
 #: src/lib/components/dashboard/widgets/ClockWidget.svelte
+#: src/lib/help/dashboard-guide.svelte.ts
+#: src/lib/help/pages.svelte.ts
 #: src/lib/navigation/app-navigation.svelte.ts
 msgid "Clock"
 msgstr "Clock"
@@ -4443,6 +4467,7 @@ msgid "Overview"
 msgstr "Overview"
 
 #: src/lib/components/reports/loop-analysis/event-labels.svelte.ts
+#: src/lib/help/pages.svelte.ts
 #: src/lib/navigation/app-navigation.svelte.ts
 #: src/routes/(authenticated)/meals/+page.svelte
 msgid "Meals"
@@ -4453,6 +4478,7 @@ msgstr "Meals"
 msgid "Tools"
 msgstr "Tools"
 
+#: src/lib/help/pages.svelte.ts
 #: src/lib/navigation/app-navigation.svelte.ts
 msgid "Packing"
 msgstr "Packing"
@@ -4461,21 +4487,25 @@ msgstr "Packing"
 msgid "Dev Tools"
 msgstr "Dev Tools"
 
+#: src/lib/help/pages.svelte.ts
 #: src/lib/navigation/app-navigation.svelte.ts
 msgid "Compatibility"
 msgstr "Compatibility"
 
+#: src/lib/help/pages.svelte.ts
 #: src/lib/navigation/app-navigation.svelte.ts
 msgid "Test Endpoint Compatibility"
 msgstr "Test Endpoint Compatibility"
 
 #: src/lib/components/layout/UserMenu.svelte
 #: src/lib/components/support/IssueCreatorDialog.svelte
+#: src/lib/help/settings.svelte.ts
 #: src/lib/navigation/app-navigation.svelte.ts
 #: src/routes/(authenticated)/settings/+page.svelte
 msgid "Settings"
 msgstr "Settings"
 
+#: src/lib/help/pages.svelte.ts
 #: src/lib/navigation/app-navigation.svelte.ts
 #: src/routes/(unauthenticated)/setup/+page@.svelte
 msgid "Setup"
@@ -4484,38 +4514,50 @@ msgstr "Setup"
 #: src/lib/components/layout/UserMenu.svelte
 #: src/lib/components/rbac/permission-categories.svelte.ts
 #: src/lib/components/settings/TokenScopeSelector.svelte
+#: src/lib/help/settings.svelte.ts
 #: src/lib/navigation/app-navigation.svelte.ts
 #: src/routes/(authenticated)/settings/account/+page.svelte
 #: src/routes/(unauthenticated)/setup/+page@.svelte
 msgid "Account"
 msgstr "Account"
 
+#: src/lib/components/help/DashboardExplanation.svelte
 #: src/lib/components/rbac/permission-categories.svelte.ts
+#: src/lib/help/settings.svelte.ts
 #: src/lib/navigation/app-navigation.svelte.ts
 #: src/routes/(authenticated)/settings/patient/+page.svelte
 msgid "Patient Record"
 msgstr "Patient Record"
 
+#: src/lib/components/help/DashboardExplanation.svelte
+#: src/lib/help/settings.svelte.ts
 #: src/lib/navigation/app-navigation.svelte.ts
 #: src/routes/(authenticated)/settings/appearance/+page.svelte
 msgid "Appearance"
 msgstr "Appearance"
 
+#: src/lib/components/help/DashboardExplanation.svelte
+#: src/lib/help/settings.svelte.ts
 #: src/lib/navigation/app-navigation.svelte.ts
 msgid "Therapy"
 msgstr "Therapy"
 
+#: src/lib/components/help/DashboardExplanation.svelte
+#: src/lib/help/reports.svelte.ts
 #: src/lib/navigation/app-navigation.svelte.ts
 #: src/lib/navigation/report-navigation.svelte.ts
 #: src/routes/(authenticated)/settings/data-quality/+page.svelte
 msgid "Data Quality"
 msgstr "Data Quality"
 
+#: src/lib/help/settings.svelte.ts
 #: src/lib/navigation/app-navigation.svelte.ts
 #: src/routes/(authenticated)/settings/trackers/+page.svelte
 msgid "Notifications & Trackers"
 msgstr "Notifications & Trackers"
 
+#: src/lib/components/help/DashboardExplanation.svelte
+#: src/lib/help/settings.svelte.ts
 #: src/lib/navigation/app-navigation.svelte.ts
 #: src/routes/(authenticated)/settings/connectors/+page.svelte
 msgid "Connectors & Apps"
@@ -4526,11 +4568,13 @@ msgstr "Connectors & Apps"
 msgid "Audit Log"
 msgstr "Audit Log"
 
+#: src/lib/help/settings.svelte.ts
 #: src/lib/navigation/app-navigation.svelte.ts
 #: src/routes/(authenticated)/settings/support/+page.svelte
 msgid "Support & Community"
 msgstr "Support & Community"
 
+#: src/lib/help/settings.svelte.ts
 #: src/lib/navigation/app-navigation.svelte.ts
 #: src/routes/(authenticated)/settings/admin/tenants/+page.svelte
 msgid "Tenant Management"
@@ -5554,6 +5598,7 @@ msgid "Blood Glucose"
 msgstr "Blood Glucose"
 
 #: src/lib/constants/scope-labels.svelte.ts
+#: src/lib/help/reports.svelte.ts
 #: src/lib/navigation/report-navigation.svelte.ts
 #: src/routes/(unauthenticated)/setup/steps/ImportProgress.svelte
 msgid "Treatments"
@@ -5749,6 +5794,7 @@ msgstr "Daily Summary"
 msgid "Range"
 msgstr "Range"
 
+#: src/lib/help/reports.svelte.ts
 #: src/lib/navigation/report-navigation.svelte.ts
 #: src/routes/(authenticated)/reports/day-in-review/+page.svelte
 #: src/routes/(authenticated)/reports/glucose-distribution/+page.svelte
@@ -5763,6 +5809,7 @@ msgid "Std Dev"
 msgstr "Std Dev"
 
 #: src/lib/components/dashboard/widgets/TirChartWidget.svelte
+#: src/lib/help/dashboard-guide.svelte.ts
 #: src/routes/(authenticated)/reports/comparison/+page.svelte
 #: src/routes/(authenticated)/reports/idp/+page.svelte
 #: src/routes/(authenticated)/reports/year-overview/+page.svelte
@@ -7084,6 +7131,7 @@ msgid "Flash the title and favicon during urgent glucose levels"
 msgstr "Flash the title and favicon during urgent glucose levels"
 
 #: src/lib/constants/scope-labels.svelte.ts
+#: src/lib/help/reports.svelte.ts
 #: src/lib/navigation/report-navigation.svelte.ts
 #: src/routes/(authenticated)/reports/heart-rate/+page.svelte
 msgid "Heart Rate"
@@ -7174,6 +7222,7 @@ msgstr "Activity"
 
 #: ../portal/src/lib/components/AuroraPool.svelte
 #: ../portal/src/lib/components/features/ConnectorsDemo.svelte
+#: src/lib/components/help/HelpDashboard.svelte
 #: src/lib/components/status-pills/LoopPill.svelte
 msgid "Loop"
 msgstr "Loop"
@@ -7524,6 +7573,7 @@ msgid "Cannula"
 msgstr "Cannula"
 
 #: src/lib/components/dashboard/glucose-chart/ChartLegend.svelte
+#: src/lib/components/help/HelpDashboard.svelte
 #: src/lib/components/status-pills/ReservoirPill.svelte
 #: src/lib/components/trackers/TrackerEditorDialog.svelte
 #: src/routes/(authenticated)/settings/trackers/+page.svelte
@@ -8392,6 +8442,7 @@ msgstr "None"
 
 #: ../portal/src/lib/components/AuroraPool.svelte
 #: ../portal/src/routes/features/+page.svelte
+#: src/lib/help/connectors.svelte.ts
 #: src/routes/(authenticated)/compatibility/+page.svelte
 #: src/routes/(authenticated)/compatibility/[id]/+page.svelte
 #: src/routes/(authenticated)/compatibility/[id]/+page.svelte
@@ -9451,6 +9502,7 @@ msgstr "Nocturne integrates with various third-party diabetes data services, inc
 
 #: ../portal/src/lib/components/AuroraPool.svelte
 #: ../portal/src/lib/components/features/ConnectorsDemo.svelte
+#: src/lib/help/connectors.svelte.ts
 #: src/routes/(legal)/terms/+page.svelte
 msgid "Dexcom"
 msgstr "Dexcom"
@@ -9460,10 +9512,12 @@ msgstr "Dexcom"
 msgid "FreeStyle Libre"
 msgstr "FreeStyle Libre"
 
+#: src/lib/help/connectors.svelte.ts
 #: src/routes/(legal)/terms/+page.svelte
 msgid "Glooko"
 msgstr "Glooko"
 
+#: src/lib/help/connectors.svelte.ts
 #: src/routes/(legal)/terms/+page.svelte
 msgid "Tidepool"
 msgstr "Tidepool"
@@ -9944,6 +9998,7 @@ msgstr "Scheduled ({0})"
 
 #: src/lib/components/dashboard/glucose-chart/ChartLegend.svelte
 #: src/lib/components/reports/loop-analysis/filter-labels.svelte.ts
+#: src/lib/help/dashboard-guide.svelte.ts
 #: src/routes/(authenticated)/time-spans/+page.svelte
 msgid "Overrides"
 msgstr "Overrides"
@@ -9961,6 +10016,7 @@ msgid "Moderate"
 msgstr "Moderate"
 
 #: src/lib/components/dashboard/widgets/DailySummaryWidget.svelte
+#: src/lib/help/dashboard-guide.svelte.ts
 msgid "Today's Summary"
 msgstr "Today's Summary"
 
@@ -9998,6 +10054,7 @@ msgid "No data today"
 msgstr "No data today"
 
 #: src/lib/components/dashboard/widgets/ConnectionStatusWidget.svelte
+#: src/lib/help/dashboard-guide.svelte.ts
 #: src/routes/(authenticated)/settings/connectors/google-health/google-health-page.svelte
 msgid "Connection"
 msgstr "Connection"
@@ -10029,6 +10086,8 @@ msgid "Blood Glucose <0/>"
 msgstr "Blood Glucose <0/>"
 
 #: src/lib/components/dashboard/widgets/TrackersWidget.svelte
+#: src/lib/components/help/DashboardExplanation.svelte
+#: src/lib/help/dashboard-guide.svelte.ts
 msgid "Trackers"
 msgstr "Trackers"
 
@@ -10056,6 +10115,7 @@ msgstr "Failed to load data"
 #~ msgstr "Average Glucose"
 
 #: src/lib/components/dashboard/widgets/TddWidget.svelte
+#: src/lib/help/dashboard-guide.svelte.ts
 msgid "Total Daily Dose"
 msgstr "Total Daily Dose"
 
@@ -10165,6 +10225,7 @@ msgstr "Contact Name"
 msgid "Close Emergency View"
 msgstr "Close Emergency View"
 
+#: src/lib/help/reports.svelte.ts
 #: src/lib/navigation/report-navigation.svelte.ts
 #: src/routes/(authenticated)/reports/year-overview/+page.svelte
 msgid "Year Overview"
@@ -10192,6 +10253,7 @@ msgid "Show all"
 msgstr "Show all"
 
 #: src/lib/components/dashboard/widgets/MealsWidget.svelte
+#: src/lib/help/dashboard-guide.svelte.ts
 msgid "Recent Meals"
 msgstr "Recent Meals"
 
@@ -11066,6 +11128,7 @@ msgstr "Your typical daily glucose pattern — a standardized clinical report"
 msgid "Summary <0/>"
 msgstr "Summary <0/>"
 
+#. 0: facts.googleHealthDefaultHistoryDays
 #. 0: expiresInDays
 #. 0: days
 #. 0: daysOption
@@ -11075,6 +11138,7 @@ msgstr "Summary <0/>"
 #. 0: dateInfo.dayCount
 #. 0: dayCount
 #. 0: dayCount
+#: src/lib/components/help/HelpReference.svelte
 #: src/lib/components/members/CreateInviteCard.svelte
 #: src/lib/components/status-pills/TrackerPill.svelte
 #: src/lib/components/ui/date-range-picker.svelte
@@ -11477,6 +11541,7 @@ msgstr "Dismissed"
 msgid "Data Quality Categories"
 msgstr "Data Quality Categories"
 
+#: src/lib/help/reports.svelte.ts
 #: src/routes/(authenticated)/reports/data-quality/+page.svelte
 #: src/routes/(authenticated)/reports/data-quality/compression-lows/+page.svelte
 msgid "Compression Lows"
@@ -11682,6 +11747,7 @@ msgstr "<0/> High Blood Sugar Events"
 msgid "<0/> Glucose Statistics"
 msgstr "<0/> Glucose Statistics"
 
+#: src/lib/help/reports.svelte.ts
 #: src/lib/navigation/report-navigation.svelte.ts
 #: src/routes/(authenticated)/reports/executive-summary/+page.svelte
 msgid "Glucose Distribution"
@@ -12323,6 +12389,9 @@ msgstr "Daily step patterns with glucose overlay"
 msgid "<0/> Step Count Actogram"
 msgstr "<0/> Step Count Actogram"
 
+#: src/lib/components/connectors/google-health-labels.svelte.ts
+#: src/lib/components/help/HelpHarness.test.svelte
+#: src/lib/help/reports.svelte.ts
 #: src/lib/navigation/report-navigation.svelte.ts
 #: src/routes/(authenticated)/reports/steps/+page.svelte
 #: src/routes/(authenticated)/reports/steps/+page.svelte
@@ -12450,6 +12519,7 @@ msgstr "Failed to deny request. Please try again."
 msgid "Access Requests - Settings - Nocturne"
 msgstr "Access Requests - Settings - Nocturne"
 
+#: src/lib/help/settings.svelte.ts
 #: src/routes/(authenticated)/settings/access-requests/+page.svelte
 msgid "Access Requests"
 msgstr "Access Requests"
@@ -12836,12 +12906,14 @@ msgstr "Configure chart display preferences"
 msgid "Default chart range"
 msgstr "Default chart range"
 
+#. 0: period
 #. 0: hours
 #. 0: Math.abs(hoursUntil).toFixed(1)
 #. 0: absHours
 #. 0: focusHours
 #. 0: therapy.dia ?? "-"
 #. 0: therapy.dia ?? "-"
+#: src/lib/components/help/HelpDashboard.svelte
 #: src/lib/components/status-pills/TrackerPill.svelte
 #: src/lib/components/trackers/TrackerStartDialog.svelte
 #: src/lib/components/ui/duration-input/duration-input.svelte
@@ -13220,6 +13292,7 @@ msgstr "No Data"
 msgid "Nightscout Transition - Settings - Nocturne"
 msgstr "Nightscout Transition - Settings - Nocturne"
 
+#: src/lib/help/settings.svelte.ts
 #: src/routes/(authenticated)/settings/nightscout-transition/+page.svelte
 msgid "Nightscout Transition"
 msgstr "Nightscout Transition"
@@ -13353,6 +13426,7 @@ msgstr "Running"
 msgid "Data Migration - Settings - Nocturne"
 msgstr "Data Migration - Settings - Nocturne"
 
+#: src/lib/help/settings.svelte.ts
 #: src/routes/(authenticated)/settings/migration/+page.svelte
 msgid "Data Migration"
 msgstr "Data Migration"
@@ -13632,6 +13706,8 @@ msgid "Chat with developers and other users"
 msgstr "Chat with developers and other users"
 
 #: ../portal/src/lib/components/SiteFooter.svelte
+#: src/lib/components/help/HelpBrowser.svelte
+#: src/lib/components/help/HelpPanel.svelte
 #: src/routes/(authenticated)/settings/support/+page.svelte
 msgid "Documentation"
 msgstr "Documentation"
@@ -14441,6 +14517,7 @@ msgid "Food library"
 msgstr "Food library"
 
 #: src/lib/components/dashboard/glucose-chart/dialogs/GlucoseInspectionDialog.svelte
+#: src/lib/help/dashboard-guide.svelte.ts
 #: src/routes/(authenticated)/time-spans/+page.svelte
 #: src/routes/(unauthenticated)/setup/steps/ImportProgress.svelte
 msgid "Activities"
@@ -15011,6 +15088,7 @@ msgstr "Failed to revoke link."
 msgid "Failed to start Discord link flow."
 msgstr "Failed to start Discord link flow."
 
+#: src/lib/help/settings.svelte.ts
 #: src/routes/(authenticated)/settings/integrations/discord/+page.svelte
 msgid "Discord Integration"
 msgstr "Discord Integration"
@@ -15190,6 +15268,7 @@ msgstr "<0/> Add condition"
 #~ msgstr "Flat"
 
 #: src/lib/components/alerts/RuleBuilderLeafEditor.svelte
+#: src/lib/help/reading-guides.svelte.ts
 msgid "Select a rule"
 msgstr "Select a rule"
 
@@ -15226,6 +15305,7 @@ msgstr "Severity: {0}"
 #: src/lib/components/alerts/DndPanel.svelte
 #: src/lib/components/alerts/SidebarDndToggle.svelte
 #: src/lib/components/ui/dropdown-menu/nested-in-popover.test.svelte
+#: src/lib/help/pages.svelte.ts
 #: src/lib/navigation/app-navigation.svelte.ts
 msgid "Do Not Disturb"
 msgstr "Do Not Disturb"
@@ -15922,6 +16002,7 @@ msgstr "To <0/>"
 msgid "User snooze actions cannot be replayed."
 msgstr "User snooze actions cannot be replayed."
 
+#: src/lib/help/reports.svelte.ts
 #: src/lib/navigation/report-navigation.svelte.ts
 msgid "Hourly Patterns"
 msgstr "Hourly Patterns"
@@ -16020,6 +16101,7 @@ msgstr "API Reference"
 #~ msgstr "Documentation In Progress"
 
 #: ../portal/src/lib/components/features/ConnectorsDemo.svelte
+#: src/lib/help/connectors.svelte.ts
 msgid "Libre"
 msgstr "Libre"
 
@@ -16681,6 +16763,7 @@ msgstr "This report is for informational purposes. Always consult your healthcar
 #~ msgid "Alerts, reminders, and tracked events."
 #~ msgstr "Alerts, reminders, and tracked events."
 
+#: src/lib/help/settings.svelte.ts
 #: src/lib/navigation/app-navigation.svelte.ts
 #: src/routes/(authenticated)/settings/access/+page.svelte
 msgid "Active Access"
@@ -18379,6 +18462,7 @@ msgid "Link records from multiple data sources that represent the same underlyin
 msgstr "Link records from multiple data sources that represent the same underlying event. This improves data quality when the same glucose readings or treatments are uploaded from different apps."
 
 #: src/lib/components/settings/DataMaintenanceCard.svelte
+#: src/lib/help/settings.svelte.ts
 #: src/routes/(authenticated)/settings/admin/connector-cursors/+page.svelte
 msgid "Reset Connector Cursors"
 msgstr "Reset Connector Cursors"
@@ -18611,6 +18695,7 @@ msgstr "Re-import started."
 msgid "Re-import failed."
 msgstr "Re-import failed."
 
+#: src/lib/help/settings.svelte.ts
 #: src/routes/(authenticated)/settings/timezone/+page.svelte
 msgid "Timezone history"
 msgstr "Timezone history"
@@ -18632,6 +18717,7 @@ msgstr "No entries yet. Your home timezone is filled in automatically on the nex
 msgid "Delete entry"
 msgstr "Delete entry"
 
+#: src/lib/help/reading-guides.svelte.ts
 #: src/routes/(authenticated)/settings/timezone/+page.svelte
 msgid "Add a location change"
 msgstr "Add a location change"
@@ -18719,6 +18805,8 @@ msgstr "Nocturne is free and open source software, created by people with diabet
 msgid "Weight History - Settings - Nocturne"
 msgstr "Weight History - Settings - Nocturne"
 
+#: src/lib/components/help/HelpReference.svelte
+#: src/lib/help/settings.svelte.ts
 #: src/routes/(authenticated)/settings/connectors/google-health/google-health-copy.svelte.ts
 #: src/routes/(authenticated)/settings/weight/+page.svelte
 msgid "Weight history"
@@ -19274,6 +19362,7 @@ msgstr "U/h"
 
 #: ../portal/src/lib/components/AuroraPool.svelte
 #: ../portal/src/lib/components/features/ConnectorsDemo.svelte
+#: src/lib/help/connectors.svelte.ts
 msgid "Tandem"
 msgstr "Tandem"
 
@@ -21856,6 +21945,7 @@ msgstr "Report generated from {0} basal events between {1} and {2}"
 #~ msgid "higher in {0} →"
 #~ msgstr "higher in {0} →"
 
+#: src/lib/help/reports.svelte.ts
 #: src/routes/(authenticated)/reports/data-quality/+page.svelte
 #: src/routes/(authenticated)/reports/data-quality/cgm-comparison/+page.svelte
 msgid "CGM Comparison"
@@ -22927,6 +23017,8 @@ msgstr "Type 1 diabetes target"
 msgid "Elevated"
 msgstr "Elevated"
 
+#: src/lib/components/help/HelpDashboard.svelte
+#: src/lib/help/reference.svelte.ts
 #: src/routes/(authenticated)/reports/ehba1c/+page.svelte
 msgid "Very high"
 msgstr "Very high"
@@ -23835,6 +23927,7 @@ msgstr "Shown in mmol/mol (IFCC)"
 #~ msgid "Est. A1c (DCCT %)"
 #~ msgstr "Est. A1c (DCCT %)"
 
+#: src/lib/components/connectors/google-health-labels.svelte.ts
 #: src/routes/(authenticated)/reports/heart-rate/+page.svelte
 #: src/routes/(authenticated)/settings/connectors/google-health/google-health-copy.svelte.ts
 msgid "Heart rate"
@@ -24124,10 +24217,12 @@ msgid "Frequently asked questions"
 msgstr "Frequently asked questions"
 
 #: src/lib/components/dashboard/RecentEntriesCard.svelte
+#: src/lib/help/dashboard-guide.svelte.ts
 msgid "Recent readings"
 msgstr "Recent readings"
 
 #: src/lib/components/dashboard/RecentTreatmentsCard.svelte
+#: src/lib/help/dashboard-guide.svelte.ts
 msgid "Recent treatments"
 msgstr "Recent treatments"
 
@@ -24510,6 +24605,7 @@ msgstr "The Big Picture"
 msgid "Your key metrics at a glance"
 msgstr "Your key metrics at a glance"
 
+#: src/lib/help/reports.svelte.ts
 #: src/lib/navigation/report-navigation.svelte.ts
 msgid "Executive Summary"
 msgstr "Executive Summary"
@@ -24556,6 +24652,7 @@ msgstr "Day-by-Day View"
 msgid "Review each day individually"
 msgstr "Review each day individually"
 
+#: src/lib/help/reports.svelte.ts
 #: src/lib/navigation/report-navigation.svelte.ts
 msgid "Day in Review"
 msgstr "Day in Review"
@@ -24564,6 +24661,7 @@ msgstr "Day in Review"
 msgid "Detailed breakdown of a single day"
 msgstr "Detailed breakdown of a single day"
 
+#: src/lib/help/reports.svelte.ts
 #: src/lib/navigation/report-navigation.svelte.ts
 msgid "Week to Week"
 msgstr "Week to Week"
@@ -24572,6 +24670,7 @@ msgstr "Week to Week"
 msgid "Compare patterns across days"
 msgstr "Compare patterns across days"
 
+#: src/lib/help/reports.svelte.ts
 #: src/lib/navigation/report-navigation.svelte.ts
 msgid "Comparison"
 msgstr "Comparison"
@@ -24636,6 +24735,7 @@ msgstr "Your insulin and carb history"
 msgid "Basal Rate Analysis"
 msgstr "Basal Rate Analysis"
 
+#: src/lib/help/reports.svelte.ts
 #: src/lib/navigation/report-navigation.svelte.ts
 msgid "Basal Analysis"
 msgstr "Basal Analysis"
@@ -24644,6 +24744,7 @@ msgstr "Basal Analysis"
 msgid "How your basal rates vary"
 msgstr "How your basal rates vary"
 
+#: src/lib/help/reports.svelte.ts
 #: src/lib/navigation/report-navigation.svelte.ts
 msgid "Insulin Delivery"
 msgstr "Insulin Delivery"
@@ -24652,6 +24753,7 @@ msgstr "Insulin Delivery"
 msgid "Basal vs bolus breakdown"
 msgstr "Basal vs bolus breakdown"
 
+#: src/lib/help/reports.svelte.ts
 #: src/lib/navigation/report-navigation.svelte.ts
 msgid "Site Change Impact"
 msgstr "Site Change Impact"
@@ -24936,7 +25038,9 @@ msgstr "<0/> Overnight Lows"
 msgid "No lows lasting 15 minutes or more during this session"
 msgstr "No lows lasting 15 minutes or more during this session"
 
+#: src/lib/components/help/HelpDashboard.svelte
 #: src/lib/components/reports/sleep/single-night/OvernightLowsCard.svelte
+#: src/lib/help/reference.svelte.ts
 msgid "Very low"
 msgstr "Very low"
 
@@ -25146,6 +25250,7 @@ msgstr "The same figures as a table, with the typical glucose in each hour. The 
 msgid "Hour"
 msgstr "Hour"
 
+#: src/lib/help/reference.svelte.ts
 #: src/routes/(authenticated)/reports/hourly-stats/+page.svelte
 msgid "In range"
 msgstr "In range"
@@ -25390,10 +25495,12 @@ msgstr "<0/> Group"
 msgid "<0/> Condition"
 msgstr "<0/> Condition"
 
+#: src/lib/help/pages.svelte.ts
 #: src/lib/navigation/app-navigation.svelte.ts
 msgid "Tenants"
 msgstr "Tenants"
 
+#: src/lib/help/settings.svelte.ts
 #: src/lib/navigation/app-navigation.svelte.ts
 msgid "Translations"
 msgstr "Translations"
@@ -25483,6 +25590,9 @@ msgstr "min ago"
 
 #: src/lib/components/connectors/GoogleHealthSourceRow.svelte
 #: src/lib/components/connectors/ServerConnectorsCard.svelte
+#: src/lib/components/help/HelpReference.svelte
+#: src/lib/components/help/HelpReference.svelte
+#: src/lib/help/connectors.svelte.ts
 #: src/routes/(authenticated)/settings/connectors/google-health/google-health-page.svelte
 msgid "Google Health"
 msgstr "Google Health"
@@ -25922,6 +26032,7 @@ msgstr "Detected data types and how Nocturne can use them"
 msgid "{0}/{1} selected"
 msgstr "{0}/{1} selected"
 
+#: src/lib/components/help/HelpReference.svelte
 #: src/routes/(authenticated)/settings/connectors/google-health/GoogleHealthCategoryTable.svelte
 msgid "Data type"
 msgstr "Data type"
@@ -26155,94 +26266,117 @@ msgstr "Omitting the bind-data override changes the declared storage back to the
 msgid "One or more connectors failed; review the connector details and retry the failed range."
 msgstr "One or more connectors failed; review the connector details and retry the failed range."
 
+#: src/lib/components/connectors/google-health-labels.svelte.ts
 #: src/routes/(authenticated)/settings/connectors/google-health/google-health-copy.svelte.ts
 msgid "Sleep sessions and stages"
 msgstr "Sleep sessions and stages"
 
+#: src/lib/components/connectors/google-health-labels.svelte.ts
 #: src/routes/(authenticated)/settings/connectors/google-health/google-health-copy.svelte.ts
 msgid "Active energy burned"
 msgstr "Active energy burned"
 
+#: src/lib/components/connectors/google-health-labels.svelte.ts
 #: src/routes/(authenticated)/settings/connectors/google-health/google-health-copy.svelte.ts
 msgid "Total calories"
 msgstr "Total calories"
 
+#: src/lib/components/connectors/google-health-labels.svelte.ts
 #: src/routes/(authenticated)/settings/connectors/google-health/google-health-copy.svelte.ts
 msgid "Distance"
 msgstr "Distance"
 
+#: src/lib/components/connectors/google-health-labels.svelte.ts
 #: src/routes/(authenticated)/settings/connectors/google-health/google-health-copy.svelte.ts
 msgid "Floors"
 msgstr "Floors"
 
+#: src/lib/components/connectors/google-health-labels.svelte.ts
 #: src/routes/(authenticated)/settings/connectors/google-health/google-health-copy.svelte.ts
 msgid "Workouts"
 msgstr "Workouts"
 
+#: src/lib/components/connectors/google-health-labels.svelte.ts
 #: src/routes/(authenticated)/settings/connectors/google-health/google-health-copy.svelte.ts
 msgid "Body fat"
 msgstr "Body fat"
 
+#: src/lib/components/connectors/google-health-labels.svelte.ts
 #: src/routes/(authenticated)/settings/connectors/google-health/google-health-copy.svelte.ts
 msgid "Height"
 msgstr "Height"
 
+#: src/lib/components/connectors/google-health-labels.svelte.ts
 #: src/routes/(authenticated)/settings/connectors/google-health/google-health-copy.svelte.ts
 msgid "Nutrition log"
 msgstr "Nutrition log"
 
+#: src/lib/components/connectors/google-health-labels.svelte.ts
 #: src/routes/(authenticated)/settings/connectors/google-health/google-health-copy.svelte.ts
 msgid "Hydration"
 msgstr "Hydration"
 
+#: src/lib/components/connectors/google-health-labels.svelte.ts
 #: src/routes/(authenticated)/settings/connectors/google-health/google-health-copy.svelte.ts
 msgid "Blood glucose"
 msgstr "Blood glucose"
 
+#: src/lib/components/connectors/google-health-labels.svelte.ts
 #: src/routes/(authenticated)/settings/connectors/google-health/google-health-copy.svelte.ts
 msgid "Oxygen saturation"
 msgstr "Oxygen saturation"
 
+#: src/lib/components/connectors/google-health-labels.svelte.ts
 #: src/routes/(authenticated)/settings/connectors/google-health/google-health-copy.svelte.ts
 msgid "Heart rate variability"
 msgstr "Heart rate variability"
 
+#: src/lib/components/connectors/google-health-labels.svelte.ts
 #: src/routes/(authenticated)/settings/connectors/google-health/google-health-copy.svelte.ts
 msgid "Resting heart rate"
 msgstr "Resting heart rate"
 
+#: src/lib/components/connectors/google-health-labels.svelte.ts
 #: src/routes/(authenticated)/settings/connectors/google-health/google-health-copy.svelte.ts
 msgid "Daily oxygen saturation"
 msgstr "Daily oxygen saturation"
 
+#: src/lib/components/connectors/google-health-labels.svelte.ts
 #: src/routes/(authenticated)/settings/connectors/google-health/google-health-copy.svelte.ts
 msgid "Daily respiratory rate"
 msgstr "Daily respiratory rate"
 
+#: src/lib/components/connectors/google-health-labels.svelte.ts
 #: src/routes/(authenticated)/settings/connectors/google-health/google-health-copy.svelte.ts
 msgid "Sleep respiratory rate"
 msgstr "Sleep respiratory rate"
 
+#: src/lib/components/connectors/google-health-labels.svelte.ts
 #: src/routes/(authenticated)/settings/connectors/google-health/google-health-copy.svelte.ts
 msgid "Core body temperature"
 msgstr "Core body temperature"
 
+#: src/lib/components/connectors/google-health-labels.svelte.ts
 #: src/routes/(authenticated)/settings/connectors/google-health/google-health-copy.svelte.ts
 msgid "Menstrual period"
 msgstr "Menstrual period"
 
+#: src/lib/components/connectors/google-health-labels.svelte.ts
 #: src/routes/(authenticated)/settings/connectors/google-health/google-health-copy.svelte.ts
 msgid "Ovulation test"
 msgstr "Ovulation test"
 
+#: src/lib/components/connectors/google-health-labels.svelte.ts
 #: src/routes/(authenticated)/settings/connectors/google-health/google-health-copy.svelte.ts
 msgid "Cervical mucus"
 msgstr "Cervical mucus"
 
+#: src/lib/components/connectors/google-health-labels.svelte.ts
 #: src/routes/(authenticated)/settings/connectors/google-health/google-health-copy.svelte.ts
 msgid "Sexual activity"
 msgstr "Sexual activity"
 
+#: src/lib/components/connectors/google-health-labels.svelte.ts
 #: src/routes/(authenticated)/settings/connectors/google-health/google-health-copy.svelte.ts
 msgid "Unknown data type"
 msgstr "Unknown data type"
@@ -27788,6 +27922,7 @@ msgstr "Keep each color boundary between its neighbours{0}."
 msgid "Focus {0}–{1} {2}"
 msgstr "Focus {0}–{1} {2}"
 
+#: src/lib/components/help/HelpReference.svelte
 #: src/routes/(authenticated)/reports/year-overview/+page.svelte
 msgid "Band"
 msgstr "Band"
@@ -28104,6 +28239,7 @@ msgstr "Show the tour for this page"
 msgid "Show tip"
 msgstr "Show tip"
 
+#: src/lib/help/reports.svelte.ts
 #: src/lib/navigation/report-navigation.svelte.ts
 msgid "Loop Analysis"
 msgstr "Loop Analysis"
@@ -28156,6 +28292,7 @@ msgstr "Your profile settings compared with your data"
 msgid "Report body"
 msgstr "Report body"
 
+#: src/lib/components/layout/AppSidebarHarness.test.svelte
 #: src/lib/components/layout/ReportFilterExtensionProbe.test-harness.svelte
 msgid "Report filter"
 msgstr "Report filter"
@@ -28572,6 +28709,7 @@ msgstr "U per hour"
 
 #: src/lib/components/reports/loop-analysis/DailyProfileBody.svelte
 #: src/lib/components/reports/loop-analysis/EventResponseBody.svelte
+#: src/lib/help/dashboard-guide.svelte.ts
 msgid "Insulin on board"
 msgstr "Insulin on board"
 
@@ -31163,9 +31301,8 @@ msgstr "Check that recorded data is complete and usable."
 msgid "Stored glucose timestamps, device identities, and quality or noise information when supplied."
 msgstr "Stored glucose timestamps, device identities, and quality or noise information when supplied."
 
-#: src/lib/help/reports.svelte.ts
-msgid "Choose the report period. Settings → Data Quality contains detection and maintenance controls. Each detailed quality report has its own filters."
-msgstr "Choose the report period. Settings → Data Quality contains detection and maintenance controls. Each detailed quality report has its own filters."
+#~ msgid "Choose the report period. Settings → Data Quality contains detection and maintenance controls. Each detailed quality report has its own filters."
+#~ msgstr "Choose the report period. Settings → Data Quality contains detection and maintenance controls. Each detailed quality report has its own filters."
 
 #: src/lib/help/reports.svelte.ts
 msgid "Coverage and reliability help you interpret reports and recognise import or sensor problems."
@@ -31187,9 +31324,8 @@ msgstr "Inspect noisy windows and surrounding readings."
 msgid "Stored readings and available source noise metadata."
 msgstr "Stored readings and available source noise metadata."
 
-#: src/lib/help/reports.svelte.ts
-msgid "Choose dates here; configure detection in Settings → Data Quality."
-msgstr "Choose dates here; configure detection in Settings → Data Quality."
+#~ msgid "Choose dates here; configure detection in Settings → Data Quality."
+#~ msgstr "Choose dates here; configure detection in Settings → Data Quality."
 
 #: src/lib/help/reports.svelte.ts
 msgid "Flags help you inspect questionable sections of glucose reports."
@@ -31207,9 +31343,8 @@ msgstr "Compare devices that recorded glucose near the same time."
 msgid "Readings paired between your selected device and reference."
 msgstr "Readings paired between your selected device and reference."
 
-#: src/lib/help/reports.svelte.ts
-msgid "Choose Device, Reference, and Match within here. Manage sources in Settings → Connectors & Apps."
-msgstr "Choose Device, Reference, and Match within here. Manage sources in Settings → Connectors & Apps."
+#~ msgid "Choose Device, Reference, and Match within here. Manage sources in Settings → Connectors & Apps."
+#~ msgstr "Choose Device, Reference, and Match within here. Manage sources in Settings → Connectors & Apps."
 
 #: src/lib/help/reports.svelte.ts
 msgid "The scatter and agreement summaries show differences between paired readings."
@@ -31223,9 +31358,8 @@ msgstr "Review suggested low-reading windows for a possible quality correction."
 msgid "Automatic detection examines stored glucose patterns using the detection settings."
 msgstr "Automatic detection examines stored glucose patterns using the detection settings."
 
-#: src/lib/help/reports.svelte.ts
-msgid "Set date and status filters here. Configure automatic detection and typical sleep times in Settings → Data Quality. Inspect suggestions before accepting or dismissing."
-msgstr "Set date and status filters here. Configure automatic detection and typical sleep times in Settings → Data Quality. Inspect suggestions before accepting or dismissing."
+#~ msgid "Set date and status filters here. Configure automatic detection and typical sleep times in Settings → Data Quality. Inspect suggestions before accepting or dismissing."
+#~ msgstr "Set date and status filters here. Configure automatic detection and typical sleep times in Settings → Data Quality. Inspect suggestions before accepting or dismissing."
 
 #: src/lib/help/reports.svelte.ts
 msgid "Accepted corrections affect subsequent charts and analysis."
@@ -31243,9 +31377,8 @@ msgstr "This guide covers Steps: counting steps and viewing your activity over t
 msgid "Step-count records received from a supported source. Google Health can import steps available in your connected account."
 msgstr "Step-count records received from a supported source. Google Health can import steps available in your connected account."
 
-#: src/lib/help/reports.svelte.ts
-msgid "Choose dates above the report. Settings → Connectors & Apps → Google Health controls step imports and the historical start date."
-msgstr "Choose dates above the report. Settings → Connectors & Apps → Google Health controls step imports and the historical start date."
+#~ msgid "Choose dates above the report. Settings → Connectors & Apps → Google Health controls step imports and the historical start date."
+#~ msgstr "Choose dates above the report. Settings → Connectors & Apps → Google Health controls step imports and the historical start date."
 
 #: src/lib/help/reports.svelte.ts
 msgid "Daily totals and activity timing help you explore your routine alongside glucose."
@@ -31263,9 +31396,8 @@ msgstr "This guide covers Heart Rate: your recorded heart rate and patterns over
 msgid "Device or service samples through a supported connector. Google Health reduces its samples to one stable average per minute."
 msgstr "Device or service samples through a supported connector. Google Health reduces its samples to one stable average per minute."
 
-#: src/lib/help/reports.svelte.ts
-msgid "Choose dates here. Enable heart rate in Settings → Connectors & Apps → Google Health after checking your device's readings reach that account."
-msgstr "Choose dates here. Enable heart rate in Settings → Connectors & Apps → Google Health after checking your device's readings reach that account."
+#~ msgid "Choose dates here. Enable heart rate in Settings → Connectors & Apps → Google Health after checking your device's readings reach that account."
+#~ msgstr "Choose dates here. Enable heart rate in Settings → Connectors & Apps → Google Health after checking your device's readings reach that account."
 
 #: src/lib/help/reports.svelte.ts
 msgid "The timeline and daily summaries show heart-rate patterns alongside glucose."
@@ -31283,9 +31415,8 @@ msgstr "Explore sleep sessions, timing, and stage composition."
 msgid "Imported sleep sessions and stages, including supported Google Health records."
 msgstr "Imported sleep sessions and stages, including supported Google Health records."
 
-#: src/lib/help/reports.svelte.ts
-msgid "Choose dates and the view here; open a night for details. Configure imports in Connectors & Apps → Google Health."
-msgstr "Choose dates and the view here; open a night for details. Configure imports in Connectors & Apps → Google Health."
+#~ msgid "Choose dates and the view here; open a night for details. Configure imports in Connectors & Apps → Google Health."
+#~ msgstr "Choose dates and the view here; open a night for details. Configure imports in Connectors & Apps → Google Health."
 
 #: src/lib/help/reports.svelte.ts
 msgid "Compare nights and glucose during recorded sleep windows."
@@ -31303,9 +31434,8 @@ msgstr "Browse, search, add, or edit diabetes events."
 msgid "Uploaded, imported, and manually saved insulin, carbohydrate, notes, and device events."
 msgstr "Uploaded, imported, and manually saved insulin, carbohydrate, notes, and device events."
 
-#: src/lib/help/reports.svelte.ts
-msgid "Use category tabs and Search here. Add/edit and bulk deletion require write permission. Settings → Therapy shows schedules; Connectors & Apps manages sources."
-msgstr "Use category tabs and Search here. Add/edit and bulk deletion require write permission. Settings → Therapy shows schedules; Connectors & Apps manages sources."
+#~ msgid "Use category tabs and Search here. Add/edit and bulk deletion require write permission. Settings → Therapy shows schedules; Connectors & Apps manages sources."
+#~ msgstr "Use category tabs and Search here. Add/edit and bulk deletion require write permission. Settings → Therapy shows schedules; Connectors & Apps manages sources."
 
 #: src/lib/help/reports.svelte.ts
 msgid "Events appear on glucose timelines and feed insulin and carbohydrate analysis."
@@ -31347,9 +31477,8 @@ msgstr "Inspect one night and its stages."
 msgid "The selected sleep session, stage records, and glucose during that window."
 msgstr "The selected sleep session, stage records, and glucose during that window."
 
-#: src/lib/help/reports.svelte.ts
-msgid "Open a night from the Sleep report; choose other dates there. Import settings are in Connectors & Apps → Google Health."
-msgstr "Open a night from the Sleep report; choose other dates there. Import settings are in Connectors & Apps → Google Health."
+#~ msgid "Open a night from the Sleep report; choose other dates there. Import settings are in Connectors & Apps → Google Health."
+#~ msgstr "Open a night from the Sleep report; choose other dates there. Import settings are in Connectors & Apps → Google Health."
 
 #: src/lib/help/reports.svelte.ts
 msgid "The hypnogram and glucose summary explain the overview in detail."
@@ -34769,3 +34898,83 @@ msgstr "View explanation: recent treatments"
 #: src/lib/components/help/HelpBrowser.svelte
 msgid "Loading dashboard examples..."
 msgstr "Loading dashboard examples..."
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Check the available records"
+msgstr "Check the available records"
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Confirm the selected dates and the availability of glucose, loop status and insulin uploads before comparing panels."
+msgstr "Confirm the selected dates and the availability of glucose, loop status and insulin uploads before comparing panels."
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Follow the same period"
+msgstr "Follow the same period"
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Switch between the five analysis pages to compare daily patterns, events, predictions, loop activity and profile context."
+msgstr "Switch between the five analysis pages to compare daily patterns, events, predictions, loop activity and profile context."
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Inspect the detail"
+msgstr "Inspect the detail"
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Review individual events and missing-data warnings. Discuss therapy setting changes with your diabetes care team."
+msgstr "Review individual events and missing-data warnings. Discuss therapy setting changes with your diabetes care team."
+
+#: src/lib/help/reports.svelte.ts
+msgid "Explore recorded loop activity alongside glucose, insulin, meals and predictions."
+msgstr "Explore recorded loop activity alongside glucose, insulin, meals and predictions."
+
+#: src/lib/help/reports.svelte.ts
+msgid "Imported glucose, treatment, device-status and prediction records provide the report context. Availability depends on what your loop uploads."
+msgstr "Imported glucose, treatment, device-status and prediction records provide the report context. Availability depends on what your loop uploads."
+
+#: src/lib/help/reports.svelte.ts
+msgid "Choose the report dates and filters, then switch between Daily Profile, Meals and Events, Prediction Accuracy, Loop Health and Settings Evidence."
+msgstr "Choose the report dates and filters, then switch between Daily Profile, Meals and Events, Prediction Accuracy, Loop Health and Settings Evidence."
+
+#: src/lib/help/reports.svelte.ts
+msgid "Compare timing and coverage across the pages, then inspect individual days or events to understand the summaries."
+msgstr "Compare timing and coverage across the pages, then inspect individual days or events to understand the summaries."
+
+#: src/lib/help/reports.svelte.ts
+msgid "Missing uploads and incomplete history limit the results. Comparisons describe observations and do not establish a treatment effect or recommend settings changes."
+msgstr "Missing uploads and incomplete history limit the results. Comparisons describe observations and do not establish a treatment effect or recommend settings changes."
+
+#: src/lib/help/reports.svelte.ts
+msgid "Choose the report period. Settings â†’ Data Quality contains detection and maintenance controls. Each detailed quality report has its own filters."
+msgstr "Choose the report period. Settings â†’ Data Quality contains detection and maintenance controls. Each detailed quality report has its own filters."
+
+#: src/lib/help/reports.svelte.ts
+msgid "Choose dates here; configure detection in Settings â†’ Data Quality."
+msgstr "Choose dates here; configure detection in Settings â†’ Data Quality."
+
+#: src/lib/help/reports.svelte.ts
+msgid "Choose Device, Reference, and Match within here. Manage sources in Settings â†’ Connectors & Apps."
+msgstr "Choose Device, Reference, and Match within here. Manage sources in Settings â†’ Connectors & Apps."
+
+#: src/lib/help/reports.svelte.ts
+msgid "Set date and status filters here. Configure automatic detection and typical sleep times in Settings â†’ Data Quality. Inspect suggestions before accepting or dismissing."
+msgstr "Set date and status filters here. Configure automatic detection and typical sleep times in Settings â†’ Data Quality. Inspect suggestions before accepting or dismissing."
+
+#: src/lib/help/reports.svelte.ts
+msgid "Choose dates above the report. Settings â†’ Connectors & Apps â†’ Google Health controls step imports and the historical start date."
+msgstr "Choose dates above the report. Settings â†’ Connectors & Apps â†’ Google Health controls step imports and the historical start date."
+
+#: src/lib/help/reports.svelte.ts
+msgid "Choose dates here. Enable heart rate in Settings â†’ Connectors & Apps â†’ Google Health after checking your device's readings reach that account."
+msgstr "Choose dates here. Enable heart rate in Settings â†’ Connectors & Apps â†’ Google Health after checking your device's readings reach that account."
+
+#: src/lib/help/reports.svelte.ts
+msgid "Choose dates and the view here; open a night for details. Configure imports in Connectors & Apps â†’ Google Health."
+msgstr "Choose dates and the view here; open a night for details. Configure imports in Connectors & Apps â†’ Google Health."
+
+#: src/lib/help/reports.svelte.ts
+msgid "Use category tabs and Search here. Add/edit and bulk deletion require write permission. Settings â†’ Therapy shows schedules; Connectors & Apps manages sources."
+msgstr "Use category tabs and Search here. Add/edit and bulk deletion require write permission. Settings â†’ Therapy shows schedules; Connectors & Apps manages sources."
+
+#: src/lib/help/reports.svelte.ts
+msgid "Open a night from the Sleep report; choose other dates there. Import settings are in Connectors & Apps â†’ Google Health."
+msgstr "Open a night from the Sleep report; choose other dates there. Import settings are in Connectors & Apps â†’ Google Health."

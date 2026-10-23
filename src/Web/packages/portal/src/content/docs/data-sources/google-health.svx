@@ -30,8 +30,10 @@ Access is read-only: Nocturne never writes to Google Health.
 
 <Callout type="info" title="Google Health is not enabled on this server">
 
-  If Nocturne says your operator hasn't enabled Google Health, the server has no Google client
-  yet. Whoever runs your Nocturne server needs to follow the steps below.
+If Nocturne says your operator hasn't enabled Google Health, its server-level Google client
+configuration is missing or invalid. This can also happen after an update to a previously
+working server. Whoever runs your Nocturne server needs to check the setup and recovery steps
+below before you can connect again.
 
 </Callout>
 
@@ -67,16 +69,71 @@ afterwards.
 
 ### 2. Give Nocturne the client
 
-Set these in your `.env` and restart Nocturne:
+Set these in your API server's environment. With Docker Compose, set them in your `.env` and
+ensure your Compose file passes them to the `nocturne-api` service:
 
-| Variable | Value |
-|----------|-------|
-| `GOOGLE_HEALTH_CLIENT_ID` | The client ID, ending in `.apps.googleusercontent.com`. |
-| `GOOGLE_HEALTH_CLIENT_SECRET` | The client secret. |
-| `GOOGLE_HEALTH_REDIRECT_URI` | Optional. Only needed when Nocturne cannot work the address out from `BASE_DOMAIN`, for example when `BASE_DOMAIN` is unset. It must end in `/api/v4/google-health/oauth/callback` and match the URI you registered exactly. |
+| Variable                      | Value                                                                                                                                                                                                                        |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GOOGLE_HEALTH_CLIENT_ID`     | The client ID, ending in `.apps.googleusercontent.com`.                                                                                                                                                                      |
+| `GOOGLE_HEALTH_CLIENT_SECRET` | The client secret.                                                                                                                                                                                                           |
+| `GOOGLE_HEALTH_REDIRECT_URI`  | Optional. Only needed when Nocturne cannot work the address out from `BASE_DOMAIN`, for example when `BASE_DOMAIN` is unset. It must end in `/api/v4/google-health/oauth/callback` and match the URI you registered exactly. |
+
+Use the public HTTPS hostname and port. For example, a server exposed on port `8450` uses
+`https://nocturne.example.com:8450/api/v4/google-health/oauth/callback`. Set
+`GOOGLE_HEALTH_REDIRECT_URI` explicitly if the derived address would omit your public port.
+Register this exact address under **Authorized redirect URIs** in Google Cloud; **Authorized
+JavaScript origins** do not replace the redirect list.
+
+After changing the environment, recreate the API container:
+
+```sh
+docker compose up -d --force-recreate nocturne-api
+```
+
+Restarting the existing container alone does not load changed environment variables. These
+credentials are server settings; the tenant's Google Health page has no client-secret form.
 
 The **Connect Google Health** button appears for everyone on the server once the client ID and
 secret are set and Nocturne has a redirect URI, from `BASE_DOMAIN` or the variable.
+
+### Recovery: Reconnect is requested but the button is missing
+
+The page can show **Google access expired or was revoked. Reconnect.** with technical code
+`reconnect_required`, while also showing **Unavailable** and saying the operator has not enabled
+Google Health. The reconnect message describes a stored connection error. **Unavailable** means
+the API cannot currently use its server-level Google client configuration, so the Connect button
+is hidden until that configuration is repaired.
+
+1. Check `GOOGLE_HEALTH_CLIENT_ID`, `GOOGLE_HEALTH_CLIENT_SECRET`, and
+   `GOOGLE_HEALTH_REDIRECT_URI` in the running API's environment. The client ID must end in
+   `.apps.googleusercontent.com`, the secret must be present, and the redirect must be a valid
+   public HTTPS URL with the path `/api/v4/google-health/oauth/callback`.
+2. Older setups may still use `/settings/connectors/google-health/callback`. That path is not
+   accepted by the current server configuration. Update the server setting and add the new API
+   callback URL to **Authorized redirect URIs** in the same Google Cloud OAuth client. Match the
+   scheme, hostname, port, and path exactly.
+3. Recreate the API container with the corrected environment as shown above, then reload the
+   Google Health page. If **Unavailable** remains, check that the variables reached the API and
+   inspect the server logs without sharing client secrets or tokens.
+4. When **Connect Google Health** appears, connect again, refresh the inventory, review the data
+   types, and save the import selection. If Google reports `redirect_uri_mismatch`, compare the
+   configured redirect and Google's registered URI again.
+
+Your imported history is kept. An import-cursor reset re-reads historical data; it does not repair
+OAuth credentials or an invalid callback URL, so it is not the remedy for this connection block.
+
+### Home Assistant apps
+
+For a Home Assistant installation, use the Nocturne app's **Configuration** tab and restart the
+app through Home Assistant. The Docker Compose command above is for a Compose installation.
+The Home Assistant app must expose Google client settings and pass them to the API. If there
+are no Google settings, changing Google's callback alone cannot enable the connector; the app
+needs an update that supports the server-level configuration.
+
+For example, [Nocturne Personal Release 1.0.84101](https://github.com/smokkelaar/nocturne-home-assistant/blob/main/nocturne_personal/config.json)
+does not expose Google client options, and its API environment builder does not pass these
+settings. Credentials previously saved through a tenant form do not configure the new
+server-level Google client.
 
 ### 3. Who can connect
 
@@ -94,8 +151,8 @@ users is usually enough.
 
 <Callout type="warning" title="Changing the client">
 
-  A Google connection belongs to the client it was made with. If you replace the client ID,
-  everyone who had connected sees **Reconnect** and has to click **Connect Google Health** again.
-  Their imported data is kept.
+A Google connection belongs to the client it was made with. If you replace the client ID,
+everyone who had connected sees **Reconnect** and has to click **Connect Google Health** again.
+Their imported data is kept.
 
 </Callout>

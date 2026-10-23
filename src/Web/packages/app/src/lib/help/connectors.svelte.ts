@@ -5,9 +5,9 @@ export function connectorArticles(): HelpArticle[] {
   const google = guide(
     "/settings/connectors/google-health",
     "Google Health",
-    "First install the Google Health app and make sure you can see the data you want to share there. Then follow the Google setup wizard and connect that same account to Nocturne.",
+    "First install the Google Health app and make sure you can see the data you want to share there. Your server operator configures one Google OAuth client for the server; then connect that same Google Health account to Nocturne.",
     "Your device or source app sends data to Google Health. Nocturne reads the selected account through Google's API and stores supported records in this tenant's existing histories. A Google Cloud project provides permission to use the API; it does not generate health data.",
-    "Open Settings → Connectors & Apps → Google Health. Keep the Google Cloud console in another tab. The reference panel below shows the callback path, requested read permissions, supported destinations, and default sync interval from this running version.",
+    "Open Settings → Connectors & Apps → Google Health and choose Connect Google Health. If the page says Unavailable and the button is missing, the server operator must first repair the Google client configuration using the recovery steps below. The reference panel shows the callback path, requested read permissions, supported destinations, and default sync interval from this running version.",
     "Imported steps, heart rate, and sleep appear in their reports. Weight appears in Patient Record → Weight history. The supported-destinations table below follows the connector's actual capability catalogue.",
     "The phone/watch must first sync to Google. Local Health Connect records do not guarantee availability in Google's cloud API. Inventory availability, Google sign-in, and import completion are separate states. Unsupported types can be visible but cannot be selected for import.",
     [
@@ -49,8 +49,8 @@ export function connectorArticles(): HelpArticle[] {
       ],
     },
     {
-      title: "Open Google's setup wizard",
-      text: "Open the Google Setup documentation linked below. Click its blue button labelled Enable the API and get an OAuth 2.0 Client ID. Use a Google account that can manage your Cloud project. If Google restricts access for your project, resolve that eligibility before continuing. Leave Nocturne open in another tab.",
+      title: "Server operator: open Google's setup wizard",
+      text: "The person running the Nocturne server sets up one Google client shared by its tenants. If that client is already configured, skip to connecting your account below. Otherwise open the Google Setup documentation linked below and choose Enable the API and get an OAuth 2.0 Client ID. Use a Google account that can manage your Cloud project. If Google restricts access for your project, resolve that eligibility before continuing. Leave Nocturne open in another tab.",
       links: [
         {
           title: "Open the Google Setup documentation",
@@ -68,11 +68,11 @@ export function connectorArticles(): HelpArticle[] {
     },
     {
       title: "Create the Web application client",
-      text: "For Where are you calling from? select Web Server. In the manual Clients screen the equivalent type is Web application. Copy the complete Callback URL shown by this Nocturne instance under Settings → Connectors & Apps → Google Health into the wizard's redirect field (Authorized redirect URIs). Use your own instance's URL, including its scheme, hostname, port, and callback path exactly. Replace any sample redirect from Google's guide. Click Create. If the wizard's layout changes, the essential choices remain a web client and that exact redirect.",
+      text: "For Where are you calling from? select Web Server. In the manual Clients screen the equivalent type is Web application. Under Authorized redirect URIs, register your server's public apex URL followed by /api/v4/google-health/oauth/callback, for example https://nocturne.example.com:8450/api/v4/google-health/oauth/callback. Preserve the actual HTTPS hostname and public port. Every tenant uses this server callback. The old /settings/connectors/google-health/callback path is not valid for the current server configuration. Click Create. Authorized JavaScript origins do not replace Authorized redirect URIs.",
     },
     {
-      title: "Download the client configuration and fill Nocturne's fields",
-      text: "Download the Client configuration/Credentials JSON. Copy Client ID and Client secret into the fields of the same names on Nocturne's Google Health page. The secret is required on first setup; leave it empty only when keeping a secret that was already saved. Check the Callback URL and choose Import data from for the history you want. Keep this form ready while you add the test user in the next step. Store the downloaded file privately: it contains credentials.",
+      title: "Configure the Nocturne API server",
+      text: "Download the Client configuration/Credentials JSON and keep it private. Set GOOGLE_HEALTH_CLIENT_ID and GOOGLE_HEALTH_CLIENT_SECRET in the API server's environment. The client ID must end in .apps.googleusercontent.com. GOOGLE_HEALTH_REDIRECT_URI can be derived from BASE_DOMAIN; set it explicitly when needed, especially for a public port, and use the exact URL registered in Google. Its path must be /api/v4/google-health/oauth/callback. These are server settings, not fields on the tenant's connector page. With Docker Compose, ensure the variables reach nocturne-api and recreate that service after changing them: docker compose up -d --force-recreate nocturne-api. Restarting an existing container alone does not load changed environment variables.",
     },
     {
       title: "Add the Google account as a test user",
@@ -83,8 +83,8 @@ export function connectorArticles(): HelpArticle[] {
       text: "In Google's Data Access page choose Add or remove scopes, select the Google Health read scopes shown in Nocturne's reference table below, then Update and Save. Nocturne adds basic sign-in identification itself. These scopes govern which records it can read; they do not allow Nocturne to write to your Google Health account.",
     },
     {
-      title: "Save and connect with the same account",
-      text: "Return to the prepared Nocturne form and choose Save and connect (or Sign in with Google for an existing configuration). Choose the Google Health account you added as a test user, review and grant the read permissions for the data you want, and confirm you return to Nocturne. Testing grants can expire after seven days and then need reconnection.",
+      title: "Connect with the same account",
+      text: "Return to Nocturne's Google Health page. Once the server configuration is valid, Connect Google Health appears. Choose it, select the Google Health account you added as a test user, review and grant the read permissions for the data you want, and confirm you return to Nocturne. Testing grants can expire after seven days and then need reconnection.",
     },
     {
       title: "Review the inventory and start an import",
@@ -101,6 +101,19 @@ export function connectorArticles(): HelpArticle[] {
   ];
   google.sections.push(
     {
+      title: "Reconnect is requested, but the Connect button is missing",
+      text: "Unavailable together with Your Nocturne operator hasn't enabled Google Health means the API cannot use its server-level Google client configuration. A client ID, client secret, or valid redirect URI may be missing or invalid; it does not necessarily mean Google Health was never enabled. The page can also show an earlier reconnect_required error saying Google access expired or was revoked. That stored error does not override the current server block: reconnecting is unavailable until the operator repairs the configuration. Imported history is kept. Use the server recovery steps below; resetting an import cursor does not repair OAuth configuration.",
+    },
+    {
+      title: "Server recovery after an update or configuration change",
+      text: "Check GOOGLE_HEALTH_CLIENT_ID, GOOGLE_HEALTH_CLIENT_SECRET, and GOOGLE_HEALTH_REDIRECT_URI in the running API's environment without sharing their secret values. In the same Google Cloud OAuth client, add the exact public server callback under Authorized redirect URIs: https://YOUR-HOST:YOUR-PORT/api/v4/google-health/oauth/callback (omit the port for standard HTTPS). If an older configuration uses /settings/connectors/google-health/callback, replace the server setting and register the new API callback in Google. Recreate the API container with the corrected environment, reload this page, and choose Connect Google Health once it appears. Then review the inventory and save your import selection. If Unavailable remains, check the API environment and server logs; if Google reports redirect_uri_mismatch, compare scheme, hostname, port, and path exactly.",
+    },
+    {
+      title:
+        "Home Assistant app: check whether Google client settings are supported",
+      text: "With Home Assistant, configure and restart the Nocturne app through Home Assistant rather than using Docker Compose commands. The app must offer Google client ID and client secret settings and pass them, together with the correct redirect URI, to the Nocturne API. If its Configuration tab has no Google settings, changing the callback in Google Cloud alone cannot enable the connector. The Home Assistant app needs an update that supports the server-level Google client configuration. For example, Nocturne Personal Release 1.0.84101 does not expose or pass these settings. Existing credentials saved through an older tenant form do not supply the new server configuration.",
+    },
+    {
       title: "Ongoing sync and historical progress",
       text: "Automatic sync uses the default interval shown below unless your server changes it. Managed imports resume recent data from a saved watermark with an overlap, then work backwards through older calendar months towards Import data from. Large or failing periods can be split into smaller windows. Progress describes stages and pages, not an exact remaining time. A restart resumes the saved cursor. Completed older months are not continually rescanned for data that Google uploads late.",
     },
@@ -111,11 +124,11 @@ export function connectorArticles(): HelpArticle[] {
     {
       title: "Common setup errors",
       // @wc-include
-      text: "redirect_uri_mismatch: copy the complete Nocturne Callback URL into the same OAuth client's redirect list. Access blocked or test-user errors: check Audience, exact email, enabled API, and current Google access eligibility. ACCOUNT_NOT_LINKED: complete the Google Health app profile with this account. Missing permission: sign in again and grant the required read access. An expired test grant: reconnect; production verification and quota rules belong to Google and can change.",
+      text: "redirect_uri_mismatch: register the API server's exact /api/v4/google-health/oauth/callback URL under Authorized redirect URIs in the same OAuth client. Access blocked or test-user errors: check Audience, exact email, enabled API, and current Google access eligibility. ACCOUNT_NOT_LINKED: complete the Google Health app profile with this account. Missing permission: sign in again and grant the required read access. An expired test grant: reconnect after any Unavailable server configuration has been repaired; production verification and quota rules belong to Google and can change.",
     },
     {
       title: "Pause, disconnect, and deletion",
-      text: "Clear selected types and Save import settings to pause imports without deleting history. Disconnect removes the connection but keeps imported records. Delete imported Google data is a separate confirmed action available after disconnecting; it affects this tenant's imported records, not Google's originals. Credentials are stored in the server's encrypted connector configuration. Never paste the secret or token into support conversations.",
+      text: "Clear selected types and Save import settings to pause imports without deleting history. Disconnect removes the connection but keeps imported records. Delete imported Google data is a separate confirmed action available after disconnecting; it affects this tenant's imported records, not Google's originals. The server operator manages the shared Google client credentials. Never paste the secret or token into support conversations.",
     }
   );
   google.sources = [

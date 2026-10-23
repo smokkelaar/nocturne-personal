@@ -18,6 +18,7 @@ public sealed class GoogleHealthConnectorInstaller : IConnectorInstaller
         services.AddConnectorConfiguration<GoogleHealthConnectorConfiguration>(
             configuration,
             "GoogleHealth");
+        services.TryAddSingleton<IGoogleHealthPlatformSource, ConfigurationGoogleHealthPlatformSource>();
         services.AddOptions<GoogleHealthPlatformOptions>().Configure(options =>
         {
             options.ClientId = configuration[GoogleHealthPlatformOptions.ClientIdKey]?.Trim() ?? "";

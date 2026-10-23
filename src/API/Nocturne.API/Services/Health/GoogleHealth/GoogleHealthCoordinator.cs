@@ -10,7 +10,7 @@ public sealed class GoogleHealthCoordinator(IGoogleHealthCoordinatorStore store)
     private const int StateLock = 0x474853;
     private const int WorkerLock = 0x474857;
     public sealed record DisconnectRequest(Guid RequestId, Guid SubjectId);
-    internal sealed record Flow(string State, string Verifier, Guid SubjectId, DateTimeOffset Expires);
+    internal sealed record Flow(string State, string Verifier, Guid SubjectId, DateTimeOffset Expires, string? PlatformFingerprint = null);
     public sealed record SyncProgress(GoogleHealthSyncPhase Phase, string? DataType,
         int CompletedDataTypes, int TotalDataTypes, int PagesRead, bool WorkerOwned = false);
 

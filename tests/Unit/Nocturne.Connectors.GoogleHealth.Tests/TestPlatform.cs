@@ -7,11 +7,11 @@ internal static class TestPlatform
 {
     public const string ClientId = "client.apps.googleusercontent.com";
 
-    public static IOptions<GoogleHealthPlatformOptions> Options() => Microsoft.Extensions.Options.Options.Create(
+    public static IGoogleHealthPlatformSource Options() => new ConfigurationGoogleHealthPlatformSource(Microsoft.Extensions.Options.Options.Create(
         new GoogleHealthPlatformOptions
         {
             ClientId = ClientId,
             ClientSecret = "client-secret",
             RedirectUri = "https://example.test" + GoogleHealthPlatformOptions.CallbackPath
-        });
+        }));
 }

@@ -9,6 +9,8 @@ public static class GoogleHealthPlatformRegistration
     public static IServiceCollection AddGoogleHealthPlatform(this IServiceCollection services)
     {
         services.AddSingleton<GoogleHealthOAuthState>();
+        services.AddSingleton<GoogleHealthAdminSettings>();
+        services.AddSingleton<IGoogleHealthPlatformSource>(sp => sp.GetRequiredService<GoogleHealthAdminSettings>());
         services.AddOptions<GoogleHealthPlatformOptions>()
             .PostConfigure<IOptions<BaseDomainOptions>>((platform, baseDomain) =>
             {

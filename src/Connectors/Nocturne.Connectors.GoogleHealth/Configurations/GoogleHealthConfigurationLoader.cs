@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Options;
 using Nocturne.Connectors.Core.Interfaces;
 using Nocturne.Connectors.Core.Services;
 
@@ -11,13 +10,13 @@ namespace Nocturne.Connectors.GoogleHealth.Configurations;
 /// </summary>
 public sealed class GoogleHealthConfigurationLoader(
     ConnectorConfigurationLoader<GoogleHealthConnectorConfiguration> inner,
-    IOptions<GoogleHealthPlatformOptions> platform)
+    IGoogleHealthPlatformSettings platform)
     : IConnectorConfigurationLoader<GoogleHealthConnectorConfiguration>
 {
     public async Task<GoogleHealthConnectorConfiguration> LoadForTenantAsync(CancellationToken ct)
     {
         var configuration = await inner.LoadForTenantAsync(ct);
-        if (!platform.Value.IsConfigured) configuration.Enabled = false;
+        if (!(await platform.GetAsync(ct)).IsConfigured) configuration.Enabled = false;
         return configuration;
     }
 }

@@ -1,7 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Nocturne.Connectors.GoogleHealth.Configurations;
 using Nocturne.Connectors.GoogleHealth.Models;
 using Nocturne.Core.Contracts.Connectors;
@@ -20,7 +19,7 @@ public sealed class GoogleHealthSessionStore(
     GoogleHealthAuthTokenProvider oauth,
     IGoogleHealthGrantHolders holders,
     ITenantAccessor tenants,
-    IOptions<GoogleHealthPlatformOptions> platform,
+    IGoogleHealthPlatformSettings platform,
     ILogger<GoogleHealthSessionStore> logger,
     TimeSpan? revokeTimeout = null)
 {
@@ -38,10 +37,13 @@ public sealed class GoogleHealthSessionStore(
     /// per-tenant client, or one the operator replaced. Google refuses it, so only a new sign-in
     /// recovers.
     /// </summary>
-    public bool IssuedToAnotherClient(GoogleHealthConnectorConfiguration configuration) =>
-        platform.Value.IsConfigured &&
-        !string.IsNullOrWhiteSpace(configuration.RefreshToken) &&
-        !string.Equals(configuration.SessionClientId, platform.Value.ClientId, StringComparison.Ordinal);
+    public async Task<bool> IssuedToAnotherClientAsync(GoogleHealthConnectorConfiguration configuration, CancellationToken ct = default)
+    {
+        var settings = await platform.GetAsync(ct);
+        return settings.IsConfigured &&
+            !string.IsNullOrWhiteSpace(configuration.RefreshToken) &&
+            !string.Equals(configuration.SessionClientId, settings.ClientId, StringComparison.Ordinal);
+    }
 
     /// <summary>The stored session, with its cached access token when that is still current.</summary>
     public async Task<GoogleHealthTokenSession?> CurrentAsync(GoogleHealthConnectorConfiguration configuration)
@@ -68,7 +70,7 @@ public sealed class GoogleHealthSessionStore(
     {
         if (string.IsNullOrWhiteSpace(configuration.RefreshToken))
             throw new GoogleHealthException("reconnect_required", stage: "session_read");
-        if (IssuedToAnotherClient(configuration))
+        if (await IssuedToAnotherClientAsync(configuration, ct))
             throw new GoogleHealthException("client_changed", stage: "session_read");
         await oauth.DiscardStaleCacheAsync(configuration);
         if (force) oauth.InvalidateToken();
@@ -141,7 +143,7 @@ public sealed class GoogleHealthSessionStore(
         var secrets = await configurations.GetSecretsAsync(ConnectorName, ct);
         await holders.HoldAsync(TenantId, accountKey, ct);
         secrets.Remove(LegacyClientSecretKey);
-        secrets[SessionClientIdKey] = platform.Value.ClientId;
+        secrets[SessionClientIdKey] = (await platform.GetAsync(ct)).ClientId;
         secrets[RefreshTokenKey] = session.RefreshToken;
         secrets[GrantedScopesKey] = string.Join(' ', session.Scopes.Distinct(StringComparer.Ordinal));
         secrets[AccountKey] = accountKey;

@@ -3862,6 +3862,7 @@ msgid "Rate (U/hr)"
 msgstr "Tasa (U/h)"
 
 #: src/lib/components/entries/BolusSection.svelte
+#: src/lib/components/reports/year-overview/HeatmapLegend.svelte
 msgid "<0/> Advanced"
 msgstr "<0/> Avanzado"
 
@@ -12405,6 +12406,7 @@ msgstr "Error al cargar la comparación semanal"
 
 #: ../portal/src/lib/components/features/AlarmsDemo.svelte
 #: src/lib/components/alerts/PlaybackStrip.svelte
+#: src/lib/components/reports/year-overview/ColorFocusRange.svelte
 #: src/lib/components/reports/year-overview/ColorFocusRange.svelte
 #: src/routes/(authenticated)/reports/week-to-week/+page.svelte
 msgid "Reset"
@@ -21316,7 +21318,7 @@ msgid "Carbohydrates"
 msgstr "Carbohidratos"
 
 #: ../portal/src/lib/components/features/ReportsDemo.svelte
-#: src/lib/components/reports/year-overview/ColorFocusPreview.test-harness.svelte
+#: src/lib/components/reports/year-overview/ColorFocusRange.svelte
 #: src/routes/(authenticated)/reports/+page.svelte
 msgid "Average glucose"
 msgstr "Glucosa media"
@@ -23194,143 +23196,197 @@ msgstr "<0/> Sin datos"
 msgid "Average glucose — Year Overview"
 msgstr "Glucosa media — Resumen anual"
 
-#~ msgid "Point 1"
-#~ msgstr "Punto 1"
+#: src/lib/components/reports/year-overview/ColorFocusRange.svelte
+msgid "Point 1"
+msgstr "Punto 1"
 
-#~ msgid "Point 2"
-#~ msgstr "Punto 2"
+#: src/lib/components/reports/year-overview/ColorFocusRange.svelte
+msgid "Point 2"
+msgstr "Punto 2"
 
-#~ msgid "Point 3"
-#~ msgstr "Punto 3"
+#: src/lib/components/reports/year-overview/ColorFocusRange.svelte
+msgid "Point 3"
+msgstr "Punto 3"
 
-#~ msgid "Point 4"
-#~ msgstr "Punto 4"
+#: src/lib/components/reports/year-overview/ColorFocusRange.svelte
+msgid "Point 4"
+msgstr "Punto 4"
 
-#~ msgid "Reset average glucose color boundaries"
-#~ msgstr "Restablecer límites de color de glucosa media"
+#: src/lib/components/reports/year-overview/ColorFocusRange.svelte
+msgid "Reset average glucose color boundaries"
+msgstr "Restablecer límites de color de glucosa media"
 
-#~ msgid "Reset {0} color range to automatic"
-#~ msgstr "Restablecer el rango de color de {0} a automático"
+#. 0: metricLabel
+#: src/lib/components/reports/year-overview/ColorFocusRange.svelte
+msgid "Reset {0} color range to automatic"
+msgstr "Restablecer el rango de color de {0} a automático"
 
-#~ msgid "{0} {1} color point"
-#~ msgstr "Punto de color {0} {1}"
+#. 0: metricLabel; 1: index === 0 ? "low" \\: "high"
+#: src/lib/components/reports/year-overview/ColorFocusRange.svelte
+msgid "{0} {1} color point"
+msgstr "Punto de color {0} {1}"
 
-#~ msgid "{0} {1} color {2}"
-#~ msgstr "{0} {1} color {2}"
+#. 0: metricLabel; 1: labels[index]; 2: glucose ? "boundary" \\: "value"
+#: src/lib/components/reports/year-overview/ColorFocusRange.svelte
+msgid "{0} {1} color {2}"
+msgstr "{0} {1} color {2}"
 
-#~ msgid "{0} focus lines"
-#~ msgstr "Líneas de enfoque de {0}"
+#. 0: metricLabel
+#: src/lib/components/reports/year-overview/ColorFocusRange.svelte
+msgid "{0} focus lines"
+msgstr "Líneas de enfoque de {0}"
 
-#~ msgid "Focus minimum line"
-#~ msgstr "Línea mínima de enfoque"
+#: src/lib/components/reports/year-overview/ColorFocusRange.svelte
+msgid "Focus minimum line"
+msgstr "Línea mínima de enfoque"
 
-#~ msgid "Focus maximum line"
-#~ msgstr "Línea máxima de enfoque"
+#: src/lib/components/reports/year-overview/ColorFocusRange.svelte
+msgid "Focus maximum line"
+msgstr "Línea máxima de enfoque"
 
-#~ msgid "Average glucose color boundaries"
-#~ msgstr "Límites de color de glucosa media"
+#: src/lib/components/reports/year-overview/ColorFocusRange.svelte
+msgid "Average glucose color boundaries"
+msgstr "Límites de color de glucosa media"
 
-#~ msgid "{0} color focus"
-#~ msgstr "Enfoque de color de {0}"
+#. 0: metricLabel
+#: src/lib/components/reports/year-overview/ColorFocusRange.svelte
+msgid "{0} color focus"
+msgstr "Enfoque de color de {0}"
 
-#. 0: metricLabel; 1: formatted(scale.axis[0]); 2: formatted(scale.axis[1]); 3: unitLabel
+#. 0: metricLabel; 1: formatted(minimum); 2: formatted(maximum); 3: unitLabel
 #: src/lib/components/reports/year-overview/ColorFocusRange.svelte
 msgid "{0} color scale from {1} to {2} {3}"
 msgstr "Escala de color de {0} de {1} a {2} {3}"
 
+#: src/lib/components/reports/year-overview/ColorFocusRange.svelte
 #: src/routes/(authenticated)/settings/appearance/+page.svelte
 msgid "<0/> Low"
 msgstr "<0/> Bajo"
 
+#: src/lib/components/reports/year-overview/ColorFocusRange.svelte
 #: src/routes/(authenticated)/settings/appearance/+page.svelte
 msgid "<0/> High"
 msgstr "<0/> Alto"
 
-#~ msgid "<0/> Color Boundaries"
-#~ msgstr "<0/> Límites de color"
+#: src/lib/components/reports/year-overview/ColorFocusRange.svelte
+msgid "<0/> Color Boundaries"
+msgstr "<0/> Límites de color"
 
-#~ msgid "{0} focus minimum value"
-#~ msgstr "Valor mínimo de enfoque de {0}"
+#. 0: metricLabel
+#: src/lib/components/reports/year-overview/ColorFocusRange.svelte
+msgid "{0} focus minimum value"
+msgstr "Valor mínimo de enfoque de {0}"
 
-#~ msgid "{0} focus maximum value"
-#~ msgstr "Valor máximo de enfoque de {0}"
+#. 0: metricLabel
+#: src/lib/components/reports/year-overview/ColorFocusRange.svelte
+msgid "{0} focus maximum value"
+msgstr "Valor máximo de enfoque de {0}"
 
-#~ msgid "Dim:"
-#~ msgstr "Atenuación:"
+#: src/lib/components/reports/year-overview/ColorFocusRange.svelte
+#: src/lib/components/reports/year-overview/ColorFocusRange.svelte
+msgid "Dim:"
+msgstr "Atenuación:"
 
-#~ msgid "<0/> Focus Window"
-#~ msgstr "<0/> Ventana de enfoque"
+#: src/lib/components/reports/year-overview/ColorFocusRange.svelte
+#: src/lib/components/reports/year-overview/ColorFocusRange.svelte
+msgid "<0/> Focus Window"
+msgstr "<0/> Ventana de enfoque"
 
-#~ msgid "Color palette presets"
-#~ msgstr "Preajustes de paleta de colores"
+#: src/lib/components/reports/year-overview/ColorFocusRange.svelte
+#: src/lib/components/reports/year-overview/ColorFocusRange.svelte
+msgid "Color palette presets"
+msgstr "Preajustes de paleta de colores"
 
-#~ msgid "Theme colors are fixed; pick a palette to invert"
-#~ msgstr "Los colores del tema son fijos; elige una paleta para invertirlos"
+#: src/lib/components/reports/year-overview/ColorFocusRange.svelte
+msgid "Theme colors are fixed; pick a palette to invert"
+msgstr "Los colores del tema son fijos; elige una paleta para invertirlos"
 
-#~ msgid "Invert"
-#~ msgstr "Invertir"
+#: src/lib/components/reports/year-overview/ColorFocusRange.svelte
+#: src/lib/components/reports/year-overview/ColorFocusRange.svelte
+msgid "Invert"
+msgstr "Invertir"
 
-#~ msgid "<0/> Color Range"
-#~ msgstr "<0/> Rango de color"
+#: src/lib/components/reports/year-overview/ColorFocusRange.svelte
+msgid "<0/> Color Range"
+msgstr "<0/> Rango de color"
 
 #: src/lib/components/reports/year-overview/ColorFocusRange.svelte
 msgid "Enter a dim percentage between 0 and 100."
 msgstr "Introduce un porcentaje de atenuación entre 0 y 100."
 
-#~ msgid "Enter four strictly increasing glucose color boundaries."
-#~ msgstr "Introduce cuatro límites de color de glucosa estrictamente crecientes."
+#: src/lib/components/reports/year-overview/ColorFocusRange.svelte
+msgid "Enter four strictly increasing glucose color boundaries."
+msgstr "Introduce cuatro límites de color de glucosa estrictamente crecientes."
 
-#~ msgid "Enter valid focus line boundaries (min < max)."
-#~ msgstr "Introduce límites válidos de las líneas de enfoque (mín < máx)."
+#: src/lib/components/reports/year-overview/ColorFocusRange.svelte
+#: src/lib/components/reports/year-overview/ColorFocusRange.svelte
+msgid "Enter valid focus line boundaries (min < max)."
+msgstr "Introduce límites válidos de las líneas de enfoque (mín < máx)."
 
 #~ msgid "Enter valid color scale boundaries (min < max)."
 #~ msgstr ""
 
-#~ msgid "{0}: color {1} {2} {3}"
-#~ msgstr "{0}: color {1} {2} {3}"
+#. 0: metricLabel; 1: glucose ? "boundaries" \\: "focus"; 2: values.map(formatted).join(" / "); 3: unitLabel
+#: src/lib/components/reports/year-overview/ColorFocusRange.svelte
+msgid "{0}: color {1} {2} {3}"
+msgstr "{0}: color {1} {2} {3}"
 
+#: src/lib/components/reports/year-overview/HeatmapLegend.svelte
 #: src/routes/(authenticated)/settings/appearance/+page.svelte
 msgid "Theme"
 msgstr "Tema"
 
-#~ msgid "Viridis"
-#~ msgstr "Viridis"
+#: src/lib/components/reports/year-overview/HeatmapLegend.svelte
+msgid "Viridis"
+msgstr "Viridis"
 
-#~ msgid "Plasma"
-#~ msgstr "Plasma"
+#: src/lib/components/reports/year-overview/HeatmapLegend.svelte
+msgid "Plasma"
+msgstr "Plasma"
 
-#~ msgid "Inferno"
-#~ msgstr "Inferno"
+#: src/lib/components/reports/year-overview/HeatmapLegend.svelte
+msgid "Inferno"
+msgstr "Inferno"
 
-#~ msgid "Magma"
-#~ msgstr "Magma"
+#: src/lib/components/reports/year-overview/HeatmapLegend.svelte
+msgid "Magma"
+msgstr "Magma"
 
-#~ msgid "Cividis"
-#~ msgstr "Cividis"
+#: src/lib/components/reports/year-overview/HeatmapLegend.svelte
+msgid "Cividis"
+msgstr "Cividis"
 
-#~ msgid "Turbo"
-#~ msgstr "Turbo"
+#: src/lib/components/reports/year-overview/HeatmapLegend.svelte
+msgid "Turbo"
+msgstr "Turbo"
 
-#~ msgid "Mako"
-#~ msgstr "Mako"
+#: src/lib/components/reports/year-overview/HeatmapLegend.svelte
+msgid "Mako"
+msgstr "Mako"
 
-#~ msgid "Rocket"
-#~ msgstr "Rocket"
+#: src/lib/components/reports/year-overview/HeatmapLegend.svelte
+msgid "Rocket"
+msgstr "Rocket"
 
-#~ msgid "Return panel to the page"
-#~ msgstr "Devolver el panel a la página"
+#: src/lib/components/reports/year-overview/HeatmapLegend.svelte
+msgid "Return panel to the page"
+msgstr "Devolver el panel a la página"
 
-#~ msgid "Float panel in the top-right corner"
-#~ msgstr "Flotar el panel en la esquina superior derecha"
+#: src/lib/components/reports/year-overview/HeatmapLegend.svelte
+msgid "Float panel in the top-right corner"
+msgstr "Flotar el panel en la esquina superior derecha"
 
-#~ msgid "Dock"
-#~ msgstr "Acoplar"
+#: src/lib/components/reports/year-overview/HeatmapLegend.svelte
+msgid "Dock"
+msgstr "Acoplar"
 
-#~ msgid "Float"
-#~ msgstr "Flotar"
+#: src/lib/components/reports/year-overview/HeatmapLegend.svelte
+msgid "Float"
+msgstr "Flotar"
 
-#~ msgid "Default scale"
-#~ msgstr "Escala predeterminada"
+#: src/lib/components/reports/year-overview/HeatmapLegend.svelte
+msgid "Default scale"
+msgstr "Escala predeterminada"
 
 #~ msgid "{0} default scale"
 #~ msgstr ""
@@ -24004,10 +24060,12 @@ msgstr "Fecha de nacimiento"
 msgid "Printed"
 msgstr "Impreso"
 
-#~ msgid "Enter valid color scale boundaries (min < max{0})."
-#~ msgstr "Introduce límites válidos de la escala de color (mín < máx{0})."
+#. 0: fixedMax !== undefined ? `, up to ${fixedMax} ${unitLabel}` \\: ""
+#: src/lib/components/reports/year-overview/ColorFocusRange.svelte
+msgid "Enter valid color scale boundaries (min < max{0})."
+msgstr "Introduce límites válidos de la escala de color (mín < máx{0})."
 
-#. 0: veryLow; 1: unitLabel
+#. 0: veryLow; 1: unit
 #: src/lib/components/reports/year-overview/HeatmapLegend.svelte
 msgid "Very low < {0} {1}"
 msgstr "Muy bajo < {0} {1}"
@@ -24027,8 +24085,9 @@ msgstr "Alto ≥ {0}"
 msgid "Very high ≥ {0}"
 msgstr "Muy alto ≥ {0}"
 
-#~ msgid "Custom scale"
-#~ msgstr "Escala personalizada"
+#: src/lib/components/reports/year-overview/HeatmapLegend.svelte
+msgid "Custom scale"
+msgstr "Escala personalizada"
 
 #. 0: comparison.deviceAName; 1: comparison.deviceBName; 2: comparison.toleranceMinutes
 #: src/routes/(authenticated)/reports/data-quality/cgm-comparison/+page.svelte
@@ -27864,66 +27923,40 @@ msgstr ""
 msgid "See how your insulin was split each day, against the carbs you logged"
 msgstr ""
 
-#: src/lib/components/layout/Headroom.test-harness.svelte
-msgid "Panel"
-msgstr ""
+#~ msgid "Panel"
+#~ msgstr ""
 
-#. 0: metricLabel
-#: src/lib/components/reports/year-overview/ColorFocusRange.svelte
-msgid "Reset {0} color scale"
-msgstr ""
+#~ msgid "Reset {0} color scale"
+#~ msgstr ""
 
-#: src/lib/components/reports/year-overview/ColorFocusRange.svelte
-msgid "Dim outside"
-msgstr ""
+#~ msgid "Dim outside"
+#~ msgstr ""
 
-#. 0: metricLabel; 1: index === 0 ? "minimum" \\: "maximum"
-#. 0: metricLabel; 1: thumb.index === 0 ? "minimum" \\: "maximum"
-#: src/lib/components/reports/year-overview/ColorFocusRange.svelte
-#: src/lib/components/reports/year-overview/ColorFocusRange.svelte
-msgid "{0} focus {1}"
-msgstr ""
+#~ msgid "{0} focus {1}"
+#~ msgstr ""
 
-#. 0: metricLabel
-#. 0: metricLabel
-#: src/lib/components/reports/year-overview/ColorFocusRange.svelte
-#: src/lib/components/reports/year-overview/HeatmapLegend.svelte
-msgid "{0} color scale"
-msgstr ""
+#~ msgid "{0} color scale"
+#~ msgstr ""
 
-#. 0: metricLabel; 1: thumb.index - 1
-#. 0: metricLabel; 1: index + 1
-#: src/lib/components/reports/year-overview/ColorFocusRange.svelte
-#: src/lib/components/reports/year-overview/ColorFocusRange.svelte
-msgid "{0} color boundary {1}"
-msgstr ""
+#~ msgid "{0} color boundary {1}"
+#~ msgstr ""
 
-#. 0: metricLabel; 1: index + 1
-#: src/lib/components/reports/year-overview/ColorFocusRange.svelte
-msgid "Remove {0} color boundary {1}"
-msgstr ""
+#~ msgid "Remove {0} color boundary {1}"
+#~ msgstr ""
 
-#: src/lib/components/reports/year-overview/ColorFocusRange.svelte
-msgid "<0/> Color boundary"
-msgstr ""
+#~ msgid "<0/> Color boundary"
+#~ msgstr ""
 
-#. 0: Number.isFinite(limits[1]) ? `, between ${formatted(limits[0])} and ${formatted(limits[1])} ${unitLabel}` \\: ""
-#: src/lib/components/reports/year-overview/ColorFocusRange.svelte
-msgid "Enter a focus window with its minimum below its maximum{0}."
-msgstr ""
+#~ msgid "Enter a focus window with its minimum below its maximum{0}."
+#~ msgstr ""
 
-#. 0: Number.isFinite(limits[1]) ? ` and inside ${formatted(limits[0])}–${formatted(limits[1])} ${unitLabel}` \\: ` and above ${formatted(limits[0])} ${unitLabel}`
-#: src/lib/components/reports/year-overview/ColorFocusRange.svelte
-msgid "Keep each color boundary between its neighbours{0}."
-msgstr ""
+#~ msgid "Keep each color boundary between its neighbours{0}."
+#~ msgstr ""
 
-#. 0: formatted(scale.window[0]); 1: formatted(scale.window[1]); 2: unitLabel
-#: src/lib/components/reports/year-overview/HeatmapLegend.svelte
-msgid "Focus {0}–{1} {2}"
-msgstr ""
+#~ msgid "Focus {0}–{1} {2}"
+#~ msgstr ""
 
 #: src/lib/components/help/HelpReference.svelte
-#: src/routes/(authenticated)/reports/year-overview/+page.svelte
 msgid "Band"
 msgstr ""
 

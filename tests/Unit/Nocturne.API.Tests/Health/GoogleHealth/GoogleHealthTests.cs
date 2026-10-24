@@ -1616,7 +1616,7 @@ public class GoogleHealthTests : IDisposable
         Nocturne.Core.Models.V4.BiologicalSex? sex = null,
         IGoogleHealthGrantHolders? holders = null)
     {
-        var platformOptions = Microsoft.Extensions.Options.Options.Create(platform ?? Platform());
+        var platformOptions = new FixedGoogleHealthPlatformSettings(platform ?? Platform());
         var tenant = new Mock<ITenantAccessor>();
         tenant.SetupGet(value => value.IsResolved).Returns(true);
         tenant.SetupGet(value => value.TenantId).Returns(tenantId);

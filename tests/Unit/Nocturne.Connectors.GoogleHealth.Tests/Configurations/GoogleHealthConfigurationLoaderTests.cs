@@ -32,7 +32,7 @@ public class GoogleHealthConfigurationLoaderTests
                 new ConnectorRegistration<GoogleHealthConnectorConfiguration>(new(), "GoogleHealth"),
                 configurations.Object,
                 NullLogger<ConnectorConfigurationLoader<GoogleHealthConnectorConfiguration>>.Instance),
-            platformConfigured ? TestPlatform.Options() : Options.Create(new GoogleHealthPlatformOptions()));
+            platformConfigured ? TestPlatform.Options() : new FixedGoogleHealthPlatformSettings(new GoogleHealthPlatformOptions()));
 
         var configuration = await loader.LoadForTenantAsync(default);
 

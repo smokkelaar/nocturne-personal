@@ -21,6 +21,7 @@
   import { errorMessage } from "$lib/forms/submit-error";
 
   const DISPLAY_NAMES: Record<string, string> = {
+    "google-health": "Google Health",
     discord: "Discord",
     slack: "Slack",
     telegram: "Telegram",
@@ -55,7 +56,7 @@
   function buildInitialState(platform: PlatformSettingsSummary): PlatformState {
     const fieldValues: Record<string, string> = {};
     for (const field of platform.fields ?? []) {
-      fieldValues[field.name ?? ""] = "";
+      fieldValues[field.name ?? ""] = field.defaultValue ?? "";
     }
     return {
       enabled: platform.enabled ?? false,
@@ -85,11 +86,18 @@
       await onSave(category, state.enabled, state.fieldValues);
       // Clear field values after successful save (secrets are stored, not echoed)
       for (const key of Object.keys(state.fieldValues)) {
-        state.fieldValues[key] = "";
+        state.fieldValues[key] =
+          key === "redirectUri" ? state.fieldValues[key] : "";
       }
-      toast.success("Settings saved. Restart the frontend for changes to take effect.");
+      toast.success(
+        category === "google-health"
+          ? "Google Health settings saved. No restart required."
+          : "Settings saved. Restart the frontend for changes to take effect."
+      );
     } catch (err) {
-      toast.error("Failed to save settings", { description: errorMessage(err) });
+      toast.error("Failed to save settings", {
+        description: errorMessage(err),
+      });
     } finally {
       state.saving = false;
     }
@@ -98,7 +106,10 @@
   async function handleDelete(platform: PlatformSettingsSummary) {
     const category = platform.category ?? "";
     const displayName = DISPLAY_NAMES[category] ?? category;
-    if (!confirm(`Remove all ${displayName} credentials? This cannot be undone.`)) return;
+    if (
+      !confirm(`Remove all ${displayName} credentials? This cannot be undone.`)
+    )
+      return;
 
     const state = states[category];
     if (!state) return;
@@ -150,39 +161,90 @@
         </CardHeader>
         <CardContent>
           <div class="space-y-4">
+            {#if category === "google-health"}
+              <p class="text-sm text-muted-foreground">
+                One OAuth client for this instance. Each user connects their own
+                Google account. Copy the callback URL into Google Cloud. Changes
+                apply without a restart; replacing the client ID requires users
+                to reconnect. Imported data is kept.
+              </p>
+            {/if}
             {#if category === "telegram" && !(platform.configuredFields ?? []).includes("webhookSecretToken")}
               <Alert.Root>
                 <TriangleAlert class="h-4 w-4" />
                 <Alert.Title>A webhook secret token is required</Alert.Title>
                 <Alert.Description>
                   <p>
-                    Telegram webhook calls are refused until one is set. Choose a random value of
-                    letters, digits, <code>_</code> or <code>-</code> (for example from
-                    <code>openssl rand -hex 32</code>), save it here with the bot enabled, then
-                    register the webhook again with the same value:
+                    Telegram webhook calls are refused until one is set. Choose
+                    a random value of letters, digits, <code>_</code>
+                    or
+                    <code>-</code>
+                    (for example from
+                    <code>openssl rand -hex 32</code>
+                    ), save it here with the bot enabled, then register the
+                    webhook again with the same value:
                   </p>
-                  <code class="block whitespace-pre-wrap break-all">{TELEGRAM_SET_WEBHOOK}</code>
+                  <code class="block whitespace-pre-wrap break-all">
+                    {TELEGRAM_SET_WEBHOOK}
+                  </code>
                 </Alert.Description>
               </Alert.Root>
             {/if}
             {#each platform.fields ?? [] as field (field.name)}
               {@const name = field.name ?? ""}
-              {@const fieldConfigured = (platform.configuredFields ?? []).includes(name)}
+              {@const fieldConfigured = (
+                platform.configuredFields ?? []
+              ).includes(name)}
               <div class="space-y-1.5">
                 <div class="flex items-center gap-2">
-                  <Label for="field-{category}-{name}">{field.label ?? name}</Label>
+                  <Label for="field-{category}-{name}">
+                    {field.label ?? name}
+                  </Label>
                   {#if fieldConfigured}
                     <Badge variant="outline">Set</Badge>
                   {/if}
                 </div>
                 <Input
                   id="field-{category}-{name}"
-                  type="password"
-                  placeholder={fieldConfigured ? "Leave blank to keep current value" : "Not set"}
+                  type={category === "google-health" && name !== "clientSecret"
+                    ? "text"
+                    : "password"}
+                  autocomplete="off"
+                  placeholder={fieldConfigured
+                    ? "Leave blank to keep current value"
+                    : "Not set"}
                   bind:value={state.fieldValues[name]}
+                  aria-describedby={category === "google-health" &&
+                  name === "redirectUri"
+                    ? "google-health-callback-help"
+                    : undefined}
                 />
               </div>
             {/each}
+            {#if category === "google-health"}
+              <p
+                id="google-health-callback-help"
+                class="text-xs text-muted-foreground"
+              >
+                Use the exact public callback URL, ending in
+                /api/v4/google-health/oauth/callback. Override it only when the
+                suggested URL differs from your public address.
+              </p>
+              <details class="text-sm text-muted-foreground">
+                <summary class="cursor-pointer">
+                  Google publishing and verification
+                </summary>
+                <p class="mt-2">
+                  Testing limits access to test users and expires refresh tokens
+                  after seven days. Publishing to Production removes that
+                  testing expiry. An unverified app still shows a warning and
+                  has a 100-user limit. Verification is a separate review;
+                  serving more than 100 users requires a third-party security
+                  assessment. Tokens can still expire or be revoked. Each user
+                  controls consent in their Google account.
+                </p>
+              </details>
+            {/if}
           </div>
         </CardContent>
         <CardFooter class="flex justify-between">
@@ -199,7 +261,10 @@
           {:else}
             <div></div>
           {/if}
-          <Button onclick={() => handleSave(platform)} disabled={state.saving || state.deleting}>
+          <Button
+            onclick={() => handleSave(platform)}
+            disabled={state.saving || state.deleting}
+          >
             {state.saving ? "Saving..." : "Save"}
           </Button>
         </CardFooter>

@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Nocturne.API.Attributes;
 using Nocturne.API.Services;
+using Nocturne.API.Services.Health.GoogleHealth;
 using OpenApi.Remote.Attributes;
 
 namespace Nocturne.API.Controllers.V4.PlatformAdmin;
@@ -57,7 +58,7 @@ public class PlatformSettingsController : ControllerBase
         var (success, errors) = await _service.UpsertAsync(category, request.Enabled, request.Fields);
         if (!success)
             return UnprocessableEntity(new { errors });
-        return Ok(new { restartRequired = category != "google-health" });
+        return Ok(new { restartRequired = category != GoogleHealthPlatformSettings.Category });
     }
 
     /// <summary>

@@ -45,7 +45,7 @@ public class PlatformSettingsService
     /// </summary>
     private static readonly Dictionary<string, List<FieldDefinition>> CategorySchemas = new()
     {
-        ["google-health"] =
+        [GoogleHealthPlatformSettings.Category] =
         [
             new("clientId", "Client ID", true),
             new("clientSecret", "Client secret", true),
@@ -123,7 +123,7 @@ public class PlatformSettingsService
             if (FieldFormats.TryGetValue((category, key), out var format) && !format.Pattern.IsMatch(value))
                 errors[key] = format.Message;
         }
-        if (category == "google-health")
+        if (category == GoogleHealthPlatformSettings.Category)
         {
             if (fields.TryGetValue("clientId", out var clientId) && !string.IsNullOrWhiteSpace(clientId) &&
                 !GoogleHealthPlatformOptions.IsValidClientId(clientId))
@@ -137,7 +137,7 @@ public class PlatformSettingsService
 
     private List<FieldDefinition> SummaryFields(string category, PlatformSettingsEntity? entity)
     {
-        if (category != "google-health") return CategorySchemas[category];
+        if (category != GoogleHealthPlatformSettings.Category) return CategorySchemas[category];
         var redirectUri = GoogleHealthPlatformSettings.DefaultRedirectUri(_baseDomain.Value);
         if (_encryption.IsConfigured && entity is not null)
         {
@@ -180,10 +180,7 @@ public class PlatformSettingsService
         };
     }
 
-    /// <summary>
-    /// Returns all decrypted platform credentials for bot initialization.
-    /// Only callable via instance-key auth (server-to-server).
-    /// </summary>
+    /// <summary>Decrypted credentials for one category, or null when absent or encryption is off.</summary>
     public async Task<PlatformCredentials?> GetCredentialsAsync(string category, CancellationToken ct = default)
     {
         if (!_encryption.IsConfigured) return null;
@@ -199,6 +196,10 @@ public class PlatformSettingsService
         };
     }
 
+    /// <summary>
+    /// Returns all decrypted platform credentials for bot initialization, excluding Google Health.
+    /// Only callable via instance-key auth (server-to-server).
+    /// </summary>
     public async Task<List<PlatformCredentials>> GetAllDecryptedAsync()
     {
         await using var db = await _contexts.CreateAsync();
@@ -206,7 +207,7 @@ public class PlatformSettingsService
             return [];
 
         var entities = await db.PlatformSettings.AsNoTracking()
-            .Where(e => e.Category != "google-health").ToListAsync();
+            .Where(e => e.Category != GoogleHealthPlatformSettings.Category).ToListAsync();
         var results = new List<PlatformCredentials>();
         foreach (var entity in entities)
         {
@@ -262,7 +263,7 @@ public class PlatformSettingsService
                 merged[key] = value;
         }
 
-        if (category == "google-health" && !merged.ContainsKey("redirectUri") &&
+        if (category == GoogleHealthPlatformSettings.Category && !merged.ContainsKey("redirectUri") &&
             GoogleHealthPlatformSettings.DefaultRedirectUri(_baseDomain.Value) is { Length: > 0 } callback)
             merged["redirectUri"] = callback;
 

@@ -49,8 +49,8 @@ public sealed class GoogleHealthService(
     private async Task<GoogleHealthConnectorConfiguration> StoredConfigurationAsync(CancellationToken ct) =>
         await StoredConfigurationOrNullAsync(ct) ?? throw new GoogleHealthException("configure_first");
 
-    private async Task<bool> HasLiveSessionAsync(GoogleHealthConnectorConfiguration configuration) =>
-        !string.IsNullOrWhiteSpace(configuration.RefreshToken) && !await sessions.IssuedToAnotherClientAsync(configuration);
+    private async Task<bool> HasLiveSessionAsync(GoogleHealthConnectorConfiguration configuration, CancellationToken ct) =>
+        !string.IsNullOrWhiteSpace(configuration.RefreshToken) && !await sessions.IssuedToAnotherClientAsync(configuration, ct);
 
     private static GoogleHealthOptions Options(GoogleHealthConnectorConfiguration configuration) => new()
     {
@@ -181,7 +181,8 @@ public sealed class GoogleHealthService(
 
     public async Task<GoogleHealthAuthorize> StartAsync(Guid subject, string? tenantSlug, CancellationToken ct)
     {
-        if (!(await platformOptions.GetAsync(ct)).IsConfigured)
+        var platform = await platformOptions.GetAsync(ct);
+        if (!platform.IsConfigured)
             throw new GoogleHealthException("platform_not_configured");
         await using var gate = await coordinator.AcquireAsync(TenantId, ct);
         var configuration = await StoredConfigurationAsync(ct);
@@ -198,8 +199,8 @@ public sealed class GoogleHealthService(
         await connectorConfigurations.SaveSecretsAsync(ConnectorName, secrets, subject.ToString(), ct);
         var parameters = new Dictionary<string, string?>
         {
-            ["client_id"] = (await platformOptions.GetAsync(ct)).ClientId,
-            ["redirect_uri"] = (await platformOptions.GetAsync(ct)).RedirectUri,
+            ["client_id"] = platform.ClientId,
+            ["redirect_uri"] = platform.RedirectUri,
             ["response_type"] = "code",
             ["access_type"] = "offline",
             ["include_granted_scopes"] = "true",
@@ -330,7 +331,7 @@ public sealed class GoogleHealthService(
     public async Task PurgeAsync(Guid subject, CancellationToken ct)
     {
         await using var gate = await coordinator.AcquireAsync(TenantId, ct);
-        if (await HasLiveSessionAsync(await configurationLoader.LoadForTenantAsync(ct)))
+        if (await HasLiveSessionAsync(await configurationLoader.LoadForTenantAsync(ct), ct))
             throw new GoogleHealthException("disconnect_first");
         await ClearFlowAsync(ct);
         await coordinator.CompleteAsync(TenantId);
@@ -424,7 +425,7 @@ public sealed class GoogleHealthService(
             if (await coordinator.DisconnectRequestAsync(TenantId, ct) is not null)
                 throw new GoogleHealthException("disconnect_first");
             var configuration = await StoredConfigurationAsync(ct);
-            if (!await HasLiveSessionAsync(configuration))
+            if (!await HasLiveSessionAsync(configuration, ct))
                 throw new GoogleHealthException("configure_first");
             var settings = Options(configuration);
             if (settings.PreviewOnly) throw new GoogleHealthException("preview_required");

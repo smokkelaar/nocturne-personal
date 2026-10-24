@@ -8,6 +8,8 @@ public sealed class GoogleHealthPlatformSettings(
     PlatformSettingsService settings,
     IOptions<BaseDomainOptions> baseDomain) : IGoogleHealthPlatformSettings
 {
+    public const string Category = "google-health";
+
     private Task<GoogleHealthPlatformOptions>? snapshot;
 
     public Task<GoogleHealthPlatformOptions> GetAsync(CancellationToken ct = default) =>
@@ -15,7 +17,7 @@ public sealed class GoogleHealthPlatformSettings(
 
     private async Task<GoogleHealthPlatformOptions> LoadAsync(CancellationToken ct)
     {
-        var credentials = await settings.GetCredentialsAsync("google-health", ct);
+        var credentials = await settings.GetCredentialsAsync(Category, ct);
         var fields = credentials?.Fields;
         return new GoogleHealthPlatformOptions
         {

@@ -33,6 +33,7 @@ public class DeviceStatusDecomposer : DecomposerBase, IDeviceStatusDecomposer, I
     private readonly IStateSpanService _stateSpanService;
     private readonly IDeviceService _deviceService;
     private readonly IAuditContext _auditContext;
+    private readonly ILoopClosedLoopStamper _closedLoop;
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -48,6 +49,7 @@ public class DeviceStatusDecomposer : DecomposerBase, IDeviceStatusDecomposer, I
         IStateSpanService stateSpanService,
         IDeviceService deviceService,
         IAuditContext auditContext,
+        ILoopClosedLoopStamper closedLoop,
         ILogger<DeviceStatusDecomposer> logger)
         : base(logger)
     {
@@ -58,6 +60,7 @@ public class DeviceStatusDecomposer : DecomposerBase, IDeviceStatusDecomposer, I
         _stateSpanService = stateSpanService;
         _deviceService = deviceService;
         _auditContext = auditContext;
+        _closedLoop = closedLoop;
     }
 
     /// <summary>
@@ -135,6 +138,7 @@ public class DeviceStatusDecomposer : DecomposerBase, IDeviceStatusDecomposer, I
         {
             apsAttempted = true;
             await UpsertApsSnapshotAsync(legacyId, apsModel, pumpDeviceId, statusMills, group, result, origin, ct);
+            await StampLoopAsync(result, ct);
         }
 
         if (ds.Uploader != null || ds.UploaderBattery.HasValue)
@@ -193,6 +197,10 @@ public class DeviceStatusDecomposer : DecomposerBase, IDeviceStatusDecomposer, I
             },
             findStored: group is null ? null : () => Task.FromResult(group.Aps));
     }
+
+    private Task StampLoopAsync(V4Models.DecompositionResult result, CancellationToken ct) =>
+        _closedLoop.AfterSnapshotsWrittenAsync(
+            result.CreatedRecords.Concat(result.UpdatedRecords).OfType<V4Models.ApsSnapshot>(), ct);
 
     #endregion
 
@@ -977,6 +985,8 @@ public class DeviceStatusDecomposer : DecomposerBase, IDeviceStatusDecomposer, I
 
             await BulkCreateAsync(_extrasRepo, extrasList, result, origin, ct);
         }
+
+        await StampLoopAsync(result, ct);
 
         var writtenSnapshots = result.CreatedRecords.Concat(result.UpdatedRecords)
             .OfType<V4Models.IV4Record>()

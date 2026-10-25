@@ -117,7 +117,7 @@
   ></div>
 
   <!-- Year Label -->
-  <div class="mb-3 flex items-center gap-3">
+  <div class="mb-3 flex flex-wrap items-center gap-x-3 gap-y-1">
     <h2 class="text-xl font-bold tabular-nums">{year}</h2>
     {#if failed}
       <span class="text-sm text-destructive">Some year data could not be loaded.</span>

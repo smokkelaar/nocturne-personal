@@ -413,7 +413,7 @@
       {/if}
 
       {#if !tenantless}
-        <div class="flex justify-center gap-3 text-xs">
+        <div class="flex flex-wrap justify-center gap-x-3 gap-y-1 text-xs">
           {@render otherMethodLinks()}
         </div>
       {/if}
@@ -458,7 +458,7 @@
         </Button>
       </form>
 
-      <div class="flex justify-between text-xs">
+      <div class="flex flex-wrap justify-between gap-x-3 gap-y-1 text-xs">
         {@render backToSignIn("Back")}
         <div class="flex gap-3">
           {@render otherMethodLinks()}

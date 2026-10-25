@@ -48,14 +48,14 @@
           <Input
             type="time"
             bind:value={entry.time}
-            class="w-32"
+            class="w-32 min-w-0 shrink"
           />
           <Input
             type="number"
             bind:value={entry.value}
             {step}
             {min}
-            class="w-28"
+            class="w-28 min-w-0 shrink"
           />
           <span class="text-sm text-muted-foreground whitespace-nowrap">{unit}</span>
           {#if entries.length > 1}

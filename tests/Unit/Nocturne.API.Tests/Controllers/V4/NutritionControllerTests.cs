@@ -222,5 +222,5 @@ public class NutritionControllerTests : IDisposable
 
     private void VerifyCarbIntakesFetched(int limit, int offset) =>
         _repoMock.Verify(r => r.GetAsync(
-            null, null, null, null, limit, offset, true, false, null, null, It.IsAny<CancellationToken>()), Times.Once);
+            null, null, null, null, limit, offset, true, null, null, It.IsAny<CancellationToken>()), Times.Once);
 }

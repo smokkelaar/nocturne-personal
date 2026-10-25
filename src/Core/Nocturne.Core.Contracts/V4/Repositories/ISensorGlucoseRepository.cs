@@ -10,8 +10,6 @@ namespace Nocturne.Core.Contracts.V4.Repositories;
 /// <remarks>
 /// This is the V4 native store for CGM data. Legacy V1/V2/V3 SGV entries are projected into this
 /// repository so that statistics and chart services have a single source of truth.
-/// The <paramref name="nativeOnly"/> flag restricts results to records inserted through the V4 API,
-/// excluding projected legacy entries.
 /// </remarks>
 /// <seealso cref="SensorGlucose"/>
 /// <seealso cref="IBGCheckRepository"/>
@@ -31,7 +29,6 @@ public interface ISensorGlucoseRepository
     /// <param name="limit">Maximum number of records to return (default 100).</param>
     /// <param name="offset">Number of records to skip for pagination (default 0).</param>
     /// <param name="descending">When <c>true</c>, results are ordered newest-first (default).</param>
-    /// <param name="nativeOnly">When <c>true</c>, excludes records projected from legacy V1/V2/V3 entries.</param>
     /// <param name="patientDeviceId">Optional filter restricting results to a single registered <see cref="PatientDevice"/>'s
     /// attributed readings. Bypasses canonical stream selection at the caller — a filtered read returns that device raw.
     /// Placed after <paramref name="ct"/> so it is additive: existing positional callers (which end at the token) are
@@ -44,7 +41,6 @@ public interface ISensorGlucoseRepository
         int limit = 100,
         int offset = 0,
         bool descending = true,
-        bool nativeOnly = false,
         DateTime? afterTimestamp = null,
         Guid? afterId = null,
         CancellationToken ct = default,
@@ -57,15 +53,9 @@ public interface ISensorGlucoseRepository
     /// </summary>
     Task<IEnumerable<SensorGlucose>> GetForAnalyticsAsync(
         DateTime? from, DateTime? to, string? device, string? source,
-        int limit = 100, int offset = 0, bool descending = true, bool nativeOnly = false,
+        int limit = 100, int offset = 0, bool descending = true,
         DateTime? afterTimestamp = null, Guid? afterId = null,
         CancellationToken ct = default, Guid? patientDeviceId = null);
-
-    // Explicit base-interface bridge — delegates to the extended overload
-    Task<IEnumerable<SensorGlucose>> IV4Repository<SensorGlucose>.GetAsync(
-        DateTime? from, DateTime? to, string? device, string? source,
-        int limit, int offset, bool descending, CancellationToken ct)
-        => GetAsync(from, to, device, source, limit, offset, descending, false, null, null, ct);
 
     /// <summary>
     /// Partial readings for canonical selection and <see cref="EntryProjection.FromSensorGlucose"/>
@@ -73,7 +63,7 @@ public interface ISensorGlucoseRepository
     /// </summary>
     Task<IEnumerable<SensorGlucose>> GetForEntriesAsync(
         DateTime? from, DateTime? to, string? device, string? source,
-        int limit = 100, int offset = 0, bool descending = true, bool nativeOnly = false,
+        int limit = 100, int offset = 0, bool descending = true,
         DateTime? afterTimestamp = null, Guid? afterId = null,
         CancellationToken ct = default, Guid? patientDeviceId = null);
 
@@ -97,7 +87,7 @@ public interface ISensorGlucoseRepository
     /// the device in <paramref name="from"/>..<paramref name="to"/>, or <c>null</c>.
     /// </summary>
     /// <remarks>
-    /// Unlike <see cref="GetAsync(DateTime?, DateTime?, string?, string?, int, int, bool, bool, DateTime?, Guid?, CancellationToken, Guid?)"/>,
+    /// Unlike <see cref="GetAsync(DateTime?, DateTime?, string?, string?, int, int, bool, DateTime?, Guid?, CancellationToken, Guid?)"/>,
     /// this deliberately includes rows hidden from reads as non-primary cross-connector duplicates.
     /// A hidden copy still means "already stored" — when a second source re-uploads readings whose
     /// copies have all been linked non-primary, a visibility-filtered check finds nothing and the

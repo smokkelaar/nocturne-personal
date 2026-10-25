@@ -2,7 +2,7 @@ name: Sync Translations
 
 on:
   push:
-    branches: [main]
+    branches: [main, personal]
     paths:
       - "src/Web/**/*.svelte"
       - "src/Web/**/*.ts"

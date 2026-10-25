@@ -199,7 +199,7 @@
 <div class="@container container mx-auto max-w-4xl p-3 @md:p-6 space-y-6">
   <!-- Header -->
   <div class="flex items-center gap-3">
-    <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+    <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10">
       <Palette class="size-6 text-primary" />
     </div>
     <div>
@@ -1014,7 +1014,7 @@
 
         <Separator />
 
-        <div class="flex items-center justify-between">
+        <div class="flex flex-wrap items-center justify-between gap-3">
           <div class="space-y-0.5">
             <Label>Client upload source defaults</Label>
             <p class="text-sm text-muted-foreground">

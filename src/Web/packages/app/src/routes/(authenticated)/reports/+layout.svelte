@@ -144,7 +144,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 </svelte:head>
 
-<div class="@container relative min-h-full bg-background" bind:this={reportRoot} data-report-root>
+<!-- --headroom-top sits a Headroom panel flush under the sticky report header (h-14 plus its border). -->
+<div class="@container relative min-h-full bg-background [--headroom-top:calc(var(--app-sticky-top,0px)+3.5rem+1px)]" bind:this={reportRoot} data-report-root>
     {#if page.url.pathname !== "/reports"}
         <ReportPrintHeader title={reportName} period={printPeriod} />
 
@@ -153,15 +154,15 @@
                 {@attach loopAnalysisHeaderMark()}
         >
             <div class="flex h-14 items-center justify-between gap-2 px-3 @md:px-6">
-                <div class="flex items-center gap-2">
+                <div class="flex min-w-0 items-center gap-2">
                     <!-- Report info -->
-                    <div class="flex items-center gap-3">
-                        <h1 class="text-lg font-semibold text-foreground">{reportName}</h1>
+                    <div class="flex min-w-0 items-center gap-3">
+                        <h1 class="truncate text-lg font-semibold text-foreground">{reportName}</h1>
                         {#if showFilters}
                             <Button
                                     variant="outline"
                                     size="sm"
-                                    class="hidden sm:inline-flex"
+                                    class="hidden shrink-0 @xl:inline-flex"
                                     onclick={() => (filterSidebarOpen = true)}
                                     aria-label="Change date range"
                             >
@@ -173,7 +174,7 @@
                     </div>
                 </div>
 
-                <div class="flex items-center gap-2">
+                <div class="flex shrink-0 items-center gap-2">
                     <Button
                             variant="outline"
                             size="sm"
@@ -182,7 +183,7 @@
                             aria-label="Print report"
                     >
                         <Printer class="w-4 h-4"/>
-                        <span class="hidden sm:inline">Print</span>
+                        <span class="hidden @lg:inline">Print</span>
                     </Button>
                     {#if showFilters}
                         <Button
@@ -192,7 +193,7 @@
                                 aria-label="Filters"
                         >
                             <Filter class="w-4 h-4"/>
-                            <span class="hidden sm:inline">Filters</span>
+                            <span class="hidden @lg:inline">Filters</span>
                         </Button>
                     {/if}
                 </div>

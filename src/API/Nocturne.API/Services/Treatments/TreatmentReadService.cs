@@ -134,7 +134,7 @@ public class TreatmentReadService : ITreatmentStore
     private Task<IEnumerable<Treatment>> FetchWindowAsync(
         FindQuery find, int limit, bool descending, CancellationToken ct) =>
         _projection.GetProjectedTreatmentsAsync(
-            find.FromMills, find.ToMills, limit, nativeOnly: false, descending, ct);
+            find.FromMills, find.ToMills, limit, descending, ct);
 
     private static IEnumerable<Treatment> OrderByTime(IEnumerable<Treatment> treatments, bool descending) =>
         descending ? treatments.OrderByDescending(t => t.Mills) : treatments.OrderBy(t => t.Mills);
@@ -198,7 +198,7 @@ public class TreatmentReadService : ITreatmentStore
         // The projection service already orders newest-first internally, but we re-sort here
         // to make the contract explicit at the read boundary.
         var projected = await _projection.GetProjectedTreatmentsAsync(
-            fromMills, toMills, limit: int.MaxValue, nativeOnly: false, ct: ct);
+            fromMills, toMills, limit: int.MaxValue, ct: ct);
 
         return projected.OrderByDescending(t => t.Mills).ToList();
     }
@@ -363,7 +363,7 @@ public class TreatmentReadService : ITreatmentStore
             // Field filters only exist on the projected shape; count matches within the
             // (bounded) window instead of delegating to per-repo counts.
             var projected = (await _projection.GetProjectedTreatmentsAsync(
-                findQuery.FromMills, findQuery.ToMills, MaxFilterFetch, nativeOnly: false, ct: ct)).ToList();
+                findQuery.FromMills, findQuery.ToMills, MaxFilterFetch, ct: ct)).ToList();
             if (projected.Count >= MaxFilterFetch)
                 _logger.LogWarning(
                     "Find-filtered treatment count hit the {MaxFetch}-row window; older matches are not counted",
@@ -609,7 +609,7 @@ public class TreatmentReadService : ITreatmentStore
         long mills, string treatmentId, CancellationToken ct)
     {
         var projected = await _projection.GetProjectedTreatmentsAsync(
-            mills, mills, 100, nativeOnly: false, ct: ct);
+            mills, mills, 100, ct: ct);
         return projected.FirstOrDefault(t => t.Id == treatmentId);
     }
 

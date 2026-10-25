@@ -43,7 +43,7 @@ public class V4BulkValidationTests
 
     private readonly Mock<IApsSnapshotRepository> _aps = new();
 
-    private ApsSnapshotController ApsController() => WithContext(new ApsSnapshotController(_aps.Object));
+    private ApsSnapshotController ApsController() => WithContext(new ApsSnapshotController(_aps.Object, Mock.Of<ILoopClosedLoopStamper>()));
 
     private static TController WithContext<TController>(TController controller)
         where TController : ControllerBase

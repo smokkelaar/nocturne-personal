@@ -57,7 +57,7 @@
 </script>
 
 <div class="space-y-4">
-  <div class="flex items-start justify-between gap-4">
+  <div class="flex flex-wrap items-start justify-between gap-3">
     <div class="space-y-1">
       <h2 class="text-lg font-semibold tracking-tight">Connected apps</h2>
       <p class="text-sm text-muted-foreground">

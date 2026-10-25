@@ -362,7 +362,6 @@ public static class ServiceRegistrationExtensions
         services.AddScoped<ITimeQueryService, TimeQueryService>();
 
         services.Configure<DbSizeOptions>(configuration.GetSection(DbSizeOptions.SectionName));
-        services.AddSingleton<StoreSizeEstimator>();
         services.AddScoped<IStoreSizeReader, StoreSizeReader>();
         services.AddScoped<IDDataService, DDataService>();
         services.AddScoped<IPropertiesService, PropertiesService>();
@@ -691,6 +690,7 @@ public static class ServiceRegistrationExtensions
         // Demo mode
         services.AddSingleton<IDemoModeService, DemoModeService>();
 
+        services.AddSingleton<CacheFlights>();
         services.AddScoped<ITenantCache, TenantCache>();
 
         services.AddScoped<IV4ToLegacyProjectionService, V4ToLegacyProjectionService>();
@@ -952,6 +952,7 @@ public static class ServiceRegistrationExtensions
         services.AddScoped<IEntryDecomposer, EntryDecomposer>();
         services.AddScoped<RelativeTempBasalRates>();
         services.AddScoped<ITempBasalRateReresolver, TempBasalRateReresolver>();
+        services.AddScoped<ILoopClosedLoopStamper, LoopClosedLoopStamper>();
         services.AddHostedService<TempBasalRateSweepService>();
         services.AddScoped<ITreatmentDecomposer, TreatmentDecomposer>();
         services.AddScoped<IDeviceStatusDecomposer, DeviceStatusDecomposer>();

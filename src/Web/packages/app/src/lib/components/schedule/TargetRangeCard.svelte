@@ -156,7 +156,7 @@
   <Card>
     <CardHeader class="pb-3">
       <div class="flex items-center gap-3">
-        <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
           <Target class="h-5 w-5 text-glucose-in-range" />
         </div>
         <div>

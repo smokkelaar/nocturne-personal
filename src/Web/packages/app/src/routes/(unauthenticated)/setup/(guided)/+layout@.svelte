@@ -54,8 +54,8 @@
     </Button>
   {/snippet}
 
-  <Card.Root size="flush" class="mx-auto w-full max-w-3xl" data-testid="guided-item">
-    <div class="flex items-start gap-4 border-b px-7 py-6">
+  <Card.Root size="flush" class="@container mx-auto w-full max-w-3xl" data-testid="guided-item">
+    <div class="flex items-start gap-4 border-b px-5 py-6 @xl:px-7">
       <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10">
         <view.icon class="h-5 w-5 text-primary" />
       </span>
@@ -65,11 +65,11 @@
       </div>
     </div>
 
-    <div class="px-7 py-6">
+    <div class="px-5 py-6 @xl:px-7">
       {@render children()}
     </div>
 
-    <div class="flex flex-wrap items-center justify-between gap-3 border-t bg-muted/40 px-7 py-4">
+    <div class="flex flex-wrap items-center justify-between gap-3 border-t bg-muted/40 px-5 py-4 @xl:px-7">
       <Button variant="outline" href={resolve("/setup")}>
         <ArrowLeft class="h-4 w-4" />
         Back to setup

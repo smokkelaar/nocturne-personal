@@ -1,7 +1,4 @@
 <script lang="ts">
-  import HelpIcon from "$lib/components/help/HelpIcon.svelte";
-  import { getHelpContext } from "$lib/help/help-context.svelte";
-  const help = getHelpContext();
   import { tryGetRealtimeStore } from "$lib/stores/realtime-store.svelte";
   import { getDirectionInfo } from "$lib/utils";
   import {
@@ -72,7 +69,7 @@
   // The layout's sticky banner strip reads this to sit flush under the header as it slides.
   $effect(() => {
     const root = document.documentElement;
-    root.style.setProperty("--mobile-header-offset", isVisible || help?.open ? "3.5rem" : "0px");
+    root.style.setProperty("--mobile-header-offset", isVisible ? "3.5rem" : "0px");
     return () => root.style.removeProperty("--mobile-header-offset");
   });
 </script>
@@ -81,18 +78,16 @@
 
 <!-- Mobile-only sticky header -->
 <header
-  data-help-header
   class="md:hidden print:hidden fixed top-0 left-0 right-0 z-50 flex h-14 items-center justify-between gap-2 border-b border-border bg-background/95 backdrop-blur px-4 transition-transform duration-300"
-  class:translate-y-0={isVisible || help?.open}
-  class:-translate-y-full={!isVisible && !help?.open}
+  class:translate-y-0={isVisible}
+  class:-translate-y-full={!isVisible}
 >
   <!-- Sidebar trigger on the left -->
-  <Sidebar.Trigger class="-ml-1" inert={help?.blocking} />
-  <HelpIcon />
+  <Sidebar.Trigger class="-ml-1" />
 
   <!-- Current BG display on the right -->
   {#if realtimeStore}
-    <div class="flex items-center gap-2" inert={help?.blocking}>
+    <div class="flex items-center gap-2">
       <GlucoseValueIndicator
         displayValue={displayCurrentBG}
         variant={tileVariant}

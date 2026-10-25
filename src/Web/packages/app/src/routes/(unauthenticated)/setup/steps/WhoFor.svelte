@@ -45,12 +45,12 @@
   );
 </script>
 
-<div class="flex flex-col items-center gap-10 px-4 py-8">
+<div class="@container flex flex-col items-center gap-10 px-4 py-8">
   <div class="flex flex-col items-center gap-4 text-center">
     <!-- prettier-ignore -->
     <h1
       id="who-for-heading"
-      class="font-brand font-hairline leading-tight tracking-tight text-foreground text-3xl md:text-4xl xl:text-5xl"
+      class="font-brand font-hairline leading-tight tracking-tight text-foreground text-3xl @lg:text-4xl @min-[40rem]:text-5xl"
     >
       Who is Nocturne <em class="not-italic font-light text-primary">for</em>?
     </h1>
@@ -61,7 +61,7 @@
   </div>
 
   <RadioGroup.Root
-    class="w-full max-w-200 grid-cols-1 gap-5 sm:grid-cols-3"
+    class="w-full max-w-200 grid-cols-1 gap-5 @xl:grid-cols-3"
     aria-labelledby="who-for-heading"
     value={relationship}
     onValueChange={(value) => {

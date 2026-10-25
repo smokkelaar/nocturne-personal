@@ -48,11 +48,12 @@ public class SensorGlucoseEntryReadTests(V4GoldenFixture fixture)
         slim.Should().OnlyContain(r => r.AdditionalProperties == null && r.SmoothedMgdl == null);
 
         var expected = await repo.GetAsync(start.AddMinutes(5), start.AddMinutes(20), "a", "entry-projection-test",
-            2, 1, descending, nativeOnly: true, patientDeviceId: primary.Id);
+            2, 1, descending, patientDeviceId: primary.Id);
         var actual = await repo.GetForEntriesAsync(start.AddMinutes(5), start.AddMinutes(20), "a", "entry-projection-test",
-            2, 1, descending, nativeOnly: true, patientDeviceId: primary.Id);
+            2, 1, descending, patientDeviceId: primary.Id);
         LegacyJson(actual).Should().Be(LegacyJson(expected));
         actual.Should().NotBeEmpty();
+        actual.Should().Contain(r => r.LegacyId == "legacy-6");
 
         var cursor = full[3];
         expected = await repo.GetAsync(start, null, null, null, 3, 99, descending,

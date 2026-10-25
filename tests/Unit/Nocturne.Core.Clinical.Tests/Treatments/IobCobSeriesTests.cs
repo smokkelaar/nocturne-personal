@@ -116,7 +116,7 @@ public class IobCobSeriesTests
     {
         // Now is a minute after the last tick. A snapshot stamped three minutes after it is that
         // tick's device clock running ahead; for the tick five minutes earlier it is later data.
-        var device = DeviceReadings.Of([new ApsIobCobPoint(At(3), 2.5, 20)], null);
+        var device = DeviceReadings.Of([new ApsIobCobPoint(At(3), 2.5, 20, null)], null);
 
         var ticks = TwoTicks(device, nowMills: Now + Minute);
 
@@ -128,7 +128,7 @@ public class IobCobSeriesTests
     [Fact]
     public void APastTick_TakesNoSnapshotStampedAfterIt()
     {
-        var device = DeviceReadings.Of([new ApsIobCobPoint(At(3), 2.5, 20)], null);
+        var device = DeviceReadings.Of([new ApsIobCobPoint(At(3), 2.5, 20, null)], null);
 
         var ticks = TwoTicks(device, nowMills: Now + 60 * Minute);
 
@@ -138,7 +138,7 @@ public class IobCobSeriesTests
     [Fact]
     public void ATick_TakesIobFromThePumpAndCobFromTheAps_WhenTheApsReportsNoIob()
     {
-        var device = DeviceReadings.Of([new ApsIobCobPoint(At(-2), null, 15)], [new PumpIobPoint(At(-1), 0.9, null)]);
+        var device = DeviceReadings.Of([new ApsIobCobPoint(At(-2), null, 15, null)], [new PumpIobPoint(At(-1), 0.9, null)]);
 
         var tick = TwoTicks(device, nowMills: Now + 60 * Minute)[1];
 

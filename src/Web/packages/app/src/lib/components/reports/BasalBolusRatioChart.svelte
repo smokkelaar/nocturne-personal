@@ -30,6 +30,23 @@
   // insulin units: the top of the carb axis lands on the top of the insulin axis.
   const hasCarbs = $derived(chartData.some((d) => (d.carbs ?? 0) > 0));
   const carbAxisMax = $derived(niceCarbAxisMax(chartData.map((d) => d.carbs ?? 0)));
+  // The insulin domain is fixed here, not read back from the chart: the carb marks join the
+  // chart's domain, so an accessor reading `context.yScale` would depend on itself. Its top is
+  // the tallest stack drawn, which a served `total` need not equal.
+  const insulinMax = $derived(
+    scaleLinear()
+      .domain([
+        0,
+        Math.max(
+          0,
+          ...chartData.map(
+            (d) => (d.basal ?? 0) + (d.manualBolus ?? 0) + (d.automaticBolus ?? 0)
+          )
+        ),
+      ])
+      .nice()
+      .domain()[1]
+  );
 </script>
 
 <div class="w-full">
@@ -70,10 +87,12 @@
           },
         ]}
         seriesLayout="stack"
+        yDomain={[0, insulinMax]}
         tooltipContext={{ mode: "band" }}
         props={{
           xAxis: {
             ticks: xTicks,
+            tickOcclusion: true,
           },
           yAxis: {
             label: "Insulin (U)",
@@ -83,9 +102,8 @@
       >
         {#snippet aboveMarks({ context })}
           {#if hasCarbs}
-            {@const yMax = Number(context.yScale.domain()[1])}
             {@const toInsulinScale = (d: DailyBasalBolusRatioData) =>
-              carbsOnInsulinScale(d.carbs ?? 0, carbAxisMax, yMax)}
+              carbsOnInsulinScale(d.carbs ?? 0, carbAxisMax, insulinMax)}
             <Spline
               data={chartData}
               x="displayDate"

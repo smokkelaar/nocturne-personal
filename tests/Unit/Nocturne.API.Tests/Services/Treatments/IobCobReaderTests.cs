@@ -30,7 +30,7 @@ public class IobCobReaderTests
     public IobCobReaderTests()
     {
         _boluses
-            .Setup(r => r.GetAsync(It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<BolusKind?>(), It.IsAny<DateTime?>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()))
+            .Setup(r => r.GetAsync(It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<bool>(), It.IsAny<BolusKind?>(), It.IsAny<DateTime?>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(() => _storedBoluses.ToList());
         _tempBasals
             .Setup(r => r.GetAsync(It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
@@ -43,7 +43,7 @@ public class IobCobReaderTests
                 .ToList()
                 .AsEnumerable());
         _carbs
-            .Setup(r => r.GetAsync(It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<DateTime?>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()))
+            .Setup(r => r.GetAsync(It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<bool>(), It.IsAny<DateTime?>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(() => _storedCarbs.ToList());
     }
 
@@ -98,7 +98,7 @@ public class IobCobReaderTests
 
     private void VerifyBolusReads(Times times) =>
         _boluses.Verify(
-            r => r.GetAsync(It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<BolusKind?>(), It.IsAny<DateTime?>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()),
+            r => r.GetAsync(It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<bool>(), It.IsAny<BolusKind?>(), It.IsAny<DateTime?>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()),
             times);
 
     [Theory]
@@ -116,6 +116,61 @@ public class IobCobReaderTests
         current.Iob.Source.Should().Be("OpenAPS");
         current.Cob.Cob.Should().Be(23);
         current.Cob.Source.Should().Be("OpenAPS");
+        current.HasIob.Should().BeTrue();
+        current.HasCob.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task SnapshotReportingZero_HasIobAndCob()
+    {
+        Snapshot(AidAlgorithm.Loop, 3, iob: 0, cob: 0);
+
+        var current = await Live(NewReader());
+
+        current.HasIob.Should().BeTrue();
+        current.HasCob.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task TreatmentsAlone_HaveIobAndCobOnlyForWhatTheyHold()
+    {
+        _storedBoluses.Add(new Bolus { Timestamp = DateTime.UtcNow.AddMinutes(-30), Insulin = 2 });
+
+        var current = await Live(NewReader());
+
+        current.HasIob.Should().BeTrue();
+        current.HasCob.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task TempBasalThatEndedBeforeTheInsulinWindow_HasNoIob()
+    {
+        _storedTempBasals.Add(new TempBasal
+        {
+            StartTimestamp = DateTime.UtcNow.AddHours(-30),
+            EndTimestamp = DateTime.UtcNow.AddHours(-20),
+            Rate = 1,
+        });
+
+        var current = await Live(NewReader());
+
+        current.Inputs.TempBasals.Should().HaveCount(1);
+        current.HasIob.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task TempBasalStillRunningInTheInsulinWindow_HasIob()
+    {
+        _storedTempBasals.Add(new TempBasal
+        {
+            StartTimestamp = DateTime.UtcNow.AddHours(-12),
+            EndTimestamp = null,
+            Rate = 1,
+        });
+
+        var current = await Live(NewReader());
+
+        current.HasIob.Should().BeTrue();
     }
 
     [Fact]
@@ -152,6 +207,8 @@ public class IobCobReaderTests
         current.Iob.Iob.Should().Be(0);
         IobResult.FormatDisplay(current.Iob.Iob).Should().Be("0");
         current.Cob.Cob.Should().Be(0);
+        current.HasIob.Should().BeFalse();
+        current.HasCob.Should().BeFalse();
     }
 
     [Fact]
@@ -165,12 +222,12 @@ public class IobCobReaderTests
         var insulinFrom = atUtc.AddMilliseconds(-DailyProfileCalculator.ActingMs);
         var tempFrom = atUtc.AddHours(-32);
         _boluses.Verify(r => r.GetAsync(
-            insulinFrom, atUtc, null, null, It.IsAny<int>(), 0, false, It.IsAny<bool>(),
+            insulinFrom, atUtc, null, null, It.IsAny<int>(), 0, false,
             It.IsAny<BolusKind?>(), It.IsAny<DateTime?>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()), Times.Once);
         _tempBasals.Verify(r => r.GetAsync(
             tempFrom, atUtc, null, null, It.IsAny<int>(), 0, false, It.IsAny<CancellationToken>()), Times.Once);
         _carbs.Verify(r => r.GetAsync(
-            atUtc.AddHours(-IIobCobReader.CarbLookbackHours), atUtc, null, null, It.IsAny<int>(), 0, false, It.IsAny<bool>(),
+            atUtc.AddHours(-IIobCobReader.CarbLookbackHours), atUtc, null, null, It.IsAny<int>(), 0, false,
             It.IsAny<DateTime?>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 

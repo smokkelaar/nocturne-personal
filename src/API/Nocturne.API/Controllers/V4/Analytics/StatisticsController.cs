@@ -807,14 +807,19 @@ public class StatisticsController : ControllerBase
         CancellationToken cancellationToken = default
     )
     {
-        const string cacheKey = $"{TenantCacheFamily.Statistics}:multi-period";
+        // Cache for 5 minutes: long enough to absorb rapid dashboard refreshes,
+        // short enough that newly-imported connector data (basal StateSpans, etc.) appears promptly.
+        var result = await _cache.GetOrSetAsync(
+            $"{TenantCacheFamily.Statistics}:multi-period",
+            () => ComputeMultiPeriodStatisticsAsync(cancellationToken),
+            TimeSpan.FromMinutes(5),
+            cancellationToken);
 
-        var cachedResult = await _cache.GetAsync<MultiPeriodStatistics>(cacheKey, cancellationToken);
-        if (cachedResult != null)
-        {
-            return Ok(StatisticsReadScopeGuard.Redact(cachedResult, HttpContext.GetGrantedScopes()));
-        }
+        return Ok(StatisticsReadScopeGuard.Redact(result, HttpContext.GetGrantedScopes()));
+    }
 
+    private async Task<MultiPeriodStatistics> ComputeMultiPeriodStatisticsAsync(CancellationToken cancellationToken)
+    {
         // Calculate statistics for each period
         var periods = new[] { 1, 3, 7, 30, 90 };
         var now = _timeProvider.GetUtcNow().UtcDateTime;
@@ -900,12 +905,7 @@ public class StatisticsController : ControllerBase
             }
         }
 
-        // Cache for 5 minutes — long enough to absorb rapid dashboard refreshes,
-        // short enough that newly-imported connector data (basal StateSpans, etc.) appears promptly.
-        var expiry = DateTime.UtcNow.AddMinutes(5);
-        await _cache.SetAsync(cacheKey, result, expiry, cancellationToken);
-
-        return Ok(StatisticsReadScopeGuard.Redact(result, HttpContext.GetGrantedScopes()));
+        return result;
     }
 
     /// <summary>

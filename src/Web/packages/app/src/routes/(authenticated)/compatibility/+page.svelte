@@ -180,14 +180,14 @@
 
 </script>
 
-<div class="@container container mx-auto p-6 space-y-6">
+<div class="@container container mx-auto p-3 @md:p-6 space-y-6">
   <!-- Header -->
   <div class="flex flex-col gap-3 @lg:flex-row @lg:justify-between @lg:items-center">
     <div class="flex items-center gap-3">
       <Link class="size-6 text-primary" />
       <h1 class="text-3xl font-bold">Compatibility testing</h1>
     </div>
-    <div class="flex gap-2 items-center">
+    <div class="flex flex-wrap gap-2 items-center">
       <span class="text-sm text-muted-foreground">
         Last update: {formatDateTimeCompact(lastUpdate.toISOString())}
       </span>
@@ -206,13 +206,13 @@
     <div class="grid grid-cols-1 @lg:grid-cols-2 gap-4">
       <div>
         <p class="text-sm text-muted-foreground">Nightscout URL</p>
-        <p class="font-mono text-sm">
+        <p class="font-mono text-sm break-all">
           {config.nightscoutUrl || "Not configured"}
         </p>
       </div>
       <div>
         <p class="text-sm text-muted-foreground">Nocturne URL</p>
-        <p class="font-mono text-sm">{nocturneUrl || "Auto-detecting..."}</p>
+        <p class="font-mono text-sm break-all">{nocturneUrl || "Auto-detecting..."}</p>
       </div>
     </div>
   </div>
@@ -428,23 +428,23 @@
                 </div>
               </td>
             </tr>
-          {:else}
-            <tr>
-              <td colspan="7" class="px-6 py-12 text-center text-muted-foreground">
-                <Artwork
-                  artwork="linked-rings"
-                  palette="dusk"
-                  motion="auto"
-                  autoplay="once"
-                  class="mx-auto mb-3 size-48"
-                />
-                No analyses found. Make sure the compatibility proxy service is
-                running and receiving traffic.
-              </td>
-            </tr>
           {/each}
         </tbody>
       </table>
     </div>
+    {#if filteredAnalyses.length === 0}
+      <!-- Outside the scrolling table, so the text wraps to the card's width. -->
+      <div class="px-6 py-12 text-center text-muted-foreground">
+        <Artwork
+          artwork="linked-rings"
+          palette="dusk"
+          motion="auto"
+          autoplay="once"
+          class="mx-auto mb-3 size-48"
+        />
+        No analyses found. Make sure the compatibility proxy service is
+        running and receiving traffic.
+      </div>
+    {/if}
   </div>
 </div>

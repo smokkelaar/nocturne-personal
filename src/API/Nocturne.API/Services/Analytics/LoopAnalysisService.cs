@@ -252,24 +252,28 @@ internal sealed partial class LoopAnalysisService(
     }
 
     /// <summary>
-    /// When each APS snapshot was stored: the AID evidence of the open-loop mask
-    /// (<see cref="LoopAnalysisMask.OpenLoop"/>) on every page. Any snapshot shows the loop ran,
-    /// whatever it carries.
+    /// When each APS snapshot was stored, and whether its loop was closed: the snapshot evidence of
+    /// the open-loop mask (<see cref="LoopAnalysisMask.OpenLoop"/>) on every page. A snapshot shows
+    /// the loop ran, whether or not it enacted anything.
     /// </summary>
-    private static List<long> SnapshotMills(IEnumerable<DateTime> storedAt) =>
-        [.. storedAt.Select(t => t.ToMills())];
+    internal static List<ApsLoopState> LoopStates(IEnumerable<ApsIobCobPoint> snapshots) =>
+        [.. snapshots.Select(s => new ApsLoopState(s.Timestamp.ToMills(), ApsLoopCycle.IsLoopClosed(s.ClosedLoop)))];
+
+    /// <inheritdoc cref="LoopStates(IEnumerable{ApsIobCobPoint})"/>
+    internal static List<ApsLoopState> LoopStates(IEnumerable<ApsLoopCycle> cycles) =>
+        [.. cycles.Select(c => new ApsLoopState(c.Mills, c.LoopClosed))];
 
     /// <summary><see cref="MaskSources"/> over <paramref name="common"/>'s spans, devices and profiles.</summary>
     private static LoopAnalysisMaskSources Sources(
-        Common common, IReadOnlyList<long> snapshotMills, long openEnd) =>
-        MaskSources(common.Spans, common.Devices, common.DeviceDates, snapshotMills, common.ProfileIntervals, openEnd);
+        Common common, IReadOnlyList<ApsLoopState> snapshots, long openEnd) =>
+        MaskSources(common.Spans, common.Devices, common.DeviceDates, snapshots, common.ProfileIntervals, openEnd);
 
     /// <param name="openEnd">Where a span still open ends: the end of the time its readers look at.</param>
     private static LoopAnalysisMaskSources MaskSources(
         Dictionary<StateSpanCategory, List<StateSpan>> spans,
         IEnumerable<PatientDevice> devices,
         DeviceDateClock deviceDates,
-        IReadOnlyList<long> snapshotMills,
+        IReadOnlyList<ApsLoopState> snapshots,
         IReadOnlyList<ProfileInterval> profiles,
         long openEnd) => new()
     {
@@ -278,7 +282,7 @@ internal sealed partial class LoopAnalysisService(
         Exercise = [.. SpansOf(spans, StateSpanCategory.Exercise, openEnd).Select(s => s.Interval)],
         Illness = [.. SpansOf(spans, StateSpanCategory.Illness, openEnd).Select(s => s.Interval)],
         DataExclusions = [.. SpansOf(spans, StateSpanCategory.DataExclusion, openEnd).Select(s => s.Interval)],
-        OpenLoop = OpenLoop(spans, devices, deviceDates, snapshotMills, openEnd).Intervals,
+        OpenLoop = OpenLoop(spans, devices, deviceDates, snapshots, openEnd).Intervals,
         Profiles = profiles,
     };
 
@@ -296,7 +300,7 @@ internal sealed partial class LoopAnalysisService(
         Dictionary<StateSpanCategory, List<StateSpan>> spans,
         IEnumerable<PatientDevice> devices,
         DeviceDateClock deviceDates,
-        IReadOnlyList<long> snapshotMills,
+        IReadOnlyList<ApsLoopState> snapshots,
         long to)
     {
         var pumps = devices
@@ -310,7 +314,7 @@ internal sealed partial class LoopAnalysisService(
                 .Select(s => s.Interval),
             pumps.Where(p => p.AidAlgorithm == AidAlgorithm.None).Select(Window),
             pumps.Where(p => p.AidAlgorithm != AidAlgorithm.None).Select(Window),
-            snapshotMills);
+            snapshots);
     }
 
     private static List<(StateSpan Span, MillsInterval Interval)> SpansOf(

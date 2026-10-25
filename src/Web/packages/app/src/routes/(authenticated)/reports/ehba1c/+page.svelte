@@ -79,9 +79,13 @@
   let labResultError = $state<string | null>(null);
   let pendingDeleteLabResult = $state<LabHbA1cResult | null>(null);
 
-  /** Normalizes a lab result's measuredAt (Date instance or ISO string) to a Date. */
+  /**
+   * A lab result's measuredAt is a calendar date stored at UTC midnight; this reads it as
+   * local midnight of that date, where the timeline's own points sit.
+   */
   function toDate(value: Date | string | undefined): Date {
-    return value instanceof Date ? value : new Date(value ?? 0);
+    const utc = value instanceof Date ? value : new Date(value ?? 0);
+    return new Date(utc.getUTCFullYear(), utc.getUTCMonth(), utc.getUTCDate());
   }
 
   function dateKey(date: Date): string {
@@ -406,6 +410,7 @@
             y="displayValue"
             {yDomain}
             clip
+            padding={{ top: 4, right: 16, bottom: 20, left: 20 }}
             series={[
               {
                 key: "displayValue",
@@ -521,7 +526,7 @@
         </ul>
       {/if}
 
-      <div class="grid gap-3 sm:grid-cols-3 print:hidden">
+      <div class="grid gap-3 @xl:grid-cols-3 print:hidden">
         <div class="space-y-1.5">
           <Label for="lab-date">Date of blood draw</Label>
           <Input id="lab-date" type="date" bind:value={newLabDate} />
@@ -540,7 +545,7 @@
         </div>
         <div class="space-y-1.5">
           <Label for="lab-note">Note (optional)</Label>
-          <Input id="lab-note" type="text" bind:value={newLabNote} placeholder="e.g. GP lab" />
+          <Input id="lab-note" type="text" maxlength={500} bind:value={newLabNote} placeholder="e.g. GP lab" />
         </div>
       </div>
 

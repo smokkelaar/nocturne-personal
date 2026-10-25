@@ -23,7 +23,7 @@
   <title>Tenants overview - Nocturne</title>
 </svelte:head>
 
-<div class="container mx-auto space-y-6 p-4 md:p-6">
+<div class="@container container mx-auto space-y-6 p-4 @md:p-6">
   <div>
     <h1 class="text-2xl font-bold">Tenants overview</h1>
     <p class="text-sm text-muted-foreground">
@@ -54,7 +54,7 @@
         No tenants with glucose access.
       </p>
     {:else}
-      <div class="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-4">
+      <div class="grid grid-cols-2 gap-4 @2xl:grid-cols-3 @4xl:grid-cols-4">
         {#each tenants as tenant (tenant.tenantId)}
           <TenantOverviewTile {tenant} {baseDomain} />
         {/each}

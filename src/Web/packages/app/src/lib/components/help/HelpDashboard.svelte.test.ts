@@ -54,10 +54,13 @@ describe("dashboard documentation demo", () => {
     }
     await expect
       .element(
-        page.getByRole("heading", { name: "Total Daily Dose", exact: true })
+        page.getByRole("heading", { name: "Total daily dose", exact: true })
       )
       .toBeVisible();
     await expect.element(page.getByText("42.0", { exact: true })).toBeVisible();
+    await expect
+      .element(page.getByText("288 readings", { exact: true }))
+      .toBeVisible();
     expect(getChartData).not.toHaveBeenCalled();
     expect(getPredictions).not.toHaveBeenCalled();
     expect(getPredictionStatus).not.toHaveBeenCalled();

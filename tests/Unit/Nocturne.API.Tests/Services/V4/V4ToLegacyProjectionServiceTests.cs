@@ -48,7 +48,7 @@ public class V4ToLegacyProjectionServiceTests
                 It.IsAny<DateTime?>(), It.IsAny<DateTime?>(),
                 It.IsAny<string?>(), It.IsAny<string?>(),
                 It.IsAny<int>(), It.IsAny<int>(),
-                It.IsAny<bool>(), It.IsAny<bool>(),
+                It.IsAny<bool>(),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(Enumerable.Empty<BGCheck>());
 
@@ -57,7 +57,7 @@ public class V4ToLegacyProjectionServiceTests
                 It.IsAny<DateTime?>(), It.IsAny<DateTime?>(),
                 It.IsAny<string?>(), It.IsAny<string?>(),
                 It.IsAny<int>(), It.IsAny<int>(),
-                It.IsAny<bool>(), It.IsAny<bool>(),
+                It.IsAny<bool>(),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(Enumerable.Empty<Note>());
 
@@ -66,7 +66,7 @@ public class V4ToLegacyProjectionServiceTests
                 It.IsAny<DateTime?>(), It.IsAny<DateTime?>(),
                 It.IsAny<string?>(), It.IsAny<string?>(),
                 It.IsAny<int>(), It.IsAny<int>(),
-                It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<Guid?>(),
+                It.IsAny<bool>(), It.IsAny<Guid?>(),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(Enumerable.Empty<DeviceEvent>());
 
@@ -104,7 +104,7 @@ public class V4ToLegacyProjectionServiceTests
                 It.IsAny<DateTime?>(), It.IsAny<DateTime?>(),
                 It.IsAny<string?>(), It.IsAny<string?>(),
                 It.IsAny<int>(), It.IsAny<int>(),
-                It.IsAny<bool>(), It.IsAny<bool>(),
+                It.IsAny<bool>(),
                 It.IsAny<BolusKind?>(),
                 It.IsAny<DateTime?>(), It.IsAny<Guid?>(),
                 It.IsAny<CancellationToken>()))
@@ -116,7 +116,7 @@ public class V4ToLegacyProjectionServiceTests
                 It.IsAny<DateTime?>(), It.IsAny<DateTime?>(),
                 It.IsAny<string?>(), It.IsAny<string?>(),
                 It.IsAny<int>(), It.IsAny<int>(),
-                It.IsAny<bool>(), It.IsAny<bool>(),
+                It.IsAny<bool>(),
                 It.IsAny<DateTime?>(), It.IsAny<Guid?>(),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(carbs);
@@ -133,20 +133,20 @@ public class V4ToLegacyProjectionServiceTests
                 It.IsAny<DateTime?>(), It.IsAny<DateTime?>(),
                 It.IsAny<string?>(), It.IsAny<string?>(),
                 It.IsAny<int>(), It.IsAny<int>(),
-                false, It.IsAny<bool>(),
+                false,
                 It.IsAny<BolusKind?>(),
                 It.IsAny<DateTime?>(), It.IsAny<Guid?>(),
                 It.IsAny<CancellationToken>()))
-            .ReturnsAsync((DateTime? _, DateTime? _, string? _, string? _, int limit, int _, bool _, bool _,
+            .ReturnsAsync((DateTime? _, DateTime? _, string? _, string? _, int limit, int _, bool _,
                     BolusKind? _, DateTime? _, Guid? _, CancellationToken _) =>
                 boluses.OrderBy(b => b.Timestamp).Take(limit).ToList());
 
-        var result = (await _service.GetProjectedTreatmentsAsync(null, null, 2, nativeOnly: false, descending: false)).ToList();
+        var result = (await _service.GetProjectedTreatmentsAsync(null, null, 2, descending: false)).ToList();
 
         result.Select(t => t.Insulin).Should().Equal(1.0, 2.0);
         _bolusRepo.Verify(r => r.GetAsync(
             It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), It.IsAny<string?>(), It.IsAny<string?>(),
-            It.IsAny<int>(), It.IsAny<int>(), true, It.IsAny<bool>(), It.IsAny<BolusKind?>(),
+            It.IsAny<int>(), It.IsAny<int>(), true, It.IsAny<BolusKind?>(),
             It.IsAny<DateTime?>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
@@ -163,20 +163,20 @@ public class V4ToLegacyProjectionServiceTests
         _bolusRepo
             .Setup(r => r.GetAsync(
                 It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), It.IsAny<string?>(), It.IsAny<string?>(),
-                It.IsAny<int>(), It.IsAny<int>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<BolusKind?>(),
+                It.IsAny<int>(), It.IsAny<int>(), It.IsAny<bool>(), It.IsAny<BolusKind?>(),
                 It.IsAny<DateTime?>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((DateTime? _, DateTime? _, string? _, string? _, int limit, int _, bool descending, bool _,
+            .ReturnsAsync((DateTime? _, DateTime? _, string? _, string? _, int limit, int _, bool descending,
                     BolusKind? _, DateTime? _, Guid? _, CancellationToken _) =>
                 (descending ? boluses.OrderByDescending(b => b.Timestamp) : boluses.OrderBy(b => b.Timestamp)).Take(limit).ToList());
         _noteRepo
             .Setup(r => r.GetAsync(
                 It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), It.IsAny<string?>(), It.IsAny<string?>(),
-                It.IsAny<int>(), It.IsAny<int>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((DateTime? _, DateTime? _, string? _, string? _, int limit, int _, bool descending, bool _, CancellationToken _) =>
+                It.IsAny<int>(), It.IsAny<int>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((DateTime? _, DateTime? _, string? _, string? _, int limit, int _, bool descending, CancellationToken _) =>
                 (descending ? notes.OrderByDescending(n => n.Timestamp) : notes.OrderBy(n => n.Timestamp)).Take(limit).ToList());
 
         var result = (await _service.GetProjectedTreatmentsAsync(
-            null, null, 5, nativeOnly: false, descending: false)).ToList();
+            null, null, 5, descending: false)).ToList();
 
         result.Select(t => t.Mills).Should().Equal(
             Enumerable.Range(0, 5).Select(i => new DateTimeOffset(start.AddMinutes(i)).ToUnixTimeMilliseconds()));
@@ -739,9 +739,6 @@ public class V4ToLegacyProjectionServiceTests
     [Fact]
     public async Task GetProjectedTreatmentsModifiedSince_LegacyOriginatedRecord_IsProjected()
     {
-        // A treatment uploaded through v1/v2/v3 is stored as a V4 record with LegacyId set, and
-        // there is no legacy treatments table for it to duplicate. Filtering those out would hide
-        // every client-uploaded treatment from the v3 history sync.
         var legacyOriginated = new BolusEntity
         {
             Id = Guid.CreateVersion7(),
@@ -825,7 +822,7 @@ public class V4ToLegacyProjectionServiceTests
                 It.IsAny<DateTime?>(), It.IsAny<DateTime?>(),
                 It.IsAny<string?>(), It.IsAny<string?>(),
                 It.IsAny<int>(), It.IsAny<int>(),
-                It.IsAny<bool>(), It.IsAny<bool>(),
+                It.IsAny<bool>(),
                 It.IsAny<BolusKind?>(),
                 It.IsAny<DateTime?>(), It.IsAny<Guid?>(),
                 It.IsAny<CancellationToken>()))
@@ -837,7 +834,7 @@ public class V4ToLegacyProjectionServiceTests
                 It.IsAny<DateTime?>(), It.IsAny<DateTime?>(),
                 It.IsAny<string?>(), It.IsAny<string?>(),
                 It.IsAny<int>(), It.IsAny<int>(),
-                It.IsAny<bool>(), It.IsAny<bool>(),
+                It.IsAny<bool>(),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(new[] { note });
 
@@ -866,7 +863,7 @@ public class V4ToLegacyProjectionServiceTests
                 It.IsAny<DateTime?>(), It.IsAny<DateTime?>(),
                 It.IsAny<string?>(), It.IsAny<string?>(),
                 It.IsAny<int>(), It.IsAny<int>(),
-                It.IsAny<bool>(), It.IsAny<bool>(),
+                It.IsAny<bool>(),
                 It.IsAny<BolusKind?>(),
                 It.IsAny<DateTime?>(), It.IsAny<Guid?>(),
                 It.IsAny<CancellationToken>()))

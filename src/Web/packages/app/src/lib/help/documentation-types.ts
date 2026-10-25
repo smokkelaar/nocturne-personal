@@ -13,6 +13,11 @@ export interface HelpSection {
   title: string;
   text: string;
   links?: HelpSource[];
+  routes?: HelpRoute[];
+}
+export interface HelpRoute {
+  title: string;
+  text: string;
 }
 export interface HelpSource {
   title: string;

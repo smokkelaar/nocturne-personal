@@ -41936,22 +41936,6 @@ msgstr ""
 msgid "Google Health settings saved. No restart required."
 msgstr "Google Health-instellingen opgeslagen. Herstarten is niet nodig."
 
-#: src/lib/components/admin/IntegrationsTabContent.svelte
-msgid "One OAuth client for this instance. Each user connects their own Google account. Copy the callback URL into Google Cloud. Changes apply without a restart. If you replace the client ID, users must connect again. Imported data stays."
-msgstr "Eén OAuth-client voor deze instantie. Elke gebruiker koppelt een eigen Google-account. Kopieer de callback-URL naar Google Cloud. Wijzigingen werken zonder herstart. Als je de client-ID vervangt, moeten gebruikers opnieuw koppelen. Geïmporteerde gegevens blijven bewaard."
-
-#: src/lib/components/admin/IntegrationsTabContent.svelte
-msgid "Google publishing and verification"
-msgstr "Publicatie en verificatie bij Google"
-
-#: src/lib/components/admin/IntegrationsTabContent.svelte
-msgid "Testing limits access to test users and expires refresh tokens after seven days. Publishing to Production removes that testing expiry. An unverified app still shows a warning and has a 100-user limit. Verification is a separate review. For more than 100 users, Google requires a third-party security assessment. Tokens can still expire or be revoked. Each user controls consent in their Google account."
-msgstr "In de testfase hebben alleen testgebruikers toegang en verlopen refresh-tokens na zeven dagen. Publiceren naar Production haalt die testverloop weg. Een niet-geverifieerde app toont nog steeds een waarschuwing en heeft een limiet van 100 gebruikers. Verificatie is een aparte beoordeling. Voor meer dan 100 gebruikers vereist Google een beveiligingsbeoordeling door een derde partij. Tokens kunnen nog steeds verlopen of worden ingetrokken. Elke gebruiker beheert de toestemming in het eigen Google-account."
-
-#: src/lib/components/admin/IntegrationsTabContent.svelte
-msgid "Use the exact public callback URL, ending in /api/v4/google-health/oauth/callback. Override it only when the suggested URL differs from your public address."
-msgstr "Gebruik de exacte publieke callback-URL, eindigend op /api/v4/google-health/oauth/callback. Pas hem alleen aan als de voorgestelde URL afwijkt van je publieke adres."
-
 #: src/lib/components/help/HelpAppearanceControls.svelte
 msgid "Only the background layer changes. Documentation text stays fully visible. Saved in this browser."
 msgstr ""
@@ -42077,3 +42061,7 @@ msgstr ""
 #: src/lib/help/connectors.svelte.ts
 msgid "Clear selected types and Save import settings to pause imports without deleting history. Disconnect removes the connection but keeps imported records. Delete imported Google data is a separate confirmed action available after disconnecting. It affects this tenant's imported records, not Google's originals. The client secret is stored encrypted in the instance settings. Never paste the secret or token into support conversations."
 msgstr ""
+
+#: src/lib/components/admin/IntegrationsTabContent.svelte
+msgid "The callback URL ends in /api/v4/google-health/oauth/callback."
+msgstr "De callback-URL eindigt op /api/v4/google-health/oauth/callback."

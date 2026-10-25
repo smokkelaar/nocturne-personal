@@ -31,9 +31,9 @@ describe("translation-aware help factories", () => {
     expect(body).toContain("Save selection and import");
     expect(body).toContain("required on first setup");
   });
-  it("has readable English help fallbacks in another interface language", async () => {
+  it("renders help in the interface language from the catalogue", async () => {
     const body = await content("/settings/connectors/google-health", "nl");
-    expect(body).toContain("required on first setup");
-    expect(body).toContain("Create the Web application client");
+    expect(body).toContain("verplicht bij de eerste keer");
+    expect(body).toContain("Maak de webapplicatie-client aan");
   });
 });

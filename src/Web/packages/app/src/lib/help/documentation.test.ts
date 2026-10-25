@@ -1,4 +1,4 @@
-import { GLUCOSE_REFERENCE_PATH } from "./reference-path";
+import { DATA_ROUTES_PATH, GLUCOSE_REFERENCE_PATH } from "./reference-path";
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
@@ -101,6 +101,21 @@ describe("contextual documentation", () => {
       "Clock builder"
     );
     expect(articleFor("/", links).title).toBe("Dashboard");
+  });
+  it("offers the data routes chapter from connectors and finds it by device", () => {
+    expect(links.some((link) => link.href === DATA_ROUTES_PATH)).toBe(true);
+    expect(
+      articleFor("/settings/connectors/google-health", links).related
+    ).toContain(DATA_ROUTES_PATH);
+    expect(
+      searchDocumentation("garmin iphone", links).map((result) => result.href)
+    ).toContain(DATA_ROUTES_PATH);
+    expect(articleFor("/settings/connectors/librelinkup", links).title).toBe(
+      "FreeStyle Libre"
+    );
+    expect(articleFor("/settings/connectors/nocturneremote", links).title).toBe(
+      "Nocturne Remote"
+    );
   });
   it("searches tutorial steps as well as article bodies", () => {
     expect(

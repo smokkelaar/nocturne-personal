@@ -253,6 +253,7 @@ public class GoogleHealthWorkerTests
         services.AddSingleton(tenants.Object);
         services.AddSingleton(sync.Object);
         services.AddSingleton(Mock.Of<IConnectorConfigurationService>());
+        services.AddSingleton<IGoogleHealthPlatformSettings>(ConfiguredPlatform);
         services.AddScoped<ITenantAccessor, TenantAccessor>();
         using var provider = services.BuildServiceProvider();
         using var worker = new GoogleHealthWorker(provider.GetRequiredService<IServiceScopeFactory>(),

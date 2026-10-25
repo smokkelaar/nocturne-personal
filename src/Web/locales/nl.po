@@ -13792,9 +13792,10 @@ msgstr ""
 msgid "In HACS, open the menu and select \"Custom repositories\". Add the Nocturne Home Assistant repository URL and select \"Integration\" as the category."
 msgstr ""
 
+#: src/lib/help/connectors.svelte.ts
 #: src/routes/(authenticated)/settings/connectors/[connector]/+page.svelte
 msgid "Install the integration"
-msgstr ""
+msgstr "Installeer de integratie"
 
 #: src/routes/(authenticated)/settings/connectors/[connector]/+page.svelte
 msgid "Search for \"Nocturne\" in HACS and install it. Once installed, restart Home Assistant to load the integration."
@@ -42626,3 +42627,23 @@ msgstr "Google: Google Health synchroniseren met Apple Health"
 #: src/lib/help/data-routes.svelte.ts
 msgid "Glooko: fitness and health data you can sync"
 msgstr "Glooko: fitness- en gezondheidsgegevens die je kunt synchroniseren"
+
+#: src/lib/help/connectors.svelte.ts
+msgid "Check the direction"
+msgstr "Controleer de richting"
+
+#: src/lib/help/connectors.svelte.ts
+msgid "Home Assistant reads from Nocturne. Nothing is imported into Nocturne."
+msgstr "Home Assistant leest uit Nocturne. Er wordt niets in Nocturne geïmporteerd."
+
+#: src/lib/help/connectors.svelte.ts
+msgid "Use HACS to install the Nocturne integration, then add it under Devices & Services."
+msgstr "Installeer de Nocturne-integratie met HACS en voeg hem daarna toe onder Apparaten en diensten."
+
+#: src/lib/help/connectors.svelte.ts
+msgid "Verify the sensors"
+msgstr "Controleer de sensoren"
+
+#: src/lib/help/connectors.svelte.ts
+msgid "Check that Home Assistant shows the Nocturne sensors and that Connected apps lists the authorization."
+msgstr "Controleer of Home Assistant de Nocturne-sensoren toont en of Connected apps de autorisatie laat zien."

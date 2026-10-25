@@ -317,6 +317,20 @@ export function connectorArticles(): HelpArticle[] {
       ),
       visual: "flow" as const,
       settings: ["/settings/connectors"],
+      reading: [
+        {
+          title: "Check the direction",
+          text: "Home Assistant reads from Nocturne. Nothing is imported into Nocturne.",
+        },
+        {
+          title: "Install the integration",
+          text: "Use HACS to install the Nocturne integration, then add it under Devices & Services.",
+        },
+        {
+          title: "Verify the sensors",
+          text: "Check that Home Assistant shows the Nocturne sensors and that Connected apps lists the authorization.",
+        },
+      ],
     },
   ];
 }

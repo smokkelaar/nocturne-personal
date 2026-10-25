@@ -13792,6 +13792,7 @@ msgstr ""
 msgid "In HACS, open the menu and select \"Custom repositories\". Add the Nocturne Home Assistant repository URL and select \"Integration\" as the category."
 msgstr ""
 
+#: src/lib/help/connectors.svelte.ts
 #: src/routes/(authenticated)/settings/connectors/[connector]/+page.svelte
 msgid "Install the integration"
 msgstr ""
@@ -42625,4 +42626,24 @@ msgstr ""
 
 #: src/lib/help/data-routes.svelte.ts
 msgid "Glooko: fitness and health data you can sync"
+msgstr ""
+
+#: src/lib/help/connectors.svelte.ts
+msgid "Check the direction"
+msgstr ""
+
+#: src/lib/help/connectors.svelte.ts
+msgid "Home Assistant reads from Nocturne. Nothing is imported into Nocturne."
+msgstr ""
+
+#: src/lib/help/connectors.svelte.ts
+msgid "Use HACS to install the Nocturne integration, then add it under Devices & Services."
+msgstr ""
+
+#: src/lib/help/connectors.svelte.ts
+msgid "Verify the sensors"
+msgstr ""
+
+#: src/lib/help/connectors.svelte.ts
+msgid "Check that Home Assistant shows the Nocturne sensors and that Connected apps lists the authorization."
 msgstr ""

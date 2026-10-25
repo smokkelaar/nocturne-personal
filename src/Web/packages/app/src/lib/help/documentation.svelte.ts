@@ -40,7 +40,8 @@ export function articles(): HelpArticle[] {
 
 function parentFor(href: string): string | undefined {
   // The report overview is not permission to visit every report.
-  if (href.startsWith("/reports/loop-analysis/")) return "/reports/loop-analysis";
+  if (href.startsWith("/reports/loop-analysis/"))
+    return "/reports/loop-analysis";
   if (href.startsWith("/reports/"))
     return href.startsWith("/reports/data-quality/")
       ? "/reports/data-quality"
@@ -49,14 +50,16 @@ function parentFor(href: string): string | undefined {
     return "/settings/patient";
   if (
     href === "/settings/migration" ||
-    href === "/settings/nightscout-transition"
+    href === "/settings/nightscout-transition" ||
+    href.startsWith("/oauth/")
   )
     return "/settings/connectors";
+  if (href === "/settings/audit") return "/settings/members";
   if (href === "/settings/integrations/discord") return "/settings/account";
   if (
+    href === "/settings/admin" ||
     href.startsWith("/settings/admin/") ||
-    href === "/settings/access-requests" ||
-    href === "/settings/audit"
+    href === "/settings/access-requests"
   )
     return "/settings/admin/tenants";
   return undefined;

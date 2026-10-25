@@ -1711,7 +1711,7 @@ public class GoogleHealthTests : IDisposable
         Nocturne.Core.Models.V4.BiologicalSex? sex = null,
         IGoogleHealthGrantHolders? holders = null)
     {
-        var platformOptions = Microsoft.Extensions.Options.Options.Create(platform ?? Platform());
+        var platformOptions = new FixedGoogleHealthPlatformSettings(platform ?? Platform());
         var tenant = new Mock<ITenantAccessor>();
         tenant.SetupGet(value => value.IsResolved).Returns(true);
         tenant.SetupGet(value => value.TenantId).Returns(tenantId);
@@ -1854,7 +1854,7 @@ public class GoogleHealthTests : IDisposable
                     new ConnectorRegistration<GoogleHealthConnectorConfiguration>(new(), "GoogleHealth"),
                     Configurations,
                     NullLogger<ConnectorConfigurationLoader<GoogleHealthConnectorConfiguration>>.Instance),
-                Microsoft.Extensions.Options.Options.Create(Platform()));
+                new FixedGoogleHealthPlatformSettings(Platform()));
         }
 
         public IConnectorConfigurationService Configurations { get; }

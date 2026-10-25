@@ -23,7 +23,7 @@
   };
 
   // Fetched after hydration, as the other statistics widgets do, so a slow query cannot block SSR.
-  let statsPromise = $state<ReturnType<typeof getMultiPeriodStatistics> | null>(null);
+  let statsPromise = $state<Promise<import("$lib/api").MultiPeriodStatistics> | null>(null);
   onMount(() => {
     statsPromise = examples ? Promise.resolve(examples.statistics) : getMultiPeriodStatistics();
   });

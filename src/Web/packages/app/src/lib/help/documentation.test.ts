@@ -93,6 +93,13 @@ describe("contextual documentation", () => {
       "Sleep night"
     );
     expect(articleFor("/alerts/editor/123", links).title).toBe("Alert Rules");
+    expect(articleFor("/alerts/123", links).title).toBe("Alert rule editor");
+    expect(articleFor("/alerts/simulator", links).title).toBe(
+      "Alert Simulator"
+    );
+    expect(articleFor("/clock/config/abc/", links).title).toBe(
+      "Clock builder"
+    );
     expect(articleFor("/", links).title).toBe("Dashboard");
   });
   it("searches tutorial steps as well as article bodies", () => {

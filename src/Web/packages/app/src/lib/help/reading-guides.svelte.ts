@@ -27,7 +27,7 @@ export function readingGuides(): Record<string, ReadingGuide> {
         ],
         [
           "Read the timeline",
-          "Line points are glucose samples. Recorded treatments provide timing context.",
+          "Line points are glucose readings. Markers for insulin, carbs, and device events show what happened around them.",
         ],
         [
           "Choose your display",
@@ -496,19 +496,19 @@ export function readingGuides(): Record<string, ReadingGuide> {
     ),
     "/calendar": entry(
       "grid",
-      ["/settings/trackers", "/settings/timezone"],
+      ["/settings/trackers", "/settings/timezone", "/settings/appearance"],
       [
         [
-          "Choose a month",
-          "Move through months to see day summaries and due tracker events.",
+          "Choose month and view",
+          "Use the arrows or Today, then switch between range bars and the daily glucose curve.",
         ],
         [
-          "Read a day",
-          "A daily summary condenses its available readings. Inspect a day for more detail.",
+          "Compare the days",
+          "Hover over a day for its percentages, carbs, insulin, and average. Days with gaps rest on fewer hours.",
         ],
         [
-          "Manage reminders elsewhere",
-          "Tracker starts/completions affect due events. Edit definitions in Notifications & Trackers.",
+          "Open a day",
+          "Select a day for Day in Review, or a tracker icon to see or complete that tracker.",
         ],
       ]
     ),
@@ -517,34 +517,52 @@ export function readingGuides(): Record<string, ReadingGuide> {
       ["/settings/connectors", "/settings/profile"],
       [
         [
-          "Choose the interval",
-          "Use the date range to find the device state you want to inspect.",
+          "Choose the period",
+          "Start from the last 7 days, or pick dates. The arrows keep the length of the period.",
         ],
         [
           "Read a span",
-          "A horizontal segment is a period in a state, rather than an individual reading.",
+          "A bar is a period in one state, not a single reading. A bar reaching the right edge may still be running.",
         ],
         [
-          "Inspect transitions",
-          "Check adjacent states and missing end times before interpreting duration.",
+          "Focus on one category",
+          "Hide rows you do not need. An empty row means your source sent nothing for it.",
         ],
       ]
     ),
     "/clock": entry(
       "flow",
-      ["/settings/appearance"],
+      ["/settings/appearance", "/settings/members"],
       [
         [
-          "Choose a face",
-          "Preview a saved face or create a new configuration.",
+          "Create a face",
+          "Select New clock, add elements in the builder, and save.",
         ],
         [
-          "Configure its layout",
-          "Open the face's editor for its widgets, sizing, and display options.",
+          "Open it on a screen",
+          "Copy the link and open it on the tablet or screen. The link works without signing in.",
         ],
         [
-          "Check freshness",
-          "The clock displays incoming records. Its appearance does not improve stale uploads.",
+          "Check the age",
+          "The clock keeps showing the last value when uploads stop. Look at the reading age.",
+        ],
+      ]
+    ),
+    "/clock/config/[id]": entry(
+      "flow",
+      ["/settings/trackers"],
+      [
+        [
+          "Add elements",
+          "Use the plus buttons above or below the rows, then drag elements into place.",
+        ],
+        [
+          "Adjust the look",
+          "Select an element for its style, and open Display settings for units, background, and stale threshold.",
+        ],
+        [
+          "Save and share",
+          "Select Save, then Copy link or Preview. Nothing changes on open clocks until you save.",
         ],
       ]
     ),
@@ -554,15 +572,15 @@ export function readingGuides(): Record<string, ReadingGuide> {
       [
         [
           "Find a food",
-          "Search or filter the catalog before adding a duplicate entry.",
+          "Search or filter the list before adding a food twice.",
         ],
         [
-          "Check portion and nutrition",
-          "Carb values describe a portion. Verify both the amount and its unit.",
+          "Check portion and carbs",
+          "Carbs belong to the portion and unit you entered. Check both before saving.",
         ],
         [
-          "Use it in a meal",
-          "A catalog entry becomes meal context only when linked to recorded intake.",
+          "Use it for meals",
+          "Star foods you use often, then attach them to carb entries on Meals.",
         ],
       ]
     ),
@@ -571,143 +589,179 @@ export function readingGuides(): Record<string, ReadingGuide> {
       ["/settings/connectors"],
       [
         [
-          "Find unassigned intake",
-          "Use All or Unattributed, then narrow by date, Search, or Food.",
+          "Choose dates",
+          "Pick a range, or show only meals without foods.",
         ],
         [
-          "Review a suggested match",
-          "Inspect the meal and carb event before accepting a proposed attribution.",
+          "Review suggestions",
+          "Accept or dismiss food entries that a connector matched to a carb entry.",
         ],
         [
-          "Adjust the link",
-          "Add, edit, or remove the food association. This is distinct from deleting the glucose trace.",
+          "Add detail",
+          "Expand a meal to attach foods, correct a portion, or add the bolus.",
         ],
       ]
     ),
-    "/tools/packing": entry(
+    "/tools": entry(
       "flow",
+      [],
+      [
+        ["Pick a tool", "Select the tool you need, such as the packing calculator."],
+        ["Use your data", "Tools fill in estimates from your own recent records where possible."],
+        ["Check the result", "Compare the estimate with your own supplies and situation."],
+      ]
+    ),
+    "/tools/packing": entry(
+      "bars",
       ["/settings/trackers"],
       [
         [
-          "Describe the trip",
-          "Set the trip inputs before reading estimated supply quantities.",
+          "Enter the trip",
+          "Set the number of days and turn on the supplies you use.",
         ],
         [
-          "Review categories",
-          "Check the estimate against your own devices and supply use.",
+          "Check the intervals",
+          "Your own average change interval is filled in when Nocturne finds it. Adjust spares and buffers.",
         ],
         [
-          "Open the list",
-          "Turn the estimate into a checklist, adding custom items where necessary.",
+          "Generate the list",
+          "Open the packing list and keep its link.",
         ],
       ]
     ),
     "/tools/packing/list": entry(
       "flow",
+      [],
+      [
+        ["Tick as you pack", "Check each item when it is in your bag."],
+        ["Add what is missing", "Add items to a category, or add a custom item."],
+        ["Keep the link", "Items are kept in the link. Ticks reset when you reload."],
+      ]
+    ),
+    "/notifications": entry(
+      "flow",
       ["/settings/trackers"],
       [
-        [
-          "Review quantities",
-          "The starting list reflects the trip calculation.",
-        ],
-        [
-          "Add custom items",
-          "Include supplies that the standard categories did not cover.",
-        ],
-        [
-          "Check items physically",
-          "A tick records your check. It does not verify the contents of your bag.",
-        ],
+        ["See what is due", "Active tracker notifications are listed with their level and age."],
+        ["Act on it", "Change the supply, then complete the tracker from the dashboard or calendar."],
+        ["Look back", "History shows each finished run, its duration, and why it ended."],
       ]
     ),
     "/alerts": entry(
       "flow",
-      ["/alerts/dnd", "/settings/connectors"],
+      ["/settings/integrations/discord", "/settings/timezone"],
       [
         [
-          "Choose a rule",
-          "Enable or edit the conditions that produce an alert.",
+          "Start from a question",
+          "Decide what needs to wake or warn you, such as glucose below a value for 15 minutes.",
         ],
         [
-          "Choose delivery",
-          "Review the channels under Where alerts reach you and each rule's configuration.",
+          "Build and test",
+          "Create the rule, replay it in the simulator, and use a test fire to check the channel.",
         ],
         [
-          "Inspect actual fires",
-          "History records evaluations/delivery. Acknowledging an alert is different from disabling its rule.",
+          "Check real alerts",
+          "History shows what fired. Do not disturb and severity decide what is delivered.",
+        ],
+      ]
+    ),
+    "/alerts/[id]": entry(
+      "flow",
+      ["/settings/integrations/discord"],
+      [
+        [
+          "Name and severity",
+          "Give the rule a clear name and choose info, warning, or critical.",
+        ],
+        [
+          "Condition",
+          "Combine facts with all or any, and add a minimum duration to avoid alerts on a single reading.",
+        ],
+        [
+          "Channels and ending",
+          "Add at least one channel, and an auto-resolve for an alert that ends on its own.",
         ],
       ]
     ),
     "/alerts/simulator": entry(
-      "trend",
-      ["/alerts"],
+      "scatter",
+      [],
       [
         [
-          "Select a rule",
-          "Choose the rule whose behavior you want to inspect.",
+          "Choose a window",
+          "Pick a day and optionally a time range. Without a day the last 24 hours are used.",
         ],
         [
-          "Choose a replay window",
-          "Replay evaluates against a chosen historical scenario. It is not a new measurement.",
+          "Read the markers",
+          "Markers show where a rule would have fired, auto-resolved, or been silenced by Do not disturb.",
         ],
         [
-          "Review the result",
-          "Check the simulated fires before enabling the rule for live use.",
+          "Adjust the rule",
+          "Change thresholds or durations in the editor, then replay the same window.",
         ],
       ]
     ),
     "/alerts/history": entry(
       "flow",
-      ["/alerts", "/alerts/dnd"],
+      [],
       [
         [
-          "Locate a fire",
-          "Read the timestamp, rule, and severity of a recorded event.",
+          "Find the alert",
+          "Look for the rule name and start time. The newest alerts come first.",
         ],
         [
-          "Inspect delivery",
-          "A rule firing and a notification being delivered are different stages.",
+          "Read the outcome",
+          "Duration and end time show how long it lasted. Acknowledged shows someone responded.",
         ],
         [
-          "Adjust the right control",
-          "Change the condition in Rules or quiet periods in Do Not Disturb.",
+          "Investigate",
+          "Open the rule's historic firings to replay that moment.",
         ],
       ]
     ),
     "/alerts/dnd": entry(
       "flow",
-      ["/alerts", "/settings/patient"],
+      ["/settings/timezone"],
       [
         [
           "Choose manual or schedule",
-          "Manual quiet mode and a recurring window serve different purposes.",
+          "Turn it on now with an optional end, or set daily quiet hours.",
         ],
         [
-          "Set timing",
-          "Use Auto-expire for manual mode, or From/To for the recurring window.",
+          "Know what still comes through",
+          "Critical rules and rules allowed through always notify.",
         ],
         [
-          "Check exceptions",
-          "Rules allowed through Do Not Disturb can still notify. Verify the patient's timezone.",
+          "Check the timezone",
+          "Quiet hours follow the patient's timezone.",
         ],
       ]
     ),
     "/compatibility": entry(
-      "flow",
+      "bars",
       [],
       [
         [
-          "Set request filters",
-          "Narrow by path, method, and match type to inspect a specific endpoint.",
+          "Check the setup",
+          "The configuration card shows which Nightscout is used for comparison.",
         ],
         [
-          "Read the differences",
-          "Inspect matching and critical issues instead of relying only on the overall score.",
+          "Find weak endpoints",
+          "Per-endpoint results show where answers differ most.",
         ],
         [
-          "Test a scenario",
-          "Open Test Endpoint Compatibility to run a deliberate comparison.",
+          "Open an analysis",
+          "Select a row to see each difference in detail.",
         ],
+      ]
+    ),
+    "/compatibility/[id]": entry(
+      "flow",
+      [],
+      [
+        ["Read the summary", "Overall match, status codes, and times come first."],
+        ["Check each difference", "Each row names a field and the kind of difference."],
+        ["Reproduce it", "Use the same path on the test page."],
       ]
     ),
     "/compatibility/test": entry(
@@ -715,52 +769,52 @@ export function readingGuides(): Record<string, ReadingGuide> {
       [],
       [
         [
-          "Choose a target",
-          "Set the endpoint and parameters for the intended scenario.",
+          "Enter both sides",
+          "Fill in the Nightscout URL, secret, and query path.",
         ],
         [
-          "Run the comparison",
-          "Inspect both responses and timing rather than just a pass/fail headline.",
+          "Run and compare",
+          "Read the status codes and times, then the diff.",
         ],
         [
-          "Review coverage",
-          "One matching scenario does not verify every uploader or data shape.",
+          "Judge the difference",
+          "Extra Nocturne fields are expected. Missing or changed values need attention.",
         ],
       ]
     ),
     "/tenants": entry(
-      "flow",
-      ["/settings/members", "/settings/admin/tenants"],
+      "grid",
+      ["/settings/members"],
       [
         [
-          "Choose the workspace",
-          "Each tile represents a tenant you are allowed to access.",
+          "Scan from the top",
+          "The most urgent tenants come first.",
         ],
         [
-          "Check identity",
-          "Confirm the patient/workspace before opening its records.",
+          "Check the age",
+          "A tile shows the last reading it found. A stale tile needs a check of that tenant's source.",
         ],
         [
-          "Manage access separately",
-          "Sharing & Privacy controls tenant membership. Platform administration controls tenant configuration.",
+          "Open a tenant",
+          "Select a tile to open that tenant.",
         ],
       ]
     ),
     "/setup": entry(
       "flow",
-      ["/settings/patient", "/settings/connectors", "/settings/appearance"],
+      ["/settings/connectors", "/settings/patient"],
       [
         [
-          "Complete identity",
-          "Set up your account and select the correct patient workspace.",
+          "Work down the list",
+          "Open each item that helps you. Mark the rest Not for me.",
         ],
         [
-          "Connect a source",
-          "Finish the provider's authentication and import selection, not just its setup form.",
+          "Let it check itself",
+          "An item is done when it works, for example when the first reading arrives.",
         ],
         [
-          "Verify real records",
-          "Open a report containing dates where the source has data.",
+          "Change it later",
+          "Every item leads to settings you can also find in the menu.",
         ],
       ]
     ),

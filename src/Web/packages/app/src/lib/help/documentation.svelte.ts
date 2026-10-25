@@ -53,6 +53,8 @@ function parentFor(href: string): string | undefined {
   )
     return "/settings/connectors";
   if (href === "/settings/integrations/discord") return "/settings/account";
+  if (href === "/tools") return "/tools/packing";
+  if (href === "/notifications") return "/settings/trackers";
   if (
     href.startsWith("/settings/admin/") ||
     href === "/settings/access-requests" ||
@@ -109,13 +111,27 @@ export function documentationLinks(navigation: NavItem[]): NavLink[] {
   return links;
 }
 
+/** Whether `path` fills the `[param]` segments of a detail route such as `/alerts/[id]`. */
+function matchesDetailRoute(route: string, path: string): boolean {
+  if (!route.includes("[")) return false;
+  const expected = route.split("/");
+  const actual = path.split("/");
+  return (
+    expected.length === actual.length &&
+    expected.every(
+      (segment, i) =>
+        (segment.startsWith("[") && actual[i] !== "") || segment === actual[i]
+    )
+  );
+}
+
 export function articleFor(path: string, links: NavLink[]): HelpArticle {
   const normalized = path.replace(/\/+$/, "") || "/";
   const all = articles();
   const exact = all.find((entry) => entry.href === normalized);
   if (exact) return exact;
-  if (/^\/reports\/sleep\/[^/]+$/.test(normalized))
-    return all.find((entry) => entry.href === "/reports/sleep/[date]")!;
+  const detail = all.find((entry) => matchesDetailRoute(entry.href, normalized));
+  if (detail) return detail;
   const parent = all
     .filter(
       (entry) => entry.href !== "/" && normalized.startsWith(`${entry.href}/`)

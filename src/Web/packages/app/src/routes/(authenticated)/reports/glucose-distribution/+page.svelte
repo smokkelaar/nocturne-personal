@@ -126,7 +126,7 @@
       <div class="grid gap-6 @3xl:grid-cols-2 print:grid-cols-2">
         <Card.Root>
           <Card.Header>
-            <div class="flex items-center justify-between">
+            <div class="flex flex-wrap items-center justify-between gap-2">
               <Card.Title class="text-lg">Distribution chart</Card.Title>
               <Button
                 variant="ghost"

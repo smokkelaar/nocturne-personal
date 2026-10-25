@@ -97,7 +97,7 @@ public class SensorGlucoseRepositoryAttributionTests : IDisposable
         var result = (await _repo.GetAsync(
             from: null, to: null, device: null, source: null,
             limit: 100, offset: 0, descending: true,
-            nativeOnly: false, afterTimestamp: null, afterId: null,
+            afterTimestamp: null, afterId: null,
             patientDeviceId: deviceId)).ToList();
 
         result.Should().ContainSingle();

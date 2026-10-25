@@ -250,7 +250,7 @@ public class SensorContextEnricherTests
         // replay tick is not the live instant.
         _bolusRepository.Verify(r => r.GetAsync(
             tick.AddMilliseconds(-DailyProfileCalculator.ActingMs), tick, null, null, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<bool>(),
-            It.IsAny<bool>(), It.IsAny<BolusKind?>(), It.IsAny<DateTime?>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()),
+            It.IsAny<BolusKind?>(), It.IsAny<DateTime?>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()),
             Times.Once);
         _bolusRepository.VerifyNoOtherCalls();
         _iobCalculator.Verify(s => s.CalculateTotalAsync(

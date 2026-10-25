@@ -49,6 +49,42 @@ public class EntryCacheAdapterTests
         cache.Invocations.Should().BeEmpty();
     }
 
+    [Fact]
+    public async Task GetOrComputeCurrentAsync_ConcurrentColdReads_ComputeOnce()
+    {
+        var cache = TestTenantCache.Create();
+        var runs = 0;
+        var held = new TaskCompletionSource<Entry?>();
+
+        var reads = Enumerable.Range(0, 8)
+            .Select(_ => Adapter(cache).GetOrComputeCurrentAsync(async () =>
+            {
+                Interlocked.Increment(ref runs);
+                return await held.Task;
+            }))
+            .ToList();
+        held.SetResult(new Entry { Id = "current" });
+
+        (await Task.WhenAll(reads).WaitAsync(TimeSpan.FromSeconds(5)))
+            .Should().AllSatisfy(entry => entry!.Id.Should().Be("current"));
+        runs.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task GetOrComputeCurrentAsync_NoEntry_IsNotCached()
+    {
+        var adapter = Adapter(TestTenantCache.Create());
+        var computes = 0;
+
+        var none = await adapter.GetOrComputeCurrentAsync(() => { computes++; return Task.FromResult<Entry?>(null); });
+        var later = await adapter.GetOrComputeCurrentAsync(
+            () => { computes++; return Task.FromResult<Entry?>(new Entry { Id = "later" }); });
+
+        none.Should().BeNull();
+        later!.Id.Should().Be("later");
+        computes.Should().Be(2);
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]

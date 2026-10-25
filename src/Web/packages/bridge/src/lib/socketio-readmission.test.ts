@@ -9,6 +9,13 @@ import SocketIOServer, {
 import { signHandshakeTicket, type RealtimeGrant } from './handshake-ticket.js';
 
 const SECRET = 'test-instance-key-0123456789';
+const TENANT_ID = '0198a3c4-7e21-7b10-9d2f-5c6e7f809a1b';
+
+/** The server, with `TENANT_ID` as the tenant every slug names. */
+function servingTenant(server: SocketIOServer): SocketIOServer {
+  server.isCurrentTenant = async (_slug, id) => id === TENANT_ID;
+  return server;
+}
 const HOST = 'rhys.nocturne.run';
 
 function grant(extra: Partial<RealtimeGrant> = {}): RealtimeGrant {
@@ -23,7 +30,7 @@ const refused = { ok: false, status: 401 };
 const failing = { ok: false, status: 503 };
 
 function makeServer() {
-  return new SocketIOServer(createServer(), {}, 'nocturne.run', null, SECRET, 'http://api.internal');
+  return servingTenant(new SocketIOServer(createServer(), {}, 'nocturne.run', null, SECRET, 'http://api.internal'));
 }
 
 /** A socket already past the handshake, with the members a re-check touches. */
@@ -239,7 +246,7 @@ describe('SocketIOServer re-admission of a browser socket admitted on a ticket',
 
   async function listening() {
     const http = createServer();
-    const server = new SocketIOServer(http, {}, 'nocturne.run', null, SECRET);
+    const server = servingTenant(new SocketIOServer(http, {}, 'nocturne.run', null, SECRET));
     await server.start();
     await new Promise<void>((resolve) => http.listen(0, '127.0.0.1', resolve));
     return { server, port: (http.address() as AddressInfo).port };
@@ -253,7 +260,7 @@ describe('SocketIOServer re-admission of a browser socket admitted on a ticket',
       transports: ['websocket'],
       reconnection: false,
       extraHeaders: { 'X-Forwarded-Host': HOST },
-      auth: { token: signHandshakeTicket(SECRET, HOST, admitted) },
+      auth: { token: signHandshakeTicket(SECRET, HOST, TENANT_ID, admitted) },
     });
     clients.push(client);
     client.on('realtime_ticket', (ack: (reply: TicketReply) => void) => ack(answer()));
@@ -270,7 +277,7 @@ describe('SocketIOServer re-admission of a browser socket admitted on a ticket',
   it('moves the socket onto the rooms of the fresh ticket', async () => {
     const { server, port } = await listening();
     const client = await browser(port, grant({ categories: ['entries', 'care'] }), () => ({
-      token: signHandshakeTicket(SECRET, HOST, grant({ categories: ['entries'] })),
+      token: signHandshakeTicket(SECRET, HOST, TENANT_ID, grant({ categories: ['entries'] })),
       denied: false,
     }));
     const socket = serverSocket(server, client);
@@ -285,8 +292,12 @@ describe('SocketIOServer re-admission of a browser socket admitted on a ticket',
 
   it.each([
     ['a denial', () => ({ token: null, denied: true })],
-    ['a ticket minted for another host', () => ({ token: signHandshakeTicket(SECRET, 'other.nocturne.run', grant()), denied: false })],
-    ['a tampered ticket', () => ({ token: signHandshakeTicket('another-key', HOST, grant()), denied: false })],
+    ['a ticket minted for another host', () => ({ token: signHandshakeTicket(SECRET, 'other.nocturne.run', TENANT_ID, grant()), denied: false })],
+    ['a tampered ticket', () => ({ token: signHandshakeTicket('another-key', HOST, TENANT_ID, grant()), denied: false })],
+    [
+      'a ticket for a tenant its slug no longer names',
+      () => ({ token: signHandshakeTicket(SECRET, HOST, '0198a3c4-0000-7000-8000-000000000000', grant()), denied: false }),
+    ],
   ])('closes the transport of a socket that answers with %s', async (_case, answer) => {
     const { server, port } = await listening();
     const client = await browser(port, grant({ categories: ['entries'] }), answer);

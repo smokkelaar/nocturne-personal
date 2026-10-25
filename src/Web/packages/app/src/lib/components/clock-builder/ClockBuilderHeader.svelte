@@ -40,7 +40,7 @@
 </script>
 
 <header
-  class="sticky top-(--app-sticky-top,0px) z-30 transition-all duration-300 flex items-center justify-between border-b bg-background/95 px-4 py-3 backdrop-blur"
+  class="sticky top-(--app-sticky-top,0px) z-30 transition-all duration-300 flex flex-wrap items-center justify-between gap-2 border-b bg-background/95 px-4 py-3 backdrop-blur"
 >
   <Button variant="ghost" href="/clock">
     <ArrowLeft class="size-4" />
@@ -52,7 +52,7 @@
     oninput={(e: Event & { currentTarget: HTMLInputElement }) =>
       onNameChange(e.currentTarget.value)}
     variant="title"
-    class="max-w-[200px] text-center"
+    class="max-w-[200px] text-center @max-xl:order-last @max-xl:max-w-none @max-xl:basis-full"
     placeholder="Clock name"
   />
   <div class="flex gap-2">
@@ -80,14 +80,14 @@
     {#if children}
       {@render children()}
     {/if}
-    <Button variant="outline" onclick={onSave} disabled={saving}>
+    <Button variant="outline" onclick={onSave} disabled={saving} aria-label="Save">
       {#if saving}<Loader2 class="size-4 animate-spin" />{:else}<Save
           class="size-4"
         />{/if}
     </Button>
-    <Button onclick={onPreview}>
+    <Button onclick={onPreview} aria-label="Preview">
       <Play class="size-4" />
-      <span class="ml-2 hidden sm:inline">Preview</span>
+      <span class="ml-2 hidden @xl:inline">Preview</span>
     </Button>
   </div>
 </header>

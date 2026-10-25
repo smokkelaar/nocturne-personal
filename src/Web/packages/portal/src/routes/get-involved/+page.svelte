@@ -11,6 +11,8 @@
   import { LINKS } from "$lib/data/links";
   import { campaignUrl, track } from "$lib/analytics";
   import SupportNocturne from "$lib/components/docs/SupportNocturne.svelte";
+  import { issueAge } from "$lib/utils/issue-age";
+  import { preferredLanguage } from "@nocturne/app/stores/appearance-store.svelte";
 
   const BRAND = { background: "var(--brand)", foreground: "white" };
 
@@ -144,19 +146,6 @@
       status = "error";
     }
   });
-
-  function relativeTime(iso: string): string {
-    const mins = (Date.now() - new Date(iso).getTime()) / 60000;
-    const hours = mins / 60;
-    const days = hours / 24;
-    const weeks = days / 7;
-    if (mins < 1) return "just now";
-    if (mins < 60) return `${Math.floor(mins)}m`;
-    if (hours < 24) return `${Math.floor(hours)}h`;
-    if (days < 7) return `${Math.floor(days)}d`;
-    if (weeks < 5) return `${Math.floor(weeks)}w`;
-    return `${Math.floor(days / 30)}mo`;
-  }
 
   // mailto: hands off to the mail client, so a new tab would just be left orphaned.
   function opensNewTab(lane: Lane): boolean {
@@ -299,7 +288,7 @@
                 <span class="sr-only">Comments:</span>
                 {issue.comments}
               </span>
-              <span>{relativeTime(issue.updatedAt)}</span>
+              <span>{issueAge(issue.updatedAt, preferredLanguage.current)}</span>
             </div>
           </a>
         {/each}

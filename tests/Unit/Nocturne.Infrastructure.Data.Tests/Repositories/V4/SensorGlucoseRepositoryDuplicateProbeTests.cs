@@ -92,7 +92,7 @@ public class SensorGlucoseRepositoryDuplicateProbeTests : IDisposable
         var visible = (await _repo.GetAsync(
             from: now.AddMinutes(-5), to: now.AddMinutes(5), device: "Dexcom G7 DXCMRf", source: null,
             limit: 100, offset: 0, descending: true,
-            nativeOnly: false, afterTimestamp: null, afterId: null)).ToList();
+            afterTimestamp: null, afterId: null)).ToList();
         visible.Should().BeEmpty();
 
         // …but the duplicate probe must not: the reading is already stored.

@@ -5998,6 +5998,10 @@ namespace Nocturne.Infrastructure.Data.Migrations
                         .HasColumnType("double precision")
                         .HasColumnName("bolus_iob");
 
+                    b.Property<bool?>("ClosedLoop")
+                        .HasColumnType("boolean")
+                        .HasColumnName("closed_loop");
+
                     b.Property<double?>("Cob")
                         .HasColumnType("double precision")
                         .HasColumnName("cob");

@@ -348,7 +348,7 @@ public class IobCobComputeStageTests
         for (var t = startTime; t <= endTime; t += 5 * 60 * 1000)
         {
             snapshots.Add(new ApsIobCobPoint(
-                DateTimeOffset.FromUnixTimeMilliseconds(t).UtcDateTime, 1.25, 18.0));
+                DateTimeOffset.FromUnixTimeMilliseconds(t).UtcDateTime, 1.25, 18.0, null));
         }
 
         var context = new ChartDataContext
@@ -419,7 +419,7 @@ public class IobCobComputeStageTests
             }],
             TempBasalList = [],
             ApsSnapshotList = [new ApsIobCobPoint(
-                DateTimeOffset.FromUnixTimeMilliseconds(startTime - 45 * 60 * 1000).UtcDateTime, 9.99, 99.0)],
+                DateTimeOffset.FromUnixTimeMilliseconds(startTime - 45 * 60 * 1000).UtcDateTime, 9.99, 99.0, null)],
         };
 
         var result = await _stage.ExecuteAsync(context, CancellationToken.None);
@@ -455,7 +455,7 @@ public class IobCobComputeStageTests
             }],
             TempBasalList = [],
             ApsSnapshotList = [new ApsIobCobPoint(
-                DateTimeOffset.FromUnixTimeMilliseconds(startTime - 60 * 1000).UtcDateTime, 1.5, null)],
+                DateTimeOffset.FromUnixTimeMilliseconds(startTime - 60 * 1000).UtcDateTime, 1.5, null, null)],
         };
 
         var result = await _stage.ExecuteAsync(context, CancellationToken.None);
@@ -498,7 +498,7 @@ public class IobCobComputeStageTests
         var second = await _stage.ExecuteAsync(baseContext with
         {
             ApsSnapshotList = [new ApsIobCobPoint(
-                DateTimeOffset.FromUnixTimeMilliseconds(startTime - 60 * 1000).UtcDateTime, 1.5, null)],
+                DateTimeOffset.FromUnixTimeMilliseconds(startTime - 60 * 1000).UtcDateTime, 1.5, null, null)],
         }, CancellationToken.None);
 
         second.IobSeries.Should().ContainSingle().Which.Value.Should().Be(1.5);
@@ -521,7 +521,7 @@ public class IobCobComputeStageTests
         }];
         // Stamped two minutes after the second tick, so only that tick, while live, takes it.
         IReadOnlyList<ApsIobCobPoint> aps = [new ApsIobCobPoint(
-            DateTimeOffset.FromUnixTimeMilliseconds(start + 7 * minute).UtcDateTime, 1.5, null)];
+            DateTimeOffset.FromUnixTimeMilliseconds(start + 7 * minute).UtcDateTime, 1.5, null, null)];
         var calculated = 2.0;
         _mockIobCalculator
             .Setup(s => s.FromBoluses(It.IsAny<List<Bolus>>(), It.IsAny<TherapySnapshot>(), It.IsAny<long>()))

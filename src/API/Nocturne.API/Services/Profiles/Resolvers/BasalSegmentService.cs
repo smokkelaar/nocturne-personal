@@ -76,7 +76,8 @@ internal sealed class BasalSegmentService : IBasalSegmentService
         return await _cache.GetOrCreateLocalAsync(
             $"basal-assignments:{window.StartMills}:{window.EndMills}",
             () => BuildAssignmentsAsync(window, ct),
-            TimeSpan.FromSeconds(CacheTtlSeconds));
+            TimeSpan.FromSeconds(CacheTtlSeconds),
+            ct);
     }
 
     private async Task<IReadOnlyList<ScheduleAssignment>> BuildAssignmentsAsync(

@@ -216,7 +216,7 @@ internal sealed class AlertReplayService(
 
             var fetched = (await glucoseRepository.GetAsync(
                 from: windowStart, to: windowEnd, device: null, source: null,
-                limit: pageSize, offset: 0, descending: false, nativeOnly: false,
+                limit: pageSize, offset: 0, descending: false,
                 afterTimestamp: afterTimestamp, afterId: afterId, ct: ct)).ToList();
 
             // A short page is the last one.

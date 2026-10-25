@@ -62,7 +62,7 @@
       </div>
     </Card.Header>
     <Card.Content>
-      <div class="flex items-baseline gap-2">
+      <div class="flex flex-wrap items-baseline gap-x-2">
         {#if tenant.latest?.mgdl != null}
           <span
             class="text-3xl font-bold tabular-nums {statusClass}"

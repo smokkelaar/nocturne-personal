@@ -34,11 +34,11 @@
 		</span>
 	</Button>
 
-	<span class="col-label text-xs max-sm:hidden">Portion</span>
+	<span class="col-label text-xs @max-2xl:hidden">Portion</span>
 
-	<span class="col-label text-xs max-sm:hidden">GI</span>
+	<span class="col-label text-xs @max-2xl:hidden">GI</span>
 
-	<span class="col-label text-right text-xs max-sm:hidden">
+	<span class="col-label text-right text-xs @max-2xl:hidden">
 		Energy <span class="normal-case">{getEnergyUnit()}</span>
 	</span>
 

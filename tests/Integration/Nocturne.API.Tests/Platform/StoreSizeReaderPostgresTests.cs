@@ -134,7 +134,6 @@ public sealed class StoreSizeReaderPostgresTests(StoreSizePostgresFixture fixtur
 
         return new StoreSizeReader(
             services.GetRequiredService<INocturneDbContextFactory>(),
-            new StoreSizeEstimator(_provider.GetRequiredService<INocturneDbContextFactory>()),
             cache.Object,
             services.GetRequiredService<ICategoryReadContext>(),
             services.GetRequiredService<ITenantAccessor>(),

@@ -19,52 +19,54 @@
 </script>
 
 {#if visibleAlerts.length > 0}
-  <div class="border-b print:hidden" role="region" aria-label="Active alerts">
+  <div class="@container border-b print:hidden" role="region" aria-label="Active alerts">
     {#each visibleAlerts as alert (alert.id)}
       <!-- Coloured by the rule's own severity: styling every banner as
            destructive made an info rule indistinguishable from a critical low. -->
       <div
-        class="container mx-auto flex flex-wrap items-center gap-3 border-b px-4 py-2 max-w-7xl last:border-b-0 {severity(
+        class="container mx-auto flex flex-col gap-2 border-b px-4 py-2 max-w-7xl last:border-b-0 @xl:flex-row @xl:items-center @xl:gap-3 {severity(
           alert.severity,
           'strip'
         )}"
       >
-        <AlertTriangle class="h-4 w-4 shrink-0" />
-        <div class="flex-1 min-w-0">
-          <!-- Named as well as coloured: colour alone is unavailable to a
-               screen reader and to anyone who can't distinguish these hues. -->
-          <span class="text-2xs font-semibold uppercase tracking-wider">
-            {severityLabel(alert.severity)}
-          </span>
-          <span class="text-sm font-medium">
-            {alert.ruleName ?? "Alert"}
-          </span>
-          <span class="text-sm text-muted-foreground mx-2">
-            {conditionLabel(alert.conditionType)}
-          </span>
-          <span
-            class="text-xs text-muted-foreground"
-            title={toDate(alert.startedAt) ? formatDateTimeCompact(alert.startedAt) : undefined}
-          >
-            {relativeAge(alert.startedAt, { fallback: "Unknown" })}
-          </span>
-          {#if alert.snoozedUntil}
-            <!-- Still listed: a snooze pauses notifications, it does not
-                 acknowledge the alert. -->
+        <div class="flex min-w-0 items-start gap-2 @xl:flex-1 @xl:items-center">
+          <AlertTriangle class="mt-0.5 h-4 w-4 shrink-0 @xl:mt-0" />
+          <div class="flex-1 min-w-0">
+            <!-- Named as well as coloured: colour alone is unavailable to a
+                 screen reader and to anyone who can't distinguish these hues. -->
+            <span class="text-2xs font-semibold uppercase tracking-wider">
+              {severityLabel(alert.severity)}
+            </span>
+            <span class="text-sm font-medium">
+              {alert.ruleName ?? "Alert"}
+            </span>
+            <span class="text-sm text-muted-foreground mx-2">
+              {conditionLabel(alert.conditionType)}
+            </span>
             <span
-              class="ml-2 inline-flex items-center gap-1 text-xs text-muted-foreground"
+              class="text-xs text-muted-foreground"
+              title={toDate(alert.startedAt) ? formatDateTimeCompact(alert.startedAt) : undefined}
             >
-              <BellOff class="h-3 w-3" />
-              Snoozed until {time(alert.snoozedUntil)}
+              {relativeAge(alert.startedAt, { fallback: "Unknown" })}
             </span>
-          {/if}
-          {#if actions.hasAccount && seenBy(alert.receipts)}
-            <span class="ml-2 text-xs text-muted-foreground">
-              {seenBy(alert.receipts)}
-            </span>
-          {/if}
+            {#if alert.snoozedUntil}
+              <!-- Still listed: a snooze pauses notifications, it does not
+                   acknowledge the alert. -->
+              <span
+                class="ml-2 inline-flex items-center gap-1 text-xs text-muted-foreground"
+              >
+                <BellOff class="h-3 w-3" />
+                Snoozed until {time(alert.snoozedUntil)}
+              </span>
+            {/if}
+            {#if actions.hasAccount && seenBy(alert.receipts)}
+              <span class="ml-2 text-xs text-muted-foreground">
+                {seenBy(alert.receipts)}
+              </span>
+            {/if}
+          </div>
         </div>
-        <div class="flex items-center gap-1 shrink-0">
+        <div class="ml-6 flex flex-wrap items-center gap-1 shrink-0 @xl:ml-0">
           {#if !alert.snoozedUntil && actions.snoozableInstance(alert)}
             <span class="text-xs text-muted-foreground">Snooze</span>
             {#each SNOOZE_MINUTES as minutes (minutes)}

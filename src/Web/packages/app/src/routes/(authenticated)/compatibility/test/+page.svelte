@@ -359,7 +359,7 @@
   }
 </script>
 
-<div class="@container container mx-auto p-6 space-y-6">
+<div class="@container container mx-auto p-3 @md:p-6 space-y-6">
   <!-- Header -->
   <div class="flex flex-col gap-3 @lg:flex-row @lg:justify-between @lg:items-center">
     <div>

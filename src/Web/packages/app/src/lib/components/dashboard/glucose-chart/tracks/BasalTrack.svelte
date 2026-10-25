@@ -26,6 +26,8 @@
 
   const ctx = getGlucoseChartContext();
   const chartCtx = getChartContext();
+  // Width the "Last pump sync" label needs to its right before it would run off the chart.
+  const LAST_SYNC_LABEL_ROOM = 100;
 
   const basalData = $derived(ctx.engine.basalData);
   const scheduledBasalData = $derived(ctx.engine.scheduledBasalData);
@@ -189,7 +191,7 @@
         x={staleBasalData.start.getTime()}
         y={basalScale(maxBasalRate)}
         label="Last pump sync"
-        labelPlacement="bottom-right"
+        labelPlacement={chartCtx.width - chartCtx.xScale(staleBasalData.start) < LAST_SYNC_LABEL_ROOM ? "bottom-left" : "bottom-right"}
         fill="var(--warning)"
         class="hover:bg-background hover:text-foreground"
       />

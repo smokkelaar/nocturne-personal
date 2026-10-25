@@ -37,6 +37,7 @@ public class RoleController : ControllerBase
     /// <inheritdoc cref="ITenantRoleService.GetRolesAsync"/>
     /// <remarks>
     /// A <c>roles.manage</c> caller gets every role; a <c>members.invite</c> or <c>members.manage</c> caller gets only the roles it can grant.
+    /// <c>CanGrant</c> on each role says whether the caller may confer it.
     /// </remarks>
     [HttpGet]
     [RemoteQuery]
@@ -45,7 +46,7 @@ public class RoleController : ControllerBase
     public async Task<IActionResult> GetRoles(CancellationToken ct)
     {
         if (HttpContext.HasScope(Scope.RolesManage))
-            return Ok(await _roleService.GetRolesAsync(_tenantAccessor.TenantId, ct));
+            return Ok(await _roleService.GetRolesAsync(_tenantAccessor.TenantId, HttpContext.GetGrantedScopes(), ct));
 
         if (!HttpContext.HasScope(Scope.MembersInvite) && !HttpContext.HasScope(Scope.MembersManage))
             return Forbid();
@@ -68,12 +69,13 @@ public class RoleController : ControllerBase
         if (!HttpContext.HasScope(Scope.RolesManage))
             return Forbid();
 
-        var violation = Scope.ValidateGrant(request.Permissions, HttpContext.GetGrantedScopes());
+        var grantedScopes = HttpContext.GetGrantedScopes();
+        var violation = Scope.ValidateGrant(request.Permissions, grantedScopes);
         if (violation != null)
             return GrantProblem(violation);
 
         var role = await _roleService.CreateRoleAsync(
-            _tenantAccessor.TenantId, request.Name, request.Description, request.Permissions, ct);
+            _tenantAccessor.TenantId, request.Name, request.Description, request.Permissions, grantedScopes, ct);
         return StatusCode(StatusCodes.Status201Created, role);
     }
 
@@ -91,14 +93,15 @@ public class RoleController : ControllerBase
         if (!HttpContext.HasScope(Scope.RolesManage))
             return Forbid();
 
-        var violation = Scope.ValidateGrant(request.Permissions, HttpContext.GetGrantedScopes());
+        var grantedScopes = HttpContext.GetGrantedScopes();
+        var violation = Scope.ValidateGrant(request.Permissions, grantedScopes);
         if (violation != null)
             return GrantProblem(violation);
 
         try
         {
             var role = await _roleService.UpdateRoleAsync(
-                _tenantAccessor.TenantId, id, request.Name, request.Description, request.Permissions, ct);
+                _tenantAccessor.TenantId, id, request.Name, request.Description, request.Permissions, grantedScopes, ct);
             if (role == null)
                 return NotFound();
 

@@ -47,7 +47,7 @@
 
 <Card.Root>
   <Card.Header>
-    <div class="flex items-center justify-between">
+    <div class="flex flex-wrap items-center justify-between gap-3">
       <div>
         <Card.Title class="flex items-center gap-2">
           <Icon class="h-5 w-5" />

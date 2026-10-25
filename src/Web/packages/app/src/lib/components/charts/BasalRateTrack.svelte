@@ -95,6 +95,9 @@
     showLabel = true,
   }: Props = $props();
 
+  // Width the "Last pump sync" label needs to its right; the stale span runs to the chart's end.
+  const LAST_SYNC_LABEL_ROOM = 100;
+
   // Group basal delivery spans by origin for layered rendering
   const scheduledDeliverySpans = $derived(
     basalDeliverySpans.filter((s) => s.origin === BasalDeliveryOrigin.Scheduled)
@@ -178,7 +181,7 @@
     x={staleBasalData.start.getTime()}
     y={basalScale(maxBasalRate)}
     label="Last pump sync"
-    labelPlacement="bottom-right"
+    labelPlacement={context.xScale(staleBasalData.end) - context.xScale(staleBasalData.start) < LAST_SYNC_LABEL_ROOM ? "bottom-left" : "bottom-right"}
     fill="var(--warning)"
     class="hover:bg-background hover:text-foreground"
   />

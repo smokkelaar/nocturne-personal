@@ -263,7 +263,7 @@ public class ClockFacesControllerTests
         _sensorGlucoseRepositoryMock.Verify(
             r => r.GetAsync(
                 It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), It.IsAny<string?>(), It.IsAny<string?>(),
-                It.IsAny<int>(), It.IsAny<int>(), It.IsAny<bool>(), It.IsAny<bool>(),
+                It.IsAny<int>(), It.IsAny<int>(), It.IsAny<bool>(),
                 It.IsAny<DateTime?>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()),
             Times.Never);
     }
@@ -296,7 +296,7 @@ public class ClockFacesControllerTests
         _sensorGlucoseRepositoryMock
             .Setup(r => r.GetAsync(
                 It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), It.IsAny<string?>(), It.IsAny<string?>(),
-                It.IsAny<int>(), It.IsAny<int>(), It.IsAny<bool>(), It.IsAny<bool>(),
+                It.IsAny<int>(), It.IsAny<int>(), It.IsAny<bool>(),
                 It.IsAny<DateTime?>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new[] { newest, previous });
 
@@ -324,7 +324,7 @@ public class ClockFacesControllerTests
         _sensorGlucoseRepositoryMock
             .Setup(r => r.GetAsync(
                 It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), It.IsAny<string?>(), It.IsAny<string?>(),
-                It.IsAny<int>(), It.IsAny<int>(), It.IsAny<bool>(), It.IsAny<bool>(),
+                It.IsAny<int>(), It.IsAny<int>(), It.IsAny<bool>(),
                 It.IsAny<DateTime?>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Array.Empty<SensorGlucose>());
 
@@ -333,7 +333,7 @@ public class ClockFacesControllerTests
         _sensorGlucoseRepositoryMock.Verify(
             r => r.GetAsync(
                 null, null, null, null,
-                2, 0, true, It.IsAny<bool>(),
+                2, 0, true,
                 It.IsAny<DateTime?>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()),
             Times.Once);
     }

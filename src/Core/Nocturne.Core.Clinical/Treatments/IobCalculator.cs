@@ -426,6 +426,7 @@ public class IobCalculator(
             Source = reading.Name,
             Device = reading.Device,
             Mills = reading.Mills,
+            ReportedByDevice = true,
         };
     }
 

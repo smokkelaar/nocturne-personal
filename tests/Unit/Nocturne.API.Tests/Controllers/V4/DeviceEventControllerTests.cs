@@ -296,7 +296,7 @@ public class DeviceEventControllerTests
                 It.IsAny<DateTime?>(), It.IsAny<DateTime?>(),
                 It.IsAny<string?>(), It.IsAny<string?>(),
                 It.IsAny<int>(), It.IsAny<int>(),
-                It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<Guid?>(),
+                It.IsAny<bool>(), It.IsAny<Guid?>(),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync([]);
 
@@ -312,7 +312,7 @@ public class DeviceEventControllerTests
             It.IsAny<DateTime?>(), It.IsAny<DateTime?>(),
             It.IsAny<string?>(), It.IsAny<string?>(),
             It.IsAny<int>(), It.IsAny<int>(),
-            It.IsAny<bool>(), It.IsAny<bool>(), patientDeviceId,
+            It.IsAny<bool>(), patientDeviceId,
             It.IsAny<CancellationToken>()), Times.Once);
     }
 }

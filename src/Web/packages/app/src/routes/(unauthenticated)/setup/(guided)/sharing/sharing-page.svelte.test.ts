@@ -6,7 +6,7 @@ import { remoteCommand, remoteQuery } from "$lib/test-stubs/remote-resource";
 const state = vi.hoisted(() => ({
   relationship: {} as { relationship?: string; patientName?: string },
   hubState: "Open" as string | undefined,
-  roles: [] as { id: string; slug: string; name: string; accessLevel?: string }[],
+  roles: [] as { id: string; slug: string; name: string; accessLevel?: string; canGrant: boolean }[],
 }));
 
 const SEEDED_ROLES = [
@@ -15,7 +15,7 @@ const SEEDED_ROLES = [
   { slug: "caretaker", accessLevel: "ReadAndLogTreatments" },
   { slug: "viewer", accessLevel: "ReadOnly" },
   { slug: "clinician", accessLevel: "ReadOnly" },
-].map((r) => ({ ...r, id: `role-${r.slug}`, name: r.slug }));
+].map((r) => ({ ...r, id: `role-${r.slug}`, name: r.slug, canGrant: true }));
 
 let share = $state.raw<Record<string, unknown>>({});
 const SHAREABLE = ["glucose.read", "treatments.read"];
@@ -142,7 +142,9 @@ describe("sharing guided page", () => {
   });
 
   it("falls back to the role picker when no seeded role is left to offer", async () => {
-    state.roles = [{ id: "role-custom", slug: "custom", name: "Custom", accessLevel: "ReadOnly" }];
+    state.roles = [
+      { id: "role-custom", slug: "custom", name: "Custom", accessLevel: "ReadOnly", canGrant: true },
+    ];
     render(SharingPage);
 
     await card("family").click();

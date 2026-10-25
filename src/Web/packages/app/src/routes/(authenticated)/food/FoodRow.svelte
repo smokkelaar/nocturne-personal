@@ -66,15 +66,15 @@
 		<CarbPill value={food.carbs ?? 0} />
 	</span>
 
-	<span class="portion-cell max-sm:hidden">
+	<span class="portion-cell @max-2xl:hidden">
 		per {food.portion ?? 0} {food.unit ?? 'g'}
 	</span>
 
-	<span class="gi-cell max-sm:hidden!">
+	<span class="gi-cell @max-2xl:hidden!">
 		<GiChip level={giFromInt(food.gi)} />
 	</span>
 
-	<span class="energy-cell max-sm:hidden">
+	<span class="energy-cell @max-2xl:hidden">
 		{energyToDisplayUnits(food.energy ?? 0, energyUnit)} {energyUnit}
 	</span>
 

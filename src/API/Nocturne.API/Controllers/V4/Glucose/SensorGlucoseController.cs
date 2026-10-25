@@ -81,7 +81,7 @@ public class SensorGlucoseController(
             patientDeviceId = parsed;
 
         var data = await Repository.GetAsync(from, to, device, source, limit, offset, descending,
-            nativeOnly: false, afterTimestamp: null, afterId: null, patientDeviceId: patientDeviceId, ct: ct);
+            afterTimestamp: null, afterId: null, patientDeviceId: patientDeviceId, ct: ct);
         var total = await Repository.CountAsync(from, to, ct);
         return Ok(new PaginatedResponse<SensorGlucose> { Data = data, Pagination = new PaginationInfo(limit, offset, total) });
     }

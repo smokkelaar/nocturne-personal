@@ -86,6 +86,7 @@ public class DeviceStatusDecomposerPumpSuspensionTests : IDisposable
             _stateSpanServiceMock.Object,
             _deviceServiceMock.Object,
             Mock.Of<IAuditContext>(),
+            Mock.Of<ILoopClosedLoopStamper>(),
             NullLogger<DeviceStatusDecomposer>.Instance);
     }
 

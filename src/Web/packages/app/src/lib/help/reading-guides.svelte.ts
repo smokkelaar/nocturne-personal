@@ -39,9 +39,126 @@ export function readingGuides(): Record<string, ReadingGuide> {
       "trend",
       ["/settings/connectors", "/settings/profile"],
       [
-        ["Check the available records", "Confirm the selected dates and the availability of glucose, loop status and insulin uploads before comparing panels."],
-        ["Follow the same period", "Switch between the five analysis pages to compare daily patterns, events, predictions, loop activity and profile context."],
-        ["Inspect the detail", "Review individual events and missing-data warnings. Discuss therapy setting changes with your diabetes care team."],
+        [
+          "Check the available records",
+          "Confirm the selected dates and the availability of glucose, loop status and insulin uploads before you compare the pages.",
+        ],
+        [
+          "Use the same filters",
+          "All five pages use the same range and filters. Change the page with the page names below the header.",
+        ],
+        [
+          "Inspect the detail",
+          "Open individual days or events in Day in review. Discuss changes to your settings with your diabetes care team.",
+        ],
+      ]
+    ),
+    "/reports/loop-analysis/daily-profile": entry(
+      "spread",
+      ["/settings/profile", "/settings/connectors"],
+      [
+        [
+          "Read your usual day",
+          "The line is the median of all days at that time. The bands show the spread of the days.",
+        ],
+        [
+          "Follow the correction",
+          "The net loop correction shows when the loop added insulin to the schedule or removed it.",
+        ],
+        [
+          "Open the days",
+          "Select a time on a chart to list the days. Select a day to open it in Day in review.",
+        ],
+      ]
+    ),
+    "/reports/loop-analysis/meals-and-events": entry(
+      "trend",
+      ["/settings/profile", "/settings/connectors"],
+      [
+        [
+          "Build a cohort",
+          "Choose an event type, a time of day and, for meals, a carb amount. Add up to three cohorts.",
+        ],
+        [
+          "Read the curves",
+          "The dashed line at 0 is the event. Each color is one cohort, and its line is the median.",
+        ],
+        [
+          "Check the events",
+          "Sort the event list and open an event in Day in review to see what happened.",
+        ],
+      ]
+    ),
+    "/reports/loop-analysis/prediction-accuracy": entry(
+      "bars",
+      ["/settings/connectors"],
+      [
+        [
+          "Read the bias",
+          "Above zero, the predictions were too high. Below zero, they were too low.",
+        ],
+        [
+          "Use the right horizon",
+          "Only the horizon marked Settings signal says something about your settings.",
+        ],
+        [
+          "Find the hours",
+          "The heatmap shows the hours of the day when the predictions were off.",
+        ],
+      ]
+    ),
+    "/reports/loop-analysis/loop-health": entry(
+      "bars",
+      ["/settings/connectors", "/settings/profile"],
+      [
+        [
+          "Read the tiles",
+          "The tiles show how much of the time the loop, the CGM and the pump were active.",
+        ],
+        [
+          "Find the hours",
+          "The hourly charts show when the loop stopped insulin or reached maximum basal.",
+        ],
+        [
+          "Inspect the gaps",
+          "Open the longest gaps in Day in review to find their cause.",
+        ],
+      ]
+    ),
+    "/reports/loop-analysis/settings-evidence": entry(
+      "stairs",
+      ["/settings/profile"],
+      [
+        [
+          "Compare line and dots",
+          "The line is your profile setting. The dots are the observed values for each block of the day.",
+        ],
+        [
+          "Check the confidence",
+          "Low confidence means few or very different episodes. Select a row to see why.",
+        ],
+        [
+          "Discuss before you change",
+          "The figures are observations. Speak to your diabetes care team before you change a setting.",
+        ],
+      ]
+    ),
+    "/reports/data-quality/rejected-uploads": entry(
+      "flow",
+      ["/settings/connectors"],
+      [
+        [
+          "Read the reason",
+          "Each row shows when a record was last sent, how many times, from which uploader and why it was not stored.",
+        ],
+        [
+          "Open the record",
+          "Expand Record to see the data as the uploader sent it.",
+        ],
+        [
+          "Export, then clear",
+          "Export this page to keep a copy. Clear removes only the records on this page.",
+        ],
       ]
     ),
     "/reports": entry(
@@ -54,7 +171,7 @@ export function readingGuides(): Record<string, ReadingGuide> {
         ],
         [
           "Choose dates",
-          "The overview summarizes the selected period. Detailed reports may have their own filters.",
+          "The overview summarizes the selected period. Some detailed reports have their own filters.",
         ],
         [
           "Open the detail",
@@ -118,37 +235,37 @@ export function readingGuides(): Record<string, ReadingGuide> {
     ),
     "/reports/ehba1c": entry(
       "trend",
-      ["/settings/appearance", "/settings/connectors"],
+      ["/settings/appearance", "/settings/timezone"],
       [
         [
-          "Choose the time scale",
-          "Use the page's timeline controls to compare estimates over time.",
+          "Read the latest estimate",
+          "The large figure is the estimate for the most recent day with enough readings. The line shows how it changed over the years.",
+        ],
+        [
+          "Compare with the zones",
+          "The colored zones show the non-diabetic range, the type 1 target, elevated and very high values.",
         ],
         [
           "Add a lab result",
-          "Enter the blood-draw date, result in the displayed units, and an optional note.",
-        ],
-        [
-          "Compare carefully",
-          "The glucose estimate and laboratory measurement use different inputs. Inspect data coverage too.",
+          "Enter the date of the blood draw and the value. The triangle then shows how closely the estimate follows the lab.",
         ],
       ]
     ),
     "/reports/year-overview": entry(
       "grid",
-      ["/settings/appearance", "/settings/connectors"],
+      ["/settings/appearance", "/settings/timezone", "/settings/connectors"],
       [
         [
-          "Read one cell",
-          "Each day cell summarizes that day's available data for the chosen metric.",
+          "Choose a metric",
+          "Select Avg glucose, Time in range, Bolus, Basal, TDD or Carbs in the color panel. Each cell then shows that value for one day.",
         ],
         [
-          "Change the view",
-          "Use source/type filters and the legend's metric, color palette, and focus controls.",
+          "Read the colors",
+          "The color bar shows which color belongs to which value. Use the focus window and Dim outside to highlight the values that matter to you.",
         ],
         [
-          "Inspect a period",
-          "Look for clusters across days, then use a detailed report to examine their cause.",
+          "Open a day",
+          "Look for groups of days with the same color. Select a day to open it in Day in review.",
         ],
       ]
     ),
@@ -247,34 +364,34 @@ export function readingGuides(): Record<string, ReadingGuide> {
       ["/settings/data-quality", "/settings/connectors"],
       [
         [
-          "Check missing time",
-          "Coverage describes where readings are present or absent.",
+          "Check the counts",
+          "The figures show the compression lows that are pending, accepted or dismissed.",
         ],
         [
           "Choose the question",
-          "Use sensor integrity for noise, comparison for paired devices, or compression-low review for suggestions.",
+          "Use Signal integrity for unstable readings, CGM comparison for two devices and Compression lows for suggestions.",
         ],
         [
-          "Review before cleanup",
-          "Detection is a prompt to inspect records, not proof they need removal.",
+          "Review before you decide",
+          "Detection is a reason to inspect the readings. It is not proof that they are wrong.",
         ],
       ]
     ),
     "/reports/data-quality/sensor-integrity": entry(
       "grid",
-      ["/settings/data-quality", "/settings/connectors"],
+      ["/settings/connectors"],
       [
         [
-          "Locate flagged windows",
-          "The daily overview places noise clusters in time.",
+          "Find flagged windows",
+          "The daily overview shows the days and times of flagged windows.",
         ],
         [
           "Inspect nearby glucose",
-          "Read the cluster detail and subsequent low-reading log together.",
+          "Read each flagged window together with the lows that followed it.",
         ],
         [
-          "Check source metadata",
-          "A source that supplies no noise information limits the analysis.",
+          "Check the sensor",
+          "Many flagged windows close together can point to a sensor or placement problem.",
         ],
       ]
     ),
@@ -302,15 +419,15 @@ export function readingGuides(): Record<string, ReadingGuide> {
       [
         [
           "Find a suggestion",
-          "Filter by dates and review status, then open the suggested window.",
+          "Filter by dates and review status, then select a suggested night.",
         ],
         [
-          "Inspect the preview",
-          "Read the glucose shape and surrounding records before deciding.",
+          "Inspect the glucose",
+          "Read the shape of the drop and the recovery time before you decide.",
         ],
         [
           "Accept or dismiss",
-          "Accept applies the correction. Dismiss rejects the suggestion. Detection settings are separate.",
+          "Accept marks a false low from pressure. Dismiss keeps it as a real low. Detection settings are separate.",
         ],
       ]
     ),
@@ -486,7 +603,7 @@ export function readingGuides(): Record<string, ReadingGuide> {
         ],
         [
           "Check the latest upload",
-          "An old value may describe an earlier battery state, not the current device.",
+          "An old value can describe an earlier battery state, not the current device.",
         ],
         [
           "Compare the source",
@@ -1129,10 +1246,7 @@ export function readingGuides(): Record<string, ReadingGuide> {
           "Choose tenant and connector",
           "A reset acts on the selected source, not on all tenants.",
         ],
-        [
-          "Choose a lower bound",
-          "Use the earliest date to read again.",
-        ],
+        ["Choose a lower bound", "Use the earliest date to read again."],
         [
           "Monitor the job",
           "Inspect progress or cancel the reset before starting another. Normal import duplicate protection applies.",

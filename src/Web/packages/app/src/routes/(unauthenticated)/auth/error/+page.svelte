@@ -104,7 +104,7 @@
     <Card.Footer class="flex flex-col space-y-2">
       <div class="text-center text-xs text-muted-foreground">
         <p>
-          Error code: <code class="bg-muted px-1 py-0.5 rounded">
+          Error code: <code class="bg-muted px-1 py-0.5 rounded break-all">
             {rawError}
           </code>
         </p>

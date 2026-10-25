@@ -123,13 +123,13 @@ describe("year overview page color focus integration", () => {
     vi.unstubAllGlobals();
   });
 
-  it("colors each metric in its own theme color, with no palette or advanced mode", async () => {
+  it("colors each metric in its own theme color until a palette is picked, with no advanced mode", async () => {
     render(YearOverviewPage);
     await expect.element(cell("2026-01-01")).toHaveTextContent(getGlucoseHeatmapFill(120));
     await selectMetric("TDD");
     await expect.element(cell("2026-01-04")).toHaveTextContent(/^var\(--insulin\)$/);
     await selectMetric("Carbs");
-    await expect.element(page.getByRole("button", { name: /palette/i })).not.toBeInTheDocument();
+    await expect.element(page.getByRole("button", { name: "Theme palette" })).toHaveAttribute("aria-pressed", "true");
     await expect.element(page.getByRole("checkbox", { name: "Advanced" })).not.toBeInTheDocument();
     expect(page.getByRole("slider").elements()).toHaveLength(2);
   });
@@ -386,5 +386,34 @@ describe("year overview page color focus integration", () => {
     expect(stored()).toEqual({ tddHighColor: "#123456" });
     await reset().click();
     expect(stored()).toEqual({});
+  });
+
+  const viridis = ["#440154", "#3b528b", "#21908d", "#5dc963", "#fde725"];
+
+  it("picks a palette for one metric and mirrors it", async () => {
+    render(YearOverviewPage);
+    await selectMetric("TDD");
+    await page.getByRole("button", { name: "Viridis palette" }).click();
+    await expect.element(cell("2026-01-04")).toHaveTextContent("#fde725");
+    expect(stored()).toEqual({ tddPalette: viridis });
+    await page.getByRole("button", { name: "Mirror TDD colors" }).click();
+    await expect.element(cell("2026-01-04")).toHaveTextContent("#440154");
+    expect(stored()).toEqual({ tddPalette: viridis, tddMirror: true });
+    await selectMetric("Carbs");
+    await expect.element(page.getByRole("button", { name: "Theme palette" })).toHaveAttribute("aria-pressed", "true");
+    await selectMetric("TDD");
+    await reset().click();
+    expect(stored()).toEqual({});
+  });
+
+  it("carries a palette and invert saved by the retired Personal panel into palette and mirror", async () => {
+    applyPreferences({
+      yearOverviewColors: { advancedMode: true, tddColors: viridis, tddInvert: true, tddBand: [0, 500] } as never,
+    });
+    render(YearOverviewPage);
+    await selectMetric("TDD");
+    await expect.element(cell("2026-01-04")).toHaveTextContent("#440154");
+    await maximum().fill("400");
+    expect(stored()).toEqual({ tddBand: [0, 400], tddPalette: viridis, tddMirror: true });
   });
 });

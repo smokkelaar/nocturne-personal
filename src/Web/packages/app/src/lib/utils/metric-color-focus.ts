@@ -1,4 +1,5 @@
 import { GLUCOSE_HEATMAP_LEGEND_STOPS } from "./chart-colors";
+import { lookRamp, type RampLook } from "./metric-color-palette";
 
 export type ColorFocusRange = readonly [number, number];
 
@@ -59,12 +60,13 @@ export function glucoseScale(
   savedWindow: unknown,
   savedBoundaries: unknown,
   dim: number,
-  savedEnds: ColorEnds = {}
+  savedEnds: ColorEnds = {},
+  look: RampLook = {}
 ): MetricScale {
   const boundaries = resolveColorBoundaries(savedBoundaries, GLUCOSE_LIMITS) ?? [];
   const ends = resolveColorEnds(savedEnds);
   return {
-    ramp: paintRamp(GLUCOSE_RAMP, ends, boundaries, GLUCOSE_LIMITS),
+    ramp: paintRamp(lookRamp(GLUCOSE_RAMP, look), ends, boundaries, GLUCOSE_LIMITS),
     ends,
     domain: GLUCOSE_LIMITS,
     axis: GLUCOSE_LIMITS,
@@ -85,7 +87,8 @@ export function intensityScale(
   savedWindow: unknown,
   savedBoundaries: unknown,
   dim: number,
-  savedEnds: ColorEnds = {}
+  savedEnds: ColorEnds = {},
+  look: RampLook = {}
 ): MetricScale {
   const max = Number.isFinite(limits[1])
     ? limits[1]
@@ -99,7 +102,7 @@ export function intensityScale(
   const boundaries = resolveColorBoundaries(savedBoundaries, limits) ?? [];
   const ends = resolveColorEnds(savedEnds);
   return {
-    ramp: paintRamp(metricRamp(cssVar), ends, boundaries, window),
+    ramp: paintRamp(lookRamp(metricRamp(cssVar), look), ends, boundaries, window),
     ends,
     domain: window,
     axis: [

@@ -130,4 +130,36 @@ public class YearOverviewColorPreferencesTests
         new YearOverviewColorPreferences { CarbsBoundaries = [new() { Value = 5, Position = 0.5, Color = color }] }
             .Validate().Should().NotBeNull();
     }
+
+    [Fact]
+    public void A_palette_and_mirror_round_trip()
+    {
+        var colors = new YearOverviewColorPreferences
+        {
+            AvgGlucosePalette = ["#440154", "#21908d", "#fde725"],
+            AvgGlucoseMirror = true,
+            TddPalette = ["#000000", "#FFFFFF"],
+        };
+        var restored = UserDisplayPreferences.Deserialize(new UserDisplayPreferences { YearOverviewColors = colors }.Serialize());
+        restored.YearOverviewColors.Should().BeEquivalentTo(colors);
+        restored.Validate().Should().BeNull();
+    }
+
+    public static TheoryData<string[]> InvalidPalettes => new()
+    {
+        Array.Empty<string>(),
+        new[] { "#000000" },
+        new[] { "#000000", "#fff" },
+        new[] { "#000000", "red" },
+        Enumerable.Repeat("#000000", YearOverviewColorPreferences.MaxPaletteColors + 1).ToArray(),
+    };
+
+    [Theory]
+    [MemberData(nameof(InvalidPalettes))]
+    public void A_palette_holds_two_to_eight_hex_colors(string[] palette)
+    {
+        new YearOverviewColorPreferences { CarbsPalette = palette }.Validate().Should().NotBeNull();
+        new YearOverviewColorPreferences { AvgGlucosePalette = palette }.Validate().Should().NotBeNull();
+    }
 }
+

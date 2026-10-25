@@ -32,12 +32,15 @@
   import {
     glucoseScale,
     intensityScale,
+    metricRamp,
     scaleFill,
     GLUCOSE_LIMITS,
+    GLUCOSE_RAMP,
     type ColorBoundary,
     type ColorEnds,
     type ColorFocusRange,
   } from "$lib/utils/metric-color-focus";
+  import { resolvePalette, type RampLook } from "$lib/utils/metric-color-palette";
   import { onMount, untrack, tick } from "svelte";
   import { fade } from "svelte/transition";
   import { YearLoader } from "$lib/components/reports/year-overview/year-loader";
@@ -107,12 +110,16 @@
     boundaries: `${HeatmapMetric}Boundaries`;
     low: `${HeatmapMetric}LowColor`;
     high: `${HeatmapMetric}HighColor`;
+    palette: `${HeatmapMetric}Palette`;
+    mirror: `${HeatmapMetric}Mirror`;
   };
   const scaleKeys = $derived<ScaleKeys>({
     band: `${selectedMetric}Band`,
     boundaries: `${selectedMetric}Boundaries`,
     low: `${selectedMetric}LowColor`,
     high: `${selectedMetric}HighColor`,
+    palette: `${selectedMetric}Palette`,
+    mirror: `${selectedMetric}Mirror`,
   });
   /**
    * The retired shape applied its bands and dimming only in advanced mode. A blob saved with
@@ -120,13 +127,30 @@
    */
   const colorPreferences = $derived.by((): YearOverviewColorPreferences => {
     const stored = yearOverviewColors.current;
-    if (!("advancedMode" in stored) || stored.advancedMode === true) return stored;
+    if (!("advancedMode" in stored)) return stored;
+    if (stored.advancedMode === true) return withRetiredPalettes(stored);
     return Object.fromEntries(
       Object.entries(stored).filter(
         ([key]) => !key.endsWith(BAND_KEY_SUFFIX) && key !== "outOfBandTransparency"
       )
     );
   });
+  /**
+   * The retired shape's palette (`<metric>Colors`) and invert flag become the palette and
+   * mirror of the current one, unless those are already set.
+   */
+  function withRetiredPalettes(stored: YearOverviewColorPreferences): YearOverviewColorPreferences {
+    const retired = new Map<string, unknown>(Object.entries(stored));
+    const next: YearOverviewColorPreferences = { ...stored };
+    for (const { value } of METRIC_OPTIONS) {
+      const palette = resolvePalette(retired.get(`${value}Colors`));
+      if (palette && !next[`${value}Palette`]) next[`${value}Palette`] = palette;
+      if (retired.get(`${value}Invert`) === true && next[`${value}Mirror`] === undefined)
+        next[`${value}Mirror`] = true;
+    }
+    return next;
+  }
+
   const dim = $derived(
     Math.max(0, Math.min(100, colorPreferences.outOfBandTransparency ?? 90))
   );
@@ -161,13 +185,18 @@
     low: colorPreferences[scaleKeys.low],
     high: colorPreferences[scaleKeys.high],
   });
+  const scaleLook = $derived<RampLook>({
+    palette: resolvePalette(colorPreferences[scaleKeys.palette]) ?? undefined,
+    mirror: colorPreferences[scaleKeys.mirror] === true,
+  });
   const scale = $derived(
     selectedMetric === "avgGlucose"
       ? glucoseScale(
           colorPreferences.avgGlucoseBand,
           colorPreferences.avgGlucoseBoundaries,
           dim,
-          scaleEnds
+          scaleEnds,
+          scaleLook
         )
       : intensityScale(
           METRIC_CSS_VARS[selectedMetric],
@@ -176,8 +205,15 @@
           colorPreferences[scaleKeys.band],
           colorPreferences[scaleKeys.boundaries],
           dim,
-          scaleEnds
+          scaleEnds,
+          scaleLook
         )
+  );
+  const themeColors = $derived(
+    (selectedMetric === "avgGlucose"
+      ? GLUCOSE_RAMP
+      : metricRamp(METRIC_CSS_VARS[selectedMetric])
+    ).map((stop) => stop.color)
   );
 
   /** Writes only the current shape, so keys from a retired one are dropped on the next save. */
@@ -196,6 +232,9 @@
       if (boundaries) next[`${value}Boundaries`] = boundaries;
       if (low) next[`${value}LowColor`] = low;
       if (high) next[`${value}HighColor`] = high;
+      const palette = resolvePalette(colorPreferences[`${value}Palette`]);
+      if (palette) next[`${value}Palette`] = palette;
+      if (colorPreferences[`${value}Mirror`] === true) next[`${value}Mirror`] = true;
     }
     change(next);
     yearOverviewColors.current = next;
@@ -225,6 +264,23 @@
     });
   }
 
+  /** A palette shows its own ends, so it clears the end colors chosen over the last one. */
+  function setScalePalette(palette: string[] | null) {
+    saveColorPreferences((next) => {
+      if (palette) next[scaleKeys.palette] = palette;
+      else delete next[scaleKeys.palette];
+      delete next[scaleKeys.low];
+      delete next[scaleKeys.high];
+    });
+  }
+
+  function setScaleMirror(mirror: boolean) {
+    saveColorPreferences((next) => {
+      if (mirror) next[scaleKeys.mirror] = true;
+      else delete next[scaleKeys.mirror];
+    });
+  }
+
   function setDim(value: number) {
     saveColorPreferences((next) => {
       next.outOfBandTransparency = Math.max(0, Math.min(100, value));
@@ -237,6 +293,8 @@
       delete next[scaleKeys.boundaries];
       delete next[scaleKeys.low];
       delete next[scaleKeys.high];
+      delete next[scaleKeys.palette];
+      delete next[scaleKeys.mirror];
     });
   }
 
@@ -654,6 +712,11 @@
       onEndsChange={setScaleEnds}
       onDimChange={setDim}
       onReset={resetScale}
+      {themeColors}
+      palette={scaleLook.palette}
+      mirror={scaleLook.mirror}
+      onPaletteChange={setScalePalette}
+      onMirrorChange={setScaleMirror}
       {glucoseBands}
     />
 

@@ -68,11 +68,11 @@ export function connectorArticles(): HelpArticle[] {
     },
     {
       title: "Create the Web application client",
-      text: "For Where are you calling from? select Web Server. In the manual Clients screen the equivalent type is Web application. Copy the complete Callback URL shown by this Nocturne instance under Settings → Connectors & Apps → Google Health into the wizard's redirect field (Authorized redirect URIs). Use your own instance's URL, including its scheme, hostname, port, and callback path exactly. Replace any sample redirect from Google's guide. Select Create. If the wizard's layout changes, the essential choices remain a web client and that exact redirect.",
+      text: "For Where are you calling from? select Web Server. In the manual Clients screen the equivalent type is Web application. Copy the complete Callback URL shown by this Nocturne instance under Settings → Administration → Integrations → Google Health into the wizard's redirect field (Authorized redirect URIs). Use your own instance's URL, including its scheme, hostname, port, and callback path exactly. Replace any sample redirect from Google's guide. Select Create. If the wizard's layout changes, the essential choices remain a web client and that exact redirect.",
     },
     {
-      title: "Download the client configuration and fill Nocturne's fields",
-      text: "Download the Client configuration/Credentials JSON. Copy Client ID and Client secret into the fields of the same names on Nocturne's Google Health page. The secret is required on first setup. Leave it empty only when keeping a secret that was already saved. Check the Callback URL and choose Import data from for the history you want. Keep this form ready while you add the test user in the next step. Store the downloaded file privately: it contains credentials.",
+      title: "Download the client configuration and enter it in Administration",
+      text: "Download the Client configuration/Credentials JSON. An instance administrator opens Settings → Administration → Integrations and enters Client ID and Client secret on the Google Health card. The secret is required on first setup. Leave it empty only when keeping a secret that was already saved. Check the Callback URL, turn on Enabled and select Save. The change applies without a restart. Store the downloaded file privately: it contains credentials.",
     },
     {
       title: "Add the Google account as a test user",
@@ -83,12 +83,12 @@ export function connectorArticles(): HelpArticle[] {
       text: "In Google's Data Access page choose Add or remove scopes, select the Google Health read scopes shown in Nocturne's reference table below, then Update and Save. Nocturne adds basic sign-in identification itself. These scopes govern which records it can read. They do not allow Nocturne to write to your Google Health account.",
     },
     {
-      title: "Save and connect with the same account",
-      text: "Return to the prepared Nocturne form and choose Save and connect (or Sign in with Google for an existing configuration). Choose the Google Health account you added as a test user, review and grant the read permissions for the data you want, and confirm you return to Nocturne. Testing grants can expire after seven days and then need reconnection.",
+      title: "Connect with the same account",
+      text: "Open Settings → Connectors & Apps → Google Health and select Connect Google Health. Choose the Google Health account you added as a test user, review and grant the read permissions for the data you want, and confirm you return to Nocturne. Testing grants can expire after seven days and then need reconnection.",
     },
     {
       title: "Review the inventory and start an import",
-      text: "In the available-data table, Found means records exist at the source, not that Nocturne imported them. Select supported types and choose Save selection and import. Save import settings only saves. Refresh inventory only checks availability. Not scanned needs a refreshed inventory. No permission needs the relevant consent. No destination yet is unsupported. Leaving the page does not cancel the server import.",
+      text: "Choose Import data from for the history you want. In the available-data table, Found means records exist at the source, not that Nocturne imported them. Select supported types and choose Save selection and import. Save import settings only saves. Refresh inventory only checks availability. Not scanned needs a refreshed inventory. No permission needs the relevant consent. No destination yet is unsupported. Leaving the page does not cancel the server import.",
     },
     {
       title: "Confirm the result in your reports",
@@ -115,7 +115,7 @@ export function connectorArticles(): HelpArticle[] {
     },
     {
       title: "Pause, disconnect, and deletion",
-      text: "Clear selected types and Save import settings to pause imports without deleting history. Disconnect removes the connection but keeps imported records. Delete imported Google data is a separate confirmed action available after disconnecting. It affects this tenant's imported records, not Google's originals. Credentials are stored in the server's encrypted connector configuration. Never paste the secret or token into support conversations.",
+      text: "Clear selected types and Save import settings to pause imports without deleting history. Disconnect removes the connection but keeps imported records. Delete imported Google data is a separate confirmed action available after disconnecting. It affects this tenant's imported records, not Google's originals. The client secret is stored encrypted in the instance settings. Never paste the secret or token into support conversations.",
     }
   );
   google.sources = [

@@ -38868,9 +38868,8 @@ msgstr ""
 #~ msgid "For Where are you calling from? select Web Server. In the manual Clients screen the equivalent type is Web application. Copy the complete Callback URL shown by this Nocturne instance under Settings → Connectors & Apps → Google Health into the wizard's redirect field (Authorized redirect URIs). Use your own instance's URL, including its scheme, hostname, port, and callback path exactly. Replace any sample redirect from Google's guide. Click Create. If the wizard's layout changes, the essential choices remain a web client and that exact redirect."
 #~ msgstr ""
 
-#: src/lib/help/connectors.svelte.ts
-msgid "Download the client configuration and fill Nocturne's fields"
-msgstr ""
+#~ msgid "Download the client configuration and fill Nocturne's fields"
+#~ msgstr ""
 
 #~ msgid "Download the Client configuration/Credentials JSON. Copy Client ID and Client secret into the fields of the same names on Nocturne's Google Health page. The secret is required on first setup; leave it empty only when keeping a secret that was already saved. Check the Callback URL and choose Import data from for the history you want. Keep this form ready while you add the test user in the next step. Store the downloaded file privately: it contains credentials."
 #~ msgstr ""
@@ -38890,13 +38889,11 @@ msgstr ""
 #~ msgid "In Google's Data Access page choose Add or remove scopes, select the Google Health read scopes shown in Nocturne's reference table below, then Update and Save. Nocturne adds basic sign-in identification itself. These scopes govern which records it can read; they do not allow Nocturne to write to your Google Health account."
 #~ msgstr ""
 
-#: src/lib/help/connectors.svelte.ts
-msgid "Save and connect with the same account"
-msgstr ""
+#~ msgid "Save and connect with the same account"
+#~ msgstr ""
 
-#: src/lib/help/connectors.svelte.ts
-msgid "Return to the prepared Nocturne form and choose Save and connect (or Sign in with Google for an existing configuration). Choose the Google Health account you added as a test user, review and grant the read permissions for the data you want, and confirm you return to Nocturne. Testing grants can expire after seven days and then need reconnection."
-msgstr ""
+#~ msgid "Return to the prepared Nocturne form and choose Save and connect (or Sign in with Google for an existing configuration). Choose the Google Health account you added as a test user, review and grant the read permissions for the data you want, and confirm you return to Nocturne. Testing grants can expire after seven days and then need reconnection."
+#~ msgstr ""
 
 #~ msgid "In the available-data table, Found means records exist at the source, not that they have been imported. Select supported types and choose Save selection and import. Save import settings only saves; Refresh inventory only checks availability. Not scanned needs a refreshed inventory; No permission needs the relevant consent; No destination yet is unsupported. Leaving the page does not cancel the server import."
 #~ msgstr ""
@@ -41391,21 +41388,18 @@ msgstr ""
 msgid "Choose a new project and enter a project name, or select an existing project you manage. The name is a reminder for you later: any recognisable name is fine. Select Next. Confirm that you want to enable the Google Health API and continue. This enables access to Google's service. It does not create or import any health records."
 msgstr ""
 
-#: src/lib/help/connectors.svelte.ts
-msgid "For Where are you calling from? select Web Server. In the manual Clients screen the equivalent type is Web application. Copy the complete Callback URL shown by this Nocturne instance under Settings → Connectors & Apps → Google Health into the wizard's redirect field (Authorized redirect URIs). Use your own instance's URL, including its scheme, hostname, port, and callback path exactly. Replace any sample redirect from Google's guide. Select Create. If the wizard's layout changes, the essential choices remain a web client and that exact redirect."
-msgstr ""
+#~ msgid "For Where are you calling from? select Web Server. In the manual Clients screen the equivalent type is Web application. Copy the complete Callback URL shown by this Nocturne instance under Settings → Connectors & Apps → Google Health into the wizard's redirect field (Authorized redirect URIs). Use your own instance's URL, including its scheme, hostname, port, and callback path exactly. Replace any sample redirect from Google's guide. Select Create. If the wizard's layout changes, the essential choices remain a web client and that exact redirect."
+#~ msgstr ""
 
-#: src/lib/help/connectors.svelte.ts
-msgid "Download the Client configuration/Credentials JSON. Copy Client ID and Client secret into the fields of the same names on Nocturne's Google Health page. The secret is required on first setup. Leave it empty only when keeping a secret that was already saved. Check the Callback URL and choose Import data from for the history you want. Keep this form ready while you add the test user in the next step. Store the downloaded file privately: it contains credentials."
-msgstr ""
+#~ msgid "Download the Client configuration/Credentials JSON. Copy Client ID and Client secret into the fields of the same names on Nocturne's Google Health page. The secret is required on first setup. Leave it empty only when keeping a secret that was already saved. Check the Callback URL and choose Import data from for the history you want. Keep this form ready while you add the test user in the next step. Store the downloaded file privately: it contains credentials."
+#~ msgstr ""
 
 #: src/lib/help/connectors.svelte.ts
 msgid "In Google's Data Access page choose Add or remove scopes, select the Google Health read scopes shown in Nocturne's reference table below, then Update and Save. Nocturne adds basic sign-in identification itself. These scopes govern which records it can read. They do not allow Nocturne to write to your Google Health account."
 msgstr ""
 
-#: src/lib/help/connectors.svelte.ts
-msgid "In the available-data table, Found means records exist at the source, not that Nocturne imported them. Select supported types and choose Save selection and import. Save import settings only saves. Refresh inventory only checks availability. Not scanned needs a refreshed inventory. No permission needs the relevant consent. No destination yet is unsupported. Leaving the page does not cancel the server import."
-msgstr ""
+#~ msgid "In the available-data table, Found means records exist at the source, not that Nocturne imported them. Select supported types and choose Save selection and import. Save import settings only saves. Refresh inventory only checks availability. Not scanned needs a refreshed inventory. No permission needs the relevant consent. No destination yet is unsupported. Leaving the page does not cancel the server import."
+#~ msgstr ""
 
 #: src/lib/help/connectors.svelte.ts
 msgid "Watch sync status and Historical import progress. Open Steps, Heart Rate, or Sleep and choose dates containing source records. Use Weight history for weight. If empty, check the source account's visible records, granted permissions, import selection, dates, and last error. Google may still be syncing older phone records. Wait for that to finish before retrying. Completed historical months that receive records later need the recovery procedure below."
@@ -41423,9 +41417,8 @@ msgstr ""
 msgid "redirect_uri_mismatch: copy the complete Nocturne Callback URL into the same OAuth client's redirect list. Access blocked or test-user errors: check Audience, exact email, enabled API, and current Google access eligibility. ACCOUNT_NOT_LINKED: complete the Google Health app profile with this account. Missing permission: sign in again and grant the required read access. An expired test grant: reconnect. Production verification and quota rules belong to Google and can change."
 msgstr ""
 
-#: src/lib/help/connectors.svelte.ts
-msgid "Clear selected types and Save import settings to pause imports without deleting history. Disconnect removes the connection but keeps imported records. Delete imported Google data is a separate confirmed action available after disconnecting. It affects this tenant's imported records, not Google's originals. Credentials are stored in the server's encrypted connector configuration. Never paste the secret or token into support conversations."
-msgstr ""
+#~ msgid "Clear selected types and Save import settings to pause imports without deleting history. Disconnect removes the connection but keeps imported records. Delete imported Google data is a separate confirmed action available after disconnecting. It affects this tenant's imported records, not Google's originals. Credentials are stored in the server's encrypted connector configuration. Never paste the secret or token into support conversations."
+#~ msgstr ""
 
 #: src/lib/help/connectors.svelte.ts
 msgid "The account must support sharing. Check the selected region and credentials in the setup form. This is a cloud connection, so readings depend on the original device uploading."
@@ -42055,4 +42048,32 @@ msgstr ""
 
 #: src/lib/components/reports/year-overview/ColorFocusRange.svelte
 msgid "Theme colors are fixed. Pick a palette to invert"
+msgstr ""
+
+#: src/lib/help/connectors.svelte.ts
+msgid "For Where are you calling from? select Web Server. In the manual Clients screen the equivalent type is Web application. Copy the complete Callback URL shown by this Nocturne instance under Settings → Administration → Integrations → Google Health into the wizard's redirect field (Authorized redirect URIs). Use your own instance's URL, including its scheme, hostname, port, and callback path exactly. Replace any sample redirect from Google's guide. Select Create. If the wizard's layout changes, the essential choices remain a web client and that exact redirect."
+msgstr ""
+
+#: src/lib/help/connectors.svelte.ts
+msgid "Download the client configuration and enter it in Administration"
+msgstr ""
+
+#: src/lib/help/connectors.svelte.ts
+msgid "Download the Client configuration/Credentials JSON. An instance administrator opens Settings → Administration → Integrations and enters Client ID and Client secret on the Google Health card. The secret is required on first setup. Leave it empty only when keeping a secret that was already saved. Check the Callback URL, turn on Enabled and select Save. The change applies without a restart. Store the downloaded file privately: it contains credentials."
+msgstr ""
+
+#: src/lib/help/connectors.svelte.ts
+msgid "Connect with the same account"
+msgstr ""
+
+#: src/lib/help/connectors.svelte.ts
+msgid "Open Settings → Connectors & Apps → Google Health and select Connect Google Health. Choose the Google Health account you added as a test user, review and grant the read permissions for the data you want, and confirm you return to Nocturne. Testing grants can expire after seven days and then need reconnection."
+msgstr ""
+
+#: src/lib/help/connectors.svelte.ts
+msgid "Choose Import data from for the history you want. In the available-data table, Found means records exist at the source, not that Nocturne imported them. Select supported types and choose Save selection and import. Save import settings only saves. Refresh inventory only checks availability. Not scanned needs a refreshed inventory. No permission needs the relevant consent. No destination yet is unsupported. Leaving the page does not cancel the server import."
+msgstr ""
+
+#: src/lib/help/connectors.svelte.ts
+msgid "Clear selected types and Save import settings to pause imports without deleting history. Disconnect removes the connection but keeps imported records. Delete imported Google data is a separate confirmed action available after disconnecting. It affects this tenant's imported records, not Google's originals. The client secret is stored encrypted in the instance settings. Never paste the secret or token into support conversations."
 msgstr ""

@@ -2,11 +2,12 @@ using System.Globalization;
 using Nocturne.Connectors.Core.Extensions;
 using Nocturne.Connectors.Core.Models;
 using Nocturne.Core.Constants;
+using Nocturne.Connectors.GoogleHealth.Services;
 
 namespace Nocturne.Connectors.GoogleHealth.Configurations;
 
 [ConnectorRegistration(
-    "GoogleHealth", ServiceNames.GoogleHealthConnector, "GOOGLE_HEALTH",
+    GoogleHealthConnectorService.ConnectorName, ServiceNames.GoogleHealthConnector, "GOOGLE_HEALTH",
     nameof(ConnectSource.GoogleHealth), DataSources.GoogleHealthConnector, "google-health",
     ConnectorCategory.Sync, "Import health and fitness data from Google Health", "Google Health",
     SupportsHistoricalSync = true,
@@ -46,6 +47,16 @@ public sealed class GoogleHealthConnectorConfiguration : BaseConnectorConfigurat
 
     [ConnectorProperty(ConnectorPropertyKey.GrantedScopes, Hidden = true)]
     public string? GrantedScopes { get; set; }
+
+    /// <summary>
+    /// Whether the stored refresh token belongs to a client other than the instance's: a former
+    /// per-tenant client, or one the operator replaced. Google refuses it, so only a new sign-in
+    /// recovers.
+    /// </summary>
+    public bool IssuedToAnotherClient(GoogleHealthPlatformOptions platform) =>
+        platform.IsConfigured &&
+        !string.IsNullOrWhiteSpace(RefreshToken) &&
+        !string.Equals(SessionClientId, platform.ClientId, StringComparison.Ordinal);
 
     public string[] ParsedGrantedScopes() => (GrantedScopes ?? string.Empty)
         .Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)

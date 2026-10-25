@@ -17,7 +17,7 @@ public sealed class GoogleHealthConnectorInstaller : IConnectorInstaller
     {
         services.AddConnectorConfiguration<GoogleHealthConnectorConfiguration>(
             configuration,
-            "GoogleHealth");
+            GoogleHealthConnectorService.ConnectorName);
         services.AddSingleton<IConnectorServerResolver<GoogleHealthConnectorConfiguration>>(
             new ConnectorServerResolver<GoogleHealthConnectorConfiguration>(null, null, null));
         services.AddScoped<ConnectorConfigurationLoader<GoogleHealthConnectorConfiguration>>();
@@ -36,6 +36,7 @@ public sealed class GoogleHealthConnectorInstaller : IConnectorInstaller
             .ConfigureConnectorClient(null, timeout: RequestTimeout);
         services.AddConnectorTokenProvider<GoogleHealthAuthTokenProvider>();
         services.AddScoped<GoogleHealthSessionStore>();
+        services.AddScoped<IConnectorPurgeGuard, GoogleHealthPurgeGuard>();
 
         services.AddHttpClient<GoogleHealthConnectorService>()
             .ConfigureConnectorClient(null, timeout: RequestTimeout);

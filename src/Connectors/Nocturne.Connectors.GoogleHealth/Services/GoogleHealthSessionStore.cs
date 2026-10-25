@@ -1,5 +1,4 @@
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using Microsoft.Extensions.Logging;
 using Nocturne.Connectors.GoogleHealth.Configurations;
 using Nocturne.Connectors.GoogleHealth.Models;
@@ -23,7 +22,6 @@ public sealed class GoogleHealthSessionStore(
     ILogger<GoogleHealthSessionStore> logger,
     TimeSpan? revokeTimeout = null)
 {
-    private const string ConnectorName = "GoogleHealth";
     private const string RefreshTokenKey = "refreshToken";
     private const string GrantedScopesKey = "grantedScopes";
     private const string AccountKey = "accountKey";
@@ -82,10 +80,10 @@ public sealed class GoogleHealthSessionStore(
         var scopes = string.Join(' ', session.Scopes.Distinct(StringComparer.Ordinal));
         if (session.RefreshToken != configuration.RefreshToken || scopes != configuration.GrantedScopes)
         {
-            var secrets = await configurations.GetSecretsAsync(ConnectorName, ct);
+            var secrets = await configurations.GetSecretsAsync(GoogleHealthConnectorService.ConnectorName, ct);
             secrets[RefreshTokenKey] = session.RefreshToken;
             secrets[GrantedScopesKey] = scopes;
-            await configurations.SaveSecretsAsync(ConnectorName, secrets, ct: ct);
+            await configurations.SaveSecretsAsync(GoogleHealthConnectorService.ConnectorName, secrets, ct: ct);
             configuration.RefreshToken = session.RefreshToken;
             configuration.GrantedScopes = scopes;
             // Saving the secrets invalidated the cached access token.
@@ -140,25 +138,21 @@ public sealed class GoogleHealthSessionStore(
     /// <remarks>The account is held before the token is saved, so no stored token is ever unheld.</remarks>
     public async Task StoreAsync(GoogleHealthTokenSession session, string accountKey, Guid subject, CancellationToken ct)
     {
-        var secrets = await configurations.GetSecretsAsync(ConnectorName, ct);
+        var secrets = await configurations.GetSecretsAsync(GoogleHealthConnectorService.ConnectorName, ct);
         await holders.HoldAsync(TenantId, accountKey, ct);
         secrets.Remove(LegacyClientSecretKey);
         secrets[SessionClientIdKey] = (await platform.GetAsync(ct)).ClientId;
         secrets[RefreshTokenKey] = session.RefreshToken;
         secrets[GrantedScopesKey] = string.Join(' ', session.Scopes.Distinct(StringComparer.Ordinal));
         secrets[AccountKey] = accountKey;
-        await configurations.SaveSecretsAsync(ConnectorName, secrets, subject.ToString(), ct);
+        await configurations.SaveSecretsAsync(GoogleHealthConnectorService.ConnectorName, secrets, subject.ToString(), ct);
     }
 
     /// <summary>
-    /// Enables the connector and caches the access token of a session <see cref="StoreAsync"/> has
-    /// stored. Not cancellable: the stored session is already live.
+    /// Caches the access token of a session <see cref="StoreAsync"/> has stored. Not cancellable:
+    /// the stored session is already live.
     /// </summary>
-    public async Task ActivateAsync(GoogleHealthTokenSession session, Guid subject)
-    {
-        await SetEnabledAsync(true, subject.ToString(), CancellationToken.None);
-        await oauth.StoreSessionAsync(session);
-    }
+    public Task CacheAsync(GoogleHealthTokenSession session) => oauth.StoreSessionAsync(session);
 
     /// <param name="removeAccount">
     /// Also forget which Google account was connected, which is what lets a different account
@@ -168,8 +162,7 @@ public sealed class GoogleHealthSessionStore(
     public async Task ClearAsync(bool removeAccount, Guid? subject, bool revoke, CancellationToken ct)
     {
         oauth.InvalidateToken();
-        await SetEnabledAsync(false, subject?.ToString(), ct);
-        var secrets = await configurations.GetSecretsAsync(ConnectorName, ct);
+        var secrets = await configurations.GetSecretsAsync(GoogleHealthConnectorService.ConnectorName, ct);
         var refreshToken = secrets.GetValueOrDefault(RefreshTokenKey);
         var account = secrets.GetValueOrDefault(AccountKey);
         secrets.Remove(RefreshTokenKey);
@@ -177,7 +170,7 @@ public sealed class GoogleHealthSessionStore(
         secrets.Remove(SessionClientIdKey);
         secrets.Remove(LegacyClientSecretKey);
         if (removeAccount) secrets.Remove(AccountKey);
-        await configurations.SaveSecretsAsync(ConnectorName, secrets, subject?.ToString(), ct);
+        await configurations.SaveSecretsAsync(GoogleHealthConnectorService.ConnectorName, secrets, subject?.ToString(), ct);
         // Released before the revocation asks who else holds the account, so two tenants clearing
         // at once cannot each see the other and both keep the grant.
         await holders.ReleaseAsync(TenantId, ct);
@@ -191,7 +184,7 @@ public sealed class GoogleHealthSessionStore(
     /// </summary>
     public async Task ReleaseUnstoredAsync(CancellationToken ct)
     {
-        if (HeldAccount(await configurations.GetSecretsAsync(ConnectorName, ct)) is null)
+        if (HeldAccount(await configurations.GetSecretsAsync(GoogleHealthConnectorService.ConnectorName, ct)) is null)
             await holders.ReleaseAsync(TenantId, ct);
     }
 
@@ -243,17 +236,7 @@ public sealed class GoogleHealthSessionStore(
         : throw new InvalidOperationException("Google Health sessions require a resolved tenant context");
 
     public async Task<string?> AccountKeyAsync(CancellationToken ct) =>
-        (await configurations.GetSecretsAsync(ConnectorName, ct)).GetValueOrDefault(AccountKey);
-
-    private async Task SetEnabledAsync(bool enabled, string? modifiedBy, CancellationToken ct)
-    {
-        var stored = await configurations.GetConfigurationAsync(ConnectorName, ct);
-        if (stored?.Configuration is null) return;
-        var configuration = JsonNode.Parse(stored.Configuration.RootElement.GetRawText())!.AsObject();
-        configuration["enabled"] = enabled;
-        using var document = JsonDocument.Parse(configuration.ToJsonString(Json));
-        await configurations.SaveConfigurationAsync(ConnectorName, document, modifiedBy, ct);
-    }
+        (await configurations.GetSecretsAsync(GoogleHealthConnectorService.ConnectorName, ct)).GetValueOrDefault(AccountKey);
 }
 
 public enum GoogleHealthRevocation

@@ -85,9 +85,7 @@ jobs:
         run: pnpm --filter @nocturne/watercolour build:wasm
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v5
-        with:
-          dotnet-version: "10.0.x"
+        uses: ./.github/actions/setup-dotnet
 
       - name: Build bridge package
         working-directory: src/Web/packages/bridge

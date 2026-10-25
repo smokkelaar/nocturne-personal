@@ -14,8 +14,13 @@
   <!-- Header -->
   <header class="border-b border-border/40">
     <div class="container mx-auto px-4 py-4">
-      <a href={resolve("/")} class="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
-        <div class="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
+      <a
+        href={resolve("/")}
+        class="flex items-center gap-2.5 hover:opacity-80 transition-opacity"
+      >
+        <div
+          class="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center"
+        >
           <span class="text-primary font-bold">N</span>
         </div>
         <span class="text-lg font-semibold">Nocturne</span>
@@ -32,14 +37,19 @@
 
   <!-- Footer -->
   <footer class="border-t border-border/40 bg-muted/30">
-    <div class="container mx-auto px-4 py-6 flex flex-col md:flex-row justify-between items-center gap-4">
-      <Button variant="ghost" href="/auth/login">
+    <div
+      class="container mx-auto px-4 py-6 flex flex-col md:flex-row justify-between items-center gap-4"
+    >
+      <Button variant="ghost" href={resolve("/auth/login")}>
         <ArrowLeft class="w-4 h-4" />
         Back to Login
       </Button>
-      <p class="text-sm text-muted-foreground">
-        Last updated: February 21, 2026
-      </p>
+      <a
+        class="text-sm text-muted-foreground underline"
+        href={resolve("/privacy")}
+      >
+        Privacy Policy
+      </a>
     </div>
   </footer>
 </div>

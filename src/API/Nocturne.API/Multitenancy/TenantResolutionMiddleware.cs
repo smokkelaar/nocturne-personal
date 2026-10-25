@@ -87,6 +87,7 @@ public class TenantResolutionMiddleware
         // preventing first-time setup.
         "/health",
         "/alive",
+        new TenantlessPath("/api/v4/privacy", HttpMethods.Get),
         // Answers for the tenant: tenantless only so a fresh apex reports setup_required instead
         // of a 404, and served as the sole tenant so a configured install is not sent to /setup.
         new TenantlessPath("/api/v4/status", SoleTenantAtApex: true),
@@ -217,6 +218,7 @@ public class TenantResolutionMiddleware
     [
         "/health",
         "/alive",
+        new TenantlessPath("/api/v4/privacy", HttpMethods.Get),
         SupportConfigPath,
     ];
 

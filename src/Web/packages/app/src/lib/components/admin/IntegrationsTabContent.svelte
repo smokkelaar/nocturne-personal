@@ -9,6 +9,8 @@
   } from "$lib/components/ui/card";
   import { Button } from "$lib/components/ui/button";
   import { Input } from "$lib/components/ui/input";
+  import { Textarea } from "$lib/components/ui/textarea";
+  import { resolve } from "$app/paths";
   import { Label } from "$lib/components/ui/label";
   import { Switch } from "$lib/components/ui/switch";
   import { Badge } from "$lib/components/ui/badge";
@@ -26,6 +28,7 @@
     telegram: "Telegram",
     whatsapp: "WhatsApp",
     resend: "Resend (Email)",
+    privacy: "Public privacy policy",
   };
 
   const TELEGRAM_SET_WEBHOOK =
@@ -87,9 +90,16 @@
       for (const key of Object.keys(state.fieldValues)) {
         state.fieldValues[key] = "";
       }
-      toast.success("Settings saved. Restart the frontend for changes to take effect.");
+      if (category === "privacy")
+        toast.success("Public privacy information saved.");
+      else
+        toast.success(
+          "Settings saved. Restart the frontend for changes to take effect."
+        );
     } catch (err) {
-      toast.error("Failed to save settings", { description: errorMessage(err) });
+      toast.error("Failed to save settings", {
+        description: errorMessage(err),
+      });
     } finally {
       state.saving = false;
     }
@@ -98,7 +108,14 @@
   async function handleDelete(platform: PlatformSettingsSummary) {
     const category = platform.category ?? "";
     const displayName = DISPLAY_NAMES[category] ?? category;
-    if (!confirm(`Remove all ${displayName} credentials? This cannot be undone.`)) return;
+    if (
+      !confirm(
+        category === "privacy"
+          ? "Remove the published privacy information?"
+          : `Remove all ${displayName} credentials? This cannot be undone.`
+      )
+    )
+      return;
 
     const state = states[category];
     if (!state) return;
@@ -150,37 +167,102 @@
         </CardHeader>
         <CardContent>
           <div class="space-y-4">
+            {#if category === "privacy"}
+              <Alert.Root>
+                <TriangleAlert class="h-4 w-4" />
+                <Alert.Title>These fields are public when enabled</Alert.Title>
+                <Alert.Description>
+                  <p>
+                    Enter an explicitly public operator name and contact
+                    address, not private account details. Describe your actual
+                    hosting, recipients, retention and backups. Enabling
+                    publishes this information and the policy's Google Health
+                    Limited Use commitments immediately; no restart is needed.
+                  </p>
+                  <p>
+                    Review the <a href={resolve("/privacy")} class="underline">
+                      privacy policy
+                    </a>
+                    and
+                    <a href={resolve("/about")} class="underline">
+                      public app information
+                    </a>
+                    . Use those URLs in Google's consent configuration. A
+                    published page does not by itself complete Google's app
+                    verification.
+                  </p>
+                  <p>
+                    Disabling withdraws these public details. Blank fields keep
+                    the saved value; Remove clears all privacy settings. Do not
+                    enter credentials or health records.
+                  </p>
+                </Alert.Description>
+              </Alert.Root>
+            {/if}
             {#if category === "telegram" && !(platform.configuredFields ?? []).includes("webhookSecretToken")}
               <Alert.Root>
                 <TriangleAlert class="h-4 w-4" />
                 <Alert.Title>A webhook secret token is required</Alert.Title>
                 <Alert.Description>
                   <p>
-                    Telegram webhook calls are refused until one is set. Choose a random value of
-                    letters, digits, <code>_</code> or <code>-</code> (for example from
-                    <code>openssl rand -hex 32</code>), save it here with the bot enabled, then
-                    register the webhook again with the same value:
+                    Telegram webhook calls are refused until one is set. Choose
+                    a random value of letters, digits, <code>_</code>
+                    or
+                    <code>-</code>
+                    (for example from
+                    <code>openssl rand -hex 32</code>
+                    ), save it here with the bot enabled, then register the
+                    webhook again with the same value:
                   </p>
-                  <code class="block whitespace-pre-wrap break-all">{TELEGRAM_SET_WEBHOOK}</code>
+                  <code class="block whitespace-pre-wrap break-all">
+                    {TELEGRAM_SET_WEBHOOK}
+                  </code>
                 </Alert.Description>
               </Alert.Root>
             {/if}
             {#each platform.fields ?? [] as field (field.name)}
               {@const name = field.name ?? ""}
-              {@const fieldConfigured = (platform.configuredFields ?? []).includes(name)}
+              {@const fieldConfigured = (
+                platform.configuredFields ?? []
+              ).includes(name)}
               <div class="space-y-1.5">
                 <div class="flex items-center gap-2">
-                  <Label for="field-{category}-{name}">{field.label ?? name}</Label>
+                  <Label for="field-{category}-{name}">
+                    {field.label ?? name}
+                  </Label>
                   {#if fieldConfigured}
                     <Badge variant="outline">Set</Badge>
                   {/if}
                 </div>
-                <Input
-                  id="field-{category}-{name}"
-                  type="password"
-                  placeholder={fieldConfigured ? "Leave blank to keep current value" : "Not set"}
-                  bind:value={state.fieldValues[name]}
-                />
+                {#if category === "privacy"}
+                  <Textarea
+                    id="field-{category}-{name}"
+                    rows={name === "appName" ||
+                    name === "operatorName" ||
+                    name === "contactEmail" ||
+                    name === "effectiveDate"
+                      ? 1
+                      : 3}
+                    maxlength={name === "appName" ||
+                    name === "operatorName" ||
+                    name === "contactEmail"
+                      ? 256
+                      : 4000}
+                    placeholder={fieldConfigured
+                      ? "Leave blank to keep current value"
+                      : "Not set"}
+                    bind:value={state.fieldValues[name]}
+                  />
+                {:else}
+                  <Input
+                    id="field-{category}-{name}"
+                    type="password"
+                    placeholder={fieldConfigured
+                      ? "Leave blank to keep current value"
+                      : "Not set"}
+                    bind:value={state.fieldValues[name]}
+                  />
+                {/if}
               </div>
             {/each}
           </div>
@@ -199,7 +281,10 @@
           {:else}
             <div></div>
           {/if}
-          <Button onclick={() => handleSave(platform)} disabled={state.saving || state.deleting}>
+          <Button
+            onclick={() => handleSave(platform)}
+            disabled={state.saving || state.deleting}
+          >
             {state.saving ? "Saving..." : "Save"}
           </Button>
         </CardFooter>

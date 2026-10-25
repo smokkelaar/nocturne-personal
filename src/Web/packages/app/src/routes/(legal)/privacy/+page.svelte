@@ -1,218 +1,174 @@
 <script lang="ts">
   import { resolve } from "$app/paths";
+  import type { PageData } from "./$types";
+  let { data }: { data: PageData } = $props();
+  const policy = $derived(data.privacy);
 </script>
 
 <svelte:head>
-  <title>Privacy Policy - Nocturne</title>
+  <title>Privacy Policy - {policy.appName ?? "Nocturne"}</title>
 </svelte:head>
 
 <h1>Privacy Policy</h1>
+{#if policy.published}
+  <p class="lead">{policy.appName} is operated by {policy.operatorName}.</p>
+  <p>Effective date: {policy.effectiveDate}</p>
+  <p>
+    This policy describes this operator's Nocturne instance. Other installations
+    have their own operators and data handling practices.
+  </p>
+  <h2>Operator and privacy contact</h2>
+  <p>{policy.operatorName}</p>
+  <p><a href={"mailto:" + policy.contactEmail}>{policy.contactEmail}</a></p>
+{:else}
+  <p role="status">
+    This instance has not published its operator's privacy information. The
+    software information below does not replace an instance-specific policy. The
+    operator can configure and publish it in Platform Administration →
+    Integrations → Public privacy policy.
+  </p>
+{/if}
 
-<p class="lead">
-  Your privacy matters. This policy explains how Nocturne handles your data and protects your privacy.
-</p>
-
-<h2>1. Introduction</h2>
-
+<h2>Data collected and purpose</h2>
 <p>
-  Nocturne is a self-hosted, open-source diabetes data management platform. This means <strong>you control where your data lives</strong>. Unlike cloud-based services, Nocturne runs on your own server or hosting provider, and your data stays in your own database.
+  Nocturne stores diabetes and health records supplied by its users and
+  configured connectors, such as glucose readings, treatments, meals, activity
+  and account settings. It uses them for the personal histories, charts, reports
+  and sharing features you choose to use.
 </p>
-
+<h2>Google Health access</h2>
 <p>
-  This privacy policy explains what data Nocturne collects (spoiler: very little), how it's stored, and your rights.
+  Connecting Google Health is optional. After you authorize access, the
+  connector reads permitted data to show your steps, heart rate, weight and
+  sleep history. It also processes timestamps, units, source identifiers,
+  inventory counts and sync progress. It uses a Google account identifier to
+  keep the connection bound to the correct account, and stores OAuth permissions
+  and tokens for background access. It does not receive your Google password.
 </p>
-
-<h2>2. Data We DON'T Collect</h2>
-
 <p>
-  Because Nocturne is self-hosted, we (the Nocturne project developers) do not have access to your data. Specifically:
+  The current connector requests openid and the read-only Google Health scopes
+  for activity and fitness, health metrics and measurements, and sleep. Google's
+  permission groups are broader than the four import types. Inventory scanning
+  checks availability for permitted types; confirming your selection starts
+  imports. Background synchronization normally runs about every fifteen minutes.
+  The connector does not write to Google Health or request Gmail, Drive,
+  contacts or location access.
 </p>
-
-<ul>
-  <li><strong>No analytics:</strong> Nocturne does not send usage analytics or telemetry to us by default.</li>
-  <li><strong>No tracking:</strong> We don't track your usage, browsing, or behavior.</li>
-  <li><strong>No data collection:</strong> Your glucose readings, treatments, meals, and health data never leave your server unless you choose to share them.</li>
-  <li><strong>No selling data:</strong> We don't sell your data because we don't have access to it in the first place.</li>
-  <li><strong>No cloud storage:</strong> Nocturne doesn't store your data in our cloud or servers. It's all on your infrastructure.</li>
-</ul>
-
-<h2>3. Data Storage</h2>
-
+<h2>Storage, security and tenant access</h2>
 <p>
-  All your Nocturne data is stored in your own database on your own server or hosting provider. This includes:
+  Health records are stored in this installation's PostgreSQL database.
+  Connector secrets in the database are encrypted. Authentication, account
+  permissions and tenant isolation control access through Nocturne. A user in
+  one tenant does not gain access to another tenant merely by signing in.
 </p>
-
-<ul>
-  <li>Glucose readings (blood sugar, CGM data)</li>
-  <li>Treatments (insulin, medications)</li>
-  <li>Meals and nutrition data</li>
-  <li>Activity and exercise logs</li>
-  <li>User account information</li>
-  <li>Settings and preferences</li>
-</ul>
-
 <p>
-  <strong>Where your data lives:</strong>
+  Restoring a complete backup preserves tenant assignments and permissions.
+  These application controls do not make a database backup unreadable to a host
+  administrator with direct storage or database access. Encryption of connector
+  secrets is not a claim that the entire database or every backup is encrypted.
 </p>
-
-<ul>
-  <li><strong>Your database:</strong> All persistent data is stored in a PostgreSQL database that you control.</li>
-  <li><strong>Your hosting provider:</strong> Your hosting provider's privacy policy and security practices apply to your data. Choose a provider you trust.</li>
-  <li><strong>Browser local storage:</strong> Some temporary data (like UI preferences) may be stored in your browser's local storage. This never leaves your device.</li>
-</ul>
-
-<h2>4. Third-Party Services and Connectors</h2>
-
+{#if policy.published}
+  <p class="whitespace-pre-line break-words">{policy.hosting}</p>
+{/if}
+<h2>Recipients, sharing and human access</h2>
 <p>
-  Nocturne can connect to third-party diabetes data services to import your glucose and treatment data. When you use these integrations:
+  Google processes authorization and API requests under its
+  <a href="https://policies.google.com/privacy">privacy policy</a>
+  . Installing Nocturne does not automatically send health records to the Nocturne
+  project developers. Accounts, sharing links, exports and integrations can expose
+  data to the recipients you authorize; disconnecting Google does not recall those
+  copies.
 </p>
-
-<ul>
-  <li><strong>Third-party privacy policies apply:</strong> Services like Dexcom, FreeStyle Libre, Glooko, and Tidepool have their own privacy policies. Review them before connecting.</li>
-  <li><strong>We don't control third parties:</strong> We cannot control what data these services collect about you or how they use it.</li>
-  <li><strong>Credentials storage:</strong> Your API keys and login credentials for third-party services are stored <strong>encrypted</strong> in your database. Only your Nocturne instance can decrypt them.</li>
-  <li><strong>Data transfer:</strong> When you connect to a third-party service, data flows between that service and your Nocturne instance. We (the Nocturne developers) do not see or have access to this data.</li>
-</ul>
-
+{#if policy.published}
+  <p class="whitespace-pre-line break-words">{policy.sharing}</p>
+{/if}
 <p>
-  <strong>Third-party services you might connect:</strong>
+  Google Health data may be read by another person only with the user's specific
+  consent, where necessary for security, or to meet a legal obligation.
 </p>
-
-<ul>
-  <li>Dexcom (CGM data)</li>
-  <li>FreeStyle Libre (CGM data)</li>
-  <li>Glooko (multi-source data aggregation)</li>
-  <li>Tidepool (open diabetes data platform)</li>
-  <li>Nightscout (diabetes data platform)</li>
-  <li>Others via community plugins</li>
-</ul>
-
-<h2>5. Optional Analytics and Error Reporting</h2>
-
+<h2>Google Health Limited Use</h2>
 <p>
-  In the future, Nocturne may offer optional, opt-in features for:
+  Use of information received from Google Health complies with the
+  <a
+    href="https://developers.google.com/health/policies/health-api-developer-user-data-policy"
+  >
+    Google Health API Developer and User Data Policy
+  </a>
+  , including its Limited Use requirements, and the
+  <a href="https://developers.google.com/terms/api-services-user-data-policy">
+    Google API Services User Data Policy
+  </a>
+  . Google Health data is used for the visible personal history and synchronization
+  features. It is not sold, used for advertising, credit decisions or training general
+  AI models, or supplied for a medical device's regulated function.
 </p>
-
-<ul>
-  <li><strong>Error reporting:</strong> Send crash reports and error logs to help us improve Nocturne</li>
-  <li><strong>Anonymous usage analytics:</strong> Aggregated, anonymized usage statistics</li>
-</ul>
-
+<h2>Retention and backups</h2>
 <p>
-  If we add these features:
+  Disconnecting or withdrawing Google's permission stops future access but does
+  not automatically delete imported history. Nocturne has no automatic expiry
+  for Google Health history. Backup copies and exports require separate
+  handling.
 </p>
-
-<ul>
-  <li>They will be <strong>opt-in only</strong> - disabled by default</li>
-  <li>You'll have clear control to enable or disable them</li>
-  <li>We'll clearly explain what data would be collected</li>
-  <li>Data will be anonymized and aggregated when possible</li>
-  <li>No health data or personally identifiable information will be included</li>
-</ul>
-
+{#if policy.published}
+  <p class="whitespace-pre-line break-words">{policy.retention}</p>
+  <p class="whitespace-pre-line break-words">{policy.backups}</p>
+{:else}
+  <p>
+    Ask this installation's operator about its retention, recipients and backups
+    before connecting.
+  </p>
+{/if}
+<h2>Withdraw access and delete data</h2>
+<ol>
+  <li>
+    Open Settings → Connectors &amp; Apps → Google Health and choose Disconnect.
+  </li>
+  <li>
+    Then choose Delete imported Google Health data and confirm to remove this
+    connector's imported records from the active tenant database. This does not
+    delete Google's originals.
+  </li>
+  <li>
+    You can also withdraw access in <a
+      href="https://myaccount.google.com/connections"
+    >
+      Google Account connections
+    </a>
+    . This does not remove existing Nocturne copies.
+  </li>
+  <li>
+    Contact the operator for account deletion, access, correction, export or
+    removal of remaining backup copies.
+  </li>
+</ol>
 <p>
-  <strong>Current status:</strong> As of this writing, Nocturne does not include any analytics or error reporting features.
+  When the same Google account is connected to multiple tenants, a local
+  disconnect may preserve Google's grant for the others. Revoking access in
+  Google can affect all those connections. Deleting one tenant's imported data
+  does not delete other tenants' copies.
 </p>
-
-<h2>6. Your Rights and Data Control</h2>
-
+<h2>Changes and privacy requests</h2>
 <p>
-  Because you self-host Nocturne, you have complete control over your data:
+  Material changes to Google data use must be disclosed before they take effect,
+  with renewed consent where required. For privacy requests, use the operator's
+  public contact above rather than posting health details on GitHub. The
+  operator may need to verify that a request belongs to your account.
 </p>
-
-<ul>
-  <li><strong>You own your data:</strong> All data belongs to you. We make no claims to it.</li>
-  <li><strong>Export anytime:</strong> You can export your data at any time. It's just a PostgreSQL database - you have full access.</li>
-  <li><strong>Delete anytime:</strong> You can delete any or all of your data whenever you want.</li>
-  <li><strong>Control access:</strong> You decide who can access your Nocturne instance and what they can see.</li>
-  <li><strong>Move your data:</strong> You can migrate your database to a different server or hosting provider at any time.</li>
-  <li><strong>Backup your data:</strong> You're responsible for backing up your database. We recommend regular backups.</li>
-</ul>
-
-<h2>7. Security</h2>
-
 <p>
-  Nocturne is designed with security best practices:
+  Session cookies and browser storage support sign-in and preferences. This page
+  contains no health records and requires no Nocturne account to read.
 </p>
-
-<ul>
-  <li><strong>Encryption:</strong> API keys and sensitive credentials are stored encrypted in the database.</li>
-  <li><strong>HTTPS recommended:</strong> We strongly recommend running Nocturne behind HTTPS to encrypt data in transit.</li>
-  <li><strong>Authentication:</strong> User accounts are protected with password hashing (bcrypt).</li>
-  <li><strong>Open source:</strong> The code is open for security review by the community.</li>
-</ul>
-
 <p>
-  <strong>Your responsibility:</strong> As a self-hosted application, you're responsible for:
+  <a href={resolve("/about")}>About this instance</a>
+  ·
+  <a href={resolve("/terms")}>Terms of Service</a>
 </p>
-
-<ul>
-  <li>Keeping your server and dependencies updated</li>
-  <li>Using strong passwords</li>
-  <li>Securing your hosting environment</li>
-  <li>Configuring HTTPS/SSL certificates</li>
-  <li>Regular backups</li>
-</ul>
-
-<h2>8. Children's Privacy</h2>
-
 <p>
-  Nocturne is often used to manage diabetes data for children. Because the software is self-hosted:
-</p>
-
-<ul>
-  <li>Parents/guardians control all data for their children</li>
-  <li>No data is sent to us (the developers)</li>
-  <li>All data stays within the family's or caregiver's control</li>
-</ul>
-
-<p>
-  If you're hosting Nocturne for your child, you have full control and responsibility for their data privacy and security.
-</p>
-
-<h2>9. Changes to This Privacy Policy</h2>
-
-<p>
-  We may update this privacy policy from time to time. When we do:
-</p>
-
-<ul>
-  <li>The updated policy will be posted at this URL</li>
-  <li>The "Last updated" date will change</li>
-  <li>Major changes will be announced in the GitHub repository</li>
-</ul>
-
-<p>
-  Because Nocturne is self-hosted, privacy policy changes don't affect data you've already collected - it stays under your control regardless.
-</p>
-
-<h2>10. Contact</h2>
-
-<p>
-  For questions about this privacy policy or Nocturne's privacy practices:
-</p>
-
-<ul>
-  <li>GitHub: <a href="https://github.com/nightscout/nocturne" target="_blank" rel="noopener noreferrer">github.com/nightscout/nocturne</a></li>
-  <li>Open an issue or discussion on GitHub</li>
-</ul>
-
-<p>
-  For questions about your specific Nocturne instance's privacy and data handling, contact your instance administrator (which might be you if you're self-hosting).
-</p>
-
-<h2>Summary</h2>
-
-<p>
-  The key point: <strong>Nocturne is self-hosted, which means you control your data</strong>. We (the developers) don't collect it, don't have access to it, and can't sell it or share it. Your privacy is protected by design.
-</p>
-
-<p>
-  See also: <a href={resolve("/terms")}>Terms of Service</a>
-</p>
-
-<hr />
-
-<p class="text-sm text-muted-foreground">
-  This privacy policy is effective as of February 21, 2026.
+  Source code:
+  <a href="https://github.com/smokkelaar/nocturne-personal">
+    Nocturne Personal
+  </a>
+  ·
+  <a href="https://github.com/nightscout/nocturne">Upstream Nocturne</a>
+  . Project developers are not automatically the operators of this installation.
 </p>

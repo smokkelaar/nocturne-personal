@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { dashboardExamples } from "../demo-context";
+  const examples = dashboardExamples();
   import { onMount } from "svelte";
   import WidgetCard from "./WidgetCard.svelte";
   import WidgetStatSkeleton from "./WidgetStatSkeleton.svelte";
@@ -23,7 +25,7 @@
   // Fetched after hydration, as the other statistics widgets do, so a slow query cannot block SSR.
   let statsPromise = $state<ReturnType<typeof getMultiPeriodStatistics> | null>(null);
   onMount(() => {
-    statsPromise = getMultiPeriodStatistics();
+    statsPromise = examples ? Promise.resolve(examples.statistics) : getMultiPeriodStatistics();
   });
 </script>
 

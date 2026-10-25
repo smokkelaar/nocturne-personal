@@ -256,7 +256,7 @@ public class GoogleHealthWorkerTests
         services.AddScoped<ITenantAccessor, TenantAccessor>();
         using var provider = services.BuildServiceProvider();
         using var worker = new GoogleHealthWorker(provider.GetRequiredService<IServiceScopeFactory>(),
-            coordinator, ConfiguredPlatform, NullLogger<GoogleHealthWorker>.Instance);
+            coordinator, NullLogger<GoogleHealthWorker>.Instance);
         Assert.True(await coordinator.QueueAsync(tenant, 1, default));
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
         await worker.StartAsync(default);

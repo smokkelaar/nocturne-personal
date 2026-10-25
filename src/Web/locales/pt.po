@@ -45,6 +45,979 @@ msgstr ""
 msgid "Establishing connection"
 msgstr ""
 
+#: src/lib/help/report-context.svelte.ts
+msgid "Stored glucose readings in the selected period feed the range summary and the typical-day preview."
+msgstr ""
+
+#: src/lib/help/report-context.svelte.ts
+msgid "Use the date range above the overview, then select a report card. Appearance sets the glucose units. Connectors & Apps manages incoming records."
+msgstr ""
+
+#: src/lib/help/report-context.svelte.ts
+msgid "Glucose readings and treatments in the selected period are summarized into headline figures and a coverage indicator."
+msgstr ""
+
+#: src/lib/help/report-context.svelte.ts
+msgid "Select the date range above the report, or use Filters. Appearance sets the glucose units. Select a detailed report to examine a figure."
+msgstr ""
+
+#: src/lib/help/report-context.svelte.ts
+msgid "Glucose readings from all days of the period are grouped by time of day into a median and percentile bands."
+msgstr ""
+
+#: src/lib/help/report-context.svelte.ts
+msgid "Select the report period above the page. The default is 14 days. Appearance sets the glucose units."
+msgstr ""
+
+#: src/lib/help/report-context.svelte.ts
+msgid "Glucose readings are counted by value interval, and grouped by hour for the hourly chart."
+msgstr ""
+
+#: src/lib/help/report-context.svelte.ts
+msgid "Select the report period above the page. Appearance sets the glucose units. Connectors & Apps manages sources and imports."
+msgstr ""
+
+#: src/lib/help/report-context.svelte.ts
+msgid "Estimates come from your stored sensor and meter readings. Lab results come from the dated entries that you save on this page."
+msgstr ""
+
+#: src/lib/help/report-context.svelte.ts
+msgid "The report shows all years with glucose data and has no date selector. Appearance sets the unit, % (NGSP) or mmol/mol (IFCC), and the name HbA1c or A1c. Add a lab result with the form below the chart."
+msgstr ""
+
+#: src/lib/help/report-context.svelte.ts
+msgid "The server builds one summary for each local day from glucose, insulin and carb records. Days and years follow your time zone. Without a time zone, the report stays empty and shows the reason."
+msgstr ""
+
+#: src/lib/help/report-context.svelte.ts
+msgid "The source filter limits the years to some data sources. Types hides record types from the day counts. The color panel sets the metric, focus window, boundaries, palette and Mirror. These controls change only the view, not your records."
+msgstr ""
+
+#: src/lib/help/report-context.svelte.ts
+msgid "Choose dates and visible chart tracks on this page. The default is 7 days. Appearance changes units. Connectors & Apps manages the records being displayed."
+msgstr ""
+
+#: src/lib/help/report-context.svelte.ts
+msgid "One day's recorded glucose, treatments, and available loop and device context are aligned by timestamp."
+msgstr ""
+
+#: src/lib/help/report-context.svelte.ts
+msgid "Use the arrows to change the day. Select a treatment to edit it, if your access allows it. Use the time scrubber to see the loop state at a time."
+msgstr ""
+
+#: src/lib/help/report-context.svelte.ts
+msgid "Stored glucose is grouped by weekday and by 5-minute slot of the day across the selected period."
+msgstr ""
+
+#: src/lib/help/report-context.svelte.ts
+msgid "Use the arrows to move one week back or forward. Reset returns to the current week. Appearance sets the glucose units."
+msgstr ""
+
+#: src/lib/help/report-context.svelte.ts
+msgid "Each side runs the same glucose, insulin and carb analysis for its own date window."
+msgstr ""
+
+#: src/lib/help/report-context.svelte.ts
+msgid "Choose a preset or set both periods and their labels, then select Load. Swap exchanges the loaded periods immediately. Appearance sets the glucose units."
+msgstr ""
+
+#: src/lib/help/report-context.svelte.ts
+msgid "Glucose readings are grouped into local-hour buckets across the selected days. Hours follow the time zone in your settings."
+msgstr ""
+
+#: src/lib/help/report-context.svelte.ts
+msgid "Choose the date range above the report. The chart, the lists of best and worst hours and the table describe that range. Appearance sets the glucose units and the time format."
+msgstr ""
+
+#: src/lib/help/report-context.svelte.ts
+msgid "Recorded basal delivery, temp basals, suspends and the therapy schedule provide the rate and its duration."
+msgstr ""
+
+#: src/lib/help/report-context.svelte.ts
+msgid "Choose the report period. The default is 14 days. Therapy shows the imported schedule. This report does not change pump settings."
+msgstr ""
+
+#: src/lib/help/report-context.svelte.ts
+msgid "Recorded basal and bolus delivery and carb entries are summarized by day and by hour."
+msgstr ""
+
+#: src/lib/help/report-context.svelte.ts
+msgid "Choose the report period. The default is 30 days. Inspect records in Treatments and schedules in Therapy."
+msgstr ""
+
+#: src/lib/help/report-context.svelte.ts
+msgid "Recorded site, pod and cannula changes define the windows. Glucose readings around each change are compared."
+msgstr ""
+
+#: src/lib/help/report-context.svelte.ts
+msgid "Choose the report period. Check the times of site-change events in Treatments."
+msgstr ""
+
+#: src/lib/help/report-context.svelte.ts
+msgid "Glucose statistics, recorded insulin delivery and the therapy profile provide the panels of the profile."
+msgstr ""
+
+#: src/lib/help/report-context.svelte.ts
+msgid "Choose the report period. The default is 14 days. Therapy provides the profile and scheduled basal. Connectors & Apps manages delivery records."
+msgstr ""
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Confirm the selected dates and the availability of glucose, loop status and insulin uploads before you compare the pages."
+msgstr ""
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Use the same filters"
+msgstr ""
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "All five pages use the same range and filters. Change the page with the page names below the header."
+msgstr ""
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Open individual days or events in Day in review. Discuss changes to your settings with your diabetes care team."
+msgstr ""
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Read your usual day"
+msgstr ""
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "The line is the median of all days at that time. The bands show the spread of the days."
+msgstr ""
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Follow the correction"
+msgstr ""
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "The net loop correction shows when the loop added insulin to the schedule or removed it."
+msgstr ""
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Open the days"
+msgstr ""
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Select a time on a chart to list the days. Select a day to open it in Day in review."
+msgstr ""
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Build a cohort"
+msgstr ""
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Choose an event type, a time of day and, for meals, a carb amount. Add up to three cohorts."
+msgstr ""
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Read the curves"
+msgstr ""
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "The dashed line at 0 is the event. Each color is one cohort, and its line is the median."
+msgstr ""
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Check the events"
+msgstr ""
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Sort the event list and open an event in Day in review to see what happened."
+msgstr ""
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Read the bias"
+msgstr ""
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Above zero, the predictions were too high. Below zero, they were too low."
+msgstr ""
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Use the right horizon"
+msgstr ""
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Only the horizon marked Settings signal says something about your settings."
+msgstr ""
+
+#: src/lib/help/reading-guides.svelte.ts
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Find the hours"
+msgstr ""
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "The heatmap shows the hours of the day when the predictions were off."
+msgstr ""
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Read the tiles"
+msgstr ""
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "The tiles show how much of the time the loop, the CGM and the pump were active."
+msgstr ""
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "The hourly charts show when the loop stopped insulin or reached maximum basal."
+msgstr ""
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Inspect the gaps"
+msgstr ""
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Open the longest gaps in Day in review to find their cause."
+msgstr ""
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Compare line and dots"
+msgstr ""
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "The line is your profile setting. The dots are the observed values for each block of the day."
+msgstr ""
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Check the confidence"
+msgstr ""
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Low confidence means few or very different episodes. Select a row to see why."
+msgstr ""
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Discuss before you change"
+msgstr ""
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "The figures are observations. Speak to your diabetes care team before you change a setting."
+msgstr ""
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Read the reason"
+msgstr ""
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Each row shows when a record was last sent, how many times, from which uploader and why it was not stored."
+msgstr ""
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Open the record"
+msgstr ""
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Expand Record to see the data as the uploader sent it."
+msgstr ""
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Export, then clear"
+msgstr ""
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Export this page to keep a copy. Clear removes only the records on this page."
+msgstr ""
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "The overview summarizes the selected period. Some detailed reports have their own filters."
+msgstr ""
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Read the latest estimate"
+msgstr ""
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "The large figure is the estimate for the most recent day with enough readings. The line shows how it changed over the years."
+msgstr ""
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Compare with the zones"
+msgstr ""
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "The colored zones show the non-diabetic range, the type 1 target, elevated and very high values."
+msgstr ""
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Enter the date of the blood draw and the value. The triangle then shows how closely the estimate follows the lab."
+msgstr ""
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Choose a metric"
+msgstr ""
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Select Avg glucose, Time in range, Bolus, Basal, TDD or Carbs in the color panel. Each cell then shows that value for one day."
+msgstr ""
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Read the colors"
+msgstr ""
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "The color bar shows which color belongs to which value. Use the focus window and Dim outside to highlight the values that matter to you."
+msgstr ""
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Open a day"
+msgstr ""
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Look for groups of days with the same color. Select a day to open it in Day in review."
+msgstr ""
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Check the counts"
+msgstr ""
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "The figures show the compression lows that are pending, accepted or dismissed."
+msgstr ""
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Use Signal integrity for unstable readings, CGM comparison for two devices and Compression lows for suggestions."
+msgstr ""
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Review before you decide"
+msgstr ""
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Detection is a reason to inspect the readings. It is not proof that they are wrong."
+msgstr ""
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Find flagged windows"
+msgstr ""
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "The daily overview shows the days and times of flagged windows."
+msgstr ""
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Read each flagged window together with the lows that followed it."
+msgstr ""
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Check the sensor"
+msgstr ""
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Many flagged windows close together can point to a sensor or placement problem."
+msgstr ""
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Filter by dates and review status, then select a suggested night."
+msgstr ""
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Inspect the glucose"
+msgstr ""
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Read the shape of the drop and the recovery time before you decide."
+msgstr ""
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Accept marks a false low from pressure. Dismiss keeps it as a real low. Detection settings are separate."
+msgstr ""
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "An old value can describe an earlier battery state, not the current device."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "The overview shows the main glucose figures for a period and leads to the detailed reports."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Select a report card to open that report. Most reports start with the period that you chose here."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "A report card appears only when your access includes the data that the report needs. Opening a report does not start an import. Days of data are counted on UTC days."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "One page with the main glucose figures, the data coverage and a short breakdown of each day."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Start here. Then open AGP for the usual day, or Day in review for one actual day."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "The figures describe the readings in the period. They do not show why a figure changed. With low CGM coverage, the figures describe only part of the period."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "How complete is your CGM data"
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "CGM active time is the part of the period with sensor readings. The consensus advice is at least 70% active time over 14 days. Below that, the figures are less reliable."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "The figures"
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Time in range, average, median, standard deviation and coefficient of variation (CV) use all readings in the period. The percentiles show the spread. MAGE is the mean size of the large glucose swings."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "The Ambulatory Glucose Profile puts all days of the period on one 24-hour axis. It shows your usual day."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "The dark line is the median. The darker band holds the middle 50% of the readings at that time, and the lighter band the middle 80%."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "The profile is not the trace of one actual day. A time with few readings gives an unreliable band. The consensus advice is at least 14 days of data with 70% sensor wear."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Time in ranges"
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "The bar next to the profile shows the share of time in each glucose range. The consensus target is at least 70% in range, less than 4% below range and less than 1% very low."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "See how often readings fall in each range, how they spread, and how this changes by hour."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "The histogram counts readings by glucose value. The statistics describe the spread, and the hourly chart shows the distribution for each hour of the day."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "The histogram counts readings, not time. A gap in the readings is not counted. Estimated A1c on this page comes from glucose, not from a blood test."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Variability figures"
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "GVI (glycemic variability index) compares the length of the glucose line with a flat line. PGS (patient glycemic status) combines GVI, the mean glucose and the time in range. Lower values mean more stable glucose."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Estimated HbA1c (eHbA1c)"
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "This report estimates the HbA1c that a lab test would show on each day. It uses your glucose readings. You can add lab results to compare."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "The summary shows the latest estimate, its weighted mean glucose, and the highest and lowest estimate. Lab results show as triangles on the chart."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "A day gets an estimate only when its 90-day window holds at least 30 readings. A short history or a long gap leaves days without a point. The report does not estimate future days."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "How the estimate is calculated"
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "For each day, the report takes all sensor and meter readings from the previous 90 days. Recent days count more: the last 30 days give half of the weight. The weighted mean glucose then goes through the ADAG formula: eHbA1c (%) = (mean glucose in mg/dL + 46.7) / 28.7."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "The colored zones"
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "The zones are: non-diabetic range up to 5.7%, type 1 diabetes target up to 7%, elevated up to 9%, and very high above 9%. In mmol/mol, the same limits are converted."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Enter the date of the blood draw, not the date that you add it. The value must be between 3.0% and 20.0%, or the same in mmol/mol. The date cannot be in the future. A note can have 500 characters."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "When estimate and lab value differ"
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Lab results never change the estimate. A lab value also depends on things that glucose readings do not show, for example the life span of red blood cells. Discuss a large difference with your care team."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "A calendar heatmap shows one cell for each day of every year with data. Use it to find periods to examine in more detail."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Select a day to open it in Day in review. Select a month name to open the calendar, or a week label to open Week to week. Below each year, a chart shows the glycemic risk index (GRI) for each month."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "An empty cell has no records. A gray cell has records, but no value for the selected metric. Do not read either one as a good day. A day with missing uploads shows totals that are too low."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "How the metrics are calculated"
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Avg glucose is the mean of the sensor and meter readings of the day. Time in range uses the consensus range of 70 to 180 mg/dL (3.9 to 10.0 mmol/L), not your own thresholds. Bolus adds manual and automatic boluses. Basal multiplies the rate of each recorded temp basal by its duration. TDD is bolus plus basal. Carbs adds the carb entries."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Basal and missing records"
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Basal counts only recorded temp basals. A temp basal without an end time counts as 5 minutes. All of its insulin counts on the day that it started. Scheduled basal from the profile is not added."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Colors and the focus window"
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Glucose colors are fixed to glucose values, so a color always means the same glucose. Time in range runs from 0 to 100%. The other metrics run from 0 to the highest day in the loaded years. Move the two focus handles to narrow the colored range. Days outside it fade by the Dim outside percentage."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Palettes, boundaries and Mirror"
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "A palette replaces the theme colors of the selected metric. Mirror reverses the order of the colors. A color boundary pins a color to a value. You can change the color at each boundary and at each end. Swap colors exchanges the two end colors, except for glucose."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Saving and resetting colors"
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Each metric keeps its own color settings. They are saved with your display preferences. A new palette removes the end colors that you set for the previous one. Reset removes all color settings of the selected metric."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Loading and printing"
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "The newest year loads first. Older years load when you scroll to them. If a year does not load, select Retry. Print loads all years first. On paper, glucose uses one color ramp and hatching marks low and high days."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Bring the glucose, treatments and loop activity of one day together on a timeline."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Inspect the timing behind a pattern or an unusual reading. Other reports, such as Year overview and Loop analysis, open a day here."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Events appear only when they are recorded and imported. An event near a change in glucose does not prove that it caused the change."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Compare the days of the week on one 24-hour axis."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Each line is one weekday. With a range of seven days, each line is one actual day. With a longer range, each line is the mean of that weekday."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "The same weekday can have unequal coverage between weeks. A mean can hide short highs and lows."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Compare two periods with the same glucose, insulin and carb figures."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Find the figures that changed, then examine individual days of each period."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Different devices, coverage or durations can change the result. A difference does not prove a treatment effect."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "This report puts every day of the range on one 24-hour clock. It shows which hours tend to go well and which are harder."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Each bar is one hour of the day. Its bands show the share of that hour's readings in each range, lowest at the bottom. The table shows the same figures with the typical glucose of each hour."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "An hour is compared with the others only when it has readings on enough days. Best and worst hours are named only when they differ enough. Tight range is part of in range, so do not add their percentages."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Inspect the basal rate that your pump delivered at each hour of the day."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "The median line and the shaded bands show the delivered rate by hour across the days. Wider bands mean the rate varied more at that hour."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Therapy profiles provide the scheduled rates. Temp basal and suspend records describe the changes. Missing delivery records or profiles limit the analysis."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Review basal and bolus totals, their split and their timing."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Daily totals show the split between basal and bolus against your carbs. The hourly chart shows the mean delivery for each hour, split into basal, manual bolus and automatic bolus."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Bolus amounts and basal rates have different units. Basal totals depend on the duration of the records. Incomplete imports make totals too low."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Compare glucose in the 12 hours before and the 24 hours after each infusion site change."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "The line is the median glucose across all site changes. The bands show the 25th to 75th and the 10th to 90th percentiles. The summary compares time in range before and after."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "The report needs at least two site changes with glucose around them. A site, pod or cannula change counts. The figures are averages, not the result of one change. They do not prove that the change caused a difference."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Insulin dosing profile (IDP)"
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "A standard summary of insulin delivery and glucose for the selected period."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "The panels show the basal and bolus split, the glucose figures, the glycemic risk index and a daily glucose pattern with basal and bolus distribution."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Scheduled basal comes from the therapy profile. It is not proof of delivered insulin. Missing profiles or treatments leave panels empty. This report is only available to members, not on a public share."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Five pages show what your automated insulin delivery did: Daily profile, Meals and events, Prediction accuracy, Loop health and Settings evidence."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Glucose, treatment, device-status, prediction and therapy-profile records provide the data. The results depend on what your loop uploads."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Select Filters (the funnel icon) to choose dates, a profile, days of the week and time to exclude. All five pages use the same filters. Select a page name to change page."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Compare timing and coverage across the pages. Then open individual days or events in Day in review."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Missing uploads and short history limit the results. The pages describe observations. They do not prove a treatment effect or recommend changes to your settings."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Excluded time"
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Accepted compression lows and other data exclusions are always removed from glucose. You can also exclude overrides, temporary targets, exercise, illness and time not in closed loop."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Compare with another range"
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Compare with adds a second range to the charts. When your access shows only recent history, the pages use only that window and cannot compare ranges."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Loop analysis: Daily profile"
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "This page shows glucose, basal, loop corrections, insulin on board (IOB) and carbs on board (COB) at each time of day."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Glucose readings, basal and bolus records, temp basals, and the IOB and COB that your loop uploads."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Use Filters for the range. Use the switches below the correction chart to show manual temp basals, suspends and inferred delivery. Select a time on a chart to list the days at that time."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "The totals show the mean insulin for one day: basal, automatic boluses, manual boluses and the net loop correction. A link opens Insulin delivery for the same range."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Each time of day uses data from one day at most. Faded areas have too few days to show a pattern. IOB and COB are estimates from your loop."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "This chart shows the insulin that the loop added to your scheduled basal or removed from it. It includes temp basals and automatic boluses."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Median and bands"
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Each chart shows all days of the range on one 24-hour axis. The line is the median. The bands show the 25% to 75% and 10% to 90% spread of the days."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Loop analysis: Meals and events"
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Carb entries, boluses, sensor starts, exercise, overrides and temporary targets. Unannounced rises are found in the glucose readings."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Choose the event type of each cohort, a time of day and a carb amount. You can compare a maximum of three cohorts. Set the window before and after the event."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "The charts align the events of each cohort at 0. The table shows the median results after the events. The list shows each event, and you can open it in Day in review."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Isolated events only removes each event that has another meal, correction bolus or unannounced rise in its window. Few events give unstable medians."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "The results"
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Results include the peak rise, the time to the peak and the glucose at 2 and 4 hours. They also include the lowest glucose and the insulin above schedule."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "For unannounced rises, this option keeps only the rises where the loop delivered more insulin than scheduled."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Loop analysis: Prediction accuracy"
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "This page compares the glucose predictions of the loop with the readings that followed them."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "The prediction curves that your loop uploads in its device status, and the glucose readings after each prediction."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Use Filters for the range. If there is more than one curve, select a curve at the top of By hour and context."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Each chart shows the error at each horizon. Bias is the prediction minus the reading. A positive bias means the predictions were too high. MAE is the mean size of the error."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Only the bias at the horizon marked Settings signal gives information about your settings. Longer horizons include actions of the loop that the prediction did not expect."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Bias by hour and by context"
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "The heatmap shows the bias for each hour of the day and each horizon. The context table groups predictions by the events in the three hours before them, for example a meal."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "When the page is hidden"
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Predictions come from device data. When your access does not include device data, the page shows no figures."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Loop analysis: Loop health"
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Device-status records of your loop, pump and CGM, temp basals and the maximum basal of your settings."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Use Filters for the range. Select an hour on a chart to show only the gaps that started in that hour. Select a gap to open it in Day in review."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "The tiles show the share of time with a closed loop and an active CGM and pump. The hourly charts show zero temps, time at maximum basal and the sensitivity ratio."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "When the data cannot give a figure, the tile shows Unknown and the reason. Each hour uses data from one day at most. Hours with too few days do not show a pattern."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "The list shows each gap in the loop, longest first, with its cause when it is known."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Loop analysis: Settings evidence"
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "This page compares your basal, insulin sensitivity (ISF) and carb ratio settings with observations from your data."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Your therapy profile, and fasting periods, correction boluses and meals with carb entries from your data."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Use Filters for the range. Select a row to see the days or events behind that figure."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "The chart shows the profile setting as a line and the observed value of each block as a dot. Each row shows the observed value, the profile value, the number of episodes and the confidence."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "The figures are observations, not advice. Speak to your diabetes care team before you change a setting. A block with too few episodes shows no figure."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Each figure has high, moderate or low confidence. Select a row to read why the confidence is not higher and which candidates the report did not use."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Check whether your recorded glucose is complete and reliable."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Stored glucose readings, compression-low suggestions, paired readings from two devices and records that an uploader sent but Nocturne could not store."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Open a quality report from the list. Run detection scans a date range for compression lows. Settings > Data quality controls automatic detection and your typical sleep times."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "The counts show how many compression lows are pending, accepted or dismissed. Review the pending ones in Compression lows."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "A flag is a reason to inspect, not proof that a reading is wrong. Rejected uploads show only to owners and members who can change tenant settings."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Find windows where the readings rise and fall in a way that is unlikely to be real glucose."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "The report examines the stored glucose readings for rapid changes of direction. It needs no extra information from the uploader."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Choose the date range with the report filters. Select a day in the overview to expand it. Select a row in Flagged windows to show its day."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "The daily overview places the flagged windows in time. The low-glucose list shows lows within 3 hours after a flagged window, and insulin dosed during it."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "The detection runs after the fact. A low after a flagged window does not prove that the sensor caused it. A flag does not change your data."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Choose Device, Reference, and Match within here. Manage sources in Settings > Connectors & Apps."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "The scatter and agreement summaries show differences between paired readings. MARD is the mean absolute relative difference."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Review suggested lows during sleep that can come from pressure on the sensor."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Automatic detection examines the stored glucose of each night with the detection settings. You can also run detection from the Data quality report."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Set the date and status filters here. Select a suggestion to see its glucose. Settings > Data quality controls automatic detection and your typical sleep times."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Accept marks the window as a false low. Loop analysis then removes it from glucose. Other reports and statistics still include these readings."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "A suggestion can be wrong and does not prove that pressure caused a low. Dismiss a real low. Accept and dismiss need write access to glucose data."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "See records that an uploader sent, but that Nocturne could not store."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Nocturne keeps each record that it answered but could not store, because a value in it could not be stored as sent."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Use Newer and Older to move between pages of 25. Export this page saves the records as a JSON file. Clear this page removes only the records on this page."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Most uploaders treat these records as saved. Use the list to find the uploader, the reason and the record, and correct the cause at the source."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "These records are not in your data. A cleared record cannot be recovered, so export it first. Only owners and members who can change tenant settings can open this page."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Choose dates above the report. Settings > Connectors & Apps > Google Health controls step imports and the historical start date."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Choose dates here. Enable heart rate in Settings > Connectors & Apps > Google Health after checking your device's readings reach that account."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "The timeline and daily summaries show heart-rate patterns alongside glucose. The resting estimate is the 10th percentile of the readings in the range."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Choose dates and a source here. Open a night for details. Configure imports in Connectors & Apps > Google Health."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Use category tabs and Search here. Add/edit and bulk deletion require write permission. Settings > Therapy shows schedules. Connectors & Apps manages sources."
+msgstr ""
+
+#: src/lib/help/reports.svelte.ts
+msgid "Open a night from the Sleep report. Choose other dates there. Import settings are in Connectors & Apps > Google Health."
+msgstr ""
+
 #~ msgid "Reconnecting..."
 #~ msgstr ""
 

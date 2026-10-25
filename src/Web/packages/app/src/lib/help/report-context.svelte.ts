@@ -12,9 +12,9 @@ export function reportContext(): Record<
     },
     "/reports/executive-summary": {
       source:
-        "Glucose readings in the selected period are summarised into headline measures and reliability information.",
+        "Glucose readings in the selected period are summarized into headline measures and reliability information.",
       controls:
-        "Choose the date range above the report. Appearance controls glucose units; choose a detailed report to investigate a headline.",
+        "Choose the date range above the report. Appearance controls glucose units. Choose a detailed report to investigate a headline.",
       related: ["/reports/agp", "/reports/glucose-distribution"],
     },
     "/reports/agp": {
@@ -28,7 +28,7 @@ export function reportContext(): Record<
       source:
         "Glucose samples are counted by value interval and grouped by hour for the hourly panel.",
       controls:
-        "Use the report date selector. Appearance changes the displayed glucose units; source and import problems are managed in Connectors & Apps.",
+        "Use the report date selector. Appearance changes the displayed glucose units. Source and import problems are managed in Connectors & Apps.",
       related: ["/reports/hourly-stats", "/reports/data-quality"],
     },
     "/reports/ehba1c": {
@@ -42,7 +42,7 @@ export function reportContext(): Record<
       source:
         "Daily and monthly summaries are built from the stored data types and sources selected on this page.",
       controls:
-        "Use the source and data-type filters. The legend controls metric, colour palette, and focus range. These view filters do not change imported records.",
+        "Use the source and data-type filters. The legend controls metric, color palette, and focus range. These view filters do not change imported records.",
       related: ["/reports/day-in-review", "/reports/data-quality"],
     },
     "/reports/readings": {
@@ -56,14 +56,14 @@ export function reportContext(): Record<
       source:
         "One day's recorded glucose, treatments, and available device context are aligned by timestamp.",
       controls:
-        "Choose the day here. Correct treatment entries in Treatments; manage profile context in Therapy and formatting in Appearance.",
+        "Choose the day here. Correct treatment entries in Treatments. Manage profile context in Therapy and formatting in Appearance.",
       related: ["/reports/treatments", "/reports/readings"],
     },
     "/reports/week-to-week": {
       source:
         "Stored glucose is grouped by weekday across the selected period.",
       controls:
-        "Use the date range above the report to choose the weeks. Appearance changes units; this page does not edit weekday targets or therapy schedules.",
+        "Use the date range above the report to choose the weeks. Appearance changes units. This page does not edit weekday targets or therapy schedules.",
       related: ["/reports/day-in-review", "/reports/agp"],
     },
     "/reports/comparison": {
@@ -89,7 +89,7 @@ export function reportContext(): Record<
     },
     "/reports/insulin-delivery": {
       source:
-        "Recorded basal and bolus delivery is summarised by day and hour.",
+        "Recorded basal and bolus delivery is summarized by day and hour.",
       controls:
         "Choose the report period. Inspect treatment records in Treatments, schedules in Therapy, and delivery imports in Connectors & Apps.",
       related: ["/reports/treatments", "/reports/basal-analysis"],

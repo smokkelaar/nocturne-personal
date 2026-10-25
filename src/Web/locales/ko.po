@@ -5186,7 +5186,6 @@ msgid "Therapy"
 msgstr ""
 
 #: src/lib/components/help/DashboardExplanation.svelte
-#: src/lib/help/reports.svelte.ts
 msgid "Data Quality"
 msgstr ""
 
@@ -6314,7 +6313,6 @@ msgstr ""
 msgid "Range"
 msgstr ""
 
-#: src/lib/help/reports.svelte.ts
 #: src/lib/navigation/report-navigation.svelte.ts
 #: src/routes/(authenticated)/reports/day-in-review/+page.svelte
 #: src/routes/(authenticated)/reports/glucose-distribution/+page.svelte
@@ -10429,9 +10427,8 @@ msgstr ""
 #~ msgid "Close Emergency View"
 #~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "Year Overview"
-msgstr ""
+#~ msgid "Year Overview"
+#~ msgstr ""
 
 #: src/lib/components/reports/year-overview/YearOverviewFilters.svelte
 msgid "Multi-year heatmap of all your data"
@@ -11595,9 +11592,8 @@ msgstr ""
 #~ msgid "Data Quality Categories"
 #~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "Compression Lows"
-msgstr ""
+#~ msgid "Compression Lows"
+#~ msgstr ""
 
 #~ msgid "Falsely low readings from sleeping on sensor"
 #~ msgstr ""
@@ -11778,9 +11774,8 @@ msgstr ""
 #~ msgid "<0/> Glucose Statistics"
 #~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "Glucose Distribution"
-msgstr ""
+#~ msgid "Glucose Distribution"
+#~ msgstr ""
 
 #: src/routes/(authenticated)/reports/executive-summary/+page.svelte
 msgid "10th %ile"
@@ -15651,9 +15646,8 @@ msgstr ""
 msgid "User snooze actions cannot be replayed."
 msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "Hourly Patterns"
-msgstr ""
+#~ msgid "Hourly Patterns"
+#~ msgstr ""
 
 #: ../portal/src/lib/components/SiteFooter.svelte
 #: ../portal/src/lib/components/SiteHeader.svelte
@@ -16488,6 +16482,7 @@ msgstr ""
 #~ msgstr ""
 
 #: src/lib/components/alerts/ReplayPanel.svelte
+#: src/lib/help/reports.svelte.ts
 #: src/lib/navigation/report-navigation.svelte.ts
 msgid "Day in review"
 msgstr ""
@@ -18467,6 +18462,7 @@ msgstr ""
 
 #: src/lib/components/reports/sensor-integrity/ClusterTable.svelte
 #: src/lib/components/reports/sensor-integrity/HypoAfterNoiseLog.svelte
+#: src/lib/help/reports.svelte.ts
 #: src/routes/(authenticated)/reports/data-quality/compression-lows/+page.svelte
 msgid "Confidence"
 msgstr ""
@@ -21341,9 +21337,8 @@ msgstr ""
 #~ msgid "higher in {0} →"
 #~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "CGM Comparison"
-msgstr ""
+#~ msgid "CGM Comparison"
+#~ msgstr ""
 
 #~ msgid "How far apart two sensors run over the same window"
 #~ msgstr ""
@@ -22401,6 +22396,7 @@ msgstr ""
 msgid "Lab result (not included in the calculation)"
 msgstr ""
 
+#: src/lib/help/reports.svelte.ts
 #: src/routes/(authenticated)/reports/ehba1c/+page.svelte
 msgid "Lab results"
 msgstr ""
@@ -23908,9 +23904,8 @@ msgstr ""
 msgid "Your key metrics at a glance"
 msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "Executive Summary"
-msgstr ""
+#~ msgid "Executive Summary"
+#~ msgstr ""
 
 #~ msgid "All your important numbers in one place"
 #~ msgstr ""
@@ -23947,16 +23942,14 @@ msgstr ""
 #~ msgid "Review each day individually"
 #~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "Day in Review"
-msgstr ""
+#~ msgid "Day in Review"
+#~ msgstr ""
 
 #~ msgid "Detailed breakdown of a single day"
 #~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "Week to Week"
-msgstr ""
+#~ msgid "Week to Week"
+#~ msgstr ""
 
 #~ msgid "Compare patterns across days"
 #~ msgstr ""
@@ -24015,23 +24008,20 @@ msgstr ""
 #~ msgid "Basal Rate Analysis"
 #~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "Basal Analysis"
-msgstr ""
+#~ msgid "Basal Analysis"
+#~ msgstr ""
 
 #~ msgid "How your basal rates vary"
 #~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "Insulin Delivery"
-msgstr ""
+#~ msgid "Insulin Delivery"
+#~ msgstr ""
 
 #~ msgid "Basal vs bolus breakdown"
 #~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "Site Change Impact"
-msgstr ""
+#~ msgid "Site Change Impact"
+#~ msgstr ""
 
 #~ msgid "How site changes affect control"
 #~ msgstr ""
@@ -27249,6 +27239,7 @@ msgstr ""
 #: src/lib/components/reports/loop-analysis/DailyProfileBody.svelte
 #: src/lib/components/reports/loop-analysis/EventResponseBody.svelte
 #: src/lib/components/reports/loop-analysis/SlotDays.svelte
+#: src/lib/help/reports.svelte.ts
 msgid "Net loop correction"
 msgstr ""
 
@@ -27336,6 +27327,7 @@ msgid "Each chart shows a value for each hour of the day. Use these charts to fi
 msgstr ""
 
 #: src/lib/coach-marks/copy.svelte.ts
+#: src/lib/help/reports.svelte.ts
 msgid "Gaps"
 msgstr ""
 
@@ -27381,9 +27373,8 @@ msgstr ""
 msgid "Show tip"
 msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "Loop Analysis"
-msgstr ""
+#~ msgid "Loop Analysis"
+#~ msgstr ""
 
 #: src/lib/navigation/report-navigation.svelte.ts
 msgid "What your automated insulin delivery does"
@@ -29353,6 +29344,7 @@ msgid "Isolated events only"
 msgstr ""
 
 #: src/lib/components/reports/loop-analysis/filter-labels.svelte.ts
+#: src/lib/help/reports.svelte.ts
 msgid "Only rises with extra loop insulin"
 msgstr ""
 
@@ -29441,6 +29433,7 @@ msgid "This page shows your glucose, basal, loop corrections, insulin on board (
 msgstr ""
 
 #: src/lib/components/reports/loop-analysis/loop-analysis-pages.svelte.ts
+#: src/lib/help/reports.svelte.ts
 msgid "This page aligns your glucose and insulin on meals, corrections and other events. It shows the time before and after each event."
 msgstr ""
 
@@ -29449,6 +29442,7 @@ msgid "This page compares the glucose predictions of the loop with the glucose r
 msgstr ""
 
 #: src/lib/components/reports/loop-analysis/loop-analysis-pages.svelte.ts
+#: src/lib/help/reports.svelte.ts
 msgid "This page shows how much of the time the loop was closed, why it stopped and how frequently it reached its limits."
 msgstr ""
 
@@ -31228,6 +31222,7 @@ msgstr ""
 msgid "Insulin and carbs"
 msgstr ""
 
+#: src/lib/help/reports.svelte.ts
 #: src/lib/navigation/app-navigation.svelte.ts
 #: src/lib/navigation/report-navigation.svelte.ts
 #: src/routes/(authenticated)/reports/comparison/ComparisonReport.svelte
@@ -33562,14 +33557,17 @@ msgstr ""
 msgid "The big picture"
 msgstr ""
 
+#: src/lib/help/reports.svelte.ts
 #: src/lib/navigation/report-navigation.svelte.ts
 msgid "Executive summary"
 msgstr ""
 
+#: src/lib/help/reports.svelte.ts
 #: src/lib/navigation/report-navigation.svelte.ts
 msgid "Glucose profile (AGP)"
 msgstr ""
 
+#: src/lib/help/reports.svelte.ts
 #: src/lib/navigation/report-navigation.svelte.ts
 #: src/routes/(authenticated)/reports/executive-summary/+page.svelte
 msgid "Glucose distribution"
@@ -33579,18 +33577,22 @@ msgstr ""
 msgid "Patterns & trends"
 msgstr ""
 
+#: src/lib/help/reports.svelte.ts
 #: src/lib/navigation/report-navigation.svelte.ts
 msgid "Year overview"
 msgstr ""
 
+#: src/lib/help/reports.svelte.ts
 #: src/lib/navigation/report-navigation.svelte.ts
 msgid "Day-by-day view"
 msgstr ""
 
+#: src/lib/help/reports.svelte.ts
 #: src/lib/navigation/report-navigation.svelte.ts
 msgid "Week to week"
 msgstr ""
 
+#: src/lib/help/reports.svelte.ts
 #: src/lib/navigation/report-navigation.svelte.ts
 msgid "Hourly patterns"
 msgstr ""
@@ -33621,6 +33623,7 @@ msgstr ""
 msgid "Treatment log"
 msgstr ""
 
+#: src/lib/help/reports.svelte.ts
 #: src/lib/navigation/report-navigation.svelte.ts
 msgid "Basal rate analysis"
 msgstr ""
@@ -33629,10 +33632,12 @@ msgstr ""
 msgid "Basal analysis"
 msgstr ""
 
+#: src/lib/help/reports.svelte.ts
 #: src/lib/navigation/report-navigation.svelte.ts
 msgid "Insulin delivery"
 msgstr ""
 
+#: src/lib/help/reports.svelte.ts
 #: src/lib/navigation/report-navigation.svelte.ts
 msgid "Site change impact"
 msgstr ""
@@ -33641,26 +33646,31 @@ msgstr ""
 msgid "Insulin dosing profile"
 msgstr ""
 
+#: src/lib/help/reports.svelte.ts
 #: src/lib/navigation/report-navigation.svelte.ts
 msgid "Loop analysis"
 msgstr ""
 
+#: src/lib/help/reports.svelte.ts
 #: src/lib/navigation/report-navigation.svelte.ts
 #: src/routes/(authenticated)/reports/data-quality/+page.svelte
 msgid "Compression lows"
 msgstr ""
 
+#: src/lib/help/reports.svelte.ts
 #: src/lib/navigation/report-navigation.svelte.ts
 #: src/routes/(authenticated)/reports/data-quality/+page.svelte
 msgid "Signal integrity"
 msgstr ""
 
+#: src/lib/help/reports.svelte.ts
 #: src/lib/navigation/report-navigation.svelte.ts
 #: src/routes/(authenticated)/reports/data-quality/+page.svelte
 msgid "CGM comparison"
 msgstr ""
 
 #: src/lib/components/shared/SkippedRecordsNote.svelte
+#: src/lib/help/reports.svelte.ts
 #: src/lib/navigation/report-navigation.svelte.ts
 #: src/routes/(authenticated)/reports/data-quality/+page.svelte
 #: src/routes/(authenticated)/reports/data-quality/rejected-uploads/+page.svelte
@@ -38552,75 +38562,59 @@ msgstr ""
 msgid "Reports overview"
 msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "Choose a report to explore glucose, treatments, or activity."
-msgstr ""
+#~ msgid "Choose a report to explore glucose, treatments, or activity."
+#~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "The overview leads to detailed reports using the same stored data."
-msgstr ""
+#~ msgid "The overview leads to detailed reports using the same stored data."
+#~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "Each report needs its own data types. Opening a report does not enable an import."
-msgstr ""
+#~ msgid "Each report needs its own data types. Opening a report does not enable an import."
+#~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "A short view of glucose, time in range, variability, and coverage."
-msgstr ""
+#~ msgid "A short view of glucose, time in range, variability, and coverage."
+#~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "Start here, then open detailed reports to understand patterns behind the summary."
-msgstr ""
+#~ msgid "Start here, then open detailed reports to understand patterns behind the summary."
+#~ msgstr ""
 
 #~ msgid "Indicators describe the selected data; they do not identify the cause of a change."
 #~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "The Ambulatory Glucose Profile folds many days into one typical day."
-msgstr ""
+#~ msgid "The Ambulatory Glucose Profile folds many days into one typical day."
+#~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "The middle line and percentile bands show when glucose is usually higher, lower, or less predictable."
-msgstr ""
+#~ msgid "The middle line and percentile bands show when glucose is usually higher, lower, or less predictable."
+#~ msgstr ""
 
 #~ msgid "Percentiles describe the spread of readings at a time of day. This is not one actual day's trace; uneven coverage can distort it."
 #~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "See how often readings fall in each range and how this changes by hour."
-msgstr ""
+#~ msgid "See how often readings fall in each range and how this changes by hour."
+#~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "The histogram and variability summaries explain the overall time-in-range result."
-msgstr ""
+#~ msgid "The histogram and variability summaries explain the overall time-in-range result."
+#~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "The histogram counts readings. A broad distribution means more variation. Estimated A1c is calculated from glucose, not measured in blood."
-msgstr ""
+#~ msgid "The histogram counts readings. A broad distribution means more variation. Estimated A1c is calculated from glucose, not measured in blood."
+#~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "Compare glucose-based estimated A1c with laboratory HbA1c results."
-msgstr ""
+#~ msgid "Compare glucose-based estimated A1c with laboratory HbA1c results."
+#~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "Saved laboratory results appear in this timeline beside the glucose estimate."
-msgstr ""
+#~ msgid "Saved laboratory results appear in this timeline beside the glucose estimate."
+#~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "Use the lab-result controls here to add the blood-draw date, value, note, or remove an entry. A lab measurement and an estimate are different and may disagree."
-msgstr ""
+#~ msgid "Use the lab-result controls here to add the blood-draw date, value, note, or remove an entry. A lab measurement and an estimate are different and may disagree."
+#~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "A calendar heatmap shows changes across a whole year."
-msgstr ""
+#~ msgid "A calendar heatmap shows changes across a whole year."
+#~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "Day and month summaries help you choose a period for a detailed report."
-msgstr ""
+#~ msgid "Day and month summaries help you choose a period for a detailed report."
+#~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "Use the year and metric filters here. A day without usable data must not be interpreted as a good result."
-msgstr ""
+#~ msgid "Use the year and metric filters here. A day without usable data must not be interpreted as a good result."
+#~ msgstr ""
 
 #: src/lib/help/reports.svelte.ts
 msgid "Explore the recorded glucose trace and its treatment context."
@@ -38633,105 +38627,83 @@ msgstr ""
 #~ msgid "Use the chart's date and display controls. Points are samples; a connecting line is not an extra measurement."
 #~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "Bring one day's glucose and events together on a timeline."
-msgstr ""
+#~ msgid "Bring one day's glucose and events together on a timeline."
+#~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "Inspect the timing behind daily patterns or unusual readings."
-msgstr ""
+#~ msgid "Inspect the timing behind daily patterns or unusual readings."
+#~ msgstr ""
 
 #~ msgid "Select the day here. Events only appear if recorded and imported; nearby events do not prove cause and effect."
 #~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "Compare weekday glucose patterns across weeks."
-msgstr ""
+#~ msgid "Compare weekday glucose patterns across weeks."
+#~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "Weekday averages help you explore differences between regular routines."
-msgstr ""
+#~ msgid "Weekday averages help you explore differences between regular routines."
+#~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "The same weekday can have unequal coverage between weeks. An average can hide short highs and lows."
-msgstr ""
+#~ msgid "The same weekday can have unequal coverage between weeks. An average can hide short highs and lows."
+#~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "Compare two periods with the same report measures."
-msgstr ""
+#~ msgid "Compare two periods with the same report measures."
+#~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "Find differences before exploring individual days."
-msgstr ""
+#~ msgid "Find differences before exploring individual days."
+#~ msgstr ""
 
 #~ msgid "Choose both periods here. Different devices, coverage, or durations can affect the comparison; a difference does not prove a treatment effect."
 #~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "Group readings by hour to find recurring highs, lows, and variation."
-msgstr ""
+#~ msgid "Group readings by hour to find recurring highs, lows, and variation."
+#~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "Hourly range bars help you choose a time to investigate on the glucose chart."
-msgstr ""
+#~ msgid "Hourly range bars help you choose a time to investigate on the glucose chart."
+#~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "Each bar describes readings in that hour across the chosen days. Tight range is part of in range: do not add their percentages together."
-msgstr ""
+#~ msgid "Each bar describes readings in that hour across the chosen days. Tight range is part of in range: do not add their percentages together."
+#~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "Inspect basal delivery together with glucose patterns."
-msgstr ""
+#~ msgid "Inspect basal delivery together with glucose patterns."
+#~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "Delivery and schedule information help you inspect specific periods."
-msgstr ""
+#~ msgid "Delivery and schedule information help you inspect specific periods."
+#~ msgstr ""
 
 #~ msgid "Therapy profiles provide scheduled rates; temporary basal and delivery records describe changes. Missing delivery records or historical profiles limit the analysis."
 #~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "Review basal and bolus totals, their proportions, and timing."
-msgstr ""
+#~ msgid "Review basal and bolus totals, their proportions, and timing."
+#~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "Daily ratios and hourly summaries use stored insulin records."
-msgstr ""
+#~ msgid "Daily ratios and hourly summaries use stored insulin records."
+#~ msgstr ""
 
 #~ msgid "Bolus amounts and basal rates have different units. Basal totals depend on duration and available records; incomplete imports can understate totals."
 #~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "Compare glucose around recorded infusion-site changes."
-msgstr ""
+#~ msgid "Compare glucose around recorded infusion-site changes."
+#~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "Event windows help you inspect recurring patterns around changes."
-msgstr ""
+#~ msgid "Event windows help you inspect recurring patterns around changes."
+#~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "Correctly timed site-change events and glucose before and after are needed. Association does not prove that the change caused a glucose difference."
-msgstr ""
+#~ msgid "Correctly timed site-change events and glucose before and after are needed. Association does not prove that the change caused a glucose difference."
+#~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "Bring glucose patterns, insulin delivery, and therapy schedules together."
-msgstr ""
+#~ msgid "Bring glucose patterns, insulin delivery, and therapy schedules together."
+#~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "The integrated daily profile combines summaries so you can inspect their timing."
-msgstr ""
+#~ msgid "The integrated daily profile combines summaries so you can inspect their timing."
+#~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "Scheduled basal is the therapy schedule, not necessarily insulin actually delivered. Missing profiles or treatments leave panels empty."
-msgstr ""
+#~ msgid "Scheduled basal is the therapy schedule, not necessarily insulin actually delivered. Missing profiles or treatments leave panels empty."
+#~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "Check that recorded data is complete and usable."
-msgstr ""
+#~ msgid "Check that recorded data is complete and usable."
+#~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "Stored glucose timestamps, device identities, and quality or noise information when supplied."
-msgstr ""
+#~ msgid "Stored glucose timestamps, device identities, and quality or noise information when supplied."
+#~ msgstr ""
 
 #~ msgid "Choose the report period. Settings → Data Quality contains detection and maintenance controls. Each detailed quality report has its own filters."
 #~ msgstr ""
@@ -38742,28 +38714,23 @@ msgstr ""
 #~ msgid "A flag needs inspection; it does not prove a reading is wrong. Cleanup affects later reports, so inspect records before confirming."
 #~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "Sensor Integrity"
-msgstr ""
+#~ msgid "Sensor Integrity"
+#~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "Inspect noisy windows and surrounding readings."
-msgstr ""
+#~ msgid "Inspect noisy windows and surrounding readings."
+#~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "Stored readings and available source noise metadata."
-msgstr ""
+#~ msgid "Stored readings and available source noise metadata."
+#~ msgstr ""
 
 #~ msgid "Choose dates here; configure detection in Settings → Data Quality."
 #~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "Flags help you inspect questionable sections of glucose reports."
-msgstr ""
+#~ msgid "Flags help you inspect questionable sections of glucose reports."
+#~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "Not every uploader supplies noise metadata. Noise or a low after a flagged window is not a diagnosis."
-msgstr ""
+#~ msgid "Not every uploader supplies noise metadata. Noise or a low after a flagged window is not a diagnosis."
+#~ msgstr ""
 
 #: src/lib/help/reports.svelte.ts
 msgid "Compare devices that recorded glucose near the same time."
@@ -38776,28 +38743,23 @@ msgstr ""
 #~ msgid "Choose Device, Reference, and Match within here. Manage sources in Settings → Connectors & Apps."
 #~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "The scatter and agreement summaries show differences between paired readings."
-msgstr ""
+#~ msgid "The scatter and agreement summaries show differences between paired readings."
+#~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "Review suggested low-reading windows for a possible quality correction."
-msgstr ""
+#~ msgid "Review suggested low-reading windows for a possible quality correction."
+#~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "Automatic detection examines stored glucose patterns using the detection settings."
-msgstr ""
+#~ msgid "Automatic detection examines stored glucose patterns using the detection settings."
+#~ msgstr ""
 
 #~ msgid "Set date and status filters here. Configure automatic detection and typical sleep times in Settings → Data Quality. Inspect suggestions before accepting or dismissing."
 #~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "Accepted corrections affect subsequent charts and analysis."
-msgstr ""
+#~ msgid "Accepted corrections affect subsequent charts and analysis."
+#~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "A suggestion can be mistaken and does not prove pressure caused a low. Check the preview before changing records."
-msgstr ""
+#~ msgid "A suggestion can be mistaken and does not prove pressure caused a low. Check the preview before changing records."
+#~ msgstr ""
 
 #: src/lib/help/reports.svelte.ts
 msgid "This guide covers Steps: counting steps and viewing your activity over time."
@@ -38829,9 +38791,8 @@ msgstr ""
 #~ msgid "Choose dates here. Enable heart rate in Settings → Connectors & Apps → Google Health after checking your device's readings reach that account."
 #~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "The timeline and daily summaries show heart-rate patterns alongside glucose."
-msgstr ""
+#~ msgid "The timeline and daily summaries show heart-rate patterns alongside glucose."
+#~ msgstr ""
 
 #~ msgid "Values are beats per minute. Sampling and averaging can hide brief changes. Missing readings are not a zero heart rate; this page defines no universal high or low threshold."
 #~ msgstr ""
@@ -40023,50 +39984,42 @@ msgstr ""
 msgid "The hourly panel shows whether the overall distribution hides time-of-day differences."
 msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Choose the time scale"
-msgstr ""
+#~ msgid "Choose the time scale"
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Use the page's timeline controls to compare estimates over time."
-msgstr ""
+#~ msgid "Use the page's timeline controls to compare estimates over time."
+#~ msgstr ""
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Add a lab result"
 msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Enter the blood-draw date, result in the displayed units, and an optional note."
-msgstr ""
+#~ msgid "Enter the blood-draw date, result in the displayed units, and an optional note."
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Compare carefully"
-msgstr ""
+#~ msgid "Compare carefully"
+#~ msgstr ""
 
 #~ msgid "The glucose estimate and laboratory measurement use different inputs; inspect data coverage too."
 #~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Read one cell"
-msgstr ""
+#~ msgid "Read one cell"
+#~ msgstr ""
 
 #~ msgid "Each day cell summarises that day's available data for the chosen metric."
 #~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Change the view"
-msgstr ""
+#~ msgid "Change the view"
+#~ msgstr ""
 
 #~ msgid "Use source/type filters and the legend's metric, colour palette, and focus controls."
 #~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Inspect a period"
-msgstr ""
+#~ msgid "Inspect a period"
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Look for clusters across days, then use a detailed report to examine their cause."
-msgstr ""
+#~ msgid "Look for clusters across days, then use a detailed report to examine their cause."
+#~ msgstr ""
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Select the interval you want to inspect on the chart."
@@ -40176,52 +40129,43 @@ msgstr ""
 msgid "Use the hourly summaries to select a time window for the readings chart."
 msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Check missing time"
-msgstr ""
+#~ msgid "Check missing time"
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Coverage describes where readings are present or absent."
-msgstr ""
+#~ msgid "Coverage describes where readings are present or absent."
+#~ msgstr ""
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Choose the question"
 msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Use sensor integrity for noise, comparison for paired devices, or compression-low review for suggestions."
-msgstr ""
+#~ msgid "Use sensor integrity for noise, comparison for paired devices, or compression-low review for suggestions."
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Review before cleanup"
-msgstr ""
+#~ msgid "Review before cleanup"
+#~ msgstr ""
 
 #~ msgid "Detection is a prompt to inspect records, not proof they should be removed."
 #~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Locate flagged windows"
-msgstr ""
+#~ msgid "Locate flagged windows"
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "The daily overview places noise clusters in time."
-msgstr ""
+#~ msgid "The daily overview places noise clusters in time."
+#~ msgstr ""
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Inspect nearby glucose"
 msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Read the cluster detail and subsequent low-reading log together."
-msgstr ""
+#~ msgid "Read the cluster detail and subsequent low-reading log together."
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Check source metadata"
-msgstr ""
+#~ msgid "Check source metadata"
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "A source that supplies no noise information limits the analysis."
-msgstr ""
+#~ msgid "A source that supplies no noise information limits the analysis."
+#~ msgstr ""
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Choose two devices"
@@ -40249,17 +40193,14 @@ msgstr ""
 msgid "Find a suggestion"
 msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Filter by dates and review status, then open the suggested window."
-msgstr ""
+#~ msgid "Filter by dates and review status, then open the suggested window."
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Inspect the preview"
-msgstr ""
+#~ msgid "Inspect the preview"
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Read the glucose shape and surrounding records before deciding."
-msgstr ""
+#~ msgid "Read the glucose shape and surrounding records before deciding."
+#~ msgstr ""
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Accept or dismiss"
@@ -40490,9 +40431,8 @@ msgstr ""
 msgid "Check the latest upload"
 msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "An old value may describe an earlier battery state, not the current device."
-msgstr ""
+#~ msgid "An old value may describe an earlier battery state, not the current device."
+#~ msgstr ""
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Compare the source"
@@ -41334,9 +41274,8 @@ msgstr ""
 msgid "Verify the imported records"
 msgstr ""
 
-#: src/lib/help/report-context.svelte.ts
-msgid "Stored glucose readings feed the overview's range summary and typical-day preview."
-msgstr ""
+#~ msgid "Stored glucose readings feed the overview's range summary and typical-day preview."
+#~ msgstr ""
 
 #~ msgid "Use the date selector above the overview, then open a report card. Appearance changes display units; Connectors & Apps manages incoming records."
 #~ msgstr ""
@@ -41347,32 +41286,26 @@ msgstr ""
 #~ msgid "Choose the date range above the report. Appearance controls glucose units; choose a detailed report to investigate a headline."
 #~ msgstr ""
 
-#: src/lib/help/report-context.svelte.ts
-msgid "Recorded glucose from several days is grouped by time of day into a median and percentile envelope."
-msgstr ""
+#~ msgid "Recorded glucose from several days is grouped by time of day into a median and percentile envelope."
+#~ msgstr ""
 
-#: src/lib/help/report-context.svelte.ts
-msgid "Select the report period above the page. Appearance changes glucose units. A personal target overlay comes from the imported therapy profile."
-msgstr ""
+#~ msgid "Select the report period above the page. Appearance changes glucose units. A personal target overlay comes from the imported therapy profile."
+#~ msgstr ""
 
-#: src/lib/help/report-context.svelte.ts
-msgid "Glucose samples are counted by value interval and grouped by hour for the hourly panel."
-msgstr ""
+#~ msgid "Glucose samples are counted by value interval and grouped by hour for the hourly panel."
+#~ msgstr ""
 
 #~ msgid "Use the report date selector. Appearance changes the displayed glucose units; source and import problems are managed in Connectors & Apps."
 #~ msgstr ""
 
-#: src/lib/help/report-context.svelte.ts
-msgid "Glucose-based estimates come from stored readings. Laboratory results come from the dated entries you save here."
-msgstr ""
+#~ msgid "Glucose-based estimates come from stored readings. Laboratory results come from the dated entries you save here."
+#~ msgstr ""
 
-#: src/lib/help/report-context.svelte.ts
-msgid "Use the timeline's time-scale controls. The Lab results controls add or remove a dated result with its value and optional note. Appearance changes display units."
-msgstr ""
+#~ msgid "Use the timeline's time-scale controls. The Lab results controls add or remove a dated result with its value and optional note. Appearance changes display units."
+#~ msgstr ""
 
-#: src/lib/help/report-context.svelte.ts
-msgid "Daily and monthly summaries are built from the stored data types and sources selected on this page."
-msgstr ""
+#~ msgid "Daily and monthly summaries are built from the stored data types and sources selected on this page."
+#~ msgstr ""
 
 #~ msgid "Use the source and data-type filters. The legend controls metric, colour palette, and focus range. These view filters do not change imported records."
 #~ msgstr ""
@@ -41384,37 +41317,32 @@ msgstr ""
 #~ msgid "Choose dates and visible chart tracks on this page. Appearance changes units; Connectors & Apps manages the records being displayed."
 #~ msgstr ""
 
-#: src/lib/help/report-context.svelte.ts
-msgid "One day's recorded glucose, treatments, and available device context are aligned by timestamp."
-msgstr ""
+#~ msgid "One day's recorded glucose, treatments, and available device context are aligned by timestamp."
+#~ msgstr ""
 
 #~ msgid "Choose the day here. Correct treatment entries in Treatments; manage profile context in Therapy and formatting in Appearance."
 #~ msgstr ""
 
-#: src/lib/help/report-context.svelte.ts
-msgid "Stored glucose is grouped by weekday across the selected period."
-msgstr ""
+#~ msgid "Stored glucose is grouped by weekday across the selected period."
+#~ msgstr ""
 
 #~ msgid "Use the date range above the report to choose the weeks. Appearance changes units; this page does not edit weekday targets or therapy schedules."
 #~ msgstr ""
 
-#: src/lib/help/report-context.svelte.ts
-msgid "Each side runs the same glucose analysis for its committed date window."
-msgstr ""
+#~ msgid "Each side runs the same glucose analysis for its committed date window."
+#~ msgstr ""
 
 #~ msgid "Choose a preset or set both periods and labels, then click Load. Swap exchanges the loaded periods immediately. Display units are in Appearance."
 #~ msgstr ""
 
-#: src/lib/help/report-context.svelte.ts
-msgid "Glucose samples are grouped into local-hour buckets across the selected days."
-msgstr ""
+#~ msgid "Glucose samples are grouped into local-hour buckets across the selected days."
+#~ msgstr ""
 
 #~ msgid "Choose the date range above the report. The hourly summaries and table describe that selection; Appearance controls glucose units and time format."
 #~ msgstr ""
 
-#: src/lib/help/report-context.svelte.ts
-msgid "Imported basal delivery, temporary basal events, and available therapy schedules provide rate and duration context."
-msgstr ""
+#~ msgid "Imported basal delivery, temporary basal events, and available therapy schedules provide rate and duration context."
+#~ msgstr ""
 
 #~ msgid "Choose the report period. Therapy shows the imported schedule; Connectors & Apps manages its source. This report does not edit pump settings."
 #~ msgstr ""
@@ -41422,21 +41350,17 @@ msgstr ""
 #~ msgid "Recorded basal and bolus delivery is summarised by day and hour."
 #~ msgstr ""
 
-#: src/lib/help/report-context.svelte.ts
-msgid "Choose the report period. Inspect treatment records in Treatments, schedules in Therapy, and delivery imports in Connectors & Apps."
-msgstr ""
+#~ msgid "Choose the report period. Inspect treatment records in Treatments, schedules in Therapy, and delivery imports in Connectors & Apps."
+#~ msgstr ""
 
-#: src/lib/help/report-context.svelte.ts
-msgid "Recorded infusion-site changes define the event windows used to compare surrounding glucose."
-msgstr ""
+#~ msgid "Recorded infusion-site changes define the event windows used to compare surrounding glucose."
+#~ msgstr ""
 
-#: src/lib/help/report-context.svelte.ts
-msgid "Choose the report period. Check site-change event timestamps in Treatments and any associated tracker history in Notifications & Trackers."
-msgstr ""
+#~ msgid "Choose the report period. Check site-change event timestamps in Treatments and any associated tracker history in Notifications & Trackers."
+#~ msgstr ""
 
-#: src/lib/help/report-context.svelte.ts
-msgid "Glucose statistics, recorded insulin delivery, and imported schedules provide the separate panels of the integrated profile."
-msgstr ""
+#~ msgid "Glucose statistics, recorded insulin delivery, and imported schedules provide the separate panels of the integrated profile."
+#~ msgstr ""
 
 #~ msgid "Choose the report period. Therapy provides the profile and scheduled targets; Connectors & Apps manages actual incoming delivery records."
 #~ msgstr ""
@@ -42145,68 +42069,54 @@ msgstr ""
 msgid "Check the available records"
 msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Confirm the selected dates and the availability of glucose, loop status and insulin uploads before comparing panels."
-msgstr ""
+#~ msgid "Confirm the selected dates and the availability of glucose, loop status and insulin uploads before comparing panels."
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Follow the same period"
-msgstr ""
+#~ msgid "Follow the same period"
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Switch between the five analysis pages to compare daily patterns, events, predictions, loop activity and profile context."
-msgstr ""
+#~ msgid "Switch between the five analysis pages to compare daily patterns, events, predictions, loop activity and profile context."
+#~ msgstr ""
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Inspect the detail"
 msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Review individual events and missing-data warnings. Discuss therapy setting changes with your diabetes care team."
-msgstr ""
+#~ msgid "Review individual events and missing-data warnings. Discuss therapy setting changes with your diabetes care team."
+#~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "Explore recorded loop activity alongside glucose, insulin, meals and predictions."
-msgstr ""
+#~ msgid "Explore recorded loop activity alongside glucose, insulin, meals and predictions."
+#~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "Imported glucose, treatment, device-status and prediction records provide the report context. Availability depends on what your loop uploads."
-msgstr ""
+#~ msgid "Imported glucose, treatment, device-status and prediction records provide the report context. Availability depends on what your loop uploads."
+#~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "Choose the report dates and filters, then switch between Daily Profile, Meals and Events, Prediction Accuracy, Loop Health and Settings Evidence."
-msgstr ""
+#~ msgid "Choose the report dates and filters, then switch between Daily Profile, Meals and Events, Prediction Accuracy, Loop Health and Settings Evidence."
+#~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "Compare timing and coverage across the pages, then inspect individual days or events to understand the summaries."
-msgstr ""
+#~ msgid "Compare timing and coverage across the pages, then inspect individual days or events to understand the summaries."
+#~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "Missing uploads and incomplete history limit the results. Comparisons describe observations and do not establish a treatment effect or recommend settings changes."
-msgstr ""
+#~ msgid "Missing uploads and incomplete history limit the results. Comparisons describe observations and do not establish a treatment effect or recommend settings changes."
+#~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "Choose the report period. Settings â†’ Data Quality contains detection and maintenance controls. Each detailed quality report has its own filters."
-msgstr ""
+#~ msgid "Choose the report period. Settings â†’ Data Quality contains detection and maintenance controls. Each detailed quality report has its own filters."
+#~ msgstr ""
 
 #~ msgid "Choose dates here; configure detection in Settings â†’ Data Quality."
 #~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "Choose Device, Reference, and Match within here. Manage sources in Settings â†’ Connectors & Apps."
-msgstr ""
+#~ msgid "Choose Device, Reference, and Match within here. Manage sources in Settings â†’ Connectors & Apps."
+#~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "Set date and status filters here. Configure automatic detection and typical sleep times in Settings â†’ Data Quality. Inspect suggestions before accepting or dismissing."
-msgstr ""
+#~ msgid "Set date and status filters here. Configure automatic detection and typical sleep times in Settings â†’ Data Quality. Inspect suggestions before accepting or dismissing."
+#~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "Choose dates above the report. Settings â†’ Connectors & Apps â†’ Google Health controls step imports and the historical start date."
-msgstr ""
+#~ msgid "Choose dates above the report. Settings â†’ Connectors & Apps â†’ Google Health controls step imports and the historical start date."
+#~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "Choose dates here. Enable heart rate in Settings â†’ Connectors & Apps â†’ Google Health after checking your device's readings reach that account."
-msgstr ""
+#~ msgid "Choose dates here. Enable heart rate in Settings â†’ Connectors & Apps â†’ Google Health after checking your device's readings reach that account."
+#~ msgstr ""
 
 #~ msgid "Choose dates and the view here; open a night for details. Configure imports in Connectors & Apps â†’ Google Health."
 #~ msgstr ""
@@ -42910,77 +42820,60 @@ msgstr ""
 msgid "Supported activity spans from your source. Availability depends on the connector."
 msgstr ""
 
-#: src/lib/help/report-context.svelte.ts
-msgid "Use the date selector above the overview, then open a report card. Appearance changes display units. Connectors & Apps manages incoming records."
-msgstr ""
+#~ msgid "Use the date selector above the overview, then open a report card. Appearance changes display units. Connectors & Apps manages incoming records."
+#~ msgstr ""
 
-#: src/lib/help/report-context.svelte.ts
-msgid "Glucose readings in the selected period are summarized into headline measures and reliability information."
-msgstr ""
+#~ msgid "Glucose readings in the selected period are summarized into headline measures and reliability information."
+#~ msgstr ""
 
-#: src/lib/help/report-context.svelte.ts
-msgid "Choose the date range above the report. Appearance controls glucose units. Choose a detailed report to investigate a headline."
-msgstr ""
+#~ msgid "Choose the date range above the report. Appearance controls glucose units. Choose a detailed report to investigate a headline."
+#~ msgstr ""
 
-#: src/lib/help/report-context.svelte.ts
-msgid "Use the report date selector. Appearance changes the displayed glucose units. Source and import problems are managed in Connectors & Apps."
-msgstr ""
+#~ msgid "Use the report date selector. Appearance changes the displayed glucose units. Source and import problems are managed in Connectors & Apps."
+#~ msgstr ""
 
-#: src/lib/help/report-context.svelte.ts
-msgid "Use the source and data-type filters. The legend controls metric, color palette, and focus range. These view filters do not change imported records."
-msgstr ""
+#~ msgid "Use the source and data-type filters. The legend controls metric, color palette, and focus range. These view filters do not change imported records."
+#~ msgstr ""
 
-#: src/lib/help/report-context.svelte.ts
-msgid "Choose dates and visible chart tracks on this page. Appearance changes units. Connectors & Apps manages the records being displayed."
-msgstr ""
+#~ msgid "Choose dates and visible chart tracks on this page. Appearance changes units. Connectors & Apps manages the records being displayed."
+#~ msgstr ""
 
-#: src/lib/help/report-context.svelte.ts
-msgid "Choose the day here. Correct treatment entries in Treatments. Manage profile context in Therapy and formatting in Appearance."
-msgstr ""
+#~ msgid "Choose the day here. Correct treatment entries in Treatments. Manage profile context in Therapy and formatting in Appearance."
+#~ msgstr ""
 
-#: src/lib/help/report-context.svelte.ts
-msgid "Use the date range above the report to choose the weeks. Appearance changes units. This page does not edit weekday targets or therapy schedules."
-msgstr ""
+#~ msgid "Use the date range above the report to choose the weeks. Appearance changes units. This page does not edit weekday targets or therapy schedules."
+#~ msgstr ""
 
-#: src/lib/help/report-context.svelte.ts
-msgid "Choose a preset or set both periods and labels, then select Load. Swap exchanges the loaded periods immediately. Display units are in Appearance."
-msgstr ""
+#~ msgid "Choose a preset or set both periods and labels, then select Load. Swap exchanges the loaded periods immediately. Display units are in Appearance."
+#~ msgstr ""
 
-#: src/lib/help/report-context.svelte.ts
-msgid "Choose the date range above the report. The hourly summaries and table describe that selection. Appearance controls glucose units and time format."
-msgstr ""
+#~ msgid "Choose the date range above the report. The hourly summaries and table describe that selection. Appearance controls glucose units and time format."
+#~ msgstr ""
 
-#: src/lib/help/report-context.svelte.ts
-msgid "Choose the report period. Therapy shows the imported schedule. Connectors & Apps manages its source. This report does not edit pump settings."
-msgstr ""
+#~ msgid "Choose the report period. Therapy shows the imported schedule. Connectors & Apps manages its source. This report does not edit pump settings."
+#~ msgstr ""
 
-#: src/lib/help/report-context.svelte.ts
-msgid "Recorded basal and bolus delivery is summarized by day and hour."
-msgstr ""
+#~ msgid "Recorded basal and bolus delivery is summarized by day and hour."
+#~ msgstr ""
 
-#: src/lib/help/report-context.svelte.ts
-msgid "Choose the report period. Therapy provides the profile and scheduled targets. Connectors & Apps manages actual incoming delivery records."
-msgstr ""
+#~ msgid "Choose the report period. Therapy provides the profile and scheduled targets. Connectors & Apps manages actual incoming delivery records."
+#~ msgstr ""
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Line points are glucose samples. Recorded treatments provide timing context."
 msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "The overview summarizes the selected period. Detailed reports may have their own filters."
-msgstr ""
+#~ msgid "The overview summarizes the selected period. Detailed reports may have their own filters."
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "The glucose estimate and laboratory measurement use different inputs. Inspect data coverage too."
-msgstr ""
+#~ msgid "The glucose estimate and laboratory measurement use different inputs. Inspect data coverage too."
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Each day cell summarizes that day's available data for the chosen metric."
-msgstr ""
+#~ msgid "Each day cell summarizes that day's available data for the chosen metric."
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Use source/type filters and the legend's metric, color palette, and focus controls."
-msgstr ""
+#~ msgid "Use source/type filters and the legend's metric, color palette, and focus controls."
+#~ msgstr ""
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "The line connects recorded points. A gap does not contain additional measurements."
@@ -42998,9 +42891,8 @@ msgstr ""
 msgid "The colored parts show how those readings are distributed between ranges."
 msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Detection is a prompt to inspect records, not proof they need removal."
-msgstr ""
+#~ msgid "Detection is a prompt to inspect records, not proof they need removal."
+#~ msgstr ""
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Device is compared with your selected Reference. Both need readings in the chosen period."
@@ -43010,9 +42902,8 @@ msgstr ""
 msgid "Points near equal values indicate closer agreement. Only paired samples enter this view."
 msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Accept applies the correction. Dismiss rejects the suggestion. Detection settings are separate."
-msgstr ""
+#~ msgid "Accept applies the correction. Dismiss rejects the suggestion. Detection settings are separate."
+#~ msgstr ""
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "A day total summarizes imported step-count records for that date."
@@ -43166,45 +43057,36 @@ msgstr ""
 msgid "Removing a link stops that authorization. It does not remove messages already sent."
 msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "Indicators describe the selected data. They do not identify the cause of a change."
-msgstr ""
+#~ msgid "Indicators describe the selected data. They do not identify the cause of a change."
+#~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "Percentiles describe the spread of readings at a time of day. This is not one actual day's trace. Uneven coverage can distort it."
-msgstr ""
+#~ msgid "Percentiles describe the spread of readings at a time of day. This is not one actual day's trace. Uneven coverage can distort it."
+#~ msgstr ""
 
 #: src/lib/help/reports.svelte.ts
 msgid "Use the chart's date and display controls. Points are samples. A connecting line is not an extra measurement."
 msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "Select the day here. Events only appear if recorded and imported. Nearby events do not prove cause and effect."
-msgstr ""
+#~ msgid "Select the day here. Events only appear if recorded and imported. Nearby events do not prove cause and effect."
+#~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "Choose both periods here. Different devices, coverage, or durations can affect the comparison. A difference does not prove a treatment effect."
-msgstr ""
+#~ msgid "Choose both periods here. Different devices, coverage, or durations can affect the comparison. A difference does not prove a treatment effect."
+#~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "Therapy profiles provide scheduled rates. Temporary basal and delivery records describe changes. Missing delivery records or historical profiles limit the analysis."
-msgstr ""
+#~ msgid "Therapy profiles provide scheduled rates. Temporary basal and delivery records describe changes. Missing delivery records or historical profiles limit the analysis."
+#~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "Bolus amounts and basal rates have different units. Basal totals depend on duration and available records. Incomplete imports can understate totals."
-msgstr ""
+#~ msgid "Bolus amounts and basal rates have different units. Basal totals depend on duration and available records. Incomplete imports can understate totals."
+#~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "Coverage and reliability help you interpret reports and recognize import or sensor problems."
-msgstr ""
+#~ msgid "Coverage and reliability help you interpret reports and recognize import or sensor problems."
+#~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "A flag needs inspection. It does not prove a reading is wrong. Cleanup affects later reports, so inspect records before confirming."
-msgstr ""
+#~ msgid "A flag needs inspection. It does not prove a reading is wrong. Cleanup affects later reports, so inspect records before confirming."
+#~ msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "Choose dates here. Configure detection in Settings â†’ Data Quality."
-msgstr ""
+#~ msgid "Choose dates here. Configure detection in Settings â†’ Data Quality."
+#~ msgstr ""
 
 #: src/lib/help/reports.svelte.ts
 msgid "Unpaired readings are excluded. A wider tolerance allows paired readings farther apart in time. Your chosen reference is not guaranteed ground truth."
@@ -43214,25 +43096,22 @@ msgstr ""
 msgid "Values are beats per minute. Sampling and averaging can hide brief changes. Missing readings are not a zero heart rate. This page defines no universal high or low threshold."
 msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "Choose dates and the view here. Open a night for details. Configure imports in Connectors & Apps â†’ Google Health."
-msgstr ""
+#~ msgid "Choose dates and the view here. Open a night for details. Configure imports in Connectors & Apps â†’ Google Health."
+#~ msgstr ""
 
 #: src/lib/help/reports.svelte.ts
 msgid "Uploaded, imported, and manually saved insulin, carb, notes, and device events."
 msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "Use category tabs and Search here. Add/edit and bulk deletion require write permission. Settings â†’ Therapy shows schedules. Connectors & Apps manages sources."
-msgstr ""
+#~ msgid "Use category tabs and Search here. Add/edit and bulk deletion require write permission. Settings â†’ Therapy shows schedules. Connectors & Apps manages sources."
+#~ msgstr ""
 
 #: src/lib/help/reports.svelte.ts
 msgid "Events appear on glucose timelines and feed insulin and carb analysis."
 msgstr ""
 
-#: src/lib/help/reports.svelte.ts
-msgid "Open a night from the Sleep report. Choose other dates there. Import settings are in Connectors & Apps â†’ Google Health."
-msgstr ""
+#~ msgid "Open a night from the Sleep report. Choose other dates there. Import settings are in Connectors & Apps â†’ Google Health."
+#~ msgstr ""
 
 #: src/lib/help/settings.svelte.ts
 msgid "Recovery codes and authentication secrets grant account access. Save recovery information privately. It is not the patient's clinical record."

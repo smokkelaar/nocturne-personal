@@ -20,6 +20,9 @@ public sealed class GoogleHealthPlatformOptions
     /// </summary>
     public string RedirectUri { get; set; } = "";
 
+    public string Fingerprint => Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(
+        System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(new[] { ClientId, ClientSecret, RedirectUri })));
+
     public bool IsConfigured =>
         IsValidClientId(ClientId) &&
         !string.IsNullOrWhiteSpace(ClientSecret) &&

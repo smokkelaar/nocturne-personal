@@ -157,12 +157,12 @@ public sealed class GoogleHealthGrantHoldersTests(GoogleHealthPostgresFixture fi
         var accessor = new Mock<ITenantAccessor>();
         accessor.SetupGet(value => value.IsResolved).Returns(true);
         accessor.SetupGet(value => value.TenantId).Returns(tenant);
-        var platform = Options.Create(new GoogleHealthPlatformOptions
+        var platform = new ConfigurationGoogleHealthPlatformSource(Options.Create(new GoogleHealthPlatformOptions
         {
             ClientId = "synthetic.apps.googleusercontent.com",
             ClientSecret = "synthetic-secret",
             RedirectUri = "https://example.test" + GoogleHealthPlatformOptions.CallbackPath
-        });
+        }));
         var http = new HttpClient(new RevokeRecorder(revoked));
         disposables.Add(http);
         var oauth = new GoogleHealthAuthTokenProvider(http, new ConnectorTokenCache(),

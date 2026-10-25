@@ -178,6 +178,7 @@ public class V4WriteScopeGatingTests
             ["DemoAdminController"] = NotDataCategory.PlatformAdminRole,
             ["OidcProviderAdminController"] = NotDataCategory.PlatformAdminRole,
             ["PlatformSettingsController"] = NotDataCategory.PlatformAdminRole,
+            ["GoogleHealthAdminController"] = NotDataCategory.PlatformAdminRole,
             ["SubjectAdminController"] = NotDataCategory.PlatformAdminRole,
             ["TenantController"] = NotDataCategory.PlatformAdminRole,
             ["TenantDirectGrantController"] = NotDataCategory.PlatformAdminRole,

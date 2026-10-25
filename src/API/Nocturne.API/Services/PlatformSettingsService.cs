@@ -156,7 +156,8 @@ public class PlatformSettingsService
         if (!_encryption.IsConfigured)
             return [];
 
-        var entities = await db.PlatformSettings.AsNoTracking().ToListAsync();
+        var entities = await db.PlatformSettings.AsNoTracking()
+            .Where(entity => entity.Category != "google-health").ToListAsync();
         var results = new List<PlatformCredentials>();
         foreach (var entity in entities)
         {

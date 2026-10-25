@@ -337,7 +337,7 @@
           <Tabs.Content value="targets" class="mt-0 space-y-6">
             <div class="flex items-center gap-3 mb-4">
               <div
-                class="flex h-10 w-10 items-center justify-center rounded-lg bg-glucose-in-range/10"
+                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-glucose-in-range/10"
               >
                 <Target class="h-5 w-5 text-glucose-in-range" />
               </div>
@@ -556,10 +556,10 @@
   values: TimeValue[];
 })}
   <div class="space-y-4">
-    <div class="flex items-center justify-between">
+    <div class="flex flex-wrap items-center justify-between gap-3">
       <div class="flex items-center gap-3">
         <div
-          class="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10"
+          class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10"
         >
           <Icon class="h-5 w-5 text-primary" />
         </div>

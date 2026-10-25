@@ -406,6 +406,7 @@
             y="displayValue"
             {yDomain}
             clip
+            padding={{ top: 4, right: 16, bottom: 20, left: 20 }}
             series={[
               {
                 key: "displayValue",
@@ -521,7 +522,7 @@
         </ul>
       {/if}
 
-      <div class="grid gap-3 sm:grid-cols-3 print:hidden">
+      <div class="grid gap-3 @xl:grid-cols-3 print:hidden">
         <div class="space-y-1.5">
           <Label for="lab-date">Date of blood draw</Label>
           <Input id="lab-date" type="date" bind:value={newLabDate} />

@@ -76,6 +76,16 @@ public class ApsSnapshot : V4RecordBase
     /// <summary>Whether the algorithm's suggestion was enacted (confirmed by pump)</summary>
     public bool Enacted { get; set; }
 
+    /// <summary>
+    /// Whether Loop was dosing (closed loop) at this cycle, from the <c>loopSettings.dosingEnabled</c>
+    /// of the Loop settings in force; null for other systems and before any Loop settings were stored.
+    /// </summary>
+    /// <remarks>
+    /// Loop reports <see cref="Enacted"/> in open loop too, so for Loop it alone cannot tell the two
+    /// apart. Stamped by <c>IApsSnapshotRepository.StampLoopClosedLoopAsync</c>, never by the uploader.
+    /// </remarks>
+    public bool? ClosedLoop { get; set; }
+
     /// <summary>Enacted temp basal rate in U/hr</summary>
     public double? EnactedRate { get; set; }
 

@@ -244,6 +244,7 @@ msgstr "UrgentLow"
 msgid "UrgentHigh"
 msgstr "UrgentHigh"
 
+#: src/lib/components/alerts/alert-labels.svelte.ts
 #: src/lib/components/calendar/CalendarHeader.svelte
 #: src/lib/components/dashboard/glucose-chart/ChartLegend.svelte
 #: src/lib/components/dashboard/glucose-chart/dialogs/GlucoseInspectionDialog.svelte
@@ -265,6 +266,7 @@ msgstr "UrgentHigh"
 msgid "Low"
 msgstr "Low"
 
+#: src/lib/components/alerts/alert-labels.svelte.ts
 #: src/lib/components/calendar/CalendarHeader.svelte
 #: src/lib/components/dashboard/glucose-chart/ChartLegend.svelte
 #: src/lib/components/dashboard/glucose-chart/dialogs/GlucoseInspectionDialog.svelte
@@ -862,6 +864,7 @@ msgstr "Create"
 #: src/lib/components/admin/IntegrationsTabContent.svelte
 #: src/lib/components/admin/RoleDialog.svelte
 #: src/lib/components/admin/SubjectEditDialog.svelte
+#: src/lib/components/clock-builder/ClockBuilderHeader.svelte
 #: src/lib/components/meals/MealBolusDialog.svelte
 #: src/lib/components/schedule/TargetRangeCard.svelte
 #: src/lib/components/settings/GlucoseSourceDefaultsDialog.svelte
@@ -1100,6 +1103,7 @@ msgid "Duration"
 msgstr "Duration"
 
 #: src/lib/components/alerts/AlertHistoryCard.svelte
+#: src/lib/components/alerts/alert-labels.svelte.ts
 #: src/routes/(authenticated)/alerts/+page.svelte
 #: src/routes/(authenticated)/alerts/history/+page.svelte
 msgid "Acknowledged"
@@ -1187,37 +1191,30 @@ msgstr "{0} reading{1}"
 msgid "Default"
 msgstr "Default"
 
-#: src/lib/components/alerts/RuleBuilderLeafEditor.svelte
 #: src/lib/components/settings/alarm-profile/DayOfWeekPicker.svelte
 msgid "Sun"
 msgstr "Sun"
 
-#: src/lib/components/alerts/RuleBuilderLeafEditor.svelte
 #: src/lib/components/settings/alarm-profile/DayOfWeekPicker.svelte
 msgid "Mon"
 msgstr "Mon"
 
-#: src/lib/components/alerts/RuleBuilderLeafEditor.svelte
 #: src/lib/components/settings/alarm-profile/DayOfWeekPicker.svelte
 msgid "Tue"
 msgstr "Tue"
 
-#: src/lib/components/alerts/RuleBuilderLeafEditor.svelte
 #: src/lib/components/settings/alarm-profile/DayOfWeekPicker.svelte
 msgid "Wed"
 msgstr "Wed"
 
-#: src/lib/components/alerts/RuleBuilderLeafEditor.svelte
 #: src/lib/components/settings/alarm-profile/DayOfWeekPicker.svelte
 msgid "Thu"
 msgstr "Thu"
 
-#: src/lib/components/alerts/RuleBuilderLeafEditor.svelte
 #: src/lib/components/settings/alarm-profile/DayOfWeekPicker.svelte
 msgid "Fri"
 msgstr "Fri"
 
-#: src/lib/components/alerts/RuleBuilderLeafEditor.svelte
 #: src/lib/components/settings/alarm-profile/DayOfWeekPicker.svelte
 msgid "Sat"
 msgstr "Sat"
@@ -1757,7 +1754,7 @@ msgstr "Today"
 msgid "TIR"
 msgstr "TIR"
 
-#: src/lib/components/alerts/RuleBuilderLeafEditor.svelte
+#: src/lib/components/alerts/alert-labels.svelte.ts
 #: src/lib/components/calendar/CalendarHeader.svelte
 #: src/lib/components/dashboard/glucose-chart/ChartLegend.svelte
 #: src/lib/components/dashboard/glucose-chart/ChartTooltip.svelte
@@ -1915,6 +1912,7 @@ msgid "Redo (Ctrl+Shift+Z)"
 msgstr "Redo (Ctrl+Shift+Z)"
 
 #: ../cms/src/editor/PreviewPane.svelte
+#: src/lib/components/clock-builder/ClockBuilderHeader.svelte
 #: src/lib/components/clock-builder/ClockBuilderHeader.svelte
 #: src/lib/components/settings/CustomSoundUpload.svelte
 msgid "Preview"
@@ -2157,8 +2155,8 @@ msgstr "On"
 
 #: ../portal/src/lib/components/features/AlarmsDemo.svelte
 #: src/lib/components/alerts/DndPanel.svelte
-#: src/lib/components/alerts/RuleBuilderLeafEditor.svelte
 #: src/lib/components/alerts/RuleSidebar.svelte
+#: src/lib/components/alerts/alert-labels.svelte.ts
 #: src/lib/components/command-palette/CommandPalette.svelte
 #: src/lib/components/dashboard/PredictionSettings.svelte
 #: src/routes/(authenticated)/settings/appearance/+page.svelte
@@ -3909,7 +3907,7 @@ msgstr "Enter note..."
 #~ msgid "PumpBatteryChange"
 #~ msgstr "PumpBatteryChange"
 
-#: src/lib/components/alerts/RuleBuilderLeafEditor.svelte
+#: src/lib/components/alerts/alert-labels.svelte.ts
 #: src/lib/components/dashboard/glucose-chart/ChartLegend.svelte
 #: src/lib/components/dashboard/glucose-chart/ChartLegend.svelte
 #: src/lib/components/dashboard/glucose-chart/ChartLegend.svelte
@@ -3920,7 +3918,7 @@ msgstr "Enter note..."
 msgid "Automatic"
 msgstr "Automatic"
 
-#: src/lib/components/alerts/RuleBuilderLeafEditor.svelte
+#: src/lib/components/alerts/alert-labels.svelte.ts
 #: src/lib/components/dashboard/glucose-chart/dialogs/DeliveryInspectionDialog.svelte
 #: src/lib/components/meals/MealBolusDialog.svelte
 #: src/lib/components/reports/InsulinDonutChart.svelte
@@ -3929,11 +3927,11 @@ msgstr "Automatic"
 msgid "Manual"
 msgstr "Manual"
 
-#: src/lib/components/alerts/RuleBuilderLeafEditor.svelte
+#: src/lib/components/alerts/alert-labels.svelte.ts
 msgid "Boost"
 msgstr "Boost"
 
-#: src/lib/components/alerts/RuleBuilderLeafEditor.svelte
+#: src/lib/components/alerts/alert-labels.svelte.ts
 #: src/lib/components/dashboard/glucose-chart/ChartTooltip.svelte
 #: src/lib/constants/scope-labels.svelte.ts
 #: src/lib/help/reports.svelte.ts
@@ -3943,15 +3941,15 @@ msgstr "Boost"
 msgid "Sleep"
 msgstr "Sleep"
 
-#: src/lib/components/alerts/RuleBuilderLeafEditor.svelte
-#: src/lib/components/alerts/RuleBuilderLeafEditor.svelte
+#: src/lib/components/alerts/alert-labels.svelte.ts
+#: src/lib/components/alerts/alert-labels.svelte.ts
 #: src/lib/components/reports/loop-analysis/event-labels.svelte.ts
 #: src/lib/components/reports/loop-analysis/filter-labels.svelte.ts
 #: src/lib/help/dashboard-examples.svelte.ts
 msgid "Exercise"
 msgstr "Exercise"
 
-#: src/lib/components/alerts/RuleBuilderLeafEditor.svelte
+#: src/lib/components/alerts/alert-labels.svelte.ts
 #: src/lib/components/dashboard/glucose-chart/ChartTooltip.svelte
 #: src/lib/components/dashboard/glucose-chart/ChartTooltip.svelte
 #: src/lib/components/dashboard/glucose-chart/dialogs/DeliveryInspectionDialog.svelte
@@ -3959,7 +3957,7 @@ msgstr "Exercise"
 msgid "Suspended"
 msgstr "Suspended"
 
-#: src/lib/components/alerts/RuleBuilderLeafEditor.svelte
+#: src/lib/components/alerts/alert-labels.svelte.ts
 msgid "Limited"
 msgstr "Limited"
 
@@ -9228,7 +9226,7 @@ msgstr "Percent"
 #~ msgid "Pump Mode"
 #~ msgstr "Pump Mode"
 
-#: src/lib/components/alerts/RuleBuilderLeafEditor.svelte
+#: src/lib/components/alerts/alert-labels.svelte.ts
 #: src/lib/components/dashboard/glucose-chart/ChartTooltip.svelte
 #: src/lib/components/dashboard/glucose-chart/dialogs/GlucoseInspectionDialog.svelte
 #: src/lib/components/dashboard/glucose-chart/tracks/SwimLaneTrack.svelte
@@ -13991,8 +13989,9 @@ msgstr "<0/> Replay"
 msgid "<0/> Add condition"
 msgstr "<0/> Add condition"
 
-#~ msgid "Flat"
-#~ msgstr "Flat"
+#: src/lib/components/alerts/alert-labels.svelte.ts
+msgid "Flat"
+msgstr "Flat"
 
 #: src/lib/components/alerts/RuleBuilderLeafEditor.svelte
 #: src/lib/help/reading-guides.svelte.ts
@@ -14502,28 +14501,28 @@ msgstr "Drag to reorder"
 #~ msgid "No events yet — playhead at start of window."
 #~ msgstr "No events yet — playhead at start of window."
 
-#: src/lib/components/alerts/RuleBuilderLeafEditor.svelte
+#: src/lib/components/alerts/alert-labels.svelte.ts
 msgid "Ease off"
 msgstr "Ease off"
 
-#: src/lib/components/alerts/RuleBuilderLeafEditor.svelte
+#: src/lib/components/alerts/alert-labels.svelte.ts
 msgid "Pump connectivity"
 msgstr "Pump connectivity"
 
-#: src/lib/components/alerts/RuleBuilderLeafEditor.svelte
+#: src/lib/components/alerts/alert-labels.svelte.ts
 #: src/lib/components/reports/loop-analysis/filter-labels.svelte.ts
 msgid "Illness"
 msgstr "Illness"
 
-#: src/lib/components/alerts/RuleBuilderLeafEditor.svelte
+#: src/lib/components/alerts/alert-labels.svelte.ts
 msgid "Travel"
 msgstr "Travel"
 
-#: src/lib/components/alerts/RuleBuilderLeafEditor.svelte
+#: src/lib/components/alerts/alert-labels.svelte.ts
 msgid "Data exclusion"
 msgstr "Data exclusion"
 
-#: src/lib/components/alerts/RuleBuilderLeafEditor.svelte
+#: src/lib/components/alerts/alert-labels.svelte.ts
 #: src/lib/components/reports/loop-analysis/event-labels.svelte.ts
 msgid "Temporary target"
 msgstr "Temporary target"
@@ -15528,7 +15527,7 @@ msgstr "Loading"
 msgid "Day in review"
 msgstr "Day in review"
 
-#: src/lib/components/alerts/RuleBuilderLeafEditor.svelte
+#: src/lib/components/alerts/alert-labels.svelte.ts
 msgid "Liberty"
 msgstr "Liberty"
 
@@ -21369,6 +21368,7 @@ msgstr "Type 1 diabetes target"
 msgid "Elevated"
 msgstr "Elevated"
 
+#: src/lib/components/alerts/alert-labels.svelte.ts
 #: src/lib/components/calendar/CalendarHeader.svelte
 #: src/lib/components/dashboard/glucose-chart/ChartLegend.svelte
 #: src/lib/components/help/HelpDashboard.svelte
@@ -23375,6 +23375,7 @@ msgstr "While awake"
 msgid "No lows lasting 15 minutes or more during this session"
 msgstr "No lows lasting 15 minutes or more during this session"
 
+#: src/lib/components/alerts/alert-labels.svelte.ts
 #: src/lib/components/calendar/CalendarHeader.svelte
 #: src/lib/components/dashboard/glucose-chart/ChartLegend.svelte
 #: src/lib/components/help/HelpDashboard.svelte
@@ -23585,6 +23586,7 @@ msgstr "The same figures as a table, with the typical glucose in each hour. The 
 msgid "Hour"
 msgstr "Hour"
 
+#: src/lib/components/alerts/alert-labels.svelte.ts
 #: src/lib/components/calendar/CalendarHeader.svelte
 #: src/lib/components/dashboard/glucose-chart/ChartLegend.svelte
 #: src/lib/components/dashboard/glucose-chart/dialogs/GlucoseInspectionDialog.svelte
@@ -26597,6 +26599,7 @@ msgstr "Profile: {0}."
 msgid "Time not used: {0}."
 msgstr "Time not used: {0}."
 
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
 #: src/lib/components/reports/loop-analysis/AggregateReadout.svelte
 #: src/lib/components/reports/loop-analysis/DailyProfileBody.svelte
 #: src/lib/components/reports/loop-analysis/LoopHealthBody.svelte
@@ -27565,6 +27568,7 @@ msgstr "Max IOB"
 msgid "This figure shows only when the loop reports that max IOB limited a dose. The loop did not report this in this range."
 msgstr "This figure shows only when the loop reports that max IOB limited a dose. The loop did not report this in this range."
 
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
 #: src/lib/components/reports/loop-analysis/LoopHealthBody.svelte
 msgid "# minute"
 msgid_plural "# minutes"
@@ -28517,6 +28521,8 @@ msgstr "This page shows how much of the time the loop was closed, why it stopped
 msgid "This page compares your profile settings with observations from your data. Speak to your diabetes care team before you change a setting."
 msgstr "This page compares your profile settings with observations from your data. Speak to your diabetes care team before you change a setting."
 
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
 #: src/lib/components/reports/loop-analysis/settings-evidence-labels.svelte.ts
 msgid "# hour"
 msgid_plural "# hours"
@@ -30479,6 +30485,8 @@ msgid "Loop not enacting"
 msgstr "Loop not enacting"
 
 #: src/lib/components/alerts/factText.svelte.ts
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
 msgid "Pump suspended"
 msgstr "Pump suspended"
 
@@ -30487,6 +30495,8 @@ msgid "Phone battery"
 msgstr "Phone battery"
 
 #: src/lib/components/alerts/factText.svelte.ts
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
 msgid "Override active"
 msgstr "Override active"
 
@@ -30513,6 +30523,7 @@ msgstr "Time since last bolus"
 msgid "Day of week"
 msgstr "Day of week"
 
+#: src/lib/components/alerts/alert-labels.svelte.ts
 #: src/lib/components/alerts/factText.svelte.ts
 #: src/lib/components/dashboard/glucose-chart/ChartTooltip.svelte
 #: src/lib/components/dashboard/glucose-chart/dialogs/GlucoseInspectionDialog.svelte
@@ -30520,6 +30531,7 @@ msgid "Pump mode"
 msgstr "Pump mode"
 
 #: src/lib/components/alerts/factText.svelte.ts
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
 msgid "State active"
 msgstr "State active"
 
@@ -34084,6 +34096,7 @@ msgstr "Correction factor"
 msgid "Insufficient data"
 msgstr "Insufficient data"
 
+#: src/lib/components/alerts/alert-labels.svelte.ts
 #: src/lib/components/reports/TIRStackedChart.svelte
 #: src/routes/(authenticated)/reports/glucose-distribution/+page.svelte
 msgid "Tight range"
@@ -41450,3 +41463,424 @@ msgstr "Use category tabs and Search here. Add/edit and bulk deletion require wr
 #: src/lib/help/reports.svelte.ts
 msgid "Open a night from the Sleep report; choose other dates there. Import settings are in Connectors & Apps â†’ Google Health."
 msgstr "Open a night from the Sleep report; choose other dates there. Import settings are in Connectors & Apps â†’ Google Health."
+
+#: src/lib/components/members/MemberCard.svelte
+msgid "You cannot change a role that gives more access than you have."
+msgstr "You cannot change a role that gives more access than you have."
+
+#. 0: joined; 1: part
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "{0} and {1}"
+msgstr "{0} and {1}"
+
+#. 0: joined; 1: part
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "{0} or {1}"
+msgstr "{0} or {1}"
+
+#. 0: summarizeCondition(child, ctx)
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Not ({0})"
+msgstr "Not ({0})"
+
+#. 0: bg(p.value ?? 0); 1: bgLabel()
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Glucose below {0} {1}"
+msgstr "Glucose below {0} {1}"
+
+#. 0: bg(p.value ?? 0); 1: bgLabel()
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Glucose above {0} {1}"
+msgstr "Glucose above {0} {1}"
+
+#. 0: bg(p.rate ?? 0); 1: bgLabel()
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "{0} {1} per minute"
+msgstr "{0} {1} per minute"
+
+#. 0: rate
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Glucose falling at least {0}"
+msgstr "Glucose falling at least {0}"
+
+#. 0: rate
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Glucose rising at least {0}"
+msgstr "Glucose rising at least {0}"
+
+#. 0: rate
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Glucose changing at least {0}"
+msgstr "Glucose changing at least {0}"
+
+#. 0: opSymbol(p.operator); 1: formatMinutes(p.value ?? 0)
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Sensor data age {0} {1}"
+msgstr "Sensor data age {0} {1}"
+
+#. 0: opSymbol(p.operator); 1: bg(p.value ?? 0); 2: bgLabel(); 3: formatMinutes(p.within_minutes ?? 0)
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Predicted glucose {0} {1} {2} in {3}"
+msgstr "Predicted glucose {0} {1} {2} in {3}"
+
+#. 0: p.from; 1: p.to
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Between {0} and {1}"
+msgstr "Between {0} and {1}"
+
+#. 0: opSymbol(p.operator); 1: p.value
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Insulin on board {0} {1} U"
+msgstr "Insulin on board {0} {1} U"
+
+#. 0: opSymbol(p.operator); 1: p.value
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Carbs on board {0} {1} g"
+msgstr "Carbs on board {0} {1} g"
+
+#. 0: opSymbol(p.operator); 1: p.value
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Reservoir {0} {1} U"
+msgstr "Reservoir {0} {1} U"
+
+#. 0: opSymbol(p.operator); 1: formatHours(p.value ?? 0)
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Site age {0} {1}"
+msgstr "Site age {0} {1}"
+
+#. 0: opSymbol(p.operator); 1: formatDays(p.value ?? 0)
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Sensor age {0} {1}"
+msgstr "Sensor age {0} {1}"
+
+#. 0: opSymbol(p.operator); 1: formatMinutes(p.minutes ?? 0)
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Loop stale {0} {1}"
+msgstr "Loop stale {0} {1}"
+
+#. 0: opSymbol(p.operator); 1: formatMinutes(p.minutes ?? 0)
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Loop enaction stale {0} {1}"
+msgstr "Loop enaction stale {0} {1}"
+
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Pump not suspended"
+msgstr "Pump not suspended"
+
+#. 0: opSymbol(p.operator); 1: p.value
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Pump battery {0} {1}%"
+msgstr "Pump battery {0} {1}%"
+
+#. 0: opSymbol(p.operator); 1: p.value
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Temp basal rate {0} {1} U/h"
+msgstr "Temp basal rate {0} {1} U/h"
+
+#. 0: opSymbol(p.operator); 1: p.value
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Temp basal {0} {1}% of scheduled"
+msgstr "Temp basal {0} {1}% of scheduled"
+
+#. 0: opSymbol(p.operator); 1: p.value
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Uploader battery {0} {1}%"
+msgstr "Uploader battery {0} {1}%"
+
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "No override active"
+msgstr "No override active"
+
+#. 0: opSymbol(p.operator); 1: p.value
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Sensitivity {0} {1}"
+msgstr "Sensitivity {0} {1}"
+
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Do not disturb on"
+msgstr "Do not disturb on"
+
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Do not disturb off"
+msgstr "Do not disturb off"
+
+#. 0: formatMinutes(p.timeout_minutes ?? 0)
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "No data for at least {0}"
+msgstr "No data for at least {0}"
+
+#. 0: listFormat().format(p.buckets.map(glucoseBucketLabel))
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Glucose range: {0}"
+msgstr "Glucose range: {0}"
+
+#. 0: opSymbol(p.operator); 1: formatMinutes(p.minutes ?? 0)
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Time since last carb {0} {1}"
+msgstr "Time since last carb {0} {1}"
+
+#. 0: opSymbol(p.operator); 1: formatMinutes(p.minutes ?? 0)
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Time since last bolus {0} {1}"
+msgstr "Time since last bolus {0} {1}"
+
+#. 0: listFormat().format(p.days.map(alertWeekdayLabel))
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "On {0}"
+msgstr "On {0}"
+
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Sleep session active"
+msgstr "Sleep session active"
+
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "No sleep session active"
+msgstr "No sleep session active"
+
+#. 0: opSymbol(p.operator); 1: formatSignedMinutes(p.minutes ?? 0)
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Tracker age {0} {1}"
+msgstr "Tracker age {0} {1}"
+
+#. 0: chip; 1: formatMinutes(minutes)
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "{0} for {1}"
+msgstr "{0} for {1}"
+
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Pump in automatic mode"
+msgstr "Pump in automatic mode"
+
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Pump not in automatic mode"
+msgstr "Pump not in automatic mode"
+
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Pump limited"
+msgstr "Pump limited"
+
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Pump not limited"
+msgstr "Pump not limited"
+
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Pump in manual mode"
+msgstr "Pump in manual mode"
+
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Pump not in manual mode"
+msgstr "Pump not in manual mode"
+
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Pump boosting"
+msgstr "Pump boosting"
+
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Pump not boosting"
+msgstr "Pump not boosting"
+
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Pump easing off"
+msgstr "Pump easing off"
+
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Pump not easing off"
+msgstr "Pump not easing off"
+
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Pump in sleep mode"
+msgstr "Pump in sleep mode"
+
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Pump not in sleep mode"
+msgstr "Pump not in sleep mode"
+
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Pump in exercise mode"
+msgstr "Pump in exercise mode"
+
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Pump not in exercise mode"
+msgstr "Pump not in exercise mode"
+
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Pump in Liberty mode"
+msgstr "Pump in Liberty mode"
+
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Pump not in Liberty mode"
+msgstr "Pump not in Liberty mode"
+
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Pump off"
+msgstr "Pump off"
+
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Pump not off"
+msgstr "Pump not off"
+
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Pump mode active"
+msgstr "Pump mode active"
+
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Pump mode not active"
+msgstr "Pump mode not active"
+
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Pump connectivity active"
+msgstr "Pump connectivity active"
+
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Pump connectivity not active"
+msgstr "Pump connectivity not active"
+
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Override not active"
+msgstr "Override not active"
+
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Profile active"
+msgstr "Profile active"
+
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Profile not active"
+msgstr "Profile not active"
+
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Exercise active"
+msgstr "Exercise active"
+
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Exercise not active"
+msgstr "Exercise not active"
+
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Illness active"
+msgstr "Illness active"
+
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Illness not active"
+msgstr "Illness not active"
+
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Travel active"
+msgstr "Travel active"
+
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Travel not active"
+msgstr "Travel not active"
+
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Data exclusion active"
+msgstr "Data exclusion active"
+
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Data exclusion not active"
+msgstr "Data exclusion not active"
+
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Temporary target active"
+msgstr "Temporary target active"
+
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Temporary target not active"
+msgstr "Temporary target not active"
+
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "State not active"
+msgstr "State not active"
+
+#. 0: name
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Alert {0} firing"
+msgstr "Alert {0} firing"
+
+#. 0: name
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Alert {0} unacknowledged"
+msgstr "Alert {0} unacknowledged"
+
+#. 0: name
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Alert {0} acknowledged"
+msgstr "Alert {0} acknowledged"
+
+#. 0: name; 1: state ?? ""
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Alert {0} in state {1}"
+msgstr "Alert {0} in state {1}"
+
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Trend falling fast"
+msgstr "Trend falling fast"
+
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Trend falling"
+msgstr "Trend falling"
+
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Trend flat"
+msgstr "Trend flat"
+
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Trend rising"
+msgstr "Trend rising"
+
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Trend rising fast"
+msgstr "Trend rising fast"
+
+#. 0: bucket ?? ""
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Trend {0}"
+msgstr "Trend {0}"
+
+#: src/lib/components/alerts/alert-labels.svelte.ts
+msgid "Motion"
+msgstr "Motion"
+
+#: src/lib/components/alerts/alert-labels.svelte.ts
+msgid "Firing"
+msgstr "Firing"
+
+#: src/lib/components/alerts/alert-labels.svelte.ts
+msgid "Unacknowledged"
+msgstr "Unacknowledged"
+
+#: src/lib/components/alerts/alert-labels.svelte.ts
+msgid "Falling fast"
+msgstr "Falling fast"
+
+#: src/lib/components/alerts/alert-labels.svelte.ts
+#: src/lib/components/alerts/alert-labels.svelte.ts
+msgid "Falling"
+msgstr "Falling"
+
+#: src/lib/components/alerts/alert-labels.svelte.ts
+#: src/lib/components/alerts/alert-labels.svelte.ts
+msgid "Rising"
+msgstr "Rising"
+
+#: src/lib/components/alerts/alert-labels.svelte.ts
+msgid "Rising fast"
+msgstr "Rising fast"
+
+#: src/lib/components/alerts/alert-labels.svelte.ts
+msgid "Rate (U/h)"
+msgstr "Rate (U/h)"
+
+#: src/lib/components/alerts/alert-labels.svelte.ts
+msgid "Percent of scheduled"
+msgstr "Percent of scheduled"
+
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Motion active"
+msgstr "Motion active"
+
+#: src/lib/components/alerts/summarizeCondition.svelte.ts
+msgid "Motion not active"
+msgstr "Motion not active"

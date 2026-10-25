@@ -60,17 +60,31 @@ public class TenantRoleServiceTests : IDisposable
         var granter = new[] { Scope.MembersInvite, Scope.MembersManage, "glucose.read" };
 
         var assignable = await _service.GetAssignableRolesAsync(_tenantId, granter);
-        var all = await _service.GetRolesAsync(_tenantId);
+        var all = await _service.GetRolesAsync(_tenantId, granter);
 
         foreach (var role in all)
         {
             var validation = await _service.ValidateRoleGrantAsync(_tenantId, [role.Id], granter);
             assignable.Any(r => r.Id == role.Id).Should().Be(validation.Ok, role.Slug);
+            role.CanGrant.Should().Be(validation.Ok, role.Slug);
         }
 
         assignable.Should().NotBeEmpty();
         assignable.Should().NotContain(r => r.Slug == RoleSeeds.Owner);
         assignable.Count.Should().BeLessThan(all.Count);
+    }
+
+    [Fact]
+    public async Task GetRolesAsync_ListsARoleTheCallerCannotGrantAsNotGrantable()
+    {
+        await _service.SeedRolesForTenantAsync(_tenantId);
+        var administrator = RoleSeeds.Permissions[RoleSeeds.Admin];
+
+        var roles = await _service.GetRolesAsync(_tenantId, administrator);
+
+        roles.Should().HaveCount(6);
+        roles.Single(r => r.Slug == RoleSeeds.Owner).CanGrant.Should().BeFalse();
+        roles.Single(r => r.Slug == RoleSeeds.Admin).CanGrant.Should().BeTrue();
     }
 
     [Fact]
@@ -122,7 +136,7 @@ public class TenantRoleServiceTests : IDisposable
     [Fact]
     public async Task CreateRoleAsync_CreatesCustomRole()
     {
-        var result = await _service.CreateRoleAsync(_tenantId, "School Nurse", "Read-only for school staff", ["glucose.read", "reports.read"]);
+        var result = await _service.CreateRoleAsync(_tenantId, "School Nurse", "Read-only for school staff", ["glucose.read", "reports.read"], [Scope.FullAccess]);
         result.Name.Should().Be("School Nurse");
         result.Slug.Should().Be("school-nurse");
         result.Description.Should().Be("Read-only for school staff");
@@ -207,7 +221,7 @@ public class TenantRoleServiceTests : IDisposable
         var otherRoleId = await SeedOtherTenantViewerRoleAsync();
 
         var result = await _service.UpdateRoleAsync(
-            _tenantId, otherRoleId, "Pwned", null, [Scope.FullAccess]);
+            _tenantId, otherRoleId, "Pwned", null, [Scope.FullAccess], [Scope.FullAccess]);
 
         result.Should().BeNull("a role ID from another tenant must not resolve");
 
@@ -233,7 +247,7 @@ public class TenantRoleServiceTests : IDisposable
     {
         var otherRoleId = await SeedOtherTenantViewerRoleAsync();
 
-        (await _service.GetRoleByIdAsync(_tenantId, otherRoleId)).Should().BeNull();
+        (await _service.GetRoleByIdAsync(_tenantId, otherRoleId, [Scope.FullAccess])).Should().BeNull();
     }
 
     private async Task<Guid> SeedOtherTenantViewerRoleAsync()

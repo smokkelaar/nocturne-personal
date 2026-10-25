@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Nocturne.API.Services.V4;
 using Nocturne.Core.Contracts.Audit;
 using Nocturne.Core.Contracts.Profiles;
 using Nocturne.Core.Contracts.V4.Repositories;
@@ -14,6 +15,7 @@ public class ProfileDeletionService : IProfileDeletionService
     private readonly INocturneDbContextFactory _contextFactory;
     private readonly ITherapySettingsRepository _therapyRepo;
     private readonly IAuditContext _auditContext;
+    private readonly ILoopClosedLoopStamper _closedLoop;
     private readonly ILogger<ProfileDeletionService> _logger;
 
     /// <summary>Rows read to evaluate the guard, matching the ceiling the summary endpoint reads at.</summary>
@@ -28,17 +30,20 @@ public class ProfileDeletionService : IProfileDeletionService
     /// Attribution for the delete. It decides <c>deleted_by_user</c>, and so whether a later resync
     /// may re-create the rows — see <see cref="SoftDeleteDedupExtensions.WhereBlocksRecreation{T}"/>.
     /// </param>
+    /// <param name="closedLoop">Restamps the Loop snapshots the deleted settings governed.</param>
     /// <param name="logger">Logger.</param>
     public ProfileDeletionService(
         INocturneDbContextFactory contextFactory,
         ITherapySettingsRepository therapyRepo,
         IAuditContext auditContext,
+        ILoopClosedLoopStamper closedLoop,
         ILogger<ProfileDeletionService> logger
     )
     {
         _contextFactory = contextFactory;
         _therapyRepo = therapyRepo;
         _auditContext = auditContext;
+        _closedLoop = closedLoop;
         _logger = logger;
     }
 
@@ -87,6 +92,9 @@ public class ProfileDeletionService : IProfileDeletionService
                     ctx.TherapySettings.Where(e => e.ProfileName == profileName),
                     _auditContext, scope, token),
             ct: ct);
+
+        await _closedLoop.AfterLoopSettingsWrittenAsync(
+            settings.Where(s => s.ProfileName == profileName).Select(s => s.Timestamp).ToList(), ct);
 
         _logger.LogInformation(
             "Deleted therapy profile {ProfileName}: {Count} records across five tables",

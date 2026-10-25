@@ -145,7 +145,7 @@ public class DeviceEventRepository : SyncUpsertRepositoryBase<DeviceEvent, Devic
         DateTime? from, DateTime? to, string? device, string? source,
         int limit = 100, int offset = 0, bool descending = true,
         CancellationToken ct = default)
-        => GetAsync(from, to, device, source, limit, offset, descending, nativeOnly: false, patientDeviceId: null, ct: ct);
+        => GetAsync(from, to, device, source, limit, offset, descending, patientDeviceId: null, ct: ct);
 
     /// <summary>
     /// Gets device event records based on filter criteria.
@@ -158,7 +158,6 @@ public class DeviceEventRepository : SyncUpsertRepositoryBase<DeviceEvent, Devic
     /// <param name="limit">The maximum number of records to return.</param>
     /// <param name="offset">The number of records to skip.</param>
     /// <param name="descending">Whether to sort by timestamp in descending order.</param>
-    /// <param name="nativeOnly">Whether to return only native records.</param>
     /// <param name="patientDeviceId">Optional filter restricting results to events linked to a single registered patient device.</param>
     /// <param name="ct">The cancellation token.</param>
     /// <returns>A collection of device events.</returns>
@@ -170,7 +169,6 @@ public class DeviceEventRepository : SyncUpsertRepositoryBase<DeviceEvent, Devic
         int limit = 100,
         int offset = 0,
         bool descending = true,
-        bool nativeOnly = false,
         Guid? patientDeviceId = null,
         CancellationToken ct = default
     )
@@ -185,8 +183,6 @@ public class DeviceEventRepository : SyncUpsertRepositoryBase<DeviceEvent, Devic
             query = query.Where(e => e.Device == device);
         if (source != null)
             query = query.Where(e => e.DataSource == source);
-        if (nativeOnly)
-            query = query.Where(e => e.LegacyId == null);
         if (patientDeviceId.HasValue)
             query = query.Where(e => e.PatientDeviceId == patientDeviceId.Value);
 

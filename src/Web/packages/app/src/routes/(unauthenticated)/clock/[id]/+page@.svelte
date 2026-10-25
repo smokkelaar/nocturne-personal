@@ -105,6 +105,44 @@
   // Show time based on configuration
   const showTime = $derived(clockConfig?.settings?.alwaysShowTime || isStale);
 
+  // Touch has no hover, so a tap shows the navigation bar for a few seconds. While the last
+  // pointer was a touch and the bar is hidden, it takes no taps. A key press hands the bar
+  // back to the keyboard.
+  const NAV_REVEAL_MS = 4000;
+  let navRevealed = $state(false);
+  let touchInput = $state(false);
+  let navHideTimer: ReturnType<typeof setTimeout> | undefined;
+  // A screen whose primary pointer is fine still lets a tap land on the hidden bar: the tap
+  // that reveals it must not also press the button under it.
+  let tapRevealedNav = false;
+
+  function handlePointerDown(event: PointerEvent) {
+    touchInput = event.pointerType !== "mouse";
+    tapRevealedNav = touchInput && !navRevealed;
+    if (!touchInput) return;
+    navRevealed = true;
+    clearTimeout(navHideTimer);
+    navHideTimer = setTimeout(() => (navRevealed = false), NAV_REVEAL_MS);
+  }
+
+  function handlePointerMove(event: PointerEvent) {
+    if (event.pointerType === "mouse") touchInput = false;
+  }
+
+  function handleKeyDown() {
+    touchInput = false;
+    tapRevealedNav = false;
+  }
+
+  function handleNavClickCapture(event: MouseEvent) {
+    if (!tapRevealedNav) return;
+    tapRevealedNav = false;
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+  $effect(() => () => clearTimeout(navHideTimer));
+
   const showAlerts = $derived(clockConfig?.settings?.showAlerts ?? false);
   $effect(() => {
     clockStore.watchAlerts(showAlerts);
@@ -118,6 +156,12 @@
 <!-- In the companion's transparent overlay window (`?embed=1`), clear the page background so the
      desktop shows through behind the clock face. -->
 <svelte:body class:embed-transparent={embed} />
+
+<svelte:window
+  onpointerdown={handlePointerDown}
+  onpointermove={handlePointerMove}
+  onkeydown={handleKeyDown}
+/>
 
 {#if loading}
   <div class="fixed inset-0 flex items-center justify-center bg-black">
@@ -134,15 +178,22 @@
   </div>
 {:else if clockConfig}
   {#if !embed}
-  <!-- Navigation overlay (shows on hover) -->
+  <!-- Navigation overlay: shows on hover, or for a few seconds after a tap. On a coarse pointer
+       each button's ::before widens its tap target to 44px. -->
   <div
+    data-testid="clock-nav"
+    data-revealed={navRevealed}
+    inert={touchInput && !navRevealed}
+    onclickcapture={handleNavClickCapture}
     class="fixed inset-x-0 top-0 z-50 flex items-center justify-between p-4
            bg-linear-to-b from-black/50 to-transparent
-           opacity-0 transition-opacity duration-300 hover:opacity-100"
+           transition-opacity duration-300 hover:opacity-100 focus-within:opacity-100
+           {navRevealed ? 'opacity-100' : 'opacity-0 pointer-coarse:pointer-events-none'}"
   >
     <Button
       variant="overlay"
       size="sm"
+      class="relative pointer-coarse:before:absolute pointer-coarse:before:-inset-1.5 pointer-coarse:before:content-['']"
       onclick={() => goto(resolve("/clock"))}
     >
       <ArrowLeft class="size-4" />
@@ -158,6 +209,7 @@
         <Button
           variant="overlay"
           size="sm"
+          class="relative pointer-coarse:before:absolute pointer-coarse:before:-inset-1.5 pointer-coarse:before:content-['']"
           onclick={() => goto(resolve("/(authenticated)/clock/config/[id]", { id }))}
         >
           <Settings class="size-4" />

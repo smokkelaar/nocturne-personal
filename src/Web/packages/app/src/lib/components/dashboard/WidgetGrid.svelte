@@ -18,7 +18,7 @@
 </script>
 
 <Card size="flush" class="@container">
-  <div class="grid grid-cols-1 divide-y divide-border @md:grid-cols-3 @md:divide-x @md:divide-y-0">
+  <div class="grid grid-cols-1 divide-y divide-border @2xl:grid-cols-3 @2xl:divide-x @2xl:divide-y-0">
     {#each displayWidgets as widgetId (widgetId)}
       {#await loadTopWidget(widgetId)}
         <WidgetPlaceholder shape={topWidgetPlaceholder(widgetId)} />

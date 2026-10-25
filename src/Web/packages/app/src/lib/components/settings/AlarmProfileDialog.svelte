@@ -112,27 +112,27 @@
       </DialogDescription>
     </DialogHeader>
 
-    <div class="flex-1 overflow-y-auto py-4">
+    <div class="@container flex-1 overflow-y-auto py-4">
       <Tabs value="general" class="w-full">
         <TabsList class="grid w-full grid-cols-5">
           <TabsTrigger value="general">
-            <Settings2 class="h-4 w-4 mr-2" />
+            <Settings2 class="hidden @lg:block h-4 w-4 mr-2" />
             General
           </TabsTrigger>
           <TabsTrigger value="audio">
-            <Volume2 class="h-4 w-4 mr-2" />
+            <Volume2 class="hidden @lg:block h-4 w-4 mr-2" />
             Audio
           </TabsTrigger>
           <TabsTrigger value="visual">
-            <Eye class="h-4 w-4 mr-2" />
+            <Eye class="hidden @lg:block h-4 w-4 mr-2" />
             Visual
           </TabsTrigger>
           <TabsTrigger value="snooze">
-            <Timer class="h-4 w-4 mr-2" />
+            <Timer class="hidden @lg:block h-4 w-4 mr-2" />
             Snooze
           </TabsTrigger>
           <TabsTrigger value="schedule">
-            <Clock class="h-4 w-4 mr-2" />
+            <Clock class="hidden @lg:block h-4 w-4 mr-2" />
             Schedule
           </TabsTrigger>
         </TabsList>

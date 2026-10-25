@@ -178,6 +178,7 @@
         motion: { type: "tween", duration: 200 },
         ticks: HOUR_TICKS,
         format: formatHour,
+        tickOcclusion: { priority: "start-end" },
       },
       tooltip: { context: { mode: "bisect-x" } },
     }}

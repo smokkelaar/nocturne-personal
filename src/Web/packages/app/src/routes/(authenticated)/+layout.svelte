@@ -269,7 +269,7 @@
     >
       <MobileHeader />
       <div
-        class="sticky top-(--mobile-header-offset,0px) z-40 transition-all duration-300 md:top-0"
+        class="@container sticky top-(--mobile-header-offset,0px) z-40 transition-all duration-300 md:top-0"
         bind:offsetHeight={bannerStripHeight}
         inert={help.blocking}
       >
@@ -293,7 +293,7 @@
           <AlertSurfaces />
         {/if}
       {/if}
-      <main class="flex-1 overflow-x-clip">
+      <main class="@container/main flex-1 overflow-x-clip">
         <HelpPageView>
         <svelte:boundary>
           {@render children()}

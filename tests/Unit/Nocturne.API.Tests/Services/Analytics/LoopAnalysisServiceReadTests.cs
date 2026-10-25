@@ -78,7 +78,7 @@ public class LoopAnalysisServiceReadTests
         var glucose = new Mock<ISensorGlucoseRepository>();
         glucose
             .Setup(r => r.GetForAnalyticsAsync(It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), It.IsAny<string?>(), It.IsAny<string?>(),
-                It.IsAny<int>(), It.IsAny<int>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<DateTime?>(), It.IsAny<Guid?>(),
+                It.IsAny<int>(), It.IsAny<int>(), It.IsAny<bool>(), It.IsAny<DateTime?>(), It.IsAny<Guid?>(),
                 It.IsAny<CancellationToken>(), It.IsAny<Guid?>()))
             .ReturnsAsync([]);
         var timeline = new Mock<ITherapyTimelineResolver>();
@@ -189,12 +189,56 @@ public class LoopAnalysisServiceReadTests
             .ReturnsAsync([new ApsPredictionPoint(start, "loop://iPhone", true, AidAlgorithm.Loop, "[120,120,120,120,120,120,120]", null, null, null, null)]);
         _snapshots
             .Setup(r => r.GetIobCobPointsAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync([new ApsIobCobPoint(start.AddMinutes(storedMinutesAfter), null, null)]);
+            .ReturnsAsync([new ApsIobCobPoint(start.AddMinutes(storedMinutesAfter), null, null, null)]);
 
         var report = await Service().GetPredictionAccuracyAsync(new LoopAnalysisFilter { From = From, To = To, Now = To.AddDays(1) }, Utc);
 
         report.Primary.Predictions.Should().Be(counted,
             "a registered pump with no AID algorithm is open loop wherever no APS snapshot was stored in the half hour before, as on every page");
+    }
+
+    [Theory]
+    [InlineData(false, 0)]
+    [InlineData(true, 1)]
+    [InlineData(null, 1)]
+    public async Task Predictions_OnALoopPump_AreOpenLoop_WhereASnapshotHadDosingOff(bool? closedLoop, int counted)
+    {
+        var start = From.AddHours(10);
+        _devices
+            .Setup(r => r.GetByDateRangeAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([new PatientDevice
+            {
+                Id = Guid.NewGuid(),
+                DeviceCategory = DeviceCategory.InsulinPump,
+                AidAlgorithm = AidAlgorithm.Loop,
+                StartDate = DateOnly.FromDateTime(From),
+                EndDate = DateOnly.FromDateTime(From),
+            }]);
+        _snapshots
+            .Setup(r => r.GetPredictionsAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([new ApsPredictionPoint(start, "loop://iPhone", true, AidAlgorithm.Loop, "[120,120,120,120,120,120,120]", null, null, null, null)]);
+        _snapshots
+            .Setup(r => r.GetIobCobPointsAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([new ApsIobCobPoint(start.AddMinutes(-5), null, null, closedLoop)]);
+
+        var report = await Service().GetPredictionAccuracyAsync(new LoopAnalysisFilter { From = From, To = To, Now = To.AddDays(1) }, Utc);
+
+        report.Primary.Predictions.Should().Be(counted,
+            "a Loop snapshot with dosing off is open loop, and one with dosing on or unknown is closed, whatever the pump is registered as");
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, true)]
+    [InlineData(null, true)]
+    public void LoopStates_ReadTheClosedLoopState_OfACycleAndOfAnIobCobPoint(bool? closedLoop, bool closed)
+    {
+        var at = From.AddHours(3);
+
+        LoopAnalysisService.LoopStates([new ApsLoopCycle { Timestamp = at, ClosedLoop = closedLoop }])
+            .Should().Equal(new ApsLoopState(at.ToMills(), closed));
+        LoopAnalysisService.LoopStates([new ApsIobCobPoint(at, null, null, closedLoop)])
+            .Should().Equal(new ApsLoopState(at.ToMills(), closed));
     }
 
     [Fact]

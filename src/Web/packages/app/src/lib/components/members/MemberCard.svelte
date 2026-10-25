@@ -68,10 +68,18 @@
   let originalLimitTo24Hours = $state(false);
   let showDirectPermissions = $state(false);
 
+  const grantableRoles = $derived(roles.filter((r) => r.canGrant));
+
+  /** The server keeps a held role the editor cannot grant as is, so it shows read-only. */
+  const ungrantableHeldRoles = $derived(
+    (member.roles ?? []).filter((held) => !grantableRoles.some((r) => r.id === held.roleId))
+  );
+
   /** Union of all permissions from the currently selected roles */
   const rolePermissions = $derived(
     editingRoleIds.flatMap((rid) => {
-      const role = roles.find((r) => r.id === rid);
+      const role =
+        grantableRoles.find((r) => r.id === rid) ?? ungrantableHeldRoles.find((r) => r.roleId === rid);
       return role?.permissions ?? [];
     })
   );
@@ -201,7 +209,22 @@
       <div class="space-y-2">
         <Label>Roles</Label>
         <div class="grid gap-2 @sm:grid-cols-2">
-          {#each roles as role (role.id)}
+          {#each ungrantableHeldRoles as role (role.roleId)}
+            <div class="flex items-center gap-2">
+              <Checkbox
+                id="member-role-{member.subjectId}-{role.roleId}"
+                checked
+                disabled
+              />
+              <label
+                for="member-role-{member.subjectId}-{role.roleId}"
+                class="text-sm text-muted-foreground select-none"
+              >
+                {role.name}
+              </label>
+            </div>
+          {/each}
+          {#each grantableRoles as role (role.id)}
             <div class="flex items-center gap-2">
               <Checkbox
                 id="member-role-{member.subjectId}-{role.id}"
@@ -217,6 +240,11 @@
             </div>
           {/each}
         </div>
+        {#if ungrantableHeldRoles.length > 0}
+          <p class="text-xs text-muted-foreground">
+            You cannot change a role that gives more access than you have.
+          </p>
+        {/if}
       </div>
 
       <Separator />

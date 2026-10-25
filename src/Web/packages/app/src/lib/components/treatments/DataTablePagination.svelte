@@ -24,7 +24,7 @@
   <div class="text-sm text-muted-foreground">
     {selectedCount} of {totalCount} row(s) selected
   </div>
-  <div class="flex items-center gap-6 @3xl:gap-8">
+  <div class="flex flex-wrap items-center gap-x-6 gap-y-3 @3xl:gap-x-8">
     <div class="flex items-center gap-2">
       <p class="text-sm font-medium">Rows per page</p>
       <Select.Root

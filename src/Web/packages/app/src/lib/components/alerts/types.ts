@@ -124,7 +124,7 @@ export type TrendBucket =
 	| "rising"
 	| "rising_fast";
 
-const TREND_BUCKETS: readonly TrendBucket[] = [
+export const TREND_BUCKETS: readonly TrendBucket[] = [
 	"falling_fast",
 	"falling",
 	"flat",

@@ -55,7 +55,7 @@
       </Dialog.Description>
     </Dialog.Header>
 
-    <div class="space-y-2 py-4">
+    <div class="@container space-y-2 py-4">
       {#if localRules.length === 0}
         <div class="text-center py-8 text-muted-foreground border border-dashed rounded-lg">
           <p class="text-sm">No rules configured.</p>
@@ -89,13 +89,13 @@
               dragIndex = null;
               dropIndex = null;
             }}
-            class="flex items-center gap-2 rounded-lg border p-2 transition-all {dropIndex === index
+            class="flex flex-wrap items-center gap-2 rounded-lg border p-2 transition-all @lg:flex-nowrap {dropIndex === index
               ? 'border-primary bg-accent'
               : 'border-border'} {dragIndex === index ? 'opacity-50' : ''}"
           >
             <GripVertical class="h-4 w-4 shrink-0 text-muted-foreground cursor-grab" />
 
-            <div class="w-[120px] shrink-0">
+            <div class="min-w-0 flex-1 @lg:w-[120px] @lg:flex-none">
               <Select
                 type="single"
                 value={rule.field}
@@ -113,7 +113,7 @@
               </Select>
             </div>
 
-            <div class="flex-1 min-w-0">
+            <div class="order-last basis-full min-w-0 @lg:order-none @lg:basis-auto @lg:flex-1">
               <Input
                 placeholder="Prefix to match..."
                 value={rule.match}
@@ -123,7 +123,7 @@
               />
             </div>
 
-            <div class="w-[150px] shrink-0">
+            <div class="min-w-0 flex-1 @lg:w-[150px] @lg:flex-none">
               <Select
                 type="single"
                 value={rule.processing}

@@ -50,7 +50,7 @@ public sealed class IobCobReader(
     /// <inheritdoc />
     public Task<IobCobReading> ReadTotalAsync(long at, bool live, CancellationToken ct = default) =>
         live
-            ? cache.GetOrCreateLocalAsync(LiveCacheKey, () => ComputeAsync(at, live: true, ct), LiveCacheDuration)
+            ? cache.GetOrCreateLocalAsync(LiveCacheKey, () => ComputeAsync(at, live: true, ct), LiveCacheDuration, ct)
             : ComputeAsync(at, live: false, ct);
 
     private async Task<IobCobReading> ComputeAsync(long at, bool live, CancellationToken ct)
@@ -58,7 +58,13 @@ public sealed class IobCobReader(
         var inputs = await ReadInputsAsync(at, ct);
         var iob = await iobCalculator.CalculateTotalAsync(
             inputs.Boluses, inputs.TempBasals, at, live: live, ct: ct);
-        return new IobCobReading(iob, await CobAsync(at, live, inputs, ct), inputs);
+        var windowStart = at - DailyProfileCalculator.ActingMs;
+        var insulinInWindow = inputs.Boluses.Count > 0
+            || inputs.TempBasals.Any(t => t.EndMills is null || t.EndMills >= windowStart);
+        return new IobCobReading(iob, await CobAsync(at, live, inputs, ct), inputs)
+        {
+            InsulinInWindow = insulinInWindow,
+        };
     }
 
     private async Task<CobResult?> CobAsync(long at, bool live, IobCobInputs inputs, CancellationToken ct)

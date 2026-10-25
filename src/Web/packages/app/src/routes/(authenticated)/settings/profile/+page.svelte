@@ -188,7 +188,7 @@
     <div class="flex flex-wrap items-start justify-between gap-2">
       <div class="flex items-center gap-3">
         <div
-          class="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10"
+          class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10"
         >
           <User class="h-6 w-6 text-primary" />
         </div>
@@ -349,9 +349,9 @@
         <!-- Profile Overview Card -->
         <Card>
           <CardHeader>
-            <div class="flex items-start justify-between">
-              <div>
-                <CardTitle class="flex items-center gap-2">
+            <div class="flex flex-wrap items-start justify-between gap-3">
+              <div class="min-w-0">
+                <CardTitle class="flex flex-wrap items-center gap-2">
                   {selectedProfileName}
                   {#if therapy.isDefault}
                     <Badge variant="success">

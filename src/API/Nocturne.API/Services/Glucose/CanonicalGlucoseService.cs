@@ -72,7 +72,7 @@ internal sealed class CanonicalGlucoseService : ICanonicalGlucoseService
         var source = _demoMode.IsEnabled ? DataSources.DemoService : null;
         var recent = (await _sensorGlucoseRepository.GetAsync(
             from: from, to: null, device: null, source: source,
-            limit: limit, offset: 0, descending: true, nativeOnly: false, ct: ct)).ToList();
+            limit: limit, offset: 0, descending: true, ct: ct)).ToList();
 
         if (!_demoMode.IsEnabled)
             recent = recent.Where(r => !DataSources.IsEphemeral(r.DataSource)).ToList();

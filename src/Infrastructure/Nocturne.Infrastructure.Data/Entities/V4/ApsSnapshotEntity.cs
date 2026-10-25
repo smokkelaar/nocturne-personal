@@ -86,6 +86,10 @@ public class ApsSnapshotEntity : V4TimeSeriesEntityBase, ISyncDedupable
     [Column("enacted")]
     public bool Enacted { get; set; }
 
+    /// <inheritdoc cref="Nocturne.Core.Models.V4.ApsSnapshot.ClosedLoop"/>
+    [Column("closed_loop")]
+    public bool? ClosedLoop { get; set; }
+
     /// <summary>
     /// Enacted temp basal rate in U/hr
     /// </summary>

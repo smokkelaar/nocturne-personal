@@ -439,6 +439,7 @@ public class ProfileDecomposerTests
                 Mock<ISensitivityScheduleRepository, SensitivitySchedule>(null, [], onUpsert),
                 Mock<ITargetRangeScheduleRepository, TargetRangeSchedule>(null, [], onUpsert),
                 TempBasalTestDeps.NoReresolution(),
+                Moq.Mock.Of<ILoopClosedLoopStamper>(),
                 NullLogger<ProfileDecomposer>.Instance);
         }
 

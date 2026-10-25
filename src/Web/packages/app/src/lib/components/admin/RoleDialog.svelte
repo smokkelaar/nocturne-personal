@@ -155,11 +155,11 @@
       <div class="space-y-2">
         <Label>Permissions</Label>
 
-        <div class="space-y-4">
+        <div class="@container space-y-4">
           {#each permissionCategories as category (category.name)}
             <div class="border rounded-lg p-3 bg-muted/50">
               <h4 class="text-sm font-medium mb-2">{category.name}</h4>
-              <div class="grid grid-cols-2 gap-2">
+              <div class="grid gap-2 @sm:grid-cols-2">
                 {#each category.permissions as perm (perm)}
                   <label class="flex items-center gap-2 cursor-pointer">
                     <Checkbox

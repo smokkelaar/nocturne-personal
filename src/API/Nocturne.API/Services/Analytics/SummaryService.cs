@@ -6,6 +6,7 @@ using Nocturne.Core.Contracts.Analytics;
 using Nocturne.Core.Contracts.Legacy;
 using Nocturne.Core.Contracts.Profiles;
 using Nocturne.Core.Contracts.Profiles.Resolvers;
+using Nocturne.Core.Contracts.Treatments;
 using Nocturne.Core.Contracts.V4.Repositories;
 using Nocturne.Core.Models;
 
@@ -21,6 +22,7 @@ public class SummaryService : ISummaryService
 {
     private readonly IDDataService _ddataService;
     private readonly IPropertiesService _propertiesService;
+    private readonly IIobCobReader _iobCobReader;
     private readonly IActiveProfileResolver _activeProfileResolver;
     private readonly ITherapySettingsRepository _therapySettingsRepository;
     private readonly IProfileProjectionService _profileProjection;
@@ -31,9 +33,21 @@ public class SummaryService : ISummaryService
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
     };
 
+    private static readonly string[] NullableStoredFields =
+    [
+        "perGIvalues",
+        "carbs_hr_high",
+        "carbs_hr_medium",
+        "carbs_hr_low",
+        "delay_high",
+        "delay_medium",
+        "delay_low",
+    ];
+
     public SummaryService(
         IDDataService ddataService,
         IPropertiesService propertiesService,
+        IIobCobReader iobCobReader,
         IActiveProfileResolver activeProfileResolver,
         ITherapySettingsRepository therapySettingsRepository,
         IProfileProjectionService profileProjection,
@@ -42,6 +56,7 @@ public class SummaryService : ISummaryService
     {
         _ddataService = ddataService;
         _propertiesService = propertiesService;
+        _iobCobReader = iobCobReader;
         _activeProfileResolver = activeProfileResolver;
         _therapySettingsRepository = therapySettingsRepository;
         _profileProjection = profileProjection;
@@ -269,6 +284,23 @@ public class SummaryService : ISummaryService
         return finalOutput;
     }
 
+    private async Task<IobCobReading?> ReadIobCobAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            return await _iobCobReader.ReadTotalAsync(
+                DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
+                live: true,
+                cancellationToken
+            );
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogError(ex, "Error reading IOB and COB; writing both as null");
+            return null;
+        }
+    }
+
     /// <inheritdoc />
     public async Task<SummaryState> ConstructStateAsync(
         CancellationToken cancellationToken = default
@@ -280,35 +312,11 @@ public class SummaryService : ISummaryService
 
             var state = new SummaryState();
 
-            // Extract IOB
-            if (
-                properties.TryGetValue("iob", out var iobObj)
-                && iobObj is Dictionary<string, object> iobDict
-            )
-            {
-                if (
-                    iobDict.TryGetValue("iob", out var iobValue)
-                    && double.TryParse(iobValue?.ToString(), out var iob)
-                )
-                {
-                    state.Iob = Math.Floor(iob * 100 + 0.5) / 100;
-                }
-            }
-
-            // Extract COB
-            if (
-                properties.TryGetValue("cob", out var cobObj)
-                && cobObj is Dictionary<string, object> cobDict
-            )
-            {
-                if (
-                    cobDict.TryGetValue("cob", out var cobValue)
-                    && double.TryParse(cobValue?.ToString(), out var cob)
-                )
-                {
-                    state.Cob = (int)Math.Floor(cob + 0.5);
-                }
-            }
+            var reading = await ReadIobCobAsync(cancellationToken);
+            if (reading?.HasIob == true)
+                state.Iob = Math.Floor(reading.Iob.Iob * 100 + 0.5) / 100;
+            if (reading?.HasCob == true)
+                state.Cob = (int)Math.Floor(reading.Cob!.Cob + 0.5);
 
             // Extract BWP (Bolus Wizard Preview)
             if (
@@ -505,7 +513,8 @@ public class SummaryService : ISummaryService
 
     /// <summary>
     /// The entry as a raw JSON object, so the response's camelCase policy cannot rename its keys,
-    /// without <c>timeAsSeconds</c>. An empty object when no profile is active.
+    /// without <c>timeAsSeconds</c>. An empty object when no profile is active. The GI fields
+    /// are written as null when unset, as Nightscout stores them.
     /// </summary>
     private static JsonObject ToStoredEntry(ProfileData? profile)
     {
@@ -514,6 +523,8 @@ public class SummaryService : ISummaryService
 
         var entry = JsonSerializer.SerializeToNode(profile, StoredEntryOptions)!.AsObject();
         RemoveTimeAsSeconds(entry);
+        foreach (var field in NullableStoredFields)
+            entry.TryAdd(field, null);
         return entry;
     }
 

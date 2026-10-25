@@ -622,7 +622,7 @@
         </p>
       </div>
 
-      <section class="space-y-4 rounded-lg border bg-card p-4" aria-labelledby="loop-health-gaps" {@attach loopAnalysisMark("loop-analysis-loop-health.gaps")}>
+      <section class="@container space-y-4 rounded-lg border bg-card p-4" aria-labelledby="loop-health-gaps" {@attach loopAnalysisMark("loop-analysis-loop-health.gaps")}>
         <div class="flex flex-wrap items-baseline justify-between gap-2">
           <h3 id="loop-health-gaps" class="font-medium">Gaps, longest first</h3>
           {#if pickedHour != null}
@@ -655,9 +655,9 @@
                         href={resolve(`/reports/day-in-review?${dayInReviewSearch(gap)}`)}
                         class="flex flex-wrap items-center gap-x-3 gap-y-1 px-3 py-2 text-sm hover:bg-muted/50"
                       >
-                        <span class="min-w-32 font-medium">{gapDate(gap)}</span><span class="sr-only">, </span>
+                        <span class="min-w-24 font-medium @md:min-w-32">{gapDate(gap)}</span><span class="sr-only">, </span>
                         <span class="min-w-16 tabular-nums">{time(atMinute(gap.startMinuteOfDay ?? 0))}</span><span class="sr-only">, </span>
-                        <span class="flex-1 tabular-nums">{duration(gap.minutes)}</span>
+                        <span class="flex-1 tabular-nums whitespace-nowrap">{duration(gap.minutes)}</span>
                         <span class="sr-only">. Open in Day in review</span>
                         <ArrowUpRight class="size-4 text-muted-foreground" aria-hidden="true" />
                       </a>

@@ -312,7 +312,7 @@
               onValueChange={(v) =>
                 (viewParams.source = Object.values(SleepSource).find((s) => s === v) ?? null)}
             >
-              <Select.Trigger class="w-44">
+              <Select.Trigger class="w-36 @sm/card-header:w-44">
                 {sourceLabel}
               </Select.Trigger>
               <Select.Content>

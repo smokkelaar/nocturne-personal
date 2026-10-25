@@ -27,7 +27,7 @@ namespace Nocturne.API.Services.V4;
 /// into back into that treatment.
 /// <para>
 /// Every treatment read projects records of both provenances, since treatments have no legacy table
-/// left to supplement. See <see cref="LegacyTreatmentRange.NativeOnly"/>.
+/// left to supplement.
 /// </para>
 /// </remarks>
 /// <seealso cref="IV4ToLegacyProjectionService"/>
@@ -78,14 +78,13 @@ public class V4ToLegacyProjectionService : IV4ToLegacyProjectionService
         long? fromMills,
         long? toMills,
         int limit,
-        bool nativeOnly = true,
         bool descending = true,
         CancellationToken ct = default
     )
     {
         await using var db = await _contexts.CreateAsync(ct);
         var range = new LegacyTreatmentRange(
-            MillsToDateTime(fromMills), MillsToDateTime(toMills), limit, nativeOnly, descending);
+            MillsToDateTime(fromMills), MillsToDateTime(toMills), limit, descending);
 
         var rows = await FetchAsync(table => table.InRangeAsync(_repositories, db, range, ct));
         var treatments = await AssembleAsync(db, rows, ct);

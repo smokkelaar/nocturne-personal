@@ -2,6 +2,7 @@ using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Nocturne.API.Services.Analytics;
+using Nocturne.API.Tests.Infrastructure;
 using Nocturne.API.Services.Caching;
 using Nocturne.Core.Contracts.Analytics;
 using Nocturne.Core.Contracts.Profiles.Resolvers;
@@ -94,7 +95,7 @@ public class DataOverviewServiceTimeZoneTests : IDisposable
             factory.Object,
             new TenantClockResolver(settings.Object, category, NullLogger<TenantClockResolver>.Instance),
             statistics.Object,
-            Mock.Of<ITenantCache>(),
+            TestTenantCache.Create(),
             NullLogger<DataOverviewService>.Instance);
     }
 

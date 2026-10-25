@@ -96,28 +96,28 @@ public class SensorGlucoseRepository : SyncUpsertRepositoryBase<SensorGlucose, S
     /// <inheritdoc />
     public Task<IEnumerable<SensorGlucose>> GetForEntriesAsync(
         DateTime? from, DateTime? to, string? device, string? source,
-        int limit = 100, int offset = 0, bool descending = true, bool nativeOnly = false,
+        int limit = 100, int offset = 0, bool descending = true,
         DateTime? afterTimestamp = null, Guid? afterId = null,
         CancellationToken ct = default, Guid? patientDeviceId = null) =>
-        ReadForEntriesAsync(from, to, device, source, limit, offset, descending, nativeOnly,
+        ReadForEntriesAsync(from, to, device, source, limit, offset, descending,
             afterTimestamp, afterId, patientDeviceId, orderByValue: false, ct);
 
     /// <inheritdoc />
     public Task<IEnumerable<SensorGlucose>> GetForEntriesByValueAsync(
         DateTime? from, DateTime? to, string? source, int limit, int offset, bool descending,
         CancellationToken ct = default) =>
-        ReadForEntriesAsync(from, to, device: null, source, limit, offset, descending, nativeOnly: false,
+        ReadForEntriesAsync(from, to, device: null, source, limit, offset, descending,
             afterTimestamp: null, afterId: null, patientDeviceId: null, orderByValue: true, ct);
 
     private async Task<IEnumerable<SensorGlucose>> ReadForEntriesAsync(
         DateTime? from, DateTime? to, string? device, string? source,
-        int limit, int offset, bool descending, bool nativeOnly,
+        int limit, int offset, bool descending,
         DateTime? afterTimestamp, Guid? afterId, Guid? patientDeviceId,
         bool orderByValue, CancellationToken ct)
     {
         await using var ctx = await ContextFactory.CreateAsync(ct);
         return await BuildReadQuery(ctx, from, to, device, source, limit, offset,
-                descending, nativeOnly, afterTimestamp, afterId, patientDeviceId, orderByValue)
+                descending, afterTimestamp, afterId, patientDeviceId, orderByValue)
             .Select(e => new SensorGlucose
             {
                 Id = e.Id,
@@ -226,7 +226,7 @@ public class SensorGlucoseRepository : SyncUpsertRepositoryBase<SensorGlucose, S
         int limit = 100, int offset = 0, bool descending = true,
         CancellationToken ct = default)
         => GetAsync(from, to, device, source, limit, offset, descending,
-            nativeOnly: false, afterTimestamp: null, afterId: null, ct);
+            afterTimestamp: null, afterId: null, ct);
 
     /// <summary>
     /// Gets sensor glucose records based on filter criteria.
@@ -239,7 +239,6 @@ public class SensorGlucoseRepository : SyncUpsertRepositoryBase<SensorGlucose, S
     /// <param name="limit">The maximum number of records to return.</param>
     /// <param name="offset">The number of records to skip.</param>
     /// <param name="descending">Whether to sort by timestamp in descending order.</param>
-    /// <param name="nativeOnly">Whether to return only native records.</param>
     /// <param name="afterTimestamp">Keyset cursor timestamp. When paired with <paramref name="afterId"/>, replaces offset-based pagination.</param>
     /// <param name="afterId">Keyset cursor record ID (tiebreaker). When paired with <paramref name="afterTimestamp"/>, replaces offset-based pagination.</param>
     /// <param name="ct">The cancellation token.</param>
@@ -255,7 +254,6 @@ public class SensorGlucoseRepository : SyncUpsertRepositoryBase<SensorGlucose, S
         int limit = 100,
         int offset = 0,
         bool descending = true,
-        bool nativeOnly = false,
         DateTime? afterTimestamp = null,
         Guid? afterId = null,
         CancellationToken ct = default,
@@ -264,19 +262,19 @@ public class SensorGlucoseRepository : SyncUpsertRepositoryBase<SensorGlucose, S
     {
         await using var ctx = await ContextFactory.CreateAsync(ct);
         var entities = await BuildReadQuery(ctx, from, to, device, source, limit, offset,
-            descending, nativeOnly, afterTimestamp, afterId, patientDeviceId).ToListAsync(ct);
+            descending, afterTimestamp, afterId, patientDeviceId).ToListAsync(ct);
         return entities.Select(SensorGlucoseMapper.ToDomainModel);
     }
 
     public async Task<IEnumerable<SensorGlucose>> GetForAnalyticsAsync(
         DateTime? from, DateTime? to, string? device, string? source,
-        int limit = 100, int offset = 0, bool descending = true, bool nativeOnly = false,
+        int limit = 100, int offset = 0, bool descending = true,
         DateTime? afterTimestamp = null, Guid? afterId = null,
         CancellationToken ct = default, Guid? patientDeviceId = null)
     {
         await using var ctx = await ContextFactory.CreateAsync(ct);
         return await BuildReadQuery(ctx, from, to, device, source, limit, offset,
-                descending, nativeOnly, afterTimestamp, afterId, patientDeviceId)
+                descending, afterTimestamp, afterId, patientDeviceId)
             .Select(e => new SensorGlucose
             {
                 Id = e.Id,
@@ -293,7 +291,7 @@ public class SensorGlucoseRepository : SyncUpsertRepositoryBase<SensorGlucose, S
 
     private IQueryable<SensorGlucoseEntity> BuildReadQuery(
         NocturneDbContext ctx, DateTime? from, DateTime? to, string? device, string? source,
-        int limit, int offset, bool descending, bool nativeOnly,
+        int limit, int offset, bool descending,
         DateTime? afterTimestamp, Guid? afterId, Guid? patientDeviceId,
         bool orderByValue = false)
     {
@@ -308,8 +306,6 @@ public class SensorGlucoseRepository : SyncUpsertRepositoryBase<SensorGlucose, S
             query = query.Where(e => e.DataSource == source);
         if (patientDeviceId.HasValue)
             query = query.Where(e => e.PatientDeviceId == patientDeviceId.Value);
-        if (nativeOnly)
-            query = query.Where(e => e.LegacyId == null);
 
         query = ApplyReadVisibility(query, ctx);
 

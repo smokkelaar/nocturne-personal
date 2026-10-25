@@ -82,7 +82,7 @@ public class DeviceEventController(
             patientDeviceId = parsed;
 
         var data = await Repository.GetAsync(from, to, device, source, limit, offset, descending,
-            nativeOnly: false, patientDeviceId: patientDeviceId, ct: ct);
+            patientDeviceId: patientDeviceId, ct: ct);
         var total = await Repository.CountAsync(from, to, ct);
         return Ok(new PaginatedResponse<DeviceEvent> { Data = data, Pagination = new PaginationInfo(limit, offset, total) });
     }

@@ -44,6 +44,27 @@ public class RealtimeAdmissionControllerTests
     }
 
     [Fact]
+    public void Admission_names_the_tenant_the_caller_was_admitted_to()
+    {
+        AdmissionFor(MemberSession()).TenantId.Should().Be(Tenant);
+    }
+
+    [Fact]
+    public void Admission_is_refused_when_no_tenant_is_resolved()
+    {
+        var httpContext = new DefaultHttpContext();
+        httpContext.SetAuthContext(MemberSession());
+        httpContext.SetGrantedScopes(Scope.Normalize([Scope.GlucoseRead]));
+        var controller = new RealtimeAdmissionController
+        {
+            ControllerContext = new ControllerContext { HttpContext = httpContext },
+        };
+
+        controller.GetRealtimeAdmission().Result.Should().BeOfType<StatusCodeResult>()
+            .Which.StatusCode.Should().Be(StatusCodes.Status403Forbidden);
+    }
+
+    [Fact]
     public void A_member_session_may_join_the_tenant_room()
     {
         TenantRelayFor(new AuthContext

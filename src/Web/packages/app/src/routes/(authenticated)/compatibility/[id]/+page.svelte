@@ -46,7 +46,7 @@
   const matchType = $derived(getMatchTypeDisplay(analysis.overallMatch));
 </script>
 
-<div class="@container container mx-auto p-6 space-y-6">
+<div class="@container container mx-auto p-3 @md:p-6 space-y-6">
   <!-- Header with Back Button -->
   <div class="flex items-center gap-4">
     <Button variant="secondary" onclick={() => goto(resolve("/compatibility"))}>

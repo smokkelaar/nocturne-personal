@@ -48,7 +48,7 @@
   >
     <Tabs.Trigger
       value="all"
-      class="flex flex-col items-center gap-1 p-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-lg data-[state=active]:border-primary/30"
+      class="flex h-auto min-w-0 flex-col items-center gap-1 p-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-lg data-[state=active]:border-primary/30"
     >
       <List class="h-5 w-5" />
       <span class="text-xs font-medium">All</span>
@@ -61,10 +61,10 @@
       {@const Icon = categoryIcons[cat.id]}
       <Tabs.Trigger
         value={cat.id}
-        class="flex flex-col items-center gap-1 p-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-lg data-[state=active]:border-primary/30"
+        class="flex h-auto min-w-0 flex-col items-center gap-1 p-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-lg data-[state=active]:border-primary/30"
       >
         <Icon class="h-5 w-5 {cat.colorClass}" />
-        <span class="text-xs font-medium">{cat.name}</span>
+        <span class="text-center text-xs leading-tight font-medium whitespace-normal">{cat.name}</span>
         <Badge variant="secondary" size="sm">
           {categoryCounts[cat.id]}
         </Badge>

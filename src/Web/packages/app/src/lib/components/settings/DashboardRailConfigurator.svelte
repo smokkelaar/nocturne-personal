@@ -215,7 +215,7 @@
       </div>
     {/if}
 
-    <div class="flex items-center justify-between gap-2">
+    <div class="flex flex-wrap items-center justify-between gap-3">
       <p class="text-xs text-muted-foreground">
         Trackers show when a tracker is active. If an item has no tracker and you did not hide it, its age also shows.
       </p>

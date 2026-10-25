@@ -111,7 +111,7 @@
   });
 </script>
 
-<div class="space-y-6 p-4">
+<div class="@container space-y-6 p-4">
   <!-- Header with Navigation -->
   <Card.Root>
     <Card.Content class="p-4">
@@ -123,12 +123,12 @@
         </Button>
 
         <!-- Date Navigation -->
-        <div class="flex min-w-0 items-center gap-2 max-sm:w-full">
+        <div class="flex min-w-0 items-center gap-2 @max-xl:w-full">
           <Button variant="outline" size="icon" onclick={() => shiftPeriod(-1)}>
             <ChevronLeft class="h-4 w-4" />
           </Button>
           <div
-            class="flex min-w-0 flex-1 items-center gap-2 justify-center text-center sm:min-w-[280px]"
+            class="flex min-w-0 flex-1 items-center gap-2 justify-center text-center @xl:min-w-[280px]"
           >
             <span class="text-lg font-medium">{dateRangeDisplay}</span>
           </div>
@@ -137,7 +137,7 @@
           </Button>
         </div>
 
-        <div class="hidden w-24 sm:block"></div>
+        <div class="hidden w-24 @2xl:block"></div>
       </div>
     </Card.Content>
   </Card.Root>

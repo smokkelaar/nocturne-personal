@@ -22,8 +22,8 @@
     toWeekdays,
     type LoopAnalysisFilterState,
     type MaskKey,
-    weekdayLabel,
   } from "./loop-analysis-filter";
+  import { weekdayLabel } from "$lib/utils/formatting";
   import { maskLabels, missingScopeReason } from "./filter-labels.svelte";
 
   interface Props {

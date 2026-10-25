@@ -328,13 +328,13 @@
 
 {#if !localeValid}
   <div class="@container flex flex-col h-full">
-    <div class="flex-1 p-3 sm:p-4">
+    <div class="flex-1 p-3 @sm:p-4">
       <p class="text-muted-foreground">Unknown locale.</p>
     </div>
   </div>
 {:else}
   <div class="@container flex flex-col h-full">
-    <div class="flex-1 p-3 sm:p-4 space-y-6">
+    <div class="flex-1 p-3 @sm:p-4 space-y-6">
       <div class="flex flex-wrap items-center justify-between gap-3">
         <div>
           <a

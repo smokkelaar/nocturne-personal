@@ -631,7 +631,7 @@
   </Card.Root>
 
   <Card.Root>
-    <Card.Content class="space-y-4 p-6 print:space-y-2 print:p-4">
+    <Card.Content class="space-y-4 p-4 @md:p-6 print:space-y-2 print:p-4">
       <div class="flex flex-wrap items-center gap-3 border-b border-border pb-3 print:hidden">
         <span class="inline-flex items-center gap-2 text-sm font-medium">
           <span
@@ -712,7 +712,7 @@
         </p>
       {/if}
 
-      <div class="flex justify-between text-xs text-muted-foreground">
+      <div class="flex justify-between gap-2 text-xs text-muted-foreground">
         <span class="inline-flex items-center gap-1">
           <ArrowLeft class="h-3 w-3" aria-hidden="true" />
           Lower in {committed.b.label}

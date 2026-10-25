@@ -378,6 +378,11 @@ class SocketIOServer {
           return next(new Error('unauthorized'));
         }
 
+        if (!(await this.isCurrentTenant(tenantSlug, ticket.t))) {
+          logger.warn(`Rejecting connection ${socket.id}: handshake ticket names a tenant ${tenantSlug} no longer serves`);
+          return next(new Error('unauthorized'));
+        }
+
         this.setGrant(socket, tenantSlug, ticket);
         socket.data.readmission = { kind: 'ticket' };
         this.scheduleReadmission(socket, ticket.exp - Date.now());
@@ -514,7 +519,7 @@ class SocketIOServer {
   ): Promise<number | null> {
     switch (readmission.kind) {
       case 'ticket': {
-        const answer = await this.requestFreshTicket(socket);
+        const answer = await this.requestFreshTicket(socket, tenantSlug);
         if (answer === 'retry') {
           // A browser that could not reach its ticket endpoint, or a bundle that
           // predates the request and never answers, keeps its admission for one
@@ -581,10 +586,11 @@ class SocketIOServer {
   }
 
   /** Asks a browser socket for a fresh handshake ticket. Resolves to the
-   *  ticket once it verifies for the host the socket arrived on; `refused` for
-   *  a denial or a ticket that does not verify; `retry` when the browser gave no
-   *  ticket and no denial, or no answer at all. */
-  private async requestFreshTicket(socket: BridgeSocket) {
+   *  ticket once it verifies for the host the socket arrived on and the tenant
+   *  `tenantSlug` serves; `refused` for a denial or a ticket that does not
+   *  verify; `retry` when the browser gave no ticket and no denial, or no answer
+   *  at all. */
+  private async requestFreshTicket(socket: BridgeSocket, tenantSlug: string) {
     let reply: unknown;
     try {
       reply = await socket.timeout(TICKET_REFRESH_TIMEOUT_MS).emitWithAck('realtime_ticket');
@@ -596,7 +602,8 @@ class SocketIOServer {
 
     const host = pickHandshakeHost(socket.handshake.headers);
     const ticket = verifyHandshakeTicket(this.signingSecret, token);
-    return ticket && host && ticket.h === normalizeHandshakeHost(host) ? ticket : 'refused';
+    if (!ticket || !host || ticket.h !== normalizeHandshakeHost(host)) return 'refused';
+    return (await this.isCurrentTenant(tenantSlug, ticket.t)) ? ticket : 'refused';
   }
 
   /** Handle the classic Nightscout `authorize` message.
@@ -879,6 +886,10 @@ class SocketIOServer {
   /** Called with the tenant of every socket the API admits, so the bridge can open a relay for a
    *  tenant created since it last read the tenant list. */
   onTenantAdmitted: (tenantSlug: string) => void = () => {};
+
+  /** Whether `tenantId` is the tenant `tenantSlug` names now. Refuses every ticket until it is wired
+   *  to the bridge's tenant list. */
+  isCurrentTenant: (tenantSlug: string, tenantId: string) => Promise<boolean> = async () => false;
 
   /** Awaited when a connection arrives on the apex while the apex serves no tenant, before it is
    *  refused: an install's first tenant is created after the bridge starts. */

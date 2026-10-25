@@ -185,7 +185,7 @@
 <div class="@container container mx-auto max-w-4xl p-3 @md:p-6 space-y-6">
   <!-- Header -->
   <div class="flex items-center gap-3">
-    <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+    <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10">
       <HeartHandshake class="h-6 w-6 text-primary" />
     </div>
     <div>
@@ -211,16 +211,16 @@
           href={link.href}
           target="_blank"
           rel="external noopener noreferrer"
-          class="flex items-center justify-between p-4 rounded-lg border hover:border-primary/50 hover:bg-accent/50 transition-colors"
+          class="flex items-center justify-between gap-3 p-4 rounded-lg border hover:border-primary/50 hover:bg-accent/50 transition-colors"
         >
-          <div class="flex items-center gap-4">
+          <div class="flex min-w-0 items-center gap-4">
             <div
-              class="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10"
+              class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10"
             >
               <link.icon class="h-5 w-5 text-primary" />
             </div>
-            <div>
-              <div class="flex items-center gap-2">
+            <div class="min-w-0">
+              <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
                 <span class="font-medium">{link.name}</span>
                 {#if link.badge}
                   <Badge variant="secondary">
@@ -231,7 +231,7 @@
               <p class="text-sm text-muted-foreground">{link.description}</p>
             </div>
           </div>
-          <ExternalLink class="h-4 w-4 text-muted-foreground" />
+          <ExternalLink class="h-4 w-4 shrink-0 text-muted-foreground" />
         </a>
       {/each}
     </CardContent>
@@ -336,7 +336,7 @@
       <CardDescription>Guided walkthroughs to help you learn the app</CardDescription>
     </CardHeader>
     <CardContent class="space-y-4">
-      <div class="flex items-center justify-between">
+      <div class="flex flex-wrap items-center justify-between gap-3">
         <div class="space-y-0.5">
           <p class="text-sm font-medium">Show all tutorials again</p>
           <p class="text-sm text-muted-foreground">
@@ -382,7 +382,7 @@
     </CardHeader>
     <CardContent class="space-y-6">
       <div class="space-y-4">
-        <div class="flex items-center justify-between">
+        <div class="flex flex-wrap items-center justify-between gap-3">
           <div class="space-y-0.5">
             <Label>Include device information</Label>
             <p class="text-sm text-muted-foreground">
@@ -446,9 +446,9 @@
     </CardHeader>
     <CardContent class="space-y-4">
       {#if services?.apiEndpoint?.baseUrl}
-        <div class="flex items-center justify-between py-2 border-b">
+        <div class="flex flex-wrap items-center justify-between gap-x-4 py-2 border-b">
           <span class="text-muted-foreground">API endpoint</span>
-          <span class="font-mono text-sm">{services.apiEndpoint.baseUrl}</span>
+          <span class="min-w-0 break-all font-mono text-sm">{services.apiEndpoint.baseUrl}</span>
         </div>
       {/if}
       {#if status?.head && status.head !== "unknown" && status.head !== "nocturne-dev"}

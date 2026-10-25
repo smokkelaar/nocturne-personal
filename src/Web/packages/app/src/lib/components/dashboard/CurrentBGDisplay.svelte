@@ -135,7 +135,7 @@
 <!-- Desktop only: on mobile, MobileHeader carries the reading. -->
 <div class="@container">
   <h1 class="sr-only">Nocturne</h1>
-  <div class="hidden @md:flex items-center gap-6">
+  <div class="hidden @md:flex flex-wrap items-center gap-x-6 gap-y-3">
     <div class="flex shrink-0 items-center gap-3">
       <GlucoseValueIndicator
         displayValue={displayCurrentBG}
@@ -156,7 +156,7 @@
       items={railItems}
       rowsKey={desktopRowsKey}
       onTrackerComplete={handleTrackerComplete}
-      class="flex-1"
+      class="flex-1 @max-xl:order-last @max-xl:basis-full"
       testid="status-pills"
     >
       {#snippet leading()}
@@ -169,7 +169,7 @@
       {/snippet}
     </StatusRail>
 
-    <div class="flex shrink-0 items-center gap-1.5 text-sm text-muted-foreground tabular-nums">
+    <div class="ml-auto flex shrink-0 items-center gap-1.5 text-sm text-muted-foreground tabular-nums">
       <Clock class="size-4" aria-hidden="true" />
       {formattedLocalTime}
     </div>

@@ -120,6 +120,7 @@
           xAxis: {
             tickMultiline: true,
             format: formatHour,
+            tickOcclusion: true,
           },
           yAxis: {
             label: "Basal rate (U/hr)",

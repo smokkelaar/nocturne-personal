@@ -126,7 +126,7 @@ public sealed class TenantAppearanceControllerTests
             CalendarShowTirPercent = true,
             Prediction = new PredictionPreferences { Enabled = true },
             Chart = new ChartPreferences { ShowPoints = true },
-            YearOverviewColors = new YearOverviewColorPreferences { Tdd = [10, 70] },
+            YearOverviewColors = new YearOverviewColorPreferences { TddBand = [10, 70] },
             DashboardTopWidgets = [WidgetId.Tdd],
             DashboardRail = new DashboardRailPreference { Hidden = [RailItemId.Trackers] },
             HiddenLegacyFallbacks = [Nocturne.Core.Models.LegacyConsumableKind.Site],
@@ -142,13 +142,14 @@ public sealed class TenantAppearanceControllerTests
         // field added inside them: everything these two types declare is disclosed. Pinning the
         // declarations is what makes adding one a decision rather than a default.
         PropertyNames(typeof(YearOverviewColorPreferences)).Should().BeEquivalentTo(
-            "AdvancedMode", "OutOfBandTransparency", "LowColor", "HighColor",
-            "AvgGlucose", "AvgGlucoseBand", "AvgGlucoseColors", "AvgGlucoseInvert",
-            "Tir", "TirBand", "TirColors", "TirInvert",
-            "Bolus", "BolusBand", "BolusColors", "BolusInvert",
-            "Basal", "BasalBand", "BasalColors", "BasalInvert",
-            "Tdd", "TddBand", "TddColors", "TddInvert",
-            "Carbs", "CarbsBand", "CarbsColors", "CarbsInvert");
+            "OutOfBandTransparency",
+            "AvgGlucoseBand", "AvgGlucoseBoundaries", "AvgGlucoseLowColor", "AvgGlucoseHighColor",
+            "TirBand", "TirBoundaries", "TirLowColor", "TirHighColor",
+            "BolusBand", "BolusBoundaries", "BolusLowColor", "BolusHighColor",
+            "BasalBand", "BasalBoundaries", "BasalLowColor", "BasalHighColor",
+            "TddBand", "TddBoundaries", "TddLowColor", "TddHighColor",
+            "CarbsBand", "CarbsBoundaries", "CarbsLowColor", "CarbsHighColor");
+        PropertyNames(typeof(YearOverviewColorBoundary)).Should().BeEquivalentTo("Value", "Position", "Color");
         PropertyNames(typeof(PredictionPreferences)).Should().BeEquivalentTo(
             "Enabled", "Minutes", "DisplayMode");
         PropertyNames(typeof(ChartPreferences)).Should().BeEquivalentTo(

@@ -467,8 +467,8 @@ msgid "Time in range, average, median, standard deviation and coefficient of var
 msgstr "Time in range, average, median, standard deviation and coefficient of variation (CV) use all readings in the period. The percentiles show the spread. MAGE is the mean size of the large glucose swings."
 
 #: src/lib/help/reports.svelte.ts
-msgid "The ambulatory glucose profile puts all days of the period on one 24-hour axis. It shows your usual day."
-msgstr "The ambulatory glucose profile puts all days of the period on one 24-hour axis. It shows your usual day."
+msgid "The Ambulatory Glucose Profile puts all days of the period on one 24-hour axis. It shows your usual day."
+msgstr "The Ambulatory Glucose Profile puts all days of the period on one 24-hour axis. It shows your usual day."
 
 #: src/lib/help/reports.svelte.ts
 msgid "The dark line is the median. The darker band holds the middle 50% of the readings at that time, and the lighter band the middle 80%."

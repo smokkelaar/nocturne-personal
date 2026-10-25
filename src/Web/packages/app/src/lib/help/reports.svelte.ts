@@ -89,7 +89,7 @@ export function reportArticles(): HelpArticle[] {
     report(
       "/reports/agp",
       "Glucose profile (AGP)",
-      "The ambulatory glucose profile puts all days of the period on one 24-hour axis. It shows your usual day.",
+      "The Ambulatory Glucose Profile puts all days of the period on one 24-hour axis. It shows your usual day.",
       "The dark line is the median. The darker band holds the middle 50% of the readings at that time, and the lighter band the middle 80%.",
       "The profile is not the trace of one actual day. A time with few readings gives an unreliable band. The consensus advice is at least 14 days of data with 70% sensor wear.",
       [

@@ -467,7 +467,7 @@ msgid "Time in range, average, median, standard deviation and coefficient of var
 msgstr "Tijd in bereik, gemiddelde, mediaan, standaarddeviatie en variatiecoëfficiënt (CV) gebruiken alle metingen in de periode. De percentielen tonen de spreiding. MAGE is de gemiddelde grootte van de grote glucoseschommelingen."
 
 #: src/lib/help/reports.svelte.ts
-msgid "The ambulatory glucose profile puts all days of the period on one 24-hour axis. It shows your usual day."
+msgid "The Ambulatory Glucose Profile puts all days of the period on one 24-hour axis. It shows your usual day."
 msgstr "Het ambulant glucoseprofiel zet alle dagen van de periode op één as van 24 uur. Het toont je gebruikelijke dag."
 
 #: src/lib/help/reports.svelte.ts

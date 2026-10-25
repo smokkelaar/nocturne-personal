@@ -17,6 +17,7 @@
   import VisibleChart from "$lib/components/reports/year-overview/VisibleChart.svelte";
   import type {
     DailySummaryDay,
+    GlycemicThresholds,
     GriTimelinePeriod,
   } from "$api/generated/nocturne-api-client";
   import { getUnitLabel } from "$lib/utils/formatting";
@@ -227,27 +228,41 @@
   // Glucose color scale
   // =========================================================================
 
-  const GLUCOSE_BANDS = [54, 70, 180, 250];
+  const DEFAULT_GLUCOSE_BANDS = [54, 70, 180, 250];
+  let thresholds = $state<GlycemicThresholds>();
 
-  const glucoseColorScale = scaleThreshold<number, string>()
-    .domain(GLUCOSE_BANDS)
-    .range([
-      "var(--glucose-very-low)",
-      "var(--glucose-low)",
-      "var(--glucose-in-range)",
-      "var(--glucose-high)",
-      "var(--glucose-very-high)",
-    ]);
+  const glucoseBands = $derived(
+    thresholds?.veryLow != null &&
+      thresholds.low != null &&
+      thresholds.high != null &&
+      thresholds.veryHigh != null
+      ? [thresholds.veryLow, thresholds.low, thresholds.high, thresholds.veryHigh]
+      : DEFAULT_GLUCOSE_BANDS
+  );
 
-  const glucoseHatchScale = scaleThreshold<number, TextureKey | null>()
-    .domain(GLUCOSE_BANDS)
-    .range([
-      "very-low-hatch",
-      "low-hatch",
-      null,
-      "high-hatch",
-      "very-high-hatch",
-    ]);
+  const glucoseColorScale = $derived(
+    scaleThreshold<number, string>()
+      .domain(glucoseBands)
+      .range([
+        "var(--glucose-very-low)",
+        "var(--glucose-low)",
+        "var(--glucose-in-range)",
+        "var(--glucose-high)",
+        "var(--glucose-very-high)",
+      ])
+  );
+
+  const glucoseHatchScale = $derived(
+    scaleThreshold<number, TextureKey | null>()
+      .domain(glucoseBands)
+      .range([
+        "very-low-hatch",
+        "low-hatch",
+        null,
+        "high-hatch",
+        "very-high-hatch",
+      ])
+  );
 
   function getCellHatch(data: CalendarDatum | undefined): TextureKey | null {
     if (selectedMetric !== "avgGlucose" || data?.value == null) return null;
@@ -433,6 +448,7 @@
         if (disposed) return;
         availableYears = result.years ?? [];
         availableDataSources = result.availableDataSources ?? [];
+        thresholds = result.thresholds;
         metadataLoaded = true;
       } catch (err) {
         console.error("Failed to load available years:", err);
@@ -736,7 +752,7 @@
       onCustomColorsChange={setCustomColors}
       {invert}
       onInvertChange={setInvert}
-      glucoseBands={GLUCOSE_BANDS}
+      glucoseBands={glucoseBands}
     />
 
     <!-- Loading state for metadata -->
@@ -796,7 +812,7 @@
             {getCellHatch}
             {navigateToDayInReview}
             {glucoseColorScale}
-            glucoseBands={GLUCOSE_BANDS}
+            glucoseBands={glucoseBands}
             {units}
             {unitLabel}
             {formatUnits}

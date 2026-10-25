@@ -406,7 +406,7 @@ describe("documentation help", () => {
         await page.getByText("Browse documentation", { exact: true }).click();
       await page
         .getByRole("navigation", { name: "Documentation navigation" })
-        .getByRole("button", { name: "Heart Rate", exact: true })
+        .getByRole("button", { name: "Heart rate", exact: true })
         .click();
       await expect
         .element(page.getByRole("heading", { name: "Heart Rate", exact: true }))

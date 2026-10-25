@@ -197,6 +197,20 @@ describe("contextual documentation", () => {
     );
     expect(admin.some((link) => link.href.includes("[date]"))).toBe(false);
   });
+  it("files administration, audit, and app authorization guides under pages their readers can open", () => {
+    const member = documentationLinks(
+      buildAppNavigation({ ...viewer, isPlatformAdmin: false })
+    );
+    expect(member.some((link) => link.href === "/settings/audit")).toBe(true);
+    expect(member.some((link) => link.href === "/oauth/consent")).toBe(true);
+    expect(member.some((link) => link.href === "/settings/admin")).toBe(false);
+    const admin = documentationLinks(buildAppNavigation(viewer));
+    expect(admin.some((link) => link.href === "/settings/admin")).toBe(true);
+    expect(articleFor("/oauth/device", admin).title).toBe("Link a device");
+    expect(articleFor("/settings/translations/nl", admin).title).toBe(
+      "Translations"
+    );
+  });
   it("uses supplied thresholds instead of copying default glucose limits into help", () => {
     const bands = glucoseBands({
       veryLow: 55,

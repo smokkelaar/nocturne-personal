@@ -941,15 +941,15 @@ export function readingGuides(): Record<string, ReadingGuide> {
       [
         [
           "Choose the scope",
-          "Account belongs to you. Patient Record and connectors belong to the selected tenant.",
+          "Account belongs to you. Patient record, therapy, sharing, and connectors belong to the selected tenant.",
         ],
         [
           "Open a category",
-          "Use its controls and field descriptions for the particular feature.",
+          "Each category page explains its own controls in its help.",
         ],
         [
-          "Verify the result",
-          "A display change, a saved setting, and an imported record are different outcomes.",
+          "Check the result",
+          "A display choice, a saved setting, and an imported record are different outcomes.",
         ],
       ]
     ),
@@ -958,16 +958,16 @@ export function readingGuides(): Record<string, ReadingGuide> {
       ["/settings/access"],
       [
         [
-          "Check your identity",
-          "These details describe the signed-in person, not the monitored patient.",
+          "Add a second sign-in method",
+          "Register at least two passkeys or linked providers, so that one lost device does not lock you out.",
         ],
         [
-          "Prepare recovery",
-          "Register your chosen sign-in methods and save recovery codes privately.",
+          "Save recovery codes",
+          "Generate the codes and store them privately. Each code works once.",
         ],
         [
           "Review sessions",
-          "Active Access manages already-signed-in browsers separately from credentials.",
+          "Active access lists the browsers that are signed in to your account.",
         ],
       ]
     ),
@@ -976,103 +976,106 @@ export function readingGuides(): Record<string, ReadingGuide> {
       ["/settings/profile", "/settings/weight", "/settings/timezone"],
       [
         [
-          "Check the patient",
-          "Verify the workspace before editing clinical information.",
+          "Check the tenant",
+          "Make sure that you edit the record of the correct person.",
         ],
         [
-          "Save changed details",
-          "Weight is recorded into its history when changed. Timezone changes take effect from saving.",
+          "Complete the details",
+          "Timezone, sex, and date of birth change alerts, schedules, and sleep ranges.",
         ],
         [
-          "Manage related history",
-          "Use Weight history and Timezone history for dated entries rather than overwriting a single current value.",
+          "Add devices and insulins",
+          "Use start and end dates, so that the history shows what was in use at each moment.",
         ],
       ]
     ),
     "/settings/appearance": entry(
       "flow",
-      [],
+      ["/settings/trackers"],
       [
         [
           "Choose units and theme",
-          "These format your display rather than changing stored measurements.",
+          "These change how values look. Stored measurements stay the same.",
         ],
         [
-          "Try help appearance",
-          "Open the book and adjust layout, transparency, and blur with Display options.",
+          "Arrange the dashboard",
+          "Choose the widgets and status pills that you want to see first.",
         ],
         [
           "Know where it is saved",
-          "Documentation preferences are browser-local. Account display preferences have their own persistence.",
+          "Most choices follow your account. Help display choices stay in this browser.",
         ],
       ]
     ),
     "/settings/profile": entry(
       "stairs",
-      ["/settings/connectors"],
+      ["/settings/connectors", "/settings/patient"],
       [
         [
           "Choose the profile",
-          "Check which imported profile is default and when the schedule applies.",
+          "Check which profile is the default and whether a switch is active.",
         ],
         [
-          "Read time segments",
+          "Read the time segments",
           "Basal, sensitivity, carb ratio, and target can change by time of day.",
         ],
         [
-          "Correct the origin",
-          "When schedules are read-only here, edit the profile in the source app/device and sync again.",
+          "Change it at the source",
+          "A read-only profile comes from your app or device. Edit it there and sync again.",
         ],
       ]
     ),
     "/settings/data-quality": entry(
       "flow",
-      ["/settings/connectors"],
+      ["/settings/patient"],
       [
         [
-          "Configure detection",
-          "Set typical sleep times and automatic detection for review suggestions.",
+          "Set your sleep times",
+          "Bedtime and wake time set the overnight window for analysis.",
         ],
         [
-          "Inspect the result",
-          "Open the quality reports to see what was flagged.",
+          "Enable detection",
+          "Nocturne then notifies you about possible compression lows.",
         ],
         [
-          "Separate cleanup",
-          "Maintenance and accepting suggestions can change records. Merely changing detection settings is a different action.",
+          "Review the suggestions",
+          "Open the quality reports to confirm or dismiss what was found.",
         ],
       ]
     ),
     "/settings/trackers": entry(
       "flow",
-      ["/alerts"],
+      ["/alerts", "/settings/appearance"],
       [
         [
-          "Define what is tracked",
-          "Definitions set the duration/reminders. Presets reuse starting information.",
+          "Create a definition",
+          "Set the lifespan, the reminder thresholds, and the dashboard visibility.",
         ],
         [
-          "Start an instance",
-          "An active tracker measures time from its recorded start.",
+          "Start a tracker",
+          "Start it from Active or a preset, and adjust the start time if needed.",
         ],
         [
-          "Complete the event",
-          "Completion creates history. Editing a definition is not the same as completing an instance.",
+          "Complete or restart",
+          "Complete it when you change the item, or let a device event restart it.",
         ],
       ]
     ),
     "/settings/access": entry(
       "flow",
-      ["/settings/account", "/settings/connectors"],
+      ["/settings/account", "/settings/connectors", "/settings/members"],
       [
-        ["Inspect sessions", "Find browsers signed in to your account."],
         [
-          "Revoke unwanted access",
-          "That session must authenticate again. Stored patient records remain.",
+          "Inspect the sessions",
+          "Find each browser that is signed in to your account.",
         ],
         [
-          "Use the right list",
-          "Uploader devices, authorized apps, and API tokens are managed in Connectors & Apps.",
+          "Sign out unknown sessions",
+          "That browser must sign in again. Stored data stays.",
+        ],
+        [
+          "Use the right page",
+          "Apps and tokens are in Connectors & apps. People and links are in Sharing & privacy.",
         ],
       ]
     ),
@@ -1100,15 +1103,15 @@ export function readingGuides(): Record<string, ReadingGuide> {
       [
         [
           "Choose who has access",
-          "Use memberships, invitations, and requests for named people.",
+          "Invite named people, review requests, or create a temporary guest link.",
         ],
         [
           "Choose what they can do",
-          "Roles, scopes, and time limits determine the available data and actions.",
+          "Roles, direct permissions, and the 24-hour limit set the data and actions.",
         ],
         [
-          "Review share links",
-          "Anyone possessing a usable guest link receives its configured access. Revoke links you no longer intend to share.",
+          "Review the links",
+          "Anyone with a guest link or the public link sees what it allows. Revoke links you do not need.",
         ],
       ]
     ),
@@ -1136,51 +1139,51 @@ export function readingGuides(): Record<string, ReadingGuide> {
       [
         [
           "Choose a language",
-          "Inspect the entries available for that catalog.",
+          "Open the language and show the untranslated messages first.",
         ],
         [
-          "Preserve placeholders",
-          "Keep interpolation and markup placeholders intact when editing a message.",
+          "Keep placeholders",
+          "Copy placeholders and markup tags exactly as they are in the English text.",
         ],
         [
-          "Submit a contribution",
-          "Contributor details and reviewer notes accompany your translation. Interface language is selected in Appearance.",
+          "Submit the drafts",
+          "Your drafts are proposed to the Nocturne project as a pull request.",
         ],
       ]
     ),
     "/settings/weight": entry(
       "trend",
-      ["/settings/connectors/google-health"],
+      ["/settings/patient", "/settings/connectors/google-health"],
       [
         [
-          "Inspect dated entries",
-          "Weight history contains manual records and supported imports.",
+          "Inspect the entries",
+          "Weight history holds manual entries and supported imports.",
         ],
         [
-          "Add the right units",
-          "Enter kilograms and the actual recording time, not today's date for an older measurement.",
+          "Enter the real time",
+          "Use the time of the measurement, not the current time, for an older weight.",
         ],
         [
           "Manage imports separately",
-          "Selecting Weight in Google Health controls imports. Editing a history entry is a different operation.",
+          "The Google Health connector controls weight imports.",
         ],
       ]
     ),
     "/settings/timezone": entry(
       "flow",
-      ["/settings/patient", "/settings/appearance"],
+      ["/settings/patient"],
       [
         [
           "Add a location change",
-          "Choose the timezone and local arrival date/time.",
+          "Choose the timezone and the local date and time of arrival.",
         ],
         [
-          "Keep history meaningful",
-          "Dated locations explain local timing as the patient travels.",
+          "Know which data it changes",
+          "It corrects sources that record local clock time, such as Glooko.",
         ],
         [
-          "Use correction deliberately",
-          "The Fix already-imported data action is separate from changing display formats. Use it to correct existing timestamps.",
+          "Correct saved data",
+          "Re-import recent data to correct readings that were saved before the change.",
         ],
       ]
     ),
@@ -1189,16 +1192,16 @@ export function readingGuides(): Record<string, ReadingGuide> {
       ["/settings/connectors"],
       [
         [
-          "Choose the source",
-          "Set Nightscout API or MongoDB credentials and an optional date range.",
+          "Test the source",
+          "Enter the Nightscout URL and API secret, or the MongoDB details, and test the connection.",
         ],
         [
-          "Watch collections",
-          "Inspect active progress and skipped-record notes, not just the final status.",
+          "Start and follow",
+          "Follow the progress for each collection, not only the final status.",
         ],
         [
-          "Verify imported records",
-          "Check representative dates in normal reports. Ongoing connector sync is configured separately.",
+          "Check the result",
+          "Read skipped and failed collections in History, then check dates in the reports.",
         ],
       ]
     ),
@@ -1222,19 +1225,16 @@ export function readingGuides(): Record<string, ReadingGuide> {
     ),
     "/settings/admin/tenants": entry(
       "flow",
-      [],
+      ["/settings/admin"],
       [
+        ["Check the tenant", "Confirm the name and slug before an edit."],
         [
-          "Choose the tenant",
-          "Confirm its name and slug before an administrative edit.",
+          "Choose a slug carefully",
+          "The slug is part of the tenant address and cannot change later.",
         ],
         [
-          "Check active status",
-          "Tenant activation affects availability of that workspace.",
-        ],
-        [
-          "Separate permissions",
-          "Platform administrators and roles inside one tenant are different kinds of access.",
+          "Separate the permissions",
+          "Platform administrators manage every tenant. A role applies inside one tenant.",
         ],
       ]
     ),
@@ -1275,33 +1275,75 @@ export function readingGuides(): Record<string, ReadingGuide> {
       "flow",
       ["/settings/members"],
       [
-        ["Inspect the requester", "Check the identity and requested access."],
         [
-          "Approve or deny",
-          "Apply the intended platform decision to the request.",
+          "Inspect the requester",
+          "Read the name and message, and decide whether you know this person.",
         ],
         [
-          "Manage tenant membership",
-          "Sharing & Privacy separately controls access to a patient's workspace.",
+          "Choose the access",
+          "Select roles, optional permissions, and the 24-hour limit.",
+        ],
+        [
+          "Approve or deny",
+          "Approval activates the account. Denial deactivates it.",
         ],
       ]
     ),
     "/settings/audit": entry(
       "flow",
-      [],
+      ["/settings/members"],
       [
         [
-          "Filter the history",
-          "Choose the relevant period or action using the available controls.",
+          "Choose the log",
+          "Data changes shows edits. If read access logging is on, Data access shows reads.",
         ],
         [
-          "Inspect an event",
-          "Read the recorded actor, action, and affected configuration.",
+          "Narrow the dates",
+          "The list shows the most recent entries, so narrow the range for older events.",
+        ],
+        ["Check retention", "Entries older than the retention are deleted."],
+      ]
+    ),
+    "/settings/admin": entry(
+      "flow",
+      ["/settings/admin/tenants"],
+      [
+        [
+          "Add a provider",
+          "Register Nocturne at the provider, then enter the issuer, client ID, and secret.",
         ],
         [
-          "Understand retention",
-          "Only actions recorded and retained by this server can appear.",
+          "Test before you save",
+          "Test connection shows whether Nocturne can reach the provider.",
         ],
+        [
+          "Watch for lockouts",
+          "Members who sign in only through a provider need a recovery code if you disable it.",
+        ],
+      ]
+    ),
+    "/oauth/consent": entry(
+      "flow",
+      ["/settings/connectors"],
+      [
+        [
+          "Identify the app",
+          "Check the app name, its address, and the directory warning.",
+        ],
+        [
+          "Read the permissions",
+          "Approve only the access that the app needs. Full access includes deleting data.",
+        ],
+        ["Revoke later", "Approved apps are listed in Connectors & apps."],
+      ]
+    ),
+    "/oauth/device": entry(
+      "flow",
+      ["/settings/connectors"],
+      [
+        ["Compare the code", "Enter only the code that your own device shows."],
+        ["Read the permissions", "Check what the device can read and change."],
+        ["Approve or deny", "After you approve, return to the device."],
       ]
     ),
   };

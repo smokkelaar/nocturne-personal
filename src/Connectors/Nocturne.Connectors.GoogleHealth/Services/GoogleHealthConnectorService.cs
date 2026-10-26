@@ -76,8 +76,8 @@ public sealed class GoogleHealthConnectorService(
     /// <summary>
     ///     Resolves the next historical calendar-month window. The live window is processed
     ///     separately on every managed sync, before this backfill window. Caller-supplied windows
-    ///     are completed in full without touching backfill state; reconciliation splits oversized
-    ///     windows as needed. An omitted lower bound uses the earliest supported date.
+    ///     are completed in full without touching backfill state; <see cref="ReadExplicitWindowAsync"/>
+    ///     splits them as needed. An omitted lower bound uses the earliest supported date.
     /// </summary>
     private async Task<GoogleHealthSyncWindow> ResolveWindowAsync(
         SyncRequest request, GoogleHealthConnectorConfiguration config, DateTimeOffset now, CancellationToken ct)
@@ -305,7 +305,7 @@ public sealed class GoogleHealthConnectorService(
                 logger.LogInformation(
                     "Starting explicitly bounded Google Health sync for tenant {TenantId} from {From} to {To}. Active data types: {ActiveDataTypes}",
                     tenantId, window.From, window.To, string.Join(',', active));
-                await ReadWithRefreshAsync(
+                await ReadExplicitWindowAsync(
                     config, session.AccessToken!, active, window.From, window.To, tenantId, result, cancellationToken);
                 if (coversConfiguredTypes)
                     await PersistWatermarkAsync(window.To, cancellationToken);
@@ -435,6 +435,56 @@ public sealed class GoogleHealthConnectorService(
             foreach (var (type, count) in previousCounts) result.ItemsSynced[type] = count;
         }
     }
+
+    /// <summary>
+    ///     Reads a caller-supplied window, halving it at UTC midnight when Google fails on a range a
+    ///     smaller one can avoid. The managed backfill gets the same relief across runs through
+    ///     <see cref="TryReduceBackfillWindowAsync"/>; an explicit window has no cursor to resume
+    ///     from, so it is split within the run. Types that completed before the failing one are not
+    ///     read again.
+    /// </summary>
+    private async Task<string> ReadExplicitWindowAsync(
+            GoogleHealthConnectorConfiguration config,
+            string accessToken,
+            string[] active,
+            DateTimeOffset from,
+            DateTimeOffset to,
+            Guid tenantId,
+            SyncResult result,
+            CancellationToken ct)
+    {
+        var previousCounts = result.ItemsSynced.ToDictionary();
+        try
+        {
+            return await ReadWithRefreshAsync(config, accessToken, active, from, to, tenantId, result, ct);
+        }
+        catch (Exception ex) when (to - from > TimeSpan.FromDays(1) && IsSplittable(ex, ct))
+        {
+            var failedIndex = ex is GoogleHealthException { DataType: { } failedType }
+                ? Array.IndexOf(active, failedType)
+                : -1;
+            var remaining = failedIndex > 0 ? active[failedIndex..] : active;
+            foreach (var type in remaining)
+                if (GoogleHealthClient.TryGetSyncDataType(type, out var dataType))
+                    result.ItemsSynced[dataType] = previousCounts.GetValueOrDefault(dataType);
+            var middle = new DateTimeOffset((from + (to - from) / 2).UtcDateTime.Date, TimeSpan.Zero);
+            if (middle <= from) middle = new DateTimeOffset(from.UtcDateTime.Date.AddDays(1), TimeSpan.Zero);
+            logger.LogWarning(
+                "Google Health window {From} to {To} failed with {Code} for {DataTypes}; retrying in two halves split at {Middle}",
+                from, to, (ex as GoogleHealthException)?.Message ?? ex.GetType().Name, string.Join(',', remaining), middle);
+            var token = await ReadExplicitWindowAsync(config, accessToken, remaining, from, middle, tenantId, result, ct);
+            return await ReadExplicitWindowAsync(config, token, remaining, middle, to, tenantId, result, ct);
+        }
+    }
+
+    // rate_limited is left out: more, smaller requests only make it worse.
+    private static bool IsSplittable(Exception ex, CancellationToken ct) => ex switch
+    {
+        GoogleHealthException { Message: "history_too_large" or "google_unavailable" or "internal_sync_native_write" } => true,
+        OperationCanceledException => !ct.IsCancellationRequested,
+        HttpRequestException or TimeoutException => true,
+        _ => false
+    };
 
     private async Task ReadOnceAsync(
             GoogleHealthConnectorConfiguration config,

@@ -28404,6 +28404,7 @@ msgstr ""
 msgid "<0/> Sleep & overnight"
 msgstr ""
 
+#: src/lib/help/meanings.svelte.ts
 #: src/routes/(authenticated)/reports/sleep/[date]/+page.svelte
 msgid "Overnight time in range"
 msgstr ""
@@ -44164,15 +44165,11 @@ msgstr ""
 msgid "At least 70% of the time in range, less than 4% below range, less than 1% very low, less than 25% above range, and less than 5% very high. These are general targets. Your care team can agree other targets with you."
 msgstr ""
 
-#. 0: data
-#: src/lib/help/meanings.svelte.ts
-msgid "How {0} reach Nocturne"
-msgstr ""
+#~ msgid "How {0} reach Nocturne"
+#~ msgstr ""
 
-#. 0: data
-#: src/lib/help/meanings.svelte.ts
-msgid "Fitbit and Pixel Watch write to Google Health directly. Garmin, Samsung, Oura and Withings on Android write to Health Connect, and the Google Health app reads Health Connect. On an iPhone, Garmin Connect, Apple Watch and most apps write to Apple Health, and the Google Health app can read Apple Health. Then connect Google Health in Connectors & Apps and select {0}."
-msgstr ""
+#~ msgid "Fitbit and Pixel Watch write to Google Health directly. Garmin, Samsung, Oura and Withings on Android write to Health Connect, and the Google Health app reads Health Connect. On an iPhone, Garmin Connect, Apple Watch and most apps write to Apple Health, and the Google Health app can read Apple Health. Then connect Google Health in Connectors & Apps and select {0}."
+#~ msgstr ""
 
 #: src/lib/help/meanings.svelte.ts
 msgid "The large number"
@@ -44402,9 +44399,8 @@ msgstr ""
 msgid "How a run ended"
 msgstr ""
 
-#: src/lib/help/meanings.svelte.ts
-msgid "Completed means that you completed the tracker. Expired means it reached its end without completion. Fell off means the device record stopped."
-msgstr ""
+#~ msgid "Completed means that you completed the tracker. Expired means it reached its end without completion. Fell off means the device record stopped."
+#~ msgstr ""
 
 #: src/lib/help/meanings.svelte.ts
 msgid "Info is delivered once and acknowledged automatically. Warning stays active until someone acknowledges it. Critical is like warning and always comes through Do not disturb."
@@ -44582,15 +44578,45 @@ msgstr ""
 msgid "Deep, REM, light and awake come from your device. Asleep (unstaged) is sleep without stages, for example from a manual entry."
 msgstr ""
 
-#: src/lib/help/meanings.svelte.ts
-msgid "Glucose during the night"
-msgstr ""
+#~ msgid "Glucose during the night"
+#~ msgstr ""
 
-#: src/lib/help/meanings.svelte.ts
-msgid "The glucose line runs under the stages, so you can see lows and rises in each stage. A low wakes you up more often than a deep sleep stage suggests."
-msgstr ""
+#~ msgid "The glucose line runs under the stages, so you can see lows and rises in each stage. A low wakes you up more often than a deep sleep stage suggests."
+#~ msgstr ""
 
 #: src/lib/components/help/HelpBrowser.svelte
 #: src/lib/components/help/HelpBrowser.svelte
 msgid "What you see and what it means"
+msgstr ""
+
+#: src/lib/help/meanings.svelte.ts
+msgid "Completed means the run ended at or near its expected time. Expired means it ran past its expected life. Fell off means the device came off the body. Replaced early, Failed, Empty and Refilled give other reasons."
+msgstr ""
+
+#: src/lib/help/meanings.svelte.ts
+msgid "How steps reach Nocturne"
+msgstr ""
+
+#: src/lib/help/meanings.svelte.ts
+msgid "Fitbit and Pixel Watch write to Google Health directly. Garmin, Samsung, Oura and Withings on Android write to Health Connect, and the Google Health app reads Health Connect. On an iPhone, Garmin Connect, Apple Watch and most apps write to Apple Health, and the Google Health app can read Apple Health. Then connect Google Health in Connectors & Apps and select Steps."
+msgstr ""
+
+#: src/lib/help/meanings.svelte.ts
+msgid "How heart rate reaches Nocturne"
+msgstr ""
+
+#: src/lib/help/meanings.svelte.ts
+msgid "Fitbit and Pixel Watch write to Google Health directly. Garmin, Samsung, Oura and Withings on Android write to Health Connect, and the Google Health app reads Health Connect. On an iPhone, Garmin Connect, Apple Watch and most apps write to Apple Health, and the Google Health app can read Apple Health. Then connect Google Health in Connectors & Apps and select Heart rate."
+msgstr ""
+
+#: src/lib/help/meanings.svelte.ts
+msgid "How sleep reaches Nocturne"
+msgstr ""
+
+#: src/lib/help/meanings.svelte.ts
+msgid "Fitbit and Pixel Watch write to Google Health directly. Garmin, Samsung, Oura and Withings on Android write to Health Connect, and the Google Health app reads Health Connect. On an iPhone, Garmin Connect, Apple Watch and most apps write to Apple Health, and the Google Health app can read Apple Health. Then connect Google Health in Connectors & Apps and select Sleep."
+msgstr ""
+
+#: src/lib/help/meanings.svelte.ts
+msgid "Overnight time in range uses the readings between falling asleep and waking up. Compare a low with the stage at the same time in the hypnogram. No CGM data means that no readings overlap the session."
 msgstr ""

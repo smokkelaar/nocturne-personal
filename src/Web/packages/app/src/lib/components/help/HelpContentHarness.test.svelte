@@ -7,6 +7,8 @@
 
 <HelpReadingAid {article} />
 <h1>{article.title}</h1>
+{#each article.meaning ?? [] as item (item.title)}<h2>{item.title}</h2>
+  <p>{item.text}</p>{/each}
 <p>{article.introduction}</p>
 {#each article.sections as section (section.title)}<h2>{section.title}</h2>
   <p>{section.text}</p>{/each}

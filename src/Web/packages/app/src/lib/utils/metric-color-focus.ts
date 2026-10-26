@@ -55,7 +55,10 @@ export interface MetricScale {
 
 export const GLUCOSE_LIMITS: ColorFocusRange = [GLUCOSE_COLOR_MIN, GLUCOSE_COLOR_MAX];
 
-/** The glucose ramp keeps its fixed mg/dL domain, so a color means the same reading whatever the window. */
+/**
+ * Personal: the glucose ramp spans the window, as the intensity ramps do, so the outer handles
+ * narrow the colors to the readings that matter. Upstream keeps the fixed mg/dL domain.
+ */
 export function glucoseScale(
   savedWindow: unknown,
   savedBoundaries: unknown,
@@ -65,12 +68,13 @@ export function glucoseScale(
 ): MetricScale {
   const boundaries = resolveColorBoundaries(savedBoundaries, GLUCOSE_LIMITS) ?? [];
   const ends = resolveColorEnds(savedEnds);
+  const window = resolveColorFocusRange(savedWindow, GLUCOSE_LIMITS) ?? GLUCOSE_LIMITS;
   return {
-    ramp: paintRamp(lookRamp(GLUCOSE_RAMP, look), ends, boundaries, GLUCOSE_LIMITS),
+    ramp: paintRamp(lookRamp(GLUCOSE_RAMP, look), ends, boundaries, window),
     ends,
-    domain: GLUCOSE_LIMITS,
+    domain: window,
     axis: GLUCOSE_LIMITS,
-    window: resolveColorFocusRange(savedWindow, GLUCOSE_LIMITS) ?? GLUCOSE_LIMITS,
+    window,
     boundaries,
     dim,
   };

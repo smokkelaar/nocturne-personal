@@ -33,6 +33,8 @@ export interface HelpArticle {
   sources?: HelpSource[];
   helpOnly?: boolean;
   reading?: HelpSection[];
+  /** What the page shows and how to interpret it; shown open above the reading aid. */
+  meaning?: HelpSection[];
   visual?: HelpVisualKind;
   settings?: string[];
   reference?: "glucose" | "google-health";

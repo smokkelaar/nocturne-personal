@@ -97,9 +97,7 @@ describe("contextual documentation", () => {
     expect(articleFor("/alerts/simulator", links).title).toBe(
       "Alert Simulator"
     );
-    expect(articleFor("/clock/config/abc/", links).title).toBe(
-      "Clock builder"
-    );
+    expect(articleFor("/clock/config/abc/", links).title).toBe("Clock builder");
     expect(articleFor("/", links).title).toBe("Dashboard");
   });
   it("offers the data routes chapter from connectors and finds it by device", () => {
@@ -271,5 +269,17 @@ describe("contextual documentation", () => {
     expect(
       google.sources!.every((source) => source.href.startsWith("https://"))
     ).toBe(true);
+  });
+});
+
+describe("page meanings", () => {
+  it("opens daily guides with what their figures mean", () => {
+    for (const path of ["/", "/calendar", "/alerts", "/reports/steps"])
+      expect(articleFor(path, []).meaning?.length).toBeGreaterThan(0);
+    expect(
+      searchDocumentation("Health Connect", [
+        { title: "Steps", href: "/reports/steps" } as never,
+      ]).map((a) => a.href)
+    ).toContain("/reports/steps");
   });
 });

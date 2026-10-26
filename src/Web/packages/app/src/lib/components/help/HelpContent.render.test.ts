@@ -12,10 +12,12 @@ const content = (path: string, locale = "en") =>
   runWithLocale(locale, () => render(Harness, { props: { path } }).body);
 
 describe("translation-aware help factories", () => {
-  it("falls back to English for untranslated dashboard explanations", async () => {
+  it("renders dashboard explanations and page meanings in the interface language", async () => {
     const body = await content("/", "nl");
-    expect(body).toContain("Auto totals algorithm bolus records");
-    expect(body).toContain("The large value is the newest sensor measurement");
+    expect(body).toContain("Auto telt de algoritmebolussen op");
+    expect(body).toContain("De grote waarde is de nieuwste sensormeting");
+    const calendar = await content("/calendar", "nl");
+    expect(calendar).toContain("De kleuren van een dag");
   });
   it("renders report content through the production translation transform", async () => {
     const body = await content("/reports/agp");

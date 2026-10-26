@@ -99,6 +99,24 @@
           {article.introduction}
         </p>
       </div>
+      {#if article.meaning?.length}
+        <section
+          class="space-y-3 rounded-xl border bg-muted/20 p-5"
+          aria-label="What you see and what it means"
+        >
+          <h2 class="font-semibold">What you see and what it means</h2>
+          <dl class="space-y-3">
+            {#each article.meaning as item (item.title)}
+              <div>
+                <dt class="text-sm font-semibold">{item.title}</dt>
+                <dd class="text-sm leading-relaxed text-muted-foreground">
+                  {item.text}
+                </dd>
+              </div>
+            {/each}
+          </dl>
+        </section>
+      {/if}
       {#if article.href === "/"}
         {#if dashboardDemo.component}<dashboardDemo.component
             allowedSettings={links.map((link) => link.href)}

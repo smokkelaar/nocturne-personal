@@ -111,7 +111,7 @@ export function reportMeanings(): Record<string, HelpSection[]> {
       ),
       item(
         "Hourly distribution",
-        "One stacked bar for each hour of the day. Hours with much red or orange are the times when lows occur. Hours with much yellow are the times of highs."
+        "One stacked bar for each hour of the day. Hours with a large share below range are the times when lows occur. Hours with a large share above range are the times of highs."
       ),
     ],
     "/reports/ehba1c": [
@@ -219,7 +219,7 @@ export function reportMeanings(): Record<string, HelpSection[]> {
       ),
       item(
         "Stacked bars",
-        "One bar for each period with the full range breakdown. Compare the red and orange parts at the bottom first, because they show lows."
+        "One bar for each period with the full range breakdown. Compare the parts below range at the bottom first, because they show lows."
       ),
       item(
         "Data quality rows",

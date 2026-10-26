@@ -1447,6 +1447,766 @@ msgstr "Icono del proveedor"
 msgid "Avg TIR"
 msgstr "TIR medio"
 
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Very low is below 3.0 mmol/L (54 mg/dL). Low is 3.0 to 3.8 mmol/L (54 to 69 mg/dL). In range is 3.9 to 10.0 mmol/L (70 to 180 mg/dL). High is 10.1 to 13.9 mmol/L (181 to 250 mg/dL). Very high is above 13.9 mmol/L (250 mg/dL). Reports always use these consensus ranges, not your personal targets."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Days of data badge"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The badge counts the days with readings. Below the recommended number, which is 14 days or the length of a shorter period, the figures describe only part of your usual pattern."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The share of your readings between 70 and 180 mg/dL. The consensus target is at least 70%. Each extra 5% in range is about one more hour in range each day."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Average glucose and CV"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Average glucose is the mean of all readings. The coefficient of variation (CV) is the spread as a percentage of that mean. A CV of 36% or lower means stable glucose."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The share of readings under 70 mg/dL. The consensus target is less than 4%, and less than 1% under 54 mg/dL. Look at this figure first, because lows are the most urgent risk."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "A small preview of the glucose profile. The line is the middle value at each time of day. Open the AGP report for the full chart."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Target met or not met"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Each card compares one figure with the international consensus target and says Target met or Target not met. The targets are general. Your care team sets your personal targets."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Time breakdown per day"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The percentages are also shown as hours and minutes on an average day. For example, 4% below range is about 1 hour each day."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Estimated A1c (GMI)"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The glucose management indicator estimates a lab HbA1c from your mean glucose. GMI (%) = 3.31 + 0.02392 x mean glucose in mg/dL. The general target is below 7%."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Glucose stability"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "CV at or below 36% means stable glucose. Above 36% means large swings and a higher risk of lows. Standard deviation and MAGE show the size of the swings in glucose units."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The share of the period with sensor readings. Aim for at least 70% over 14 days. The figures on the page are most reliable at 90% or higher."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "What your data is telling us"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Short notes that the report makes from your figures. They describe the data. They are not medical advice."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The dark line"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Your median glucose at each time of day: on half of the days glucose was lower, on half higher. It shows what happens most often."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The dark band"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The 25th to 75th percentile. On half of the days, glucose at that time was inside this band. A narrow band means a predictable time of day."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The light band"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The 10th to 90th percentile. It holds 80% of the readings at that time. Its edges show the lows and highs that happen regularly, not the extremes."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The shaded target zone"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The consensus target range of 70 to 180 mg/dL. Times where the bands cross its lower edge show when lows occur. Times above its upper edge show when highs occur."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "How to use it"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Find the time of day with the widest band or the lowest dip. Then open Day in review for days in this period to find the cause."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The ring chart"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Each slice is the share of readings in one glucose range. Tight range, 70 to 140 mg/dL, is part of in range. Show tight range adds it as its own slice."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Estimated A1c"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Based on average glucose. It uses the GMI formula, 3.31 + 0.02392 x mean glucose in mg/dL. It is an estimate, not a blood test."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The glycemic variability index compares the length of your glucose line with a flat line. 1.0 to 1.2 is low variability, 1.2 to 1.5 is moderate, above 1.5 is high."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Patient glycemic status combines GVI, mean glucose and time in range. 35 or less is excellent, 35 to 100 is good, 100 to 150 is poor, above 150 is very poor."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Mean total daily change adds up how far glucose moved up and down on an average day. Time in fluctuation is the share of readings that changed more than 15 mg/dL in about 5 minutes."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "One stacked bar for each hour of the day. Hours with a large share below range are the times when lows occur. Hours with a large share above range are the times of highs."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The line"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Each point is the estimate for one day, from the readings of the 90 days before it. The line moves slowly, because each day shares most of its window with the day before."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Up to 5.7% is the non-diabetic range. Up to 7% is the usual target for type 1 diabetes. Up to 9% is elevated. Above 9% is very high."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Triangles"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Lab results that you entered, placed on the day of the blood draw. Compare the triangle with the line on that day."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Estimate and lab differ"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "A difference of up to about 0.5% is common. A larger, constant difference can come from your red blood cells or from sensor accuracy. Discuss it with your care team."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Appearance sets % (NGSP) or mmol/mol (IFCC). 7% is 53 mmol/mol, and 9% is 75 mmol/mol."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "One cell is one day"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Each cell is one day of the year. Its color shows the value of the selected metric on that day. The color scale shows which color belongs to which value."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Glucose colors"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "With Avg glucose, a color always belongs to the same glucose value, so you can compare years. A good mean can hide lows and highs. Use Time in range to see how much of each day was in range."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Empty and gray cells"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "An empty cell has no records at all. A gray cell has records, but no value for this metric, for example no carbs. Neither one means a good day."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Dimmed days"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "When you narrow the focus window, days outside it fade. The bright days are the days that match the values that you are looking for."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Monthly GRI chart"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The glycemic risk index for each month, from 0 to 100. Zone A (0 to 20) is the lowest risk, zone E (above 80) the highest. Lows weigh more than highs."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Glucose dots and line"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Each dot is one stored reading. The color shows its range, from the thresholds in your therapy settings. A line between dots is not an extra reading."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Markers"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Markers on the chart show boluses, carbs, finger-stick checks and device events at the time they were recorded."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Tracks"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The tracks under the chart show basal delivery, insulin on board (IOB) and carbs on board (COB), when your uploader sends them."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "A gap in the dots means no readings were stored for that time. It is not a level of glucose."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Day figures"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Mean, median, standard deviation, range and GMI describe the readings of this one day. One day is too short for an estimated A1c, so read GMI here as an indication."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The chart"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Glucose with the events of the day: boluses, carbs, basal, and the loop state when your loop uploads it. Move the time scrubber to see the values at one time."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Totals"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Total carbs, manual boluses and automatic boluses add up the records of the day. Missing uploads make them too low."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Treatments timeline"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Every recorded event of the day in time order. Select an event to edit it, if you have write access."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "One line for each weekday"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Each weekday has its own color. Over the default 7 days, each line is one actual day. Over a longer range, each line is the mean of all days with that weekday."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Lines that run apart at the same time show a weekday with a different routine, for example a sports day or the weekend."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "No line"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "A weekday without readings has no line. A short line means readings only for part of that day."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Change column"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Each row shows a figure for both periods and the difference. Lower in and Higher in name the period with the lower or higher value."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Better or worse"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "For time in range, more is better. For time below range, CV, GRI and very high time, less is better. Read the direction for each figure."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Stacked bars"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "One bar for each period with the full range breakdown. Compare the parts below range at the bottom first, because they show lows."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Data quality rows"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "CGM active time, days with data and readings per day show whether the two periods are comparable. A large difference makes the other rows less reliable."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Bars"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "One bar for each hour from midnight. Each band is the share of that hour's readings in one range, lowest range at the bottom."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Lists the hours with the most time in range, the most time below range and the most time above range. Start with the hours below range."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "An hour is compared only when it has readings on at least 5 days and 20 readings in all. Best and worst hours need a difference of at least 5 percentage points."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "In the table, the range in which the central 50% of that hour's readings fell. A wide middle half means that hour changes much from day to day."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Median line"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The basal rate that was delivered most often at each hour, in units per hour. It includes the changes that your loop or you made."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Shaded bands"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The 10th to 90th percentile of the delivered rate. A wide band at an hour means your loop changes the basal often at that time."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Average hourly basal"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The mean insulin delivered in each hour of the day. Compare it with the scheduled rate in Therapy. A large difference at the same hour every day is a pattern."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Temp basals and suspends"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Many temp basals or zero temps per day mean that the loop corrects your schedule often. Discuss a repeated pattern with your care team."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Total daily dose (TDD)"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Basal plus bolus insulin for one day. For type 1 diabetes it is usually 0.4 to 1.0 units for each kg of body weight."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Basal and bolus split"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "A split of about 50% basal and 50% bolus is common. It changes with food, activity and the loop. With a loop, automatic boluses count as bolus."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Daily bars"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "One bar for each day, split into basal and bolus, with the carbs that you logged. Carbs without a bolus show as a note."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Hourly delivery"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The mean insulin for each hour, split into basal, manual bolus and automatic bolus. Peaks show when you usually eat or correct."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Meal and correction boluses"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "A manual bolus paired with a carb entry counts as a meal bolus. A manual bolus without carbs counts as a correction. Many corrections can point to a ratio or basal to discuss."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Time 0"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The moment of each site, pod or cannula change. The chart shows 12 hours before and 24 hours after it."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Line and bands"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The line is the median glucose of all changes at that time. The bands hold the middle 50% and 80%. A rise after time 0 shows a slow start of the new site."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Before and after"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The summary compares time in range before and after the change. Higher glucose in the last hours before a change can point to a site that works less well."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Insulin summary"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Basal and bolus per day with their share of the total. Delivered basal is what your pump recorded. Scheduled basal comes from your therapy profile."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Delivered and scheduled basal"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "When delivered basal is much lower than scheduled, the loop often reduced it. When it is higher, the loop often added insulin."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Glucose metrics and GRI"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Time in range and the glycemic risk index. GRI runs from 0 to 100. Zone A (0 to 20) is the lowest risk, zone E (above 80) the highest. Lows weigh more than highs."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Glucose pattern"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The glucose profile of a day, with the scheduled basal rate and the times of your boluses below it."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Five pages"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Daily profile shows the usual day. Meals and events shows what happens after events. Prediction accuracy checks the loop's predictions. Loop health shows how much the loop ran. Settings evidence compares your settings with the data."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Medians and bands"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Most charts put all days on one 24-hour axis. The line is the median and the bands hold the middle 50% and 80% of the days."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Faded areas"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "A faded time has too few days to show a pattern. Choose a longer range in Filters."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The usual glucose at each time of day, as on the AGP report."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Above zero, the loop gave more insulin than your schedule. Below zero, it gave less. A correction in the same direction at the same time every day is a pattern to discuss."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Insulin on board and carbs on board as your loop calculated them. A high IOB before a low shows insulin that was still active."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The mean insulin of one day, split into basal, automatic boluses and manual boluses, with the net loop correction."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "All events of a cohort are placed at time 0. The charts show glucose and insulin before and after them."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Peak rise and time to peak"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "How far glucose rose after the event and how long it took. A late peak after meals can point to slow digestion or late bolus timing."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Glucose at 2 and 4 hours"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Glucose 2 and 4 hours after the event. A value well above the start at 4 hours shows that the insulin did not cover the event."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The lowest reading in the window after the event. A low here can point to too much insulin for that event."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The prediction minus the reading that followed. Above zero means the loop expected higher glucose than happened. Below zero means it expected lower glucose."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The mean absolute error: how far off the predictions were on average, up or down. Smaller is better."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Horizons"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The time between the prediction and the reading. Errors grow with the horizon. Only the horizon marked Settings signal says something about your settings."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Heatmap"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Bias for each hour of the day. A color that repeats at the same hour shows a time when your settings and your body do not agree."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Closed loop time"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The share of time in which the loop was able to change insulin. Low closed loop time makes the other loop pages less useful."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "CGM and pump active"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The share of time with recent data from the sensor and the pump. Gaps here are the most common reason for an open loop."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Zero temps and maximum basal"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Many zero temps show that the loop often stopped basal to prevent lows. Much time at maximum basal shows that it wanted more insulin than allowed."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "A tile shows Unknown when your data cannot give that figure. The reason is shown on the tile."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Line and dots"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The line is the value in your profile. Each dot is the value that your data showed for that time block."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Dot above or below the line"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "A dot far from the line means your data behaves differently from the setting. A row shows how many episodes support the figure."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "High, moderate or low. Low confidence means few or uneven episodes. Use only high-confidence rows as a topic for your care team."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Compression lows by status"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Pending suggestions need your review. Accepted ones are marked as false lows. Dismissed ones are real lows."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Signal integrity finds unlikely jumps in the readings. CGM comparison compares two sensors. Rejected uploads lists records that Nocturne did not store."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Opens the pending compression lows. Accepted lows stay in most reports. Only Loop analysis removes them."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Times where the readings changed direction fast and often. Real glucose rarely does this. A flagged window often comes from a loose or new sensor."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Each day shows where its flagged windows were. Many flags on the first or last day of a sensor point to the sensor."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Lows after a flag"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Lows in the 3 hours after a flagged window, and insulin given during it. Insulin given on a false reading can cause a real low."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Scatter plot"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Each point is one pair of readings taken close together. Points on the dashed line read the same value. Points above it read higher on the device than on the reference."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Mean absolute relative difference: the mean difference as a percentage of the reference. Lower is better."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The mean of device minus reference. A negative bias means the device reads lower on average."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Within 15 mg/dL or 15%"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The share of pairs within 15 mg/dL when the reference is under 100 mg/dL, or within 15% above that. Higher is better."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "A suggestion"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "A fast drop during sleep, followed by a fast recovery. This pattern often comes from lying on the sensor."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Pending, accepted, dismissed"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Pending needs your review. Accepted marks a false low and removes it from Loop analysis. Dismissed keeps it as a real low."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Accept when you slept on the sensor and felt no low. Dismiss when you had symptoms or a finger-stick check confirmed the low."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "One row"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "One record that an uploader sent, with the time, the uploader, the reason and the record itself."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Why Nocturne did not store it, for example a value that does not fit the field. Correct the cause in the uploader or its settings."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Empty list"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "No records were rejected. This is the normal state."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "One recorded event: a bolus, carbs, a finger-stick check, a note or a device event, with its time and value."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Category and search"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The tabs show one type of event. Search finds text in the events. The count above the list shows how many records match."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Edit and delete"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "A change here changes every chart and report that uses the record. A deleted record cannot be recovered."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Current and average level"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The newest battery level of each device and its mean over the period."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The share of time above 80% and below 30%. Much time below 30% means the phone or uploader often runs low."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Warnings and critical"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "How often the level dropped below 30% (warning) and below 20% (critical)."
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Charge cycles"
+msgstr ""
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Each cycle runs from one charge to the next. Lasted shows how long the battery ran. A shorter cycle than usual can point to an old battery or a busy app."
+msgstr ""
+
 #~ msgid "Avg Glucose"
 #~ msgstr "Glucosa media"
 

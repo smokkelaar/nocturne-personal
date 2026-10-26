@@ -538,11 +538,11 @@ msgstr ""
 msgid "Started"
 msgstr ""
 
-#: src/lib/components/alerts/AlertHistoryCard.svelte src/lib/components/profile/ProfileSwitchDialog.svelte src/lib/components/reports/sensor-integrity/ClusterTable.svelte
+#: src/lib/components/alerts/AlertHistoryCard.svelte src/lib/components/profile/ProfileSwitchDialog.svelte src/lib/components/reports/sensor-integrity/ClusterTable.svelte src/lib/help/meanings.svelte.ts
 msgid "Duration"
 msgstr "Duur"
 
-#: src/lib/components/alerts/AlertHistoryCard.svelte src/lib/components/alerts/alert-labels.svelte.ts src/routes/(authenticated)/alerts/+page.svelte src/routes/(authenticated)/alerts/history/+page.svelte
+#: src/lib/components/alerts/AlertHistoryCard.svelte src/lib/components/alerts/alert-labels.svelte.ts src/lib/help/meanings.svelte.ts src/routes/(authenticated)/alerts/+page.svelte src/routes/(authenticated)/alerts/history/+page.svelte
 msgid "Acknowledged"
 msgstr "Bevestigd"
 
@@ -652,7 +652,7 @@ msgstr ""
 msgid "Description (optional)"
 msgstr ""
 
-#: src/routes/(authenticated)/alerts/[id]/+page.svelte
+#: src/lib/help/meanings.svelte.ts src/routes/(authenticated)/alerts/[id]/+page.svelte
 msgid "Severity"
 msgstr "Ernst"
 
@@ -2545,7 +2545,7 @@ msgstr ""
 msgid "Attributed"
 msgstr ""
 
-#: src/lib/components/meals/MealsTable.svelte src/lib/components/treatments/CarbBreakdownBar.svelte
+#: src/lib/components/meals/MealsTable.svelte src/lib/components/treatments/CarbBreakdownBar.svelte src/lib/help/meanings.svelte.ts
 msgid "Unattributed"
 msgstr "Zonder voedingsmiddelen"
 
@@ -7648,7 +7648,7 @@ msgstr ""
 msgid "Food library"
 msgstr ""
 
-#: src/lib/components/dashboard/glucose-chart/dialogs/GlucoseInspectionDialog.svelte src/lib/help/dashboard-guide.svelte.ts src/routes/(authenticated)/time-spans/+page.svelte src/routes/(unauthenticated)/setup/steps/ImportProgress.svelte
+#: src/lib/components/dashboard/glucose-chart/dialogs/GlucoseInspectionDialog.svelte src/lib/help/dashboard-guide.svelte.ts src/lib/help/meanings.svelte.ts src/routes/(authenticated)/time-spans/+page.svelte src/routes/(unauthenticated)/setup/steps/ImportProgress.svelte
 msgid "Activities"
 msgstr "Activiteiten"
 
@@ -12567,7 +12567,7 @@ msgstr ""
 msgid "Awake"
 msgstr ""
 
-#: src/lib/components/reports/sleep/SleepCompositionChart.svelte src/routes/(authenticated)/reports/sleep/+page.svelte src/routes/(authenticated)/reports/sleep/[date]/+page.svelte
+#: src/lib/components/reports/sleep/SleepCompositionChart.svelte src/lib/help/meanings.svelte.ts src/routes/(authenticated)/reports/sleep/+page.svelte src/routes/(authenticated)/reports/sleep/[date]/+page.svelte
 msgid "Sleep score"
 msgstr "Slaapscore"
 
@@ -13915,7 +13915,7 @@ msgstr ""
 msgid "<0/>All reports"
 msgstr ""
 
-#: src/routes/(authenticated)/reports/heart-rate/+page.svelte
+#: src/lib/help/meanings.svelte.ts src/routes/(authenticated)/reports/heart-rate/+page.svelte
 msgid "Resting estimate"
 msgstr "Rustschatting"
 
@@ -13948,7 +13948,7 @@ msgstr ""
 msgid "Nights tracked"
 msgstr ""
 
-#: src/routes/(authenticated)/reports/sleep/+page.svelte
+#: src/lib/help/meanings.svelte.ts src/routes/(authenticated)/reports/sleep/+page.svelte
 msgid "Dawn rise"
 msgstr "Ochtendstijging"
 
@@ -20222,7 +20222,7 @@ msgstr ""
 msgid "Sensor stale"
 msgstr ""
 
-#: src/lib/components/alerts/factText.svelte.ts
+#: src/lib/components/alerts/factText.svelte.ts src/lib/help/meanings.svelte.ts
 msgid "Predicted glucose"
 msgstr "Voorspelde glucose"
 
@@ -22550,7 +22550,7 @@ msgstr ""
 msgid "<0/> Notification history"
 msgstr ""
 
-#: src/lib/help/dashboard-guide.svelte.ts src/routes/(authenticated)/time-spans/+page.svelte
+#: src/lib/help/dashboard-guide.svelte.ts src/lib/help/meanings.svelte.ts src/routes/(authenticated)/time-spans/+page.svelte
 msgid "Pump modes"
 msgstr "Pompmodi"
 
@@ -23316,7 +23316,7 @@ msgstr ""
 msgid "Is announcement"
 msgstr ""
 
-#: src/lib/components/food/FoodFields.svelte
+#: src/lib/components/food/FoodFields.svelte src/lib/help/meanings.svelte.ts
 msgid "Glycemic index"
 msgstr "Glykemische index"
 
@@ -26006,7 +26006,7 @@ msgstr ""
 msgid "<0/> Sleep & overnight"
 msgstr ""
 
-#: src/routes/(authenticated)/reports/sleep/[date]/+page.svelte
+#: src/lib/help/meanings.svelte.ts src/routes/(authenticated)/reports/sleep/[date]/+page.svelte
 msgid "Overnight time in range"
 msgstr "Nachtelijke tijd binnen bereik"
 
@@ -30268,7 +30268,7 @@ msgstr "Hoe volledig zijn je CGM-gegevens"
 msgid "CGM active time is the part of the period with sensor readings. The consensus advice is at least 70% active time over 14 days. Below that, the figures are less reliable."
 msgstr "CGM-actieve tijd is het deel van de periode met sensormetingen. Het consensusadvies is minstens 70% actieve tijd over 14 dagen. Daaronder zijn de cijfers minder betrouwbaar."
 
-#: src/lib/help/reports.svelte.ts
+#: src/lib/help/meanings.svelte.ts src/lib/help/reports.svelte.ts
 msgid "The figures"
 msgstr "De cijfers"
 

@@ -278,13 +278,13 @@ describe("year overview page color focus integration", () => {
     await expect.element(cell("2026-01-02")).toHaveTextContent(insulinAt("50.00"));
   });
 
-  it("keeps glucose colors fixed to the reading while its window only dims", async () => {
+  it("spans the glucose colors across its window and dims what falls outside", async () => {
     render(YearOverviewPage);
     await minimum("Avg glucose").fill("130");
     expect(stored()).toEqual({ avgGlucoseBand: [130, 350] });
     await expect
       .element(cell("2026-01-01"))
-      .toHaveTextContent(`color-mix(in srgb, ${getGlucoseHeatmapFill(120)} 10%, transparent)`);
+      .toHaveTextContent(`color-mix(in srgb, ${GLUCOSE_RAMP[0].color} 10%, transparent)`);
     await reset("Avg glucose").click();
     await expect.element(cell("2026-01-01")).toHaveTextContent(getGlucoseHeatmapFill(120));
   });

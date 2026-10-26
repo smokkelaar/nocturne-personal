@@ -21,12 +21,13 @@ namespace Nocturne.API.Services.Connectors;
 public interface IConnectorCursorResetService
 {
     /// <summary>
-    /// Resets the cursor for every configured connector belonging to <paramref name="tenantId"/>,
+    /// Resets the cursor for every configured connector, or the selected ones, belonging to <paramref name="tenantId"/>,
     /// in a scope already opened on that tenant (<c>TenantJobScope.Open</c>).
     /// </summary>
     /// <param name="tenantId">The target tenant whose connectors should be re-pulled.</param>
     /// <param name="from">Optional lower bound. When null, all available history is re-ingested.</param>
     /// <param name="dataTypes">Optional data-type filter. When null/empty, every supported type is reset.</param>
+    /// <param name="connectorNames">Optional connector filter. When null/empty, every configured connector is reset.</param>
     /// <param name="progress">
     /// Optional sink notified as each connector starts and completes, so a long-running fan-out can
     /// report incremental per-connector progress (e.g. to a background-job status endpoint).
@@ -39,6 +40,7 @@ public interface IConnectorCursorResetService
         Guid tenantId,
         DateTime? from,
         List<SyncDataType>? dataTypes,
+        IReadOnlyCollection<string>? connectorNames,
         IConnectorResetProgress? progress,
         CancellationToken ct);
 
@@ -130,6 +132,7 @@ public class ConnectorCursorResetService : IConnectorCursorResetService
         Guid tenantId,
         DateTime? from,
         List<SyncDataType>? dataTypes,
+        IReadOnlyCollection<string>? connectorNames,
         IConnectorResetProgress? progress,
         CancellationToken ct)
     {
@@ -152,8 +155,10 @@ public class ConnectorCursorResetService : IConnectorCursorResetService
                 $"A cursor reset for tenant {tenantId} must run in a scope opened on that tenant.");
         }
 
+        var selected = connectorNames is { Count: > 0 } ? connectorNames.ToList() : null;
         var configs = await db.ConnectorConfigurations.AsNoTracking()
             .Where(c => c.TenantId == tenantId)
+            .Where(c => selected == null || selected.Contains(c.ConnectorName))
             .OrderBy(c => c.ConnectorName)
             .ToListAsync(ct);
 

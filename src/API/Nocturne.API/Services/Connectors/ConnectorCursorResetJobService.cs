@@ -29,17 +29,20 @@ public interface IConnectorCursorResetJobService
 {
     /// <summary>
     /// Validates the target tenant and enqueues a background reset of every connector it has
-    /// configured.
+    /// configured, or of the selected ones.
     /// </summary>
     /// <param name="tenantId">The target tenant whose connectors should be re-pulled.</param>
     /// <param name="from">Optional lower bound. When null, all available history is re-ingested.</param>
     /// <param name="dataTypes">Optional data-type filter. When null/empty, every supported type is reset.</param>
+    /// <param name="connectorNames">Optional connector filter. When null/empty, every configured connector is reset.</param>
     /// <param name="ct">Cancellation token for the validation work (not the background job).</param>
     /// <returns>The created job, or null when the target tenant does not exist.</returns>
+    /// <exception cref="ArgumentException">A selected connector is not configured on the tenant.</exception>
     Task<ConnectorResetJobInfo?> StartResetAsync(
         Guid tenantId,
         DateTime? from,
         List<SyncDataType>? dataTypes,
+        IReadOnlyCollection<string>? connectorNames,
         CancellationToken ct);
 
     /// <summary>
@@ -75,6 +78,7 @@ public class ConnectorCursorResetJobService : IConnectorCursorResetJobService
         Guid tenantId,
         DateTime? from,
         List<SyncDataType>? dataTypes,
+        IReadOnlyCollection<string>? connectorNames,
         CancellationToken ct)
     {
         // Validate the tenant and grab its connector list synchronously so we can (a) return 404 for
@@ -94,6 +98,12 @@ public class ConnectorCursorResetJobService : IConnectorCursorResetJobService
             return null;
         }
 
+        var configured = connectors.Connectors.Select(c => c.ConnectorName).ToList();
+        var selected = connectorNames is { Count: > 0 } ? connectorNames.Distinct().ToList() : null;
+        if (selected?.Except(configured).ToList() is { Count: > 0 } unknown)
+            throw new ArgumentException(
+                $"Not configured on this tenant: {string.Join(", ", unknown)}", nameof(connectorNames));
+
         var jobId = Guid.CreateVersion7();
         var job = new ConnectorResetJob(
             jobId,
@@ -101,7 +111,8 @@ public class ConnectorCursorResetJobService : IConnectorCursorResetJobService
             connectors.TenantSlug,
             from,
             dataTypes,
-            connectors.Connectors.Select(c => c.ConnectorName),
+            selected,
+            selected ?? configured,
             _logger,
             _serviceProvider);
         // Record the job before the work starts. The in-process task cannot survive an API
@@ -131,7 +142,7 @@ public class ConnectorCursorResetJobService : IConnectorCursorResetJobService
 
         _logger.LogInformation(
             "Started connector cursor reset job {JobId} for tenant {TenantSlug} ({ConnectorCount} connectors)",
-            jobId, connectors.TenantSlug, connectors.Connectors.Count);
+            jobId, connectors.TenantSlug, (selected ?? configured).Count);
 
         return job.GetInfo();
     }
@@ -193,6 +204,7 @@ internal sealed class ConnectorResetJob : IConnectorResetProgress
     private readonly string _tenantSlug;
     private readonly DateTime? _from;
     private readonly List<SyncDataType>? _dataTypes;
+    private readonly IReadOnlyCollection<string>? _connectorNames;
     private readonly ILogger _logger;
     private readonly IServiceProvider _serviceProvider;
     private readonly CancellationTokenSource _cts = new();
@@ -213,6 +225,7 @@ internal sealed class ConnectorResetJob : IConnectorResetProgress
         string tenantSlug,
         DateTime? from,
         List<SyncDataType>? dataTypes,
+        IReadOnlyCollection<string>? selectedConnectors,
         IEnumerable<string> connectorNames,
         ILogger logger,
         IServiceProvider serviceProvider)
@@ -222,6 +235,7 @@ internal sealed class ConnectorResetJob : IConnectorResetProgress
         _tenantSlug = tenantSlug;
         _from = from;
         _dataTypes = dataTypes;
+        _connectorNames = selectedConnectors;
         _logger = logger;
         _serviceProvider = serviceProvider;
 
@@ -266,7 +280,7 @@ internal sealed class ConnectorResetJob : IConnectorResetProgress
                 await using var scope = TenantJobScope.Open(_serviceProvider, tenant, AuditEndpoint);
 
                 var engine = scope.ServiceProvider.GetRequiredService<IConnectorCursorResetService>();
-                result = await engine.ResetTenantCursorsAsync(_tenantId, _from, _dataTypes, this, ct);
+                result = await engine.ResetTenantCursorsAsync(_tenantId, _from, _dataTypes, _connectorNames, this, ct);
             }
 
             if (result is null)

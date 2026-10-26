@@ -74,8 +74,8 @@ describe("documentation help", () => {
       .toBeVisible();
     await expect
       .element(
-        page.getByRole("img", {
-          name: "Schematic reading example, without personal data",
+        page.getByRole("region", {
+          name: "Interactive chart example",
         })
       )
       .toBeVisible();

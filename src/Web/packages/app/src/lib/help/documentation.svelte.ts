@@ -6,6 +6,7 @@ import { reportArticles } from "./reports.svelte";
 import { settingsArticles } from "./settings.svelte";
 import { connectorArticles } from "./connectors.svelte";
 import { readingGuides } from "./reading-guides.svelte";
+import { workflowArticles } from "./workflows.svelte";
 import { glucoseReferenceArticle } from "./glucose-reference.svelte";
 import { GLUCOSE_REFERENCE_PATH } from "./reference-path";
 
@@ -17,6 +18,7 @@ export function articles(): HelpArticle[] {
     ...reportArticles(),
     ...settingsArticles(),
     ...connectorArticles(),
+    ...workflowArticles(),
     glucoseReferenceArticle(),
   ];
   return entries.map((article) => {
@@ -40,7 +42,8 @@ export function articles(): HelpArticle[] {
 
 function parentFor(href: string): string | undefined {
   // The report overview is not permission to visit every report.
-  if (href.startsWith("/reports/loop-analysis/")) return "/reports/loop-analysis";
+  if (href.startsWith("/reports/loop-analysis/"))
+    return "/reports/loop-analysis";
   if (href.startsWith("/reports/"))
     return href.startsWith("/reports/data-quality/")
       ? "/reports/data-quality"

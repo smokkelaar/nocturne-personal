@@ -4,6 +4,7 @@ import Harness from "./HelpContentHarness.test.svelte";
 import { loadLocales, runWithLocale } from "wuchale/load-utils/server";
 import * as main from "../../../../../../locales/main.loader.server.svelte.js";
 import { locales } from "../../../../../../locales/data.js";
+import { chartLessons } from "$lib/help/chart-lessons.svelte";
 
 beforeAll(async () => {
   await loadLocales(main.key, main.loadCount, main.loadCatalog, locales);
@@ -12,6 +13,44 @@ const content = (path: string, locale = "en") =>
   runWithLocale(locale, () => render(Harness, { props: { path } }).body);
 
 describe("translation-aware help factories", () => {
+  it("translates interactive chart lessons without leaking implementation names", async () => {
+    const lessons = await runWithLocale("nl", () => chartLessons());
+    expect(lessons.median.title).toBe("Mediaan en spreiding");
+    expect(lessons.prediction.meaning).toContain("voorspelhorizon");
+    expect(lessons.barComparison.meaning).toContain("omlijningen");
+    expect(lessons.schedule.check).toContain("afgifteregistraties");
+  });
+  it("renders the new report guides instead of the generic parent guide", async () => {
+    for (const [path, title] of [
+      ["/reports/loop-analysis/daily-profile", "Daily Profile"],
+      ["/reports/loop-analysis/meals-and-events", "Meals and Events"],
+      ["/reports/loop-analysis/prediction-accuracy", "Prediction Accuracy"],
+      ["/reports/loop-analysis/loop-health", "Loop Health"],
+      ["/reports/loop-analysis/settings-evidence", "Settings Evidence"],
+      ["/reports/data-quality/rejected-uploads", "Rejected Uploads"],
+    ]) {
+      const body = await content(path);
+      expect(body).toContain(title);
+      expect(body).toContain("How to read this page");
+    }
+  });
+  it("renders the Dutch daily profile help through the production transform", async () => {
+    const body = await content("/reports/loop-analysis/daily-profile", "nl");
+    expect(body).toContain("Dagprofiel");
+    expect(body).toContain("Kies een periode");
+  });
+  it("renders Dutch setup and rejection guidance without losing the diagnostic limits", async () => {
+    const setup = await content("/help/getting-started", "nl");
+    expect(setup).toContain("Snel starten");
+    expect(setup).toContain("Koppelingen en apps");
+    const rejected = await content(
+      "/reports/data-quality/rejected-uploads",
+      "nl"
+    );
+    expect(rejected).toContain("Afgewezen uploads");
+    expect(rejected).toContain("voert uploads niet opnieuw uit");
+    expect(rejected).toContain("herleidbare gezondheidsgegevens");
+  });
   it("falls back to English for untranslated dashboard explanations", async () => {
     const body = await content("/", "nl");
     expect(body).toContain("Auto totals algorithm bolus records");

@@ -4,6 +4,7 @@ import { beforeEach, describe, it, expect, vi } from "vitest";
 
 let tenantsImpl: () => Promise<unknown>;
 let connectorsResult: unknown = null;
+const resetRequests: unknown[] = [];
 
 vi.mock("$api/generated/tenants.generated.remote", () => ({
   getAll: () => ({ run: () => tenantsImpl() }),
@@ -11,7 +12,10 @@ vi.mock("$api/generated/tenants.generated.remote", () => ({
 
 vi.mock("$api/generated/connectorAdmins.generated.remote", () => ({
   getTenantConnectors: () => ({ run: () => Promise.resolve(connectorsResult) }),
-  resetTenantCursors: () => Promise.resolve({ jobId: "reset-job" }),
+  resetTenantCursors: (args: unknown) => {
+    resetRequests.push(args);
+    return Promise.resolve({ jobId: "reset-job" });
+  },
   getResetJobStatus: () => ({
     run: () =>
       Promise.resolve({
@@ -34,6 +38,38 @@ function rejection(status: number, message: string) {
 describe("settings/admin/connector-cursors", () => {
   beforeEach(() => {
     connectorsResult = null;
+    resetRequests.length = 0;
+  });
+
+  it("resets only the connectors that stay selected", async () => {
+    tenantsImpl = () =>
+      Promise.resolve([
+        { id: "tenant", displayName: "Example", slug: "example" },
+      ]);
+    connectorsResult = {
+      connectors: [
+        { connectorName: "GoogleHealth", isHealthy: true },
+        { connectorName: "Nightscout", isHealthy: true },
+      ],
+    };
+    render(ConnectorCursorsPage, {});
+
+    await page.getByText("Select a tenant", { exact: true }).click();
+    await page.getByRole("option", { name: "Example (example)" }).click();
+    await page.getByRole("checkbox", { name: "Nightscout" }).click();
+    await page
+      .getByRole("button", { name: "Reset cursors", exact: true })
+      .click();
+    await page
+      .getByRole("alertdialog")
+      .getByRole("button", { name: "Reset cursors", exact: true })
+      .click();
+
+    await expect.poll(() => resetRequests.length).toBe(1);
+    expect(resetRequests[0]).toMatchObject({
+      tenantId: "tenant",
+      request: { connectorNames: ["GoogleHealth"] },
+    });
   });
 
   it("renders localized copy for the connector reset failure code", async () => {

@@ -14,6 +14,7 @@
   import { Badge } from "$lib/components/ui/badge";
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
+  import { Checkbox } from "$lib/components/ui/checkbox";
   import * as Select from "$lib/components/ui/select";
   import * as Alert from "$lib/components/ui/alert";
   import { ConfirmDialog } from "$lib/components/ui/confirm-dialog";
@@ -52,6 +53,7 @@
 
   // Reset options
   let fromDate = $state<string>(""); // yyyy-MM-dd (optional lower bound)
+  let selectedConnectors = $state<string[]>([]);
 
   // Reset execution
   let confirmOpen = $state(false);
@@ -100,6 +102,7 @@
   async function onTenantChange(value: string | undefined) {
     selectedTenantId = value;
     connectors = null;
+    selectedConnectors = [];
     stopPolling();
     jobStatus = null;
     activeJobId = null;
@@ -111,6 +114,7 @@
     try {
       // One-shot fetch via .run() — re-selecting a tenant re-executes, so health is never stale.
       connectors = await getTenantConnectors(value).run();
+      selectedConnectors = (connectors?.connectors ?? []).map((c) => c.connectorName);
     } catch (err) {
       console.error("Failed to load connectors:", err);
       connectorsError = remoteErrorMessage(
@@ -172,6 +176,7 @@
         request: {
           from: fromIso,
           dataTypes: null, // first cut resets every supported type
+          connectorNames: allSelected ? null : selectedConnectors,
         },
       });
       activeJobId = job.jobId ?? null;
@@ -213,6 +218,14 @@
   }
 
   const hasConnectors = $derived((connectors?.connectors?.length ?? 0) > 0);
+  const totalConnectors = $derived(connectors?.connectors?.length ?? 0);
+  const allSelected = $derived(selectedConnectors.length === totalConnectors);
+
+  function toggleConnector(name: string, checked: boolean) {
+    selectedConnectors = checked
+      ? [...selectedConnectors.filter((n) => n !== name), name]
+      : selectedConnectors.filter((n) => n !== name);
+  }
 </script>
 
 <svelte:head>
@@ -236,8 +249,8 @@
     <AlertTriangle class="h-4 w-4" />
     <Alert.Title>Heads up</Alert.Title>
     <Alert.Description>
-      This forces a full re-pull of history for every configured connector on
-      the selected tenant. Re-ingested records dedupe on their idempotency keys,
+      This forces a full re-pull of history for the connectors that you select
+      on the selected tenant. Re-ingested records dedupe on their idempotency keys,
       so it is safe to re-run. A large re-pull can take several minutes, so it
       runs as a background job. Progress appears below, and you can leave
       this page while it finishes.
@@ -305,7 +318,10 @@
             <Plug class="h-5 w-5" />
             Connectors
           </CardTitle>
-          <CardDescription>Current sync status for {selectedTenant?.slug}</CardDescription>
+          <CardDescription>
+            Current sync status for {selectedTenant?.slug}. Select the
+            connectors to reset.
+          </CardDescription>
         </div>
         <div class="flex items-center gap-2">
           {#if jobInFlight}
@@ -322,7 +338,11 @@
           {/if}
           <Button
             onclick={() => (confirmOpen = true)}
-            disabled={!hasConnectors || connectorsLoading || resetting || jobInFlight}
+            disabled={!hasConnectors ||
+              selectedConnectors.length === 0 ||
+              connectorsLoading ||
+              resetting ||
+              jobInFlight}
           >
             {#if resetting || jobInFlight}
               <Loader2 class="mr-2 h-4 w-4 animate-spin" />
@@ -380,7 +400,16 @@
             <div class="rounded-lg border p-3">
               <div class="flex items-center justify-between">
                 <div class="flex items-center gap-2 font-medium">
-                  {c.connectorName}
+                  <Checkbox
+                    id="reset-{c.connectorName}"
+                    checked={selectedConnectors.includes(c.connectorName)}
+                    onCheckedChange={(checked) =>
+                      toggleConnector(c.connectorName, checked === true)}
+                    disabled={resetting || jobInFlight}
+                  />
+                  <Label for="reset-{c.connectorName}" class="cursor-pointer">
+                    {c.connectorName}
+                  </Label>
                   {#if c.isHealthy}
                     <Badge variant="secondary">Healthy</Badge>
                   {:else}
@@ -445,8 +474,12 @@
   onConfirm={runReset}
 >
   {#snippet description()}
-    This re-pulls history for all {connectors?.connectors?.length ?? 0}
-    connector(s) configured on this tenant
+    {#if allSelected}
+      This re-pulls history for all {totalConnectors} connector(s) configured
+      on this tenant
+    {:else}
+      This re-pulls history for {selectedConnectors.join(", ")} on this tenant
+    {/if}
     {#if fromDate}
       from {fromDate}
     {:else}

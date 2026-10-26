@@ -82,7 +82,7 @@ public class ConnectorCursorResetServiceTests
 
         var from = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         var result = await service.ResetTenantCursorsAsync(
-            _targetTenantId, from, [SyncDataType.Boluses], progress: null, CancellationToken.None);
+            _targetTenantId, from, [SyncDataType.Boluses], connectorNames: null, progress: null, CancellationToken.None);
 
         result.Should().NotBeNull();
         result!.Connectors.Should().HaveCount(2);
@@ -109,7 +109,7 @@ public class ConnectorCursorResetServiceTests
             Mock.Of<ILogger<ConnectorCursorResetService>>());
 
         var act = () => service.ResetTenantCursorsAsync(
-            _targetTenantId, from: null, dataTypes: null, progress: null, CancellationToken.None);
+            _targetTenantId, from: null, dataTypes: null, connectorNames: null, progress: null, CancellationToken.None);
 
         await act.Should().ThrowAsync<InvalidOperationException>();
         syncService.Verify(
@@ -136,7 +136,7 @@ public class ConnectorCursorResetServiceTests
             Mock.Of<ILogger<ConnectorCursorResetService>>());
 
         var result = await service.ResetTenantCursorsAsync(
-            Guid.CreateVersion7(), from: null, dataTypes: null, progress: null, CancellationToken.None);
+            Guid.CreateVersion7(), from: null, dataTypes: null, connectorNames: null, progress: null, CancellationToken.None);
 
         result.Should().BeNull();
         syncService.Verify(
@@ -163,7 +163,7 @@ public class ConnectorCursorResetServiceTests
         var progress = new RecordingProgress();
 
         var result = await service.ResetTenantCursorsAsync(
-            _targetTenantId, from: null, dataTypes: null, progress, CancellationToken.None);
+            _targetTenantId, from: null, dataTypes: null, connectorNames: null, progress, CancellationToken.None);
 
         result.Should().NotBeNull();
 
@@ -174,6 +174,29 @@ public class ConnectorCursorResetServiceTests
         // A failing connector is isolated and reported as a non-success outcome, not thrown.
         progress.Completed.Should().Contain(r => r.ConnectorName == "nightscout" && r.Result.Success);
         progress.Completed.Should().Contain(r => r.ConnectorName == "dexcom" && !r.Result.Success);
+    }
+
+    [Fact]
+    public async Task ResetTenantCursors_WithASelection_ResetsOnlyTheSelectedConnectors()
+    {
+        var db = CreateDb();
+        var syncService = new Mock<IConnectorSyncService>();
+        syncService
+            .Setup(s => s.TriggerSyncAsync(It.IsAny<string>(), It.IsAny<SyncRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new SyncResult { Success = true });
+
+        var service = new ConnectorCursorResetService(
+            new TestNocturneDbContextFactory(db), syncService.Object, ScopeOn(_targetTenantId).Object,
+            Mock.Of<ILogger<ConnectorCursorResetService>>());
+
+        var result = await service.ResetTenantCursorsAsync(
+            _targetTenantId, from: null, dataTypes: null, connectorNames: ["dexcom"], progress: null,
+            CancellationToken.None);
+
+        result!.Connectors.Select(c => c.ConnectorName).Should().Equal("dexcom");
+        syncService.Verify(
+            s => s.TriggerSyncAsync("nightscout", It.IsAny<SyncRequest>(), It.IsAny<CancellationToken>()),
+            Times.Never);
     }
 
     private sealed class RecordingProgress : IConnectorResetProgress

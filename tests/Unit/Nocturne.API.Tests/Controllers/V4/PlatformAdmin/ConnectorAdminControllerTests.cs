@@ -93,6 +93,7 @@ public class ConnectorAdminControllerTests
         jobService
             .Setup(s => s.StartResetAsync(_targetTenantId, from,
                 It.Is<List<SyncDataType>>(d => d.Contains(SyncDataType.Boluses)),
+                It.Is<IReadOnlyCollection<string>?>(n => n != null && n.Contains("dexcom")),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(jobInfo);
 
@@ -100,7 +101,7 @@ public class ConnectorAdminControllerTests
 
         var result = await controller.ResetTenantCursors(
             _targetTenantId,
-            new AdminResetCursorsRequest { From = from, DataTypes = [SyncDataType.Boluses] },
+            new AdminResetCursorsRequest { From = from, DataTypes = [SyncDataType.Boluses], ConnectorNames = ["dexcom"] },
             CancellationToken.None);
 
         var accepted = result.Result.Should().BeOfType<AcceptedAtActionResult>().Subject;
@@ -126,13 +127,31 @@ public class ConnectorAdminControllerTests
     }
 
     [Fact]
+    public async Task ResetTenantCursors_WithAConnectorTheTenantDoesNotHave_Returns400()
+    {
+        var jobService = new Mock<IConnectorCursorResetJobService>();
+        jobService
+            .Setup(s => s.StartResetAsync(It.IsAny<Guid>(), It.IsAny<DateTime?>(),
+                It.IsAny<List<SyncDataType>?>(), It.IsAny<IReadOnlyCollection<string>?>(),
+                It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new ArgumentException("Not configured on this tenant: glooko"));
+        var controller = CreateController(Engine(CreateDb()), jobService.Object);
+
+        var result = await controller.ResetTenantCursors(
+            _targetTenantId, new AdminResetCursorsRequest { ConnectorNames = ["glooko"] }, CancellationToken.None);
+
+        result.Result.Should().BeOfType<ObjectResult>().Which.StatusCode.Should().Be(400);
+    }
+
+    [Fact]
     public async Task ResetTenantCursors_UnknownTenant_Returns404()
     {
         var db = CreateDb();
         var jobService = new Mock<IConnectorCursorResetJobService>();
         jobService
             .Setup(s => s.StartResetAsync(It.IsAny<Guid>(), It.IsAny<DateTime?>(),
-                It.IsAny<List<SyncDataType>?>(), It.IsAny<CancellationToken>()))
+                It.IsAny<List<SyncDataType>?>(), It.IsAny<IReadOnlyCollection<string>?>(),
+                It.IsAny<CancellationToken>()))
             .ReturnsAsync((ConnectorResetJobInfo?)null);
 
         var controller = CreateController(Engine(db), jobService.Object);

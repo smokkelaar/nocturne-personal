@@ -104,7 +104,7 @@ public class ConnectorCursorResetJobServiceTests
 
         var (service, _) = BuildService(engine.Object);
 
-        var info = await service.StartResetAsync(_tenantId, null, null, CancellationToken.None);
+        var info = await service.StartResetAsync(_tenantId, null, null, null, CancellationToken.None);
 
         info.Should().BeNull();
     }
@@ -118,12 +118,12 @@ public class ConnectorCursorResetJobServiceTests
         // Never completes, so the status we read is the seeded one.
         engine.Setup(e => e.ResetTenantCursorsAsync(
                 It.IsAny<Guid>(), It.IsAny<DateTime?>(), It.IsAny<List<SyncDataType>?>(),
-                It.IsAny<IConnectorResetProgress?>(), It.IsAny<CancellationToken>()))
+                It.IsAny<IReadOnlyCollection<string>?>(), It.IsAny<IConnectorResetProgress?>(), It.IsAny<CancellationToken>()))
             .Returns(new TaskCompletionSource<TenantCursorResetResult?>().Task);
 
         var (service, _) = BuildService(engine.Object);
 
-        var info = await service.StartResetAsync(_tenantId, null, null, CancellationToken.None);
+        var info = await service.StartResetAsync(_tenantId, null, null, null, CancellationToken.None);
 
         info.Should().NotBeNull();
         info!.TenantSlug.Should().Be("erik");
@@ -137,6 +137,43 @@ public class ConnectorCursorResetJobServiceTests
     }
 
     [Fact]
+    public async Task StartResetAsync_WithASelection_SeedsAndPassesOnlyTheSelectedConnectors()
+    {
+        IReadOnlyCollection<string>? passed = null;
+        var engine = new Mock<IConnectorCursorResetService>();
+        engine.Setup(e => e.GetTenantConnectorsAsync(_tenantId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Connectors(_tenantId));
+        engine.Setup(e => e.ResetTenantCursorsAsync(
+                _tenantId, It.IsAny<DateTime?>(), It.IsAny<List<SyncDataType>?>(),
+                It.IsAny<IReadOnlyCollection<string>?>(), It.IsAny<IConnectorResetProgress?>(), It.IsAny<CancellationToken>()))
+            .Callback<Guid, DateTime?, List<SyncDataType>?, IReadOnlyCollection<string>?, IConnectorResetProgress?, CancellationToken>(
+                (_, _, _, names, _, _) => passed = names)
+            .ReturnsAsync(new TenantCursorResetResult(_tenantId, "erik", []));
+
+        var (service, _) = BuildService(engine.Object);
+
+        var info = await service.StartResetAsync(_tenantId, null, null, ["dexcom"], CancellationToken.None);
+
+        info!.TotalConnectors.Should().Be(1);
+        var status = await WaitForTerminalAsync(service, info.JobId);
+        status.Connectors.Select(c => c.ConnectorName).Should().Equal("dexcom");
+        passed.Should().Equal("dexcom");
+    }
+
+    [Fact]
+    public async Task StartResetAsync_WithAConnectorTheTenantDoesNotHave_Throws()
+    {
+        var engine = new Mock<IConnectorCursorResetService>();
+        engine.Setup(e => e.GetTenantConnectorsAsync(_tenantId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Connectors(_tenantId));
+
+        var (service, _) = BuildService(engine.Object);
+
+        await Assert.ThrowsAsync<ArgumentException>(
+            () => service.StartResetAsync(_tenantId, null, null, ["glooko"], CancellationToken.None));
+    }
+
+    [Fact]
     public async Task StartResetAsync_RunsToCompletion_ReflectingPerConnectorOutcomes()
     {
         var engine = new Mock<IConnectorCursorResetService>();
@@ -144,9 +181,9 @@ public class ConnectorCursorResetJobServiceTests
             .ReturnsAsync(Connectors(_tenantId));
         engine.Setup(e => e.ResetTenantCursorsAsync(
                 _tenantId, It.IsAny<DateTime?>(), It.IsAny<List<SyncDataType>?>(),
-                It.IsAny<IConnectorResetProgress?>(), It.IsAny<CancellationToken>()))
-            .Returns<Guid, DateTime?, List<SyncDataType>?, IConnectorResetProgress?, CancellationToken>(
-                (tenantId, _, _, progress, _) =>
+                It.IsAny<IReadOnlyCollection<string>?>(), It.IsAny<IConnectorResetProgress?>(), It.IsAny<CancellationToken>()))
+            .Returns<Guid, DateTime?, List<SyncDataType>?, IReadOnlyCollection<string>?, IConnectorResetProgress?, CancellationToken>(
+                (tenantId, _, _, _, progress, _) =>
                 {
                     progress!.ConnectorStarted("nightscout");
                     progress.ConnectorCompleted(new ConnectorCursorResetResult(
@@ -160,7 +197,7 @@ public class ConnectorCursorResetJobServiceTests
 
         var (service, _) = BuildService(engine.Object);
 
-        var info = await service.StartResetAsync(_tenantId, null, null, CancellationToken.None);
+        var info = await service.StartResetAsync(_tenantId, null, null, null, CancellationToken.None);
         info.Should().NotBeNull();
 
         var status = await WaitForTerminalAsync(service, info!.JobId);
@@ -184,7 +221,7 @@ public class ConnectorCursorResetJobServiceTests
         var (service, _) = BuildService(
             sp => engine = new AttributionCapturingEngine(sp, Connectors(_tenantId)));
 
-        var info = await service.StartResetAsync(_tenantId, null, null, CancellationToken.None);
+        var info = await service.StartResetAsync(_tenantId, null, null, null, CancellationToken.None);
         await WaitForTerminalAsync(service, info!.JobId);
 
         engine!.AmbientIsSystemMutation.Should().BeTrue();
@@ -206,14 +243,14 @@ public class ConnectorCursorResetJobServiceTests
             db.SaveChanges();
         }
 
-        var info = await service.StartResetAsync(_tenantId, null, null, CancellationToken.None);
+        var info = await service.StartResetAsync(_tenantId, null, null, null, CancellationToken.None);
         var status = await WaitForTerminalAsync(service, info!.JobId);
 
         status.State.Should().Be(ConnectorResetJobState.Failed);
         status.ErrorMessage.Should().Be("Tenant no longer exists.");
         engine.Verify(e => e.ResetTenantCursorsAsync(
                 It.IsAny<Guid>(), It.IsAny<DateTime?>(), It.IsAny<List<SyncDataType>?>(),
-                It.IsAny<IConnectorResetProgress?>(), It.IsAny<CancellationToken>()),
+                It.IsAny<IReadOnlyCollection<string>?>(), It.IsAny<IConnectorResetProgress?>(), It.IsAny<CancellationToken>()),
             Times.Never);
     }
 
@@ -238,6 +275,7 @@ public class ConnectorCursorResetJobServiceTests
             Guid tenantId,
             DateTime? from,
             List<SyncDataType>? dataTypes,
+            IReadOnlyCollection<string>? connectorNames,
             IConnectorResetProgress? progress,
             CancellationToken ct)
         {
@@ -277,12 +315,12 @@ public class ConnectorCursorResetJobServiceTests
             .ReturnsAsync(Connectors(_tenantId));
         engine.Setup(e => e.ResetTenantCursorsAsync(
                 _tenantId, It.IsAny<DateTime?>(), It.IsAny<List<SyncDataType>?>(),
-                It.IsAny<IConnectorResetProgress?>(), It.IsAny<CancellationToken>()))
+                It.IsAny<IReadOnlyCollection<string>?>(), It.IsAny<IConnectorResetProgress?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new TenantCursorResetResult(_tenantId, "erik", []));
 
         var (service, provider) = BuildService(engine.Object);
 
-        var info = await service.StartResetAsync(_tenantId, null, null, CancellationToken.None);
+        var info = await service.StartResetAsync(_tenantId, null, null, null, CancellationToken.None);
 
         // A fresh service over the same store models the post-restart process: empty job map,
         // same database.

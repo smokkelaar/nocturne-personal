@@ -63,7 +63,7 @@ public class ConnectorAdminController : ControllerBase
 
     /// <summary>
     /// Enqueue a background reset of the sync cursor for every connector configured on a target
-    /// tenant, forcing a re-pull of history. Use after fixing a connector bug to push corrected data
+    /// tenant, or for the selected ones, forcing a re-pull of history. Use after fixing a connector bug to push corrected data
     /// to an affected tenant.
     /// </summary>
     /// <remarks>
@@ -73,7 +73,7 @@ public class ConnectorAdminController : ControllerBase
     /// per-connector progress, and <see cref="CancelResetJob"/> to stop it.
     /// </remarks>
     /// <param name="tenantId">The target tenant whose connectors should be re-pulled.</param>
-    /// <param name="request">Optional lower bound and data-type filter, mirroring the per-tenant reset endpoint.</param>
+    /// <param name="request">Optional lower bound, data-type filter and connector selection.</param>
     /// <param name="ct">Cancellation token for enqueueing (not the background job itself).</param>
     [HttpPost("{tenantId:guid}/reset-cursors")]
     [RemoteCommand]
@@ -92,8 +92,16 @@ public class ConnectorAdminController : ControllerBase
             "Platform admin cursor reset requested for tenant {TenantId} (from {From})",
             tenantId, request.From?.ToString("o") ?? "beginning");
 
-        var job = await _resetJobService.StartResetAsync(
-            tenantId, request.From, request.DataTypes, ct);
+        ConnectorResetJobInfo? job;
+        try
+        {
+            job = await _resetJobService.StartResetAsync(
+                tenantId, request.From, request.DataTypes, request.ConnectorNames, ct);
+        }
+        catch (ArgumentException ex)
+        {
+            return Problem(detail: ex.Message, statusCode: 400, title: "Bad Request");
+        }
 
         return job is null
             ? Problem(detail: $"Tenant not found: {tenantId}", statusCode: 404, title: "Not Found")
@@ -160,4 +168,10 @@ public class AdminResetCursorsRequest
     /// Optional set of data types to reset. When null or empty, every supported data type is reset.
     /// </summary>
     public List<SyncDataType>? DataTypes { get; init; }
+
+    /// <summary>
+    /// Optional set of connectors to reset, by name as <c>GetTenantConnectors</c> lists them. When
+    /// null or empty, every configured connector is reset.
+    /// </summary>
+    public List<string>? ConnectorNames { get; init; }
 }

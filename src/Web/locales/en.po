@@ -16061,6 +16061,7 @@ msgid "FAQ"
 msgstr "FAQ"
 
 #: ../portal/src/lib/components/SiteFooter.svelte
+#: src/lib/help/workflows.svelte.ts
 msgid "Getting Started"
 msgstr "Getting Started"
 
@@ -27349,6 +27350,7 @@ msgid "{0} records could not be stored. They are listed under"
 msgstr "{0} records could not be stored. They are listed under"
 
 #: src/lib/components/shared/SkippedRecordsNote.svelte
+#: src/lib/help/workflows.svelte.ts
 #: src/routes/(authenticated)/reports/data-quality/+page.svelte
 #: src/routes/(authenticated)/reports/data-quality/rejected-uploads/+page.svelte
 msgid "Rejected Uploads"
@@ -32594,6 +32596,7 @@ msgid "Line points are glucose samples; recorded treatments provide timing conte
 msgstr "Line points are glucose samples; recorded treatments provide timing context."
 
 #: src/lib/help/reading-guides.svelte.ts
+#: src/lib/help/workflows.svelte.ts
 msgid "Choose your display"
 msgstr "Choose your display"
 
@@ -35011,3 +35014,375 @@ msgstr "Use category tabs and Search here. Add/edit and bulk deletion require wr
 #: src/lib/help/reports.svelte.ts
 msgid "Open a night from the Sleep report; choose other dates there. Import settings are in Connectors & Apps â†’ Google Health."
 msgstr "Open a night from the Sleep report; choose other dates there. Import settings are in Connectors & Apps â†’ Google Health."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Daily Profile"
+msgstr "Daily Profile"
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Compare glucose, basal, loop corrections, insulin on board (IOB) and carbs on board (COB) across the time of day."
+msgstr "Compare glucose, basal, loop corrections, insulin on board (IOB) and carbs on board (COB) across the time of day."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Uploaded glucose, treatment, and device-status records."
+msgstr "Uploaded glucose, treatment, and device-status records."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Choose the report dates and filters. They stay selected when you switch to another Loop Analysis page. Ranges longer than 90 days use the most recent 90 days of the selected range."
+msgstr "Choose the report dates and filters. They stay selected when you switch to another Loop Analysis page. Ranges longer than 90 days use the most recent 90 days of the selected range."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Compare daily patterns across the recorded signals, then open Insulin Delivery for the same dates to inspect delivery context."
+msgstr "Compare daily patterns across the recorded signals, then open Insulin Delivery for the same dates to inspect delivery context."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Aggregated patterns are not one actual day or proof of actual delivery."
+msgstr "Aggregated patterns are not one actual day or proof of actual delivery."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Choose a period"
+msgstr "Choose a period"
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Check the selected dates and applied filters before reading the daily pattern."
+msgstr "Check the selected dates and applied filters before reading the daily pattern."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Compare the signals"
+msgstr "Compare the signals"
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Look at glucose, basal, corrections, IOB and COB at the same time of day. Check coverage before comparing periods."
+msgstr "Look at glucose, basal, corrections, IOB and COB at the same time of day. Check coverage before comparing periods."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Inspect actual days"
+msgstr "Inspect actual days"
+
+#: src/lib/help/workflows.svelte.ts
+msgid "A daily profile combines multiple days. Use Day in Review and Insulin Delivery to inspect the recorded detail behind a pattern."
+msgstr "A daily profile combines multiple days. Use Day in Review and Insulin Delivery to inspect the recorded detail behind a pattern."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Meals and Events"
+msgstr "Meals and Events"
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Align glucose and insulin before and after meals, corrections, and events."
+msgstr "Align glucose and insulin before and after meals, corrections, and events."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Recorded meals, corrections and other events, together with uploaded glucose and insulin records."
+msgstr "Recorded meals, corrections and other events, together with uploaded glucose and insulin records."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Choose the report dates, then select event kinds and available conditions in the event cohort builder. Review the applied filters and server-reported limits."
+msgstr "Choose the report dates, then select event kinds and available conditions in the event cohort builder. Review the applied filters and server-reported limits."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Compare the time before and after the selected events. Unavailable filters are removed from the selection rather than silently applied."
+msgstr "Compare the time before and after the selected events. Unavailable filters are removed from the selection rather than silently applied."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Missing or incorrectly timed events can change the comparison. A similar glucose pattern does not prove that an event caused it."
+msgstr "Missing or incorrectly timed events can change the comparison. A similar glucose pattern does not prove that an event caused it."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Build Cohort"
+msgstr "Build Cohort"
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Select event kinds and conditions in the builder."
+msgstr "Select event kinds and conditions in the builder."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Check Filters"
+msgstr "Check Filters"
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Review server-reported applied filters and limits."
+msgstr "Review server-reported applied filters and limits."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Interpret Results"
+msgstr "Interpret Results"
+
+#: src/lib/help/workflows.svelte.ts
+msgid "View alignments. Remember association does not prove causation."
+msgstr "View alignments. Remember association does not prove causation."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Prediction Accuracy"
+msgstr "Prediction Accuracy"
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Compare uploaded loop glucose predictions with subsequent readings."
+msgstr "Compare uploaded loop glucose predictions with subsequent readings."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Uploaded loop predictions and subsequent glucose readings."
+msgstr "Uploaded loop predictions and subsequent glucose readings."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Choose the shared report dates and filters, then review the available prediction comparisons."
+msgstr "Choose the shared report dates and filters, then review the available prediction comparisons."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Matches predictions to subsequent readings within the selected period."
+msgstr "Matches predictions to subsequent readings within the selected period."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Predictions need subsequent glucose readings for comparison. Missing pairs reduce coverage. This retrospective report does not guarantee the next reading or recommend a dose."
+msgstr "Predictions need subsequent glucose readings for comparison. Missing pairs reduce coverage. This retrospective report does not guarantee the next reading or recommend a dose."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Keep the period consistent"
+msgstr "Keep the period consistent"
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Use the same report dates and filters when comparing this page with the other Loop Analysis pages."
+msgstr "Use the same report dates and filters when comparing this page with the other Loop Analysis pages."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Check available pairs"
+msgstr "Check available pairs"
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Compare uploaded predictions with the glucose readings that followed them. Missing predictions or readings limit the comparison."
+msgstr "Compare uploaded predictions with the glucose readings that followed them. Missing predictions or readings limit the comparison."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Read the result in context"
+msgstr "Read the result in context"
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Use the comparison to inspect past prediction behaviour, rather than treating a past match as a guarantee of a future reading."
+msgstr "Use the comparison to inspect past prediction behaviour, rather than treating a past match as a guarantee of a future reading."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Loop Health"
+msgstr "Loop Health"
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Inspect recorded closed-loop activity, interruptions and the limits reported by the loop."
+msgstr "Inspect recorded closed-loop activity, interruptions and the limits reported by the loop."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Uploaded loop and device-status records provide activity history, with glucose records for context."
+msgstr "Uploaded loop and device-status records provide activity history, with glucose records for context."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Choose the shared report dates and filters. For a period longer than 90 days, only the most recent 90 days of that selection are used."
+msgstr "Choose the shared report dates and filters. For a period longer than 90 days, only the most recent 90 days of that selection are used."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Shows recorded closed-loop time, reasons the loop stopped, and frequency of reaching limits."
+msgstr "Shows recorded closed-loop time, reasons the loop stopped, and frequency of reaching limits."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "A missing or hidden value is not a measured zero. Missing status records do not prove a device fault. The report displays uploaded history and does not control the pump."
+msgstr "A missing or hidden value is not a measured zero. Missing status records do not prove a device fault. The report displays uploaded history and does not control the pump."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Check the analysed period"
+msgstr "Check the analysed period"
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Review the selected dates, filters and available status coverage before comparing activity shares."
+msgstr "Review the selected dates, filters and available status coverage before comparing activity shares."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Review activity and gaps"
+msgstr "Review activity and gaps"
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Inspect closed-loop time, recorded interruptions and limit frequency. Open linked days to examine a gap in context."
+msgstr "Inspect closed-loop time, recorded interruptions and limit frequency. Open linked days to examine a gap in context."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Distinguish unknown from zero"
+msgstr "Distinguish unknown from zero"
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Read the reason shown for an unknown value. Check the uploader, connector and source app if status history is missing."
+msgstr "Read the reason shown for an unknown value. Check the uploader, connector and source app if status history is missing."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Settings Evidence"
+msgstr "Settings Evidence"
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Compare imported settings with stored observations."
+msgstr "Compare imported settings with stored observations."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Profiles, glucose, treatments, and loop/device status."
+msgstr "Profiles, glucose, treatments, and loop/device status."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Use the shared report dates and filters to select the observations. Inspect the historical profile context and the records behind a comparison."
+msgstr "Use the shared report dates and filters to select the observations. Inspect the historical profile context and the records behind a comparison."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Compares imported profile settings with observations in stored data."
+msgstr "Compares imported profile settings with observations in stored data."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Missing records and historical profiles matter. No automatic therapy adjustment. Discuss changes with your diabetes care team."
+msgstr "Missing records and historical profiles matter. No automatic therapy adjustment. Discuss changes with your diabetes care team."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Verify coverage"
+msgstr "Verify coverage"
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Check which glucose, treatment, device-status and profile records are available in the selected period."
+msgstr "Check which glucose, treatment, device-status and profile records are available in the selected period."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Inspect the historical context"
+msgstr "Inspect the historical context"
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Compare observations with the profile active at that time. Missing records can limit what the report can show."
+msgstr "Compare observations with the profile active at that time. Missing records can limit what the report can show."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Discuss changes with your care team"
+msgstr "Discuss changes with your care team"
+
+#: src/lib/help/workflows.svelte.ts
+msgid "This page provides retrospective observations, not an automatic therapy adjustment. Discuss any proposed setting changes with your diabetes care team."
+msgstr "This page provides retrospective observations, not an automatic therapy adjustment. Discuss any proposed setting changes with your diabetes care team."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "View records Nocturne acknowledged but could not store."
+msgstr "View records Nocturne acknowledged but could not store."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Uploader submissions that Nocturne acknowledged but could not store as sent. An uploader may therefore consider a missing record saved."
+msgstr "Uploader submissions that Nocturne acknowledged but could not store as sent. An uploader may therefore consider a missing record saved."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Use Previous and Next to move through pages of 25 records. Export this page downloads the visible rows as JSON. Clear this page asks for confirmation before removing those diagnostics."
+msgstr "Use Previous and Next to move through pages of 25 records. Export this page downloads the visible rows as JSON. Clear this page asks for confirmation before removing those diagnostics."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Inspect the source, reason, last-sent time, occurrence count and payload to find records missing from the stored data. Repeated identical submissions are grouped."
+msgstr "Inspect the source, reason, last-sent time, occurrence count and payload to find records missing from the stored data. Repeated identical submissions are grouped."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Clearing diagnostics does not repair, import or retry records. Long payload text is shortened in the list and export. Exported records may include identifiable health information."
+msgstr "Clearing diagnostics does not repair, import or retry records. Long payload text is shortened in the list and export. Exported records may include identifiable health information."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Inspect the rejection"
+msgstr "Inspect the rejection"
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Review the source, reason, occurrence count and record payload. A successful uploader response does not prove that this rejected record was stored."
+msgstr "Review the source, reason, occurrence count and record payload. A successful uploader response does not prove that this rejected record was stored."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Correct the source and verify"
+msgstr "Correct the source and verify"
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Check the uploader or source configuration, then confirm that new records appear. Clearing the list does not trigger another upload."
+msgstr "Check the uploader or source configuration, then confirm that new records appear. Clearing the list does not trigger another upload."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Export only what you need"
+msgstr "Export only what you need"
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Export this page contains only the visible rows and may contain shortened payloads. Review and redact the JSON before sharing it with support."
+msgstr "Export this page contains only the visible rows and may contain shortened payloads. Review and redact the JSON before sharing it with support."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Learn how to configure display settings, connect data sources, and verify that your imported data appears correctly in Nocturne."
+msgstr "Learn how to configure display settings, connect data sources, and verify that your imported data appears correctly in Nocturne."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "The selected tenant, saved display preferences and records received from your configured uploaders and connectors."
+msgstr "The selected tenant, saved display preferences and records received from your configured uploaders and connectors."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Open help with the book beside Nocturne. Close it with the close button or Escape to return to your original page and inputs. Appearance controls units, theme, language and help display."
+msgstr "Open help with the book beside Nocturne. Close it with the close button or Escape to return to your original page and inputs. Appearance controls units, theme, language and help display."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "After connecting a source, use Dashboard to check freshness and Reports to review the selected period. Therapy shows imported schedules; Sharing & Privacy manages access."
+msgstr "After connecting a source, use Dashboard to check freshness and Reports to review the selected period. Therapy shows imported schedules; Sharing & Privacy manages access."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Available settings depend on your permissions. A connected status or completed setup checklist does not prove that an import has finished. Check actual records and their timestamps."
+msgstr "Available settings depend on your permissions. A connected status or completed setup checklist does not prove that an import has finished. Check actual records and their timestamps."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Open Appearance to set units, theme, language and help display. Display preferences do not change the stored readings."
+msgstr "Open Appearance to set units, theme, language and help display. Display preferences do not change the stored readings."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Connect your data source"
+msgstr "Connect your data source"
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Open Connectors & Apps and follow the guide for your source. Complete any required sign-in and import selection."
+msgstr "Open Connectors & Apps and follow the guide for your source. Complete any required sign-in and import selection."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Verify incoming data"
+msgstr "Verify incoming data"
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Check the latest reading timestamp on Dashboard, then confirm dates and data coverage in Reports. If records are missing, open Missing Data and Troubleshooting."
+msgstr "Check the latest reading timestamp on Dashboard, then confirm dates and data coverage in Reports. If records are missing, open Missing Data and Troubleshooting."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Missing Data and Troubleshooting"
+msgstr "Missing Data and Troubleshooting"
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Diagnose missing data by checking scope, source records, and import status. Prepare evidence for support without including sensitive credentials."
+msgstr "Diagnose missing data by checking scope, source records, and import status. Prepare evidence for support without including sensitive credentials."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Dashboard timestamps, the selected report period, connector status, source-app records and rejected-upload diagnostics."
+msgstr "Dashboard timestamps, the selected report period, connector status, source-app records and rejected-upload diagnostics."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Check the selected tenant, report dates and applied filters first. In Connectors & Apps, inspect the source configuration and latest sync. Use Support & Community for version and issue-report details."
+msgstr "Check the selected tenant, report dates and applied filters first. In Connectors & Apps, inspect the source configuration and latest sync. Use Support & Community for version and issue-report details."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Distinguish a date or access mismatch from missing source records, an incomplete import or a rejected upload before changing configuration."
+msgstr "Distinguish a date or access mismatch from missing source records, an incomplete import or a rejected upload before changing configuration."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Reports require different combinations of glucose, treatments and device status. An empty page is not proof that no event occurred. Clearing diagnostics does not repair or retry an import."
+msgstr "Reports require different combinations of glucose, treatments and device status. An empty page is not proof that no event occurred. Clearing diagnostics does not repair or retry an import."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Check the workspace and period"
+msgstr "Check the workspace and period"
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Confirm the tenant, latest reading timestamp, selected dates and filters. Check whether your access includes the data the report needs."
+msgstr "Confirm the tenant, latest reading timestamp, selected dates and filters. Check whether your access includes the data the report needs."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Compare source and imported records"
+msgstr "Compare source and imported records"
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Check that the record exists in the source app, then review the connector latest sync and supported data types. Inspect Rejected Uploads when an uploader reports success but a record is missing."
+msgstr "Check that the record exists in the source app, then review the connector latest sync and supported data types. Inspect Rejected Uploads when an uploader reports success but a record is missing."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Prepare a useful support report"
+msgstr "Prepare a useful support report"
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Include the page, selected dates, expected result, version and steps to reproduce. Review any exported diagnostics and remove passwords, tokens and identifiable health records before sharing."
+msgstr "Include the page, selected dates, expected result, version and steps to reproduce. Review any exported diagnostics and remove passwords, tokens and identifiable health records before sharing."

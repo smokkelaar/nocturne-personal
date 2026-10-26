@@ -106,9 +106,9 @@ public class EntryReadServiceHistoryTests
             .ReturnsAsync([Live(loser)]);
         _sgRepo.Setup(r => r.GetForEntriesAsync(
                 It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), It.IsAny<string?>(), It.IsAny<string?>(),
-                It.IsAny<int>(), It.IsAny<int>(), It.IsAny<bool>(), It.IsAny<bool>(),
+                It.IsAny<int>(), It.IsAny<int>(), It.IsAny<bool>(),
                 It.IsAny<DateTime?>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>(), It.IsAny<Guid?>()))
-            .ReturnsAsync((DateTime? from, DateTime? to, string? _, string? _, int _, int _, bool _, bool _,
+            .ReturnsAsync((DateTime? from, DateTime? to, string? _, string? _, int _, int _, bool _,
                 DateTime? _, Guid? _, CancellationToken _, Guid? _) =>
                 new[] { winner, loser }.Where(r => r.Timestamp >= from && r.Timestamp <= to).ToList());
 
@@ -134,9 +134,9 @@ public class EntryReadServiceHistoryTests
         ServeHistory(_sgRepo, new[] { winner }, deleted: [winner.Id]);
         _sgRepo.Setup(r => r.GetForEntriesAsync(
                 It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), It.IsAny<string?>(), It.IsAny<string?>(),
-                It.IsAny<int>(), It.IsAny<int>(), It.IsAny<bool>(), It.IsAny<bool>(),
+                It.IsAny<int>(), It.IsAny<int>(), It.IsAny<bool>(),
                 It.IsAny<DateTime?>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>(), It.IsAny<Guid?>()))
-            .ReturnsAsync((DateTime? from, DateTime? to, string? _, string? _, int _, int _, bool _, bool _,
+            .ReturnsAsync((DateTime? from, DateTime? to, string? _, string? _, int _, int _, bool _,
                 DateTime? _, Guid? _, CancellationToken _, Guid? _) =>
                 new[] { successor }.Where(r => r.Timestamp >= from && r.Timestamp <= to).ToList());
 

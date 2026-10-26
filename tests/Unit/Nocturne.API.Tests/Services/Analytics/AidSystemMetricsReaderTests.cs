@@ -88,7 +88,7 @@ public class AidSystemMetricsReaderTests
         glucose
             .Setup(r => r.GetForAnalyticsAsync(
                 It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), null, null, It.IsAny<int>(), It.IsAny<int>(),
-                It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<DateTime?>(), It.IsAny<Guid?>(),
+                It.IsAny<bool>(), It.IsAny<DateTime?>(), It.IsAny<Guid?>(),
                 It.IsAny<CancellationToken>(), It.IsAny<Guid?>()))
             .ReturnsAsync([]);
 

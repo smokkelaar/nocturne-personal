@@ -94,16 +94,16 @@
 {/snippet}
 
 {#if sections.length > 0}
-  <div class="space-y-2 text-xs">
+  <div class="@container space-y-2 text-xs">
     {#each sections as { profile, targetSegments, carbSegments, sensitivitySegments } (profile.profileName)}
       <ActiveProfileHeading {profile} multiple={profiles.length > 1} />
 
       {#if targetSegments.length > 0}
-        <div class="flex items-center gap-2">
-          <span class="w-28 shrink-0 text-muted-foreground font-medium">
+        <div class="flex flex-wrap items-center gap-x-2 gap-y-1 @md:flex-nowrap">
+          <span class="shrink-0 text-muted-foreground font-medium @md:w-28">
             Correction range
           </span>
-          <div class="flex flex-1 h-8 rounded overflow-hidden border border-border">
+          <div class="order-last flex h-8 w-full basis-full rounded overflow-hidden border border-border @md:order-none @md:w-auto @md:flex-1 @md:basis-auto">
             {#each targetSegments as seg, i (i)}
               <div
                 class="flex items-center justify-center {segmentColors[i % segmentColors.length]} border-r border-border last:border-r-0 px-1 overflow-hidden w-(--seg-w)"
@@ -116,7 +116,7 @@
               </div>
             {/each}
           </div>
-          <span class="w-20 shrink-0 text-right text-muted-foreground flex items-center justify-end gap-0.5">
+          <span class="ml-auto shrink-0 text-right text-muted-foreground flex items-center justify-end gap-0.5 @md:ml-0 @md:w-20">
             {bgLabel()}
             {@render changeIndicator(profile.targetRangeChanges)}
           </span>
@@ -124,11 +124,11 @@
       {/if}
 
       {#if carbSegments.length > 0}
-        <div class="flex items-center gap-2">
-          <span class="w-28 shrink-0 text-muted-foreground font-medium">
+        <div class="flex flex-wrap items-center gap-x-2 gap-y-1 @md:flex-nowrap">
+          <span class="shrink-0 text-muted-foreground font-medium @md:w-28">
             Carb ratio
           </span>
-          <div class="flex flex-1 h-8 rounded overflow-hidden border border-border">
+          <div class="order-last flex h-8 w-full basis-full rounded overflow-hidden border border-border @md:order-none @md:w-auto @md:flex-1 @md:basis-auto">
             {#each carbSegments as seg, i (i)}
               <div
                 class="flex items-center justify-center {segmentColors[i % segmentColors.length]} border-r border-border last:border-r-0 px-1 overflow-hidden w-(--seg-w)"
@@ -141,7 +141,7 @@
               </div>
             {/each}
           </div>
-          <span class="w-20 shrink-0 text-right text-muted-foreground flex items-center justify-end gap-0.5">
+          <span class="ml-auto shrink-0 text-right text-muted-foreground flex items-center justify-end gap-0.5 @md:ml-0 @md:w-20">
             g/U
             {@render changeIndicator(profile.carbRatioChanges)}
           </span>
@@ -149,11 +149,11 @@
       {/if}
 
       {#if sensitivitySegments.length > 0}
-        <div class="flex items-center gap-2">
-          <span class="w-28 shrink-0 text-muted-foreground font-medium">
+        <div class="flex flex-wrap items-center gap-x-2 gap-y-1 @md:flex-nowrap">
+          <span class="shrink-0 text-muted-foreground font-medium @md:w-28">
             Correction factor
           </span>
-          <div class="flex flex-1 h-8 rounded overflow-hidden border border-border">
+          <div class="order-last flex h-8 w-full basis-full rounded overflow-hidden border border-border @md:order-none @md:w-auto @md:flex-1 @md:basis-auto">
             {#each sensitivitySegments as seg, i (i)}
               <div
                 class="flex items-center justify-center {segmentColors[i % segmentColors.length]} border-r border-border last:border-r-0 px-1 overflow-hidden w-(--seg-w)"
@@ -166,7 +166,7 @@
               </div>
             {/each}
           </div>
-          <span class="w-20 shrink-0 text-right text-muted-foreground flex items-center justify-end gap-0.5">
+          <span class="ml-auto shrink-0 text-right text-muted-foreground flex items-center justify-end gap-0.5 @md:ml-0 @md:w-20">
             {bgLabel()}/U
             {@render changeIndicator(profile.sensitivityChanges)}
           </span>
@@ -176,13 +176,13 @@
 
     <!-- Time axis -->
     <div class="flex items-center gap-2">
-      <span class="w-28 shrink-0"></span>
+      <span class="hidden w-28 shrink-0 @md:block"></span>
       <div class="flex flex-1 justify-between text-2xs text-muted-foreground px-0.5">
         {#each AXIS_HOURS as hour (hour)}
           <span>{hourStart(hour)}</span>
         {/each}
       </div>
-      <span class="w-20 shrink-0"></span>
+      <span class="hidden w-20 shrink-0 @md:block"></span>
     </div>
 
     <!-- The icon's meaning is otherwise only in its hover title, which paper cannot show. -->

@@ -1,5 +1,6 @@
 namespace Nocturne.Core.Models;
 
+using System.Text.Json.Serialization;
 using Nocturne.Core.Models.V4;
 
 /// <summary>
@@ -11,6 +12,11 @@ public class CobResult
     public double? Activity { get; set; }
     public string? Source { get; set; }
     public string? Device { get; set; }
+
+    /// <summary>Whether <see cref="Cob"/> is a device's own total rather than a calculation, zero included.</summary>
+    [JsonIgnore]
+    public bool ReportedByDevice { get; set; }
+
     public long? Mills { get; set; }
     public string? Display { get; set; }
     public string? DisplayLine { get; set; }

@@ -25,6 +25,8 @@
 
   let { requests, roles, onApprove, onDeny }: Props = $props();
 
+  const grantableRoles = $derived(roles.filter((r) => r.canGrant));
+
   // Per-request state keyed by request id
   let selectedRoles = $state<Record<string, string[]>>({});
   let approvingIds = $state(new Set<string>());
@@ -119,7 +121,7 @@
         <div class="space-y-2">
           <Label>Assign roles</Label>
           <div class="grid gap-2 @sm:grid-cols-2">
-            {#each roles as role (role.id)}
+            {#each grantableRoles as role (role.id)}
               <div class="flex items-center gap-2">
                 <Checkbox
                   id="request-role-{request.id}-{role.id}"

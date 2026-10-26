@@ -51,9 +51,9 @@ public partial class StatisticsControllerTests
                 It.IsAny<DateTime?>(), It.IsAny<DateTime?>(),
                 It.IsAny<string?>(), It.IsAny<string?>(),
                 It.IsAny<int>(), It.IsAny<int>(), It.IsAny<bool>(),
-                It.IsAny<bool>(), It.IsAny<BolusKind?>(),
+                It.IsAny<BolusKind?>(),
                 It.IsAny<DateTime?>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((DateTime? _, DateTime? _, string? _, string? _, int _, int _, bool _, bool _, BolusKind? kind,
+            .ReturnsAsync((DateTime? _, DateTime? _, string? _, string? _, int _, int _, bool _, BolusKind? kind,
                 DateTime? _, Guid? _, CancellationToken _) =>
                 kind == BolusKind.Manual
                     ? new List<Bolus> { new() { Timestamp = SydneyMondayMorning, Insulin = 4 } }
@@ -321,7 +321,7 @@ public partial class StatisticsControllerTests
                 It.IsAny<DateTime?>(), It.IsAny<DateTime?>(),
                 It.IsAny<string?>(), It.IsAny<string?>(),
                 It.IsAny<int>(), It.IsAny<int>(), It.IsAny<bool>(),
-                It.IsAny<bool>(), It.IsAny<DateTime?>(), It.IsAny<Guid?>(),
+                It.IsAny<DateTime?>(), It.IsAny<Guid?>(),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<CarbIntake> { new() { Timestamp = start.AddHours(1), Carbs = 60 } });
 

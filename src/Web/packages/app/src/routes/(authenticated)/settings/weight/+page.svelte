@@ -67,14 +67,14 @@
   <title>Weight history - Settings - Nocturne</title>
 </svelte:head>
 
-<div class="mx-auto max-w-2xl space-y-6 p-4">
+<div class="@container mx-auto max-w-2xl space-y-6 p-4">
   <div class="flex items-center gap-4">
     <Artwork
       icon={weightScaleArtwork}
       palette="moss"
       motion="auto"
       autoplay="once"
-      class="size-48 shrink-0"
+      class="size-20 shrink-0 @md:size-48"
     />
     <div class="space-y-1">
       <h1 class="text-xl font-semibold">Weight history</h1>
@@ -132,7 +132,7 @@
       <Card.Title>Add an entry</Card.Title>
     </Card.Header>
     <Card.Content class="space-y-4">
-      <div class="grid gap-3 sm:grid-cols-2">
+      <div class="grid gap-3 @md:grid-cols-2">
         <div class="space-y-1.5">
           <Label for="weight-kg">Weight (kg)</Label>
           <Input id="weight-kg" type="number" step="0.1" min="0" bind:value={newWeightKg} placeholder="e.g. 70" />

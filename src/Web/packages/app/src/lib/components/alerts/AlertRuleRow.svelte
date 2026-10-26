@@ -16,7 +16,7 @@
   import {
     summarizeCondition,
     type SummarizeContext,
-  } from "./summarizeCondition";
+  } from "./summarizeCondition.svelte";
   import { severity } from "./severity";
   import { severityLabel } from "./severityLabel.svelte";
   import { nodeFromApi } from "./types";

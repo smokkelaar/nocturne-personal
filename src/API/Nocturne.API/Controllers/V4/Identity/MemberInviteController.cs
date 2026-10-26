@@ -280,8 +280,13 @@ public class MemberInviteController : ControllerBase
     }
 
     /// <summary>
-    /// Set roles for a member (replaces all role assignments).
+    /// Set roles for a member. <c>RoleIds</c> is the member's whole role set after the change.
     /// </summary>
+    /// <remarks>
+    /// Only the change is checked against the caller's grant ceiling, so a caller who could not
+    /// grant a role the member already holds can still edit the member's other roles. Such a role
+    /// must stay in the set: removing it is refused like adding it.
+    /// </remarks>
     [HttpPut("members/{id:guid}/roles")]
     [RemoteCommand(Invalidates = ["GetMembers"])]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -320,10 +325,17 @@ public class MemberInviteController : ControllerBase
             return Problem(detail: reason, statusCode: 400);
         }
 
-        var roleGrant = await _tenantRoleService.ValidateRoleGrantAsync(
-            tenantId, request.RoleIds, HttpContext.GetGrantedScopes(), ct);
+        var held = member.MemberRoles.Select(mr => mr.TenantRoleId).ToList();
+        var added = request.RoleIds.Except(held).ToList();
+        var removed = held.Except(request.RoleIds).ToList();
+        var grantedScopes = HttpContext.GetGrantedScopes();
+
+        var roleGrant = await _tenantRoleService.ValidateRoleGrantAsync(tenantId, added, grantedScopes, ct);
         if (!roleGrant.Ok)
             return RoleGrantProblem(roleGrant);
+
+        if (!(await _tenantRoleService.ValidateRoleGrantAsync(tenantId, removed, grantedScopes, ct)).Ok)
+            return Problem(detail: UngrantableRoleRemovalDetail, statusCode: 403);
 
         var keepsOwner = await db.TenantRoles.AnyAsync(
             r => r.TenantId == tenantId && request.RoleIds.Contains(r.Id) && r.Slug == RoleSeeds.Owner, ct);
@@ -334,12 +346,10 @@ public class MemberInviteController : ControllerBase
         if (await WouldExemptAClampedMemberAsync(member, rolesAfter.Concat(member.DirectPermissions ?? []), ct))
             return Problem(detail: HttpContextExtensions.HistoryCeilingDetail, statusCode: 403);
 
-        // Remove existing role assignments
-        db.TenantMemberRoles.RemoveRange(member.MemberRoles);
+        db.TenantMemberRoles.RemoveRange(member.MemberRoles.Where(mr => removed.Contains(mr.TenantRoleId)));
 
-        // Add new role assignments
         var now = DateTime.UtcNow;
-        foreach (var roleId in request.RoleIds)
+        foreach (var roleId in added)
         {
             db.TenantMemberRoles.Add(new TenantMemberRoleEntity
             {
@@ -524,6 +534,8 @@ public class MemberInviteController : ControllerBase
 
     private const string SelfRemovalDetail =
         "Cannot remove your own membership; ask another member with members.manage.";
+
+    private const string UngrantableRoleRemovalDetail = "Cannot remove a role you cannot grant.";
 
     /// <summary>
     /// True when a history-clamped caller's edit would leave a clamped member holding permissions

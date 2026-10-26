@@ -543,7 +543,7 @@
 					{#if suggestionDetail}
 						<Card>
 							<CardHeader>
-								<div class="flex items-center justify-between">
+								<div class="flex flex-wrap items-center justify-between gap-2">
 									<CardTitle>
 										{suggestionDetail.suggestion?.nightOf
 											? formatNightOf(suggestionDetail.suggestion.nightOf)
@@ -591,7 +591,7 @@
 								{/if}
 
 								<dl class="m-0 mb-6 grid grid-cols-3 divide-x divide-border border-y border-border">
-									<div class="py-3 pr-4">
+									<div class="py-3 pr-2 @md:pr-4">
 										<dt class="text-sm text-muted-foreground">Lowest ({bgLabel()})</dt>
 										<dd class="m-0 mt-1 text-lg font-semibold tabular-nums">
 											{suggestionDetail.suggestion?.lowestGlucose != null
@@ -599,7 +599,7 @@
 												: '-'}
 										</dd>
 									</div>
-									<div class="px-4 py-3">
+									<div class="px-2 py-3 @md:px-4">
 										<dt class="text-sm text-muted-foreground">Drop Rate ({bgLabel()}/min)</dt>
 										<dd class="m-0 mt-1 text-lg font-semibold tabular-nums">
 											{suggestionDetail.suggestion?.dropRate != null
@@ -607,7 +607,7 @@
 												: '-'}
 										</dd>
 									</div>
-									<div class="py-3 pl-4">
+									<div class="py-3 pl-2 @md:pl-4">
 										<dt class="text-sm text-muted-foreground">Recovery (min)</dt>
 										<dd class="m-0 mt-1 text-lg font-semibold tabular-nums">
 											{suggestionDetail.suggestion?.recoveryMinutes ?? '-'}
@@ -633,10 +633,10 @@
 
 								{#if isBulkMode && canReviewSuggestions}
 									<div
-										class="mb-4 flex items-center justify-between border-b border-border pb-3 print:hidden"
+										class="mb-4 flex flex-wrap items-center justify-between gap-2 border-b border-border pb-3 print:hidden"
 									>
 										<span class="text-sm font-medium">{selectionCount} selected</span>
-										<div class="flex gap-2">
+										<div class="flex flex-wrap gap-2">
 											<Button
 												size="sm"
 												onclick={handleAccept}
@@ -669,7 +669,7 @@
 
 								{#if !isBulkMode && canReviewSuggestions}
 									{#if isPending}
-										<div class="flex gap-4 print:hidden">
+										<div class="flex flex-wrap gap-2 @md:gap-4 print:hidden">
 											<Button
 												class="flex-1"
 												onclick={handleAccept}
@@ -698,7 +698,7 @@
 											</Button>
 										</div>
 									{:else}
-										<div class="flex gap-4 print:hidden">
+										<div class="flex flex-wrap gap-2 @md:gap-4 print:hidden">
 											<Button
 												variant="destructive"
 												class="flex-1"

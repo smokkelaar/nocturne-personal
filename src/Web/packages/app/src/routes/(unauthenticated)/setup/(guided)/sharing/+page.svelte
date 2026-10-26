@@ -82,7 +82,7 @@
     </p>
   </div>
 
-  <div class="grid gap-3 sm:grid-cols-2" role="group" aria-labelledby="sharing-question">
+  <div class="grid gap-3 @lg:grid-cols-2" role="group" aria-labelledby="sharing-question">
     {#each audiences as audience (audience.id)}
       {@const on = chosen.includes(audience.id)}
       <button

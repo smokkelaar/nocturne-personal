@@ -51,16 +51,6 @@ public class NoteRepository : SyncUpsertRepositoryBase<Note, NoteEntity>, INoteR
     protected internal override RecordType? DedupRecordType => RecordType.Note;
 
     /// <summary>
-    /// Routes the base 7-arg form through the extended note query (non-primary LinkedRecords
-    /// exclusion + ordering), preserving the pre-base default-interface bridge behaviour.
-    /// </summary>
-    public override Task<IEnumerable<Note>> GetAsync(
-        DateTime? from, DateTime? to, string? device, string? source,
-        int limit = 100, int offset = 0, bool descending = true,
-        CancellationToken ct = default)
-        => GetAsync(from, to, device, source, limit, offset, descending, nativeOnly: false, ct);
-
-    /// <summary>
     /// Gets note records based on filter criteria.
     /// Deduplicates records using the <see cref="IDeduplicationService"/>.
     /// </summary>
@@ -71,10 +61,9 @@ public class NoteRepository : SyncUpsertRepositoryBase<Note, NoteEntity>, INoteR
     /// <param name="limit">The maximum number of records to return.</param>
     /// <param name="offset">The number of records to skip.</param>
     /// <param name="descending">Whether to sort by timestamp in descending order.</param>
-    /// <param name="nativeOnly">Whether to return only native records.</param>
     /// <param name="ct">The cancellation token.</param>
     /// <returns>A collection of notes.</returns>
-    public async Task<IEnumerable<Note>> GetAsync(
+    public override async Task<IEnumerable<Note>> GetAsync(
         DateTime? from,
         DateTime? to,
         string? device,
@@ -82,7 +71,6 @@ public class NoteRepository : SyncUpsertRepositoryBase<Note, NoteEntity>, INoteR
         int limit = 100,
         int offset = 0,
         bool descending = true,
-        bool nativeOnly = false,
         CancellationToken ct = default
     )
     {
@@ -96,8 +84,6 @@ public class NoteRepository : SyncUpsertRepositoryBase<Note, NoteEntity>, INoteR
             query = query.Where(e => e.Device == device);
         if (source != null)
             query = query.Where(e => e.DataSource == source);
-        if (nativeOnly)
-            query = query.Where(e => e.LegacyId == null);
 
         query = ApplyReadVisibility(query, ctx);
 

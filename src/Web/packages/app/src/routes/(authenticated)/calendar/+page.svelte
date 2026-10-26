@@ -372,7 +372,7 @@
     </div>
 
     {#if trackersLoading}
-      <div class="flex-1 p-3 sm:p-4">
+      <div class="flex-1 p-3 @md:p-4">
         <Card.Root class="h-full">
           <Card.Content class="p-4 h-full flex items-center justify-center">
             <div class="text-muted-foreground">Loading data...</div>
@@ -380,9 +380,9 @@
         </Card.Root>
       </div>
     {:else}
-      <div class="flex-1 p-3 sm:p-4">
+      <div class="flex-1 p-3 @md:p-4">
         <Card.Root class="h-full">
-          <Card.Content class="p-2 sm:p-4 h-full flex flex-col">
+          <Card.Content class="p-2 @md:p-4 h-full flex flex-col">
             {#if trackersError}
               <!-- Trackers overlay the calendar; losing them must not take the glucose
                    calendar with them, which is served by a separate query. -->

@@ -492,6 +492,11 @@ export function formatWeekdayLabel(date: Date | string | number): string {
   });
 }
 
+/** A weekday's short name in the viewer's locale. 4 January 2026 is a Sunday, so day d falls on the 4th + d. */
+export function weekdayLabel(day: number): string {
+  return formatWeekdayLabel(new Date(2026, 0, 4 + day));
+}
+
 /**
  * Formats a date string for use in datetime-local input fields
  * @param dateStr - ISO date string or undefined

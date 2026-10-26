@@ -166,7 +166,7 @@
 </script>
 
 <div class="space-y-4">
-  <div class="flex items-center justify-between">
+  <div class="flex flex-wrap items-center justify-between gap-3">
     <div>
       <Label size="lg">Custom sounds</Label>
       <p class="text-sm text-muted-foreground">

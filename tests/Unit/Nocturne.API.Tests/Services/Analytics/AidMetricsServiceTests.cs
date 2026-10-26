@@ -222,6 +222,47 @@ public class AidMetricsServiceTests
     }
 
     [Fact]
+    public void ApsSnapshotStrategy_LoopCyclesStampedOpenLoop_AreNotActive()
+    {
+        // Loop reports every cycle enacted, in open loop too: an hour open, then an hour closed.
+        var start = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        var cycles = Enumerable.Range(0, 24).Select(i => new ApsLoopCycle
+        {
+            Timestamp = start.AddMinutes(5 * i),
+            Enacted = true,
+            AidAlgorithm = AidAlgorithm.Loop,
+            ClosedLoop = i >= 12,
+        });
+
+        var metrics = ApsMetrics(start, start.AddHours(2), cycles);
+
+        metrics.AidActivePercent.Should().BeApproximately(50.0, 0.001);
+        metrics.PumpUsePercent.Should().BeApproximately(100.0, 0.001);
+        metrics.EnactedCount.Should().Be(24);
+        metrics.ClosedLoopCount.Should().Be(12);
+    }
+
+    [Theory]
+    [InlineData(AidAlgorithm.Loop)]
+    [InlineData(AidAlgorithm.Trio)]
+    public void ApsSnapshotStrategy_CyclesWithNoClosedLoopStamp_CountWhenEnacted(AidAlgorithm algorithm)
+    {
+        var start = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        var cycles = Enumerable.Range(0, 12).Select(i => new ApsLoopCycle
+        {
+            Timestamp = start.AddMinutes(5 * i),
+            Enacted = i % 2 == 0,
+            AidAlgorithm = algorithm,
+        });
+
+        var metrics = ApsMetrics(start, start.AddHours(1), cycles);
+
+        metrics.AidActivePercent.Should().BeApproximately(50.0, 0.001);
+        metrics.EnactedCount.Should().Be(6);
+        metrics.ClosedLoopCount.Should().Be(6);
+    }
+
+    [Fact]
     public void ApsSnapshotStrategy_LastCycleRunsNoFurtherThanTheWindow()
     {
         var start = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc);

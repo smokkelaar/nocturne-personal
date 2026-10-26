@@ -152,7 +152,6 @@ public class SleepReportService : ISleepReportService
             limit:          int.MaxValue,
             offset:         0,
             descending:     false,
-            nativeOnly:     false,
             afterTimestamp: null,
             afterId:        null,
             ct:             ct);

@@ -114,7 +114,7 @@ public class CanonicalGlucoseServiceTests
         secondaryReading.Timestamp = bucketStart.AddMinutes(2);
         _sgRepo.Setup(r => r.GetAsync(
                 It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), It.IsAny<string?>(), It.IsAny<string?>(),
-                It.IsAny<int>(), It.IsAny<int>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<DateTime?>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()))
+                It.IsAny<int>(), It.IsAny<int>(), It.IsAny<bool>(), It.IsAny<DateTime?>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync([secondaryReading, primaryReading]);
 
         var latest = await _sut.GetLatestAsync();
@@ -129,7 +129,7 @@ public class CanonicalGlucoseServiceTests
     {
         _sgRepo.Setup(r => r.GetAsync(
                 It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), It.IsAny<string?>(), It.IsAny<string?>(),
-                It.IsAny<int>(), It.IsAny<int>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<DateTime?>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()))
+                It.IsAny<int>(), It.IsAny<int>(), It.IsAny<bool>(), It.IsAny<DateTime?>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync([]);
 
         (await _sut.GetLatestAsync()).Should().BeNull();
@@ -145,7 +145,7 @@ public class CanonicalGlucoseServiceTests
         ephemeral.DataSource = Nocturne.Core.Constants.DataSources.DemoService;
         _sgRepo.Setup(r => r.GetAsync(
                 since, null, null, null,
-                It.IsAny<int>(), 0, true, false, It.IsAny<DateTime?>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()))
+                It.IsAny<int>(), 0, true, It.IsAny<DateTime?>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync([real, ephemeral]);
 
         var recent = await _sut.GetRecentAsync(since);

@@ -462,269 +462,271 @@
       </div>
     </div>
   {:else}
-    <div
-      class="w-full max-w-280 mx-auto grid grid-cols-1 gap-6 lg:grid-cols-[240px_minmax(0,1fr)] lg:gap-10 xl:grid-cols-[320px_minmax(0,1fr)] xl:gap-14 items-start"
-    >
-      <aside class="lg:sticky lg:top-8">
-        <StepSidebar
-          path={setupRequired ? "fresh" : path}
-          currentStep={activeIndex}
-          steps={activeSteps}
-          {voice}
-          onJumpToStep={handleJumpToStep}
-        />
-      </aside>
-
-      <section
-        bind:this={stepCard}
-        class="relative rounded-3xl border bg-card text-card-foreground shadow-sm overflow-clip lg:min-h-135 flex flex-col"
+    <div class="@container/wizard">
+      <div
+        class="w-full max-w-280 mx-auto grid grid-cols-1 gap-6 @4xl/wizard:grid-cols-[240px_minmax(0,1fr)] @4xl/wizard:gap-10 @6xl/wizard:grid-cols-[320px_minmax(0,1fr)] @6xl/wizard:gap-14 items-start"
       >
-        <div
-          class="flex items-center justify-between flex-wrap gap-2.5 px-5 py-3.5 md:px-7 md:py-5 border-b"
-        >
-          <div class="flex items-center gap-3 text-xs text-muted-foreground">
-            <span class="font-mono uppercase tracking-wide">
-              Step {String(activeIndex + 1).padStart(2, "0")} / {String(
-                activeSteps.length
-              ).padStart(2, "0")}
-            </span>
-            <span aria-hidden="true">&middot;</span>
-            <span>{activeStep?.short}</span>
-          </div>
-          <div class="flex items-center gap-3">
-            {#if !setupRequired}
-              <Badge variant="secondary">
-                {#if path === "migration"}
-                  <Cable />
-                  Nightscout Migration
-                {:else}
-                  <Sprout />
-                  Fresh Start
-                {/if}
-              </Badge>
-            {/if}
-            <Progress
-              value={progressPct}
-              class="h-1 w-30"
-              aria-label="Setup progress"
-            />
-          </div>
-        </div>
-
-        <div class="flex-1 px-4 py-3 md:px-5 max-lg:[&_:is(input,select,textarea,[role=combobox],[role=radio])]:scroll-mb-44">
-          <StepIcon
-            art={activeStep?.art ?? "welcome"}
-            class="mx-auto mt-4 size-10 text-(--onb-accent) md:size-12"
+        <aside class="@4xl/wizard:sticky @4xl/wizard:top-8">
+          <StepSidebar
+            path={setupRequired ? "fresh" : path}
+            currentStep={activeIndex}
+            steps={activeSteps}
+            {voice}
+            onJumpToStep={handleJumpToStep}
           />
-          {#if activeStep?.id === "tenant"}
-            <TenantIdentity onComplete={handleTenantCreated} />
-          {:else if activeStep?.id === "account"}
-            <AccountCreation onComplete={handleAccountCreated} />
-          {:else if activeStep?.id === "who"}
-            <WhoFor
-              bind:relationship={
-                () => relationship, (value) => (chosenRelationship = value)
-              }
-              bind:patientName={
-                () => patientName, (value) => (chosenName = value)
-              }
-              error={relationshipError}
-            />
-          {:else if activeStep?.id === "path"}
-            <PathChoice bind:path {voice} />
-          {:else if activeStep?.id === "units"}
-            <UnitsAndTimezone
-              bind:units={() => units, (value) => (chosenUnits = value)}
-              bind:timezone={
-                () => timezone, (value) => (chosenTimezone = value)
-              }
-              timezoneDetected={chosenTimezone === undefined &&
-                !unitsAnswer?.timezone}
-              nightscout={unitsAnswer?.nightscout}
-              nightscoutUnavailable={unitsAnswer?.nightscoutUnavailable}
-              {voice}
-              error={unitsError}
-            />
-          {:else if activeStep?.id === "connect"}
-            <NightscoutConnect
-              onComplete={() => {
-                nightscoutConnected = true;
-                migrationStartError = undefined;
-                handleNext();
-              }}
-            />
-          {:else if activeStep?.id === "cgm"}
-            <div class="flex flex-col gap-8 px-4 py-8">
-              <div class="flex flex-col items-center gap-4 text-center">
-                <h1
-                  class="font-brand font-hairline leading-tight tracking-tight text-3xl md:text-4xl xl:text-5xl"
-                >
-                  Connect a <em class="not-italic font-light text-primary">data source</em>.
-                </h1>
-                <p class="max-w-140 text-base leading-relaxed text-muted-foreground">
-                  {#if voice.kind === "self"}
-                    Choose a cloud service or phone app to start sending your
-                    glucose and treatment data to Nocturne. You can connect more later.
-                  {:else if voice.kind === "named"}
-                    Choose a cloud service or phone app to start sending {voice.name}'s
-                    glucose and treatment data to Nocturne. You can connect more later.
+        </aside>
+
+        <section
+          bind:this={stepCard}
+          class="@container/card relative rounded-3xl border bg-card text-card-foreground shadow-sm overflow-clip @4xl/wizard:min-h-135 flex flex-col"
+        >
+          <div
+            class="flex items-center justify-between flex-wrap gap-2.5 px-4 py-3.5 @xl/card:px-7 @xl/card:py-5 border-b"
+          >
+            <div class="flex items-center gap-3 text-xs text-muted-foreground">
+              <span class="font-mono uppercase tracking-wide">
+                Step {String(activeIndex + 1).padStart(2, "0")} / {String(
+                  activeSteps.length
+                ).padStart(2, "0")}
+              </span>
+              <span aria-hidden="true">&middot;</span>
+              <span>{activeStep?.short}</span>
+            </div>
+            <div class="flex items-center gap-3">
+              {#if !setupRequired}
+                <Badge variant="secondary">
+                  {#if path === "migration"}
+                    <Cable />
+                    Nightscout Migration
                   {:else}
-                    Choose a cloud service or phone app to start sending the glucose
-                    and treatment data to Nocturne. You can connect more later.
+                    <Sprout />
+                    Fresh Start
                   {/if}
-                </p>
-              </div>
-              <DataSourceSelectionView
-                {connectors}
-                {uploaderApps}
-                dataSources={activeDataSources}
-                isLoading={servicesLoading}
-                loadError={null}
-                onSelectConnector={handleSelectConnector}
-                onSelectUploader={handleSelectUploader}
-                onSkip={goToFinish}
+                </Badge>
+              {/if}
+              <Progress
+                value={progressPct}
+                class="h-1 w-30"
+                aria-label="Setup progress"
               />
             </div>
-          {:else if activeStep?.id === "sync"}
-            <div class="flex flex-col gap-8 px-4 py-8">
-              {#if selectedConnectorId}
+          </div>
+
+          <div class="flex-1 px-1 py-3 @lg/card:px-5 @max-4xl/wizard:[&_:is(input,select,textarea,[role=combobox],[role=radio])]:scroll-mb-44">
+            <StepIcon
+              art={activeStep?.art ?? "welcome"}
+              class="mx-auto mt-4 size-10 text-(--onb-accent) @xl/card:size-12"
+            />
+            {#if activeStep?.id === "tenant"}
+              <TenantIdentity onComplete={handleTenantCreated} />
+            {:else if activeStep?.id === "account"}
+              <AccountCreation onComplete={handleAccountCreated} />
+            {:else if activeStep?.id === "who"}
+              <WhoFor
+                bind:relationship={
+                  () => relationship, (value) => (chosenRelationship = value)
+                }
+                bind:patientName={
+                  () => patientName, (value) => (chosenName = value)
+                }
+                error={relationshipError}
+              />
+            {:else if activeStep?.id === "path"}
+              <PathChoice bind:path {voice} />
+            {:else if activeStep?.id === "units"}
+              <UnitsAndTimezone
+                bind:units={() => units, (value) => (chosenUnits = value)}
+                bind:timezone={
+                  () => timezone, (value) => (chosenTimezone = value)
+                }
+                timezoneDetected={chosenTimezone === undefined &&
+                  !unitsAnswer?.timezone}
+                nightscout={unitsAnswer?.nightscout}
+                nightscoutUnavailable={unitsAnswer?.nightscoutUnavailable}
+                {voice}
+                error={unitsError}
+              />
+            {:else if activeStep?.id === "connect"}
+              <NightscoutConnect
+                onComplete={() => {
+                  nightscoutConnected = true;
+                  migrationStartError = undefined;
+                  handleNext();
+                }}
+              />
+            {:else if activeStep?.id === "cgm"}
+              <div class="@container flex flex-col gap-8 px-4 py-8">
                 <div class="flex flex-col items-center gap-4 text-center">
                   <h1
-                    class="font-brand font-hairline leading-tight tracking-tight text-3xl md:text-4xl xl:text-5xl"
+                    class="font-brand font-hairline leading-tight tracking-tight text-3xl @lg:text-4xl @min-[40rem]:text-5xl"
                   >
-                    Configure your <em class="not-italic font-light text-primary">connection</em>.
+                    Connect a <em class="not-italic font-light text-primary">data source</em>.
                   </h1>
                   <p class="max-w-140 text-base leading-relaxed text-muted-foreground">
                     {#if voice.kind === "self"}
-                      Enter your credentials and we will start syncing your data.
+                      Choose a cloud service or phone app to start sending your
+                      glucose and treatment data to Nocturne. You can connect more later.
                     {:else if voice.kind === "named"}
-                      Enter the service's sign-in details and we will start syncing
-                      {voice.name}'s data.
+                      Choose a cloud service or phone app to start sending {voice.name}'s
+                      glucose and treatment data to Nocturne. You can connect more later.
                     {:else}
-                      Enter the service's sign-in details and we will start syncing the
-                      data.
+                      Choose a cloud service or phone app to start sending the glucose
+                      and treatment data to Nocturne. You can connect more later.
                     {/if}
                   </p>
                 </div>
-                <ConnectorSetup
-                  connectorId={selectedConnectorId}
-                  primaryAction="save-and-finish"
-                  showToggle={false}
-                  showDangerZone={false}
-                  showCapabilities={true}
-                  onComplete={handleConnectorSaved}
-                  onCancel={handleBack}
+                <DataSourceSelectionView
+                  {connectors}
+                  {uploaderApps}
+                  dataSources={activeDataSources}
+                  isLoading={servicesLoading}
+                  loadError={null}
+                  onSelectConnector={handleSelectConnector}
+                  onSelectUploader={handleSelectUploader}
+                  onSkip={goToFinish}
                 />
-              {:else if selectedUploader}
-                <div class="flex flex-col items-center gap-4 text-center">
-                  <h1
-                    class="font-brand font-hairline leading-tight tracking-tight text-3xl md:text-4xl xl:text-5xl"
-                  >
-                    Set up the <em class="not-italic font-light text-primary">app</em>.
-                  </h1>
-                  <p class="max-w-140 text-base leading-relaxed text-muted-foreground">
-                    Follow the steps below to connect the phone app to
-                    Nocturne.
+              </div>
+            {:else if activeStep?.id === "sync"}
+              <div class="@container flex flex-col gap-8 px-4 py-8">
+                {#if selectedConnectorId}
+                  <div class="flex flex-col items-center gap-4 text-center">
+                    <h1
+                      class="font-brand font-hairline leading-tight tracking-tight text-3xl @lg:text-4xl @min-[40rem]:text-5xl"
+                    >
+                      Configure your <em class="not-italic font-light text-primary">connection</em>.
+                    </h1>
+                    <p class="max-w-140 text-base leading-relaxed text-muted-foreground">
+                      {#if voice.kind === "self"}
+                        Enter your credentials and we will start syncing your data.
+                      {:else if voice.kind === "named"}
+                        Enter the service's sign-in details and we will start syncing
+                        {voice.name}'s data.
+                      {:else}
+                        Enter the service's sign-in details and we will start syncing the
+                        data.
+                      {/if}
+                    </p>
+                  </div>
+                  <ConnectorSetup
+                    connectorId={selectedConnectorId}
+                    primaryAction="save-and-finish"
+                    showToggle={false}
+                    showDangerZone={false}
+                    showCapabilities={true}
+                    onComplete={handleConnectorSaved}
+                    onCancel={handleBack}
+                  />
+                {:else if selectedUploader}
+                  <div class="flex flex-col items-center gap-4 text-center">
+                    <h1
+                      class="font-brand font-hairline leading-tight tracking-tight text-3xl @lg:text-4xl @min-[40rem]:text-5xl"
+                    >
+                      Set up the <em class="not-italic font-light text-primary">app</em>.
+                    </h1>
+                    <p class="max-w-140 text-base leading-relaxed text-muted-foreground">
+                      Follow the steps below to connect the phone app to
+                      Nocturne.
+                    </p>
+                  </div>
+                  <UploaderSetupView
+                    app={selectedUploader}
+                    setupResponse={uploaderSetupResponse}
+                    onBack={handleBack}
+                    onConnected={handleUploaderReceiving}
+                  />
+                {:else}
+                  <p class="px-4 py-8 text-center text-muted-foreground">
+                    No data source selected. Go back to choose one.
                   </p>
-                </div>
-                <UploaderSetupView
-                  app={selectedUploader}
-                  setupResponse={uploaderSetupResponse}
-                  onBack={handleBack}
-                  onConnected={handleUploaderReceiving}
-                />
-              {:else}
-                <p class="px-4 py-8 text-center text-muted-foreground">
-                  No data source selected. Go back to choose one.
-                </p>
-              {/if}
-            </div>
-          {:else if activeStep?.id === "import"}
-            <ImportProgress
-              jobId={migrationJobId}
-              startError={migrationStartError}
-              {voice}
-              onResult={(result) => (importResult = result)}
-              onSettled={() => (importSettled = true)}
-              onComplete={goToFinish}
-            />
-          {:else if activeStep?.id === "finish"}
-            <Finish
-              {path}
-              source={sourceResult}
-              {importResult}
-              {voice}
-              onContinue={handleContinueToHub}
-              {continueFailed}
-              onTakeTour={handleTakeTour}
-            />
-          {/if}
-        </div>
-
-        {#if !setupRequired}
-          <div
-            class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-between sm:items-center px-5 py-3.5 md:px-7 md:py-4.5 border-t bg-background lg:bg-muted/40 sticky bottom-0 z-10 lg:static *:sm:w-auto *:w-full"
-          >
-            <div class="empty:hidden [&>button]:w-full sm:[&>button]:w-auto">
-              {#if stepIndex > 0 && currentStep?.id !== "finish" && !importBlocking}
-                <Button variant="outline" onclick={handleBack}>
-                  <ArrowLeft class="h-4 w-4" />
-                  Back
-                </Button>
-              {/if}
-            </div>
-            <div class="flex flex-col-reverse gap-3 sm:flex-row sm:items-center *:w-full *:sm:w-auto">
-              {#if currentStep?.id === "finish"}
-                <Button onclick={handleContinueToHub}>
-                  Continue
-                  <ArrowRight class="h-4 w-4" />
-                </Button>
-              {:else if currentStep?.id === "import"}
-                {#if importSettled}
-                  <Button onclick={handleNext}>
-                    Continue
-                    <ArrowRight class="h-4 w-4" />
-                  </Button>
                 {/if}
-              {:else if currentStep?.id === "who"}
-                <Button variant="ghost" onclick={handleWhoForSkip}>
-                  Skip for now
-                </Button>
-                <Button onclick={handleWhoForContinue}>
-                  Continue
-                  <ArrowRight class="h-4 w-4" />
-                </Button>
-              {:else if currentStep?.id === "units"}
-                <Button variant="ghost" onclick={handleUnitsLeave} disabled={unitsSaving}>
-                  Skip for now
-                </Button>
-                <Button
-                  onclick={handleUnitsLeave}
-                  disabled={unitsSaving || !units || !timezone}
-                >
-                  Continue
-                  <ArrowRight class="h-4 w-4" />
-                </Button>
-              {:else if currentStep?.id === "path"}
-                <Button onclick={handleNext}>
-                  Continue
-                  <ArrowRight class="h-4 w-4" />
-                </Button>
-              {:else if currentStep?.id !== "cgm"}
-                <Button variant="ghost" onclick={handleNext}>
-                  Skip for now
-                </Button>
-                {#if currentStep?.id !== "sync" && currentStep?.id !== "connect"}
-                  <Button onclick={handleNext}>
-                    Continue
-                    <ArrowRight class="h-4 w-4" />
-                  </Button>
-                {/if}
-              {/if}
-            </div>
+              </div>
+            {:else if activeStep?.id === "import"}
+              <ImportProgress
+                jobId={migrationJobId}
+                startError={migrationStartError}
+                {voice}
+                onResult={(result) => (importResult = result)}
+                onSettled={() => (importSettled = true)}
+                onComplete={goToFinish}
+              />
+            {:else if activeStep?.id === "finish"}
+              <Finish
+                {path}
+                source={sourceResult}
+                {importResult}
+                {voice}
+                onContinue={handleContinueToHub}
+                {continueFailed}
+                onTakeTour={handleTakeTour}
+              />
+            {/if}
           </div>
-        {/if}
-      </section>
+
+          {#if !setupRequired}
+            <div
+              class="flex flex-col-reverse gap-3 @lg/card:flex-row @lg/card:justify-between @lg/card:items-center px-4 py-3.5 @xl/card:px-7 @xl/card:py-4.5 border-t bg-background @4xl/wizard:bg-muted/40 sticky bottom-0 z-10 @4xl/wizard:static *:@lg/card:w-auto *:w-full"
+            >
+              <div class="empty:hidden [&>button]:w-full @lg/card:[&>button]:w-auto">
+                {#if stepIndex > 0 && currentStep?.id !== "finish" && !importBlocking}
+                  <Button variant="outline" onclick={handleBack}>
+                    <ArrowLeft class="h-4 w-4" />
+                    Back
+                  </Button>
+                {/if}
+              </div>
+              <div class="flex flex-col-reverse gap-3 @lg/card:flex-row @lg/card:items-center *:w-full *:@lg/card:w-auto">
+                {#if currentStep?.id === "finish"}
+                  <Button onclick={handleContinueToHub}>
+                    Continue
+                    <ArrowRight class="h-4 w-4" />
+                  </Button>
+                {:else if currentStep?.id === "import"}
+                  {#if importSettled}
+                    <Button onclick={handleNext}>
+                      Continue
+                      <ArrowRight class="h-4 w-4" />
+                    </Button>
+                  {/if}
+                {:else if currentStep?.id === "who"}
+                  <Button variant="ghost" onclick={handleWhoForSkip}>
+                    Skip for now
+                  </Button>
+                  <Button onclick={handleWhoForContinue}>
+                    Continue
+                    <ArrowRight class="h-4 w-4" />
+                  </Button>
+                {:else if currentStep?.id === "units"}
+                  <Button variant="ghost" onclick={handleUnitsLeave} disabled={unitsSaving}>
+                    Skip for now
+                  </Button>
+                  <Button
+                    onclick={handleUnitsLeave}
+                    disabled={unitsSaving || !units || !timezone}
+                  >
+                    Continue
+                    <ArrowRight class="h-4 w-4" />
+                  </Button>
+                {:else if currentStep?.id === "path"}
+                  <Button onclick={handleNext}>
+                    Continue
+                    <ArrowRight class="h-4 w-4" />
+                  </Button>
+                {:else if currentStep?.id !== "cgm"}
+                  <Button variant="ghost" onclick={handleNext}>
+                    Skip for now
+                  </Button>
+                  {#if currentStep?.id !== "sync" && currentStep?.id !== "connect"}
+                    <Button onclick={handleNext}>
+                      Continue
+                      <ArrowRight class="h-4 w-4" />
+                    </Button>
+                  {/if}
+                {/if}
+              </div>
+            </div>
+          {/if}
+        </section>
+      </div>
     </div>
   {/if}
 </SetupChrome>

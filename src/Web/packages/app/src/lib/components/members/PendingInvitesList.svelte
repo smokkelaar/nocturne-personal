@@ -7,22 +7,16 @@
   import Loader2 from "@lucide/svelte/icons/loader-circle";
   import Check from "@lucide/svelte/icons/check";
   import { formatMediumDateTime } from "$lib/utils/formatting";
-  import type { MemberInviteInfo, TenantRoleDto } from "$lib/api/generated/nocturne-api-client";
+  import type { MemberInviteInfo } from "$lib/api/generated/nocturne-api-client";
 
   interface Props {
     invites: MemberInviteInfo[];
-    roles: TenantRoleDto[];
     onRevoke: (inviteId: string) => void;
     isRevoking: boolean;
   }
 
-  let { invites = [], roles = [], onRevoke, isRevoking = false }: Props =
+  let { invites = [], onRevoke, isRevoking = false }: Props =
     $props();
-
-  function getRoleName(roleId: string): string {
-    const role = roles.find((r) => r.id === roleId);
-    return role?.name ?? roleId;
-  }
 </script>
 
 <Card.Root>
@@ -42,13 +36,11 @@
             <p class="text-sm font-medium">
               {invite.label ?? "Invite link"}
             </p>
-            {#if invite.roleIds?.length}
-              {#each invite.roleIds as roleId, i (i)}
-                <Badge variant="secondary">
-                  {getRoleName(roleId)}
-                </Badge>
-              {/each}
-            {/if}
+            {#each invite.roleNames ?? [] as roleName, i (i)}
+              <Badge variant="secondary">
+                {roleName}
+              </Badge>
+            {/each}
           </div>
           <p class="text-xs text-muted-foreground">
             Expires {formatMediumDateTime(invite.expiresAt)}

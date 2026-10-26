@@ -9,6 +9,4 @@ jobs:
         with:
           token: ${{ secrets.PAT_TOKEN || github.token }}
       - name: Setup .NET
-        uses: actions/setup-dotnet@v5
-        with:
-          dotnet-version: "10.0"
+        uses: ./.github/actions/setup-dotnet

@@ -11,6 +11,7 @@ using Nocturne.Core.Contracts.Analytics;
 using Nocturne.Core.Contracts.Legacy;
 using Nocturne.Core.Contracts.Profiles;
 using Nocturne.Core.Contracts.Profiles.Resolvers;
+using Nocturne.Core.Contracts.Treatments;
 using Nocturne.Core.Contracts.V4.Repositories;
 using Nocturne.Core.Models;
 using Nocturne.Core.Models.V4;
@@ -26,6 +27,7 @@ public class SummaryServiceTests
 {
     private readonly Mock<IDDataService> _mockDDataService;
     private readonly Mock<IPropertiesService> _mockPropertiesService;
+    private readonly Mock<IIobCobReader> _mockIobCobReader = new();
     private readonly Mock<IActiveProfileResolver> _mockActiveProfileResolver;
     private readonly Mock<ITherapySettingsRepository> _mockTherapySettings;
     private readonly Mock<IBasalScheduleRepository> _mockBasal = new();
@@ -45,9 +47,14 @@ public class SummaryServiceTests
             .Setup(x => x.GetDefaultsAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync([]);
         _mockLogger = new Mock<ILogger<SummaryService>>();
+        Reading(NoInputs(), new IobResult(), new CobResult());
+        _mockPropertiesService
+            .Setup(x => x.GetAllPropertiesAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Dictionary<string, object>());
         _service = new SummaryService(
             _mockDDataService.Object,
             _mockPropertiesService.Object,
+            _mockIobCobReader.Object,
             _mockActiveProfileResolver.Object,
             _mockTherapySettings.Object,
             new ProfileProjectionService(
@@ -85,6 +92,23 @@ public class SummaryServiceTests
         result.Treatments.Should().NotBeNull();
         result.Profile.Should().NotBeNull();
         result.State.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task GetSummaryAsync_ProfileWritesTheUnsetGiFieldsAsNull()
+    {
+        var summary = await SummaryJsonAsync(NightAndDay(nightFirst: false), null);
+
+        var profile = summary["profile"]!.AsObject();
+        foreach (var field in new[]
+        {
+            "perGIvalues", "carbs_hr_high", "carbs_hr_medium", "carbs_hr_low",
+            "delay_medium", "delay_low",
+        })
+        {
+            profile.ContainsKey(field).Should().BeTrue(field);
+            profile[field].Should().BeNull(field);
+        }
     }
 
     [Theory]
@@ -483,6 +507,12 @@ public class SummaryServiceTests
             .Setup(x => x.GetAllPropertiesAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(properties);
 
+        Reading(
+            new IobCobInputs([new Bolus { Timestamp = DateTime.UtcNow, Insulin = 1 }], [], [new CarbIntake { Timestamp = DateTime.UtcNow, Carbs = 10 }]),
+            new IobResult { Iob = 2.5 },
+            new CobResult { Cob = 25 }
+        );
+
         // Act
         var result = await _service.ConstructStateAsync(CancellationToken.None);
 
@@ -497,15 +527,14 @@ public class SummaryServiceTests
     }
 
     [Fact]
-    public async Task ConstructStateAsync_WithNoProperties_WritesNullIobNullCobAndZeroBwp()
+    public async Task ConstructStateAsync_WithNoIobCobData_WritesNullIobNullCobAndZeroBwp()
     {
         _mockPropertiesService
             .Setup(x => x.GetAllPropertiesAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(new Dictionary<string, object>());
 
-        var state = await _service.ConstructStateAsync(CancellationToken.None);
+        var json = await StateJsonAsync();
 
-        var json = JsonNode.Parse(JsonSerializer.Serialize(state, NightscoutJsonOptions.Create()))!.AsObject();
         json.ContainsKey("iob").Should().BeTrue();
         json["iob"].Should().BeNull();
         json.ContainsKey("cob").Should().BeTrue();
@@ -514,23 +543,67 @@ public class SummaryServiceTests
     }
 
     [Fact]
-    public async Task ConstructStateAsync_WithZeroIobAndCob_WritesZeroNotNull()
+    public async Task ConstructStateAsync_WithZeroIobAndCobFromADevice_WritesZeroNotNull()
     {
-        _mockPropertiesService
-            .Setup(x => x.GetAllPropertiesAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(
-                new Dictionary<string, object>
-                {
-                    ["iob"] = new Dictionary<string, object> { ["iob"] = 0.0 },
-                    ["cob"] = new Dictionary<string, object> { ["cob"] = 0.0 },
-                }
-            );
+        Reading(
+            NoInputs(),
+            new IobResult { Iob = 0, ReportedByDevice = true },
+            new CobResult { Cob = 0, ReportedByDevice = true }
+        );
 
-        var state = await _service.ConstructStateAsync(CancellationToken.None);
+        var json = await StateJsonAsync();
 
-        var json = JsonNode.Parse(JsonSerializer.Serialize(state, NightscoutJsonOptions.Create()))!.AsObject();
         json["iob"]!.GetValue<double>().Should().Be(0);
         json["cob"]!.GetValue<int>().Should().Be(0);
+    }
+
+    [Fact]
+    public async Task ConstructStateAsync_WithTreatmentsThatLeaveNothingOnBoard_WritesZeroNotNull()
+    {
+        Reading(
+            new IobCobInputs(
+                [new Bolus { Timestamp = DateTime.UtcNow, Insulin = 1 }],
+                [],
+                [new CarbIntake { Timestamp = DateTime.UtcNow, Carbs = 10 }]
+            ),
+            new IobResult { Iob = 0 },
+            new CobResult { Cob = 0 }
+        );
+
+        var json = await StateJsonAsync();
+
+        json["iob"]!.GetValue<double>().Should().Be(0);
+        json["cob"]!.GetValue<int>().Should().Be(0);
+    }
+
+    [Fact]
+    public async Task ConstructStateAsync_WithTempBasalsButNoCarbs_WritesIobAndNullCob()
+    {
+        Reading(
+            new IobCobInputs([], [new TempBasal { StartTimestamp = DateTime.UtcNow, Rate = 1 }], []),
+            new IobResult { Iob = -0.4 },
+            new CobResult()
+        );
+
+        var json = await StateJsonAsync();
+
+        json["iob"]!.GetValue<double>().Should().Be(-0.4);
+        json["cob"].Should().BeNull();
+    }
+
+    [Fact]
+    public async Task ConstructStateAsync_WithAFailedCobCalculation_WritesNullCob()
+    {
+        Reading(
+            new IobCobInputs([new Bolus { Timestamp = DateTime.UtcNow, Insulin = 1 }], [], [new CarbIntake { Timestamp = DateTime.UtcNow, Carbs = 10 }]),
+            new IobResult { Iob = 1 },
+            null
+        );
+
+        var json = await StateJsonAsync();
+
+        json["iob"]!.GetValue<double>().Should().Be(1);
+        json["cob"].Should().BeNull();
     }
 
     [Theory]
@@ -545,21 +618,51 @@ public class SummaryServiceTests
         int expectedCob
     )
     {
-        _mockPropertiesService
-            .Setup(x => x.GetAllPropertiesAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(
-                new Dictionary<string, object>
-                {
-                    ["iob"] = new Dictionary<string, object> { ["iob"] = iob },
-                    ["cob"] = new Dictionary<string, object> { ["cob"] = cob },
-                }
-            );
+        Reading(
+            new IobCobInputs(
+                [new Bolus { Timestamp = DateTime.UtcNow, Insulin = 1 }],
+                [],
+                [new CarbIntake { Timestamp = DateTime.UtcNow, Carbs = 10 }]
+            ),
+            new IobResult { Iob = iob },
+            new CobResult { Cob = cob }
+        );
 
-        var state = await _service.ConstructStateAsync(CancellationToken.None);
+        var json = await StateJsonAsync();
 
-        var json = JsonNode.Parse(JsonSerializer.Serialize(state, NightscoutJsonOptions.Create()))!.AsObject();
         json["iob"]!.GetValue<double>().Should().Be(expectedIob);
         json["cob"]!.GetValue<int>().Should().Be(expectedCob);
+    }
+
+    private static IobCobInputs NoInputs() => new([], [], []);
+
+    private void Reading(IobCobInputs inputs, IobResult iob, CobResult? cob) =>
+        _mockIobCobReader
+            .Setup(r => r.ReadTotalAsync(It.IsAny<long>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new IobCobReading(iob, cob, inputs)
+            {
+                InsulinInWindow = inputs.Boluses.Count > 0 || inputs.TempBasals.Count > 0,
+            });
+
+    [Fact]
+    public async Task ConstructStateAsync_WhenTheReaderThrows_WritesNullIobAndCobAndKeepsTheSummary()
+    {
+        _mockIobCobReader
+            .Setup(r => r.ReadTotalAsync(It.IsAny<long>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("therapy settings unavailable"));
+
+        var json = await StateJsonAsync();
+
+        json.ContainsKey("iob").Should().BeTrue();
+        json["iob"].Should().BeNull();
+        json.ContainsKey("cob").Should().BeTrue();
+        json["cob"].Should().BeNull();
+    }
+
+    private async Task<JsonObject> StateJsonAsync()
+    {
+        var state = await _service.ConstructStateAsync(CancellationToken.None);
+        return JsonNode.Parse(JsonSerializer.Serialize(state, NightscoutJsonOptions.Create()))!.AsObject();
     }
 
     [Fact]
@@ -717,8 +820,6 @@ public class SummaryServiceTests
     {
         return new Dictionary<string, object>
         {
-            ["iob"] = new Dictionary<string, object> { ["iob"] = 2.5 },
-            ["cob"] = new Dictionary<string, object> { ["cob"] = 25 },
             ["bwp"] = new Dictionary<string, object> { ["bolusEstimate"] = 1.234 },
             ["cage"] = new Dictionary<string, object> { ["age"] = 48 },
             ["sage"] = new Dictionary<string, object> { ["age"] = 72 },
@@ -836,8 +937,6 @@ public class SummaryServiceTests
             ["iage"] = new Dictionary<string, object> { ["age"] = 96 },
             ["bage"] = new Dictionary<string, object> { ["age"] = 24 },
             ["calib"] = new Dictionary<string, object> { ["age"] = 6 },
-            ["iob"] = new Dictionary<string, object> { ["iob"] = 2.5 },
-            ["cob"] = new Dictionary<string, object> { ["cob"] = 25 },
             ["upbat"] = new Dictionary<string, object> { ["level"] = 85 },
         };
 
@@ -855,8 +954,6 @@ public class SummaryServiceTests
         result.Bage.Should().Be(24);
         result.CalibAge.Should().Be(6);
         result.SensorExpiresIn.Should().Be(168); // 240 - 72 = 168 hours remaining
-        result.Iob.Should().Be(2.5);
-        result.Cob.Should().Be(25);
         result.Battery.Should().Be(85);
     }
 
@@ -864,8 +961,6 @@ public class SummaryServiceTests
     {
         return new Dictionary<string, object>
         {
-            ["iob"] = new Dictionary<string, object> { ["iob"] = 2.5 },
-            ["cob"] = new Dictionary<string, object> { ["cob"] = 25 },
             ["bwp"] = new Dictionary<string, object> { ["bolusEstimate"] = 1.234 },
             ["cage"] = new Dictionary<string, object> { ["age"] = 48 },
             ["sage"] = new Dictionary<string, object> { ["age"] = 72 },

@@ -82,7 +82,7 @@
 </script>
 
 <div class="space-y-6 @container">
-  <div class="flex items-center justify-between">
+  <div class="flex flex-wrap items-center justify-between gap-3">
     <div class="flex items-center gap-3">
       <Volume2 class="h-5 w-5 text-muted-foreground" />
       <div>

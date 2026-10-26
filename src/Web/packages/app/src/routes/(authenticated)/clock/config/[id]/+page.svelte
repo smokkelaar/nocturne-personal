@@ -500,7 +500,7 @@
     <Loader2 class="size-12 animate-spin text-muted-foreground" />
   </div>
 {:else}
-  <div class="flex min-h-dvh flex-col bg-background text-foreground">
+  <div class="@container flex min-h-dvh flex-col bg-background text-foreground">
     <!-- Header -->
     <ClockBuilderHeader
       {clockName}
@@ -525,9 +525,9 @@
     </ClockBuilderHeader>
 
     <!-- Main content -->
-    <div class="flex min-w-0 flex-1 overflow-hidden">
+    <div class="flex min-w-0 flex-1 overflow-hidden @max-2xl:flex-col">
       <!-- Preview Canvas -->
-      <div class="relative flex min-w-0 flex-1 flex-col overflow-hidden">
+      <div class="relative flex min-w-0 flex-1 flex-col overflow-hidden @max-2xl:min-h-96">
         <div
           class="absolute inset-4 flex flex-col items-center justify-center overflow-auto rounded-xl border-2 border-dashed border-muted-foreground/30"
           style={previewBgStyle}

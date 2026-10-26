@@ -6,6 +6,7 @@ using Microsoft.Extensions.Options;
 using Moq;
 using Nocturne.Core.Contracts.Alerts;
 using Nocturne.API.Services.Auth;
+using Nocturne.API.Services.Caching;
 using Nocturne.API.Services.Platform;
 using Microsoft.Extensions.Logging.Abstractions;
 using Nocturne.Core.Models.Configuration;
@@ -200,6 +201,7 @@ public class ServiceCacheTests
         var statusService = new StatusService(
             mockConfiguration,
             _mockCacheService.Object,
+            new CacheFlights(),
             _mockDemoModeService.Object,
             tenantDbContextFactory.Object,
             httpContextAccessor,
@@ -292,6 +294,7 @@ public class ServiceCacheTests
         var statusService = new StatusService(
             mockConfiguration,
             _mockCacheService.Object,
+            new CacheFlights(),
             _mockDemoModeService.Object,
             tenantDbContextFactory.Object,
             httpContextAccessor,
@@ -313,11 +316,6 @@ public class ServiceCacheTests
         Assert.Equal("Test Site", result.Name);
         Assert.Equal("ok", result.Status);
 
-        // Verify cache was checked and result was cached
-        _mockCacheService.Verify(
-            x => x.GetAsync<StatusResponse>("status:system:00000000-0000-0000-0000-000000000001", It.IsAny<CancellationToken>()),
-            Times.Once
-        );
         _mockCacheService.Verify(
             x =>
                 x.SetAsync(

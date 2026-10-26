@@ -72,7 +72,7 @@
 <div class="divide-y divide-border/60">
   {#each rows as { week, cells } (week.weekStart)}
     <div class="flex flex-wrap items-center gap-x-4 gap-y-1.5 py-2.5 first:pt-0 last:pb-0">
-      <div class="min-w-0 flex-1">
+      <div class="min-w-0 flex-1 basis-48">
         <div class="text-sm font-medium">{week.label}</div>
         {#if (week.nightCount ?? 0) > 0}
           <div class="text-xs text-muted-foreground">

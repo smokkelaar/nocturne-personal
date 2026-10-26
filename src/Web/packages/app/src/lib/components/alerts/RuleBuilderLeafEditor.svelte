@@ -7,6 +7,17 @@
   import TimezoneCombobox from "$lib/components/patient/TimezoneCombobox.svelte";
   import X from "@lucide/svelte/icons/x";
   import { bg, bgLabel, convertFromDisplayUnits } from "$lib/utils/formatting";
+  import { alertWeekdayLabel } from "./summarizeCondition.svelte";
+  import {
+    ALERT_STATES,
+    alertStateLabel,
+    glucoseBucketLabel,
+    pumpModeLabel,
+    rateDirectionLabel,
+    stateSpanCategoryLabel,
+    tempBasalMetricLabel,
+    trendBucketLabel,
+  } from "./alert-labels.svelte";
   import { glucoseUnits } from "$lib/stores/appearance-store.svelte";
   import { untrack } from "svelte";
   import { getDefinitions } from "$api/generated/trackers.generated.remote";
@@ -15,8 +26,8 @@
     type ConditionNode,
     type ComparisonOperator,
     type StalenessOperator,
-    type TrendBucket,
     isStringEnumMember,
+    TREND_BUCKETS,
     TempBasalMetric,
     GlucoseBucket,
     PumpModeState,
@@ -66,50 +77,11 @@
     ">=": "≥",
     ">": ">",
   };
-  const trendLabels: Record<TrendBucket, string> = {
-    falling_fast: "falling fast",
-    falling: "falling",
-    flat: "flat",
-    rising: "rising",
-    rising_fast: "rising fast",
-  };
-  const tempBasalMetricLabels: Record<TempBasalMetric, string> = {
-    [TempBasalMetric.Rate]: "rate (U/h)",
-    [TempBasalMetric.PercentOfScheduled]: "% of scheduled",
-  };
-  const glucoseBucketLabels: Record<GlucoseBucket, string> = {
-    [GlucoseBucket.VeryLow]: "very low",
-    [GlucoseBucket.Low]: "low",
-    [GlucoseBucket.TightRange]: "tight range",
-    [GlucoseBucket.InRange]: "in range",
-    [GlucoseBucket.High]: "high",
-    [GlucoseBucket.VeryHigh]: "very high",
-  };
-  const pumpModeLabels: Record<PumpModeState, string> = {
-    [PumpModeState.Automatic]: "Automatic",
-    [PumpModeState.Limited]: "Limited",
-    [PumpModeState.Manual]: "Manual",
-    [PumpModeState.Boost]: "Boost",
-    [PumpModeState.EaseOff]: "Ease off",
-    [PumpModeState.Sleep]: "Sleep",
-    [PumpModeState.Exercise]: "Exercise",
-    [PumpModeState.Liberty]: "Liberty",
-    [PumpModeState.Suspended]: "Suspended",
-    [PumpModeState.Off]: "Off",
-  };
-  // PumpMode is intentionally excluded — pump mode rules use the dedicated
-  // pump_state condition (the backend rejects PumpMode on the generic state-span
-  // condition at validation time).
-  const stateCategoryLabels: Partial<Record<StateSpanCategory, string>> = {
-    [StateSpanCategory.PumpConnectivity]: "Pump connectivity",
-    [StateSpanCategory.Override]: "Override",
-    [StateSpanCategory.Profile]: "Profile",
-    [StateSpanCategory.Exercise]: "Exercise",
-    [StateSpanCategory.Illness]: "Illness",
-    [StateSpanCategory.Travel]: "Travel",
-    [StateSpanCategory.DataExclusion]: "Data exclusion",
-    [StateSpanCategory.TemporaryTarget]: "Temporary target",
-  };
+  // PumpMode rules use the dedicated pump_state condition (the backend rejects
+  // PumpMode on the generic state-span condition at validation time).
+  const stateCategories = Object.values(StateSpanCategory).filter(
+    (category) => category !== StateSpanCategory.PumpMode && category !== StateSpanCategory.Motion,
+  );
   // Mon → Sun. Order is fixed to a Monday-start week for the toggle pills.
   const weekdayOrder: AlertWeekday[] = [
     AlertWeekday.Monday,
@@ -120,15 +92,6 @@
     AlertWeekday.Saturday,
     AlertWeekday.Sunday,
   ];
-  const weekdayLabels: Record<AlertWeekday, string> = {
-    [AlertWeekday.Sunday]: "Sun",
-    [AlertWeekday.Monday]: "Mon",
-    [AlertWeekday.Tuesday]: "Tue",
-    [AlertWeekday.Wednesday]: "Wed",
-    [AlertWeekday.Thursday]: "Thu",
-    [AlertWeekday.Friday]: "Fri",
-    [AlertWeekday.Saturday]: "Sat",
-  };
 
   /** Label for a stored key, or undefined when the key is not one the editor offers. */
   function labelFor(labels: Partial<Record<string, string>>, key: string): string | undefined {
@@ -259,11 +222,11 @@
       }}
     >
       <Select.Trigger size="xs" class="w-24">
-        {node.rate_of_change.direction ?? "falling"}
+        {rateDirectionLabel(node.rate_of_change.direction ?? "falling")}
       </Select.Trigger>
       <Select.Content>
-        <Select.Item value="falling" label="falling" />
-        <Select.Item value="rising" label="rising" />
+        <Select.Item value="falling" label={rateDirectionLabel("falling")} />
+        <Select.Item value="rising" label={rateDirectionLabel("rising")} />
       </Select.Content>
     </Select.Root>
     <span class="text-xs text-muted-foreground">≥</span>
@@ -291,11 +254,11 @@
       }}
     >
       <Select.Trigger size="xs" class="w-32">
-        {labelFor(trendLabels, node.trend.bucket ?? "falling")}
+        {trendBucketLabel(node.trend.bucket ?? "falling")}
       </Select.Trigger>
       <Select.Content>
-        {#each Object.entries(trendLabels) as [bucket, label] (bucket)}
-          <Select.Item value={bucket} {label} />
+        {#each TREND_BUCKETS as bucket (bucket)}
+          <Select.Item value={bucket} label={trendBucketLabel(bucket)} />
         {/each}
       </Select.Content>
     </Select.Root>
@@ -457,11 +420,11 @@
       }}
     >
       <Select.Trigger size="xs" class="w-32">
-        {tempBasalMetricLabels[node.temp_basal.metric ?? TempBasalMetric.Rate]}
+        {tempBasalMetricLabel(node.temp_basal.metric ?? TempBasalMetric.Rate)}
       </Select.Trigger>
       <Select.Content>
-        {#each Object.entries(tempBasalMetricLabels) as [m, label] (m)}
-          <Select.Item value={m} {label} />
+        {#each Object.values(TempBasalMetric) as metric (metric)}
+          <Select.Item value={metric} label={tempBasalMetricLabel(metric)} />
         {/each}
       </Select.Content>
     </Select.Root>
@@ -549,12 +512,12 @@
       }}
     >
       <Select.Trigger size="xs" class="w-32">
-        {node.alert_state.state ?? "firing"}
+        {alertStateLabel(node.alert_state.state ?? "firing")}
       </Select.Trigger>
       <Select.Content>
-        <Select.Item value="firing" label="firing" />
-        <Select.Item value="unacknowledged" label="unacknowledged" />
-        <Select.Item value="acknowledged" label="acknowledged" />
+        {#each ALERT_STATES as state (state)}
+          <Select.Item value={state} label={alertStateLabel(state)} />
+        {/each}
       </Select.Content>
     </Select.Root>
     <span class="text-xs text-muted-foreground">for ≥</span>
@@ -585,9 +548,9 @@
       }}
       class="flex-wrap"
     >
-      {#each Object.entries(glucoseBucketLabels) as [bucket, label] (bucket)}
-        <ToggleGroup.Item value={bucket} aria-label={label}>
-          {label}
+      {#each Object.values(GlucoseBucket) as bucket (bucket)}
+        <ToggleGroup.Item value={bucket} aria-label={glucoseBucketLabel(bucket)}>
+          {glucoseBucketLabel(bucket)}
         </ToggleGroup.Item>
       {/each}
     </ToggleGroup.Root>
@@ -634,8 +597,8 @@
       class="flex-wrap"
     >
       {#each weekdayOrder as day (day)}
-        <ToggleGroup.Item value={day} aria-label={weekdayLabels[day]}>
-          {weekdayLabels[day]}
+        <ToggleGroup.Item value={day} aria-label={alertWeekdayLabel(day)}>
+          {alertWeekdayLabel(day)}
         </ToggleGroup.Item>
       {/each}
     </ToggleGroup.Root>
@@ -648,11 +611,11 @@
       }}
     >
       <Select.Trigger size="xs" class="w-32">
-        {pumpModeLabels[node.pump_state.mode ?? PumpModeState.Suspended]}
+        {pumpModeLabel(node.pump_state.mode ?? PumpModeState.Suspended)}
       </Select.Trigger>
       <Select.Content>
-        {#each Object.entries(pumpModeLabels) as [mode, label] (mode)}
-          <Select.Item value={mode} {label} />
+        {#each Object.values(PumpModeState) as mode (mode)}
+          <Select.Item value={mode} label={pumpModeLabel(mode)} />
         {/each}
       </Select.Content>
     </Select.Root>
@@ -693,12 +656,11 @@
       }}
     >
       <Select.Trigger size="xs" class="w-40">
-        {stateCategoryLabels[node.state_span_active.category ?? StateSpanCategory.Override] ??
-          "category"}
+        {stateSpanCategoryLabel(node.state_span_active.category ?? StateSpanCategory.Override)}
       </Select.Trigger>
       <Select.Content>
-        {#each Object.entries(stateCategoryLabels) as [cat, label] (cat)}
-          <Select.Item value={cat} label={label ?? cat} />
+        {#each stateCategories as category (category)}
+          <Select.Item value={category} label={stateSpanCategoryLabel(category)} />
         {/each}
       </Select.Content>
     </Select.Root>

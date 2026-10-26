@@ -52,16 +52,6 @@ public class BGCheckRepository : SyncUpsertRepositoryBase<BGCheck, BGCheckEntity
     protected internal override RecordType? DedupRecordType => RecordType.BGCheck;
 
     /// <summary>
-    /// Routes the base 7-arg form through the extended BG-check query (non-primary LinkedRecords
-    /// exclusion + ordering), preserving the pre-base default-interface bridge behaviour.
-    /// </summary>
-    public override Task<IEnumerable<BGCheck>> GetAsync(
-        DateTime? from, DateTime? to, string? device, string? source,
-        int limit = 100, int offset = 0, bool descending = true,
-        CancellationToken ct = default)
-        => GetAsync(from, to, device, source, limit, offset, descending, nativeOnly: false, ct);
-
-    /// <summary>
     /// Gets blood glucose check records based on filter criteria.
     /// Deduplicates records using the <see cref="IDeduplicationService"/>.
     /// </summary>
@@ -72,10 +62,9 @@ public class BGCheckRepository : SyncUpsertRepositoryBase<BGCheck, BGCheckEntity
     /// <param name="limit">The maximum number of records to return.</param>
     /// <param name="offset">The number of records to skip.</param>
     /// <param name="descending">Whether to sort by timestamp in descending order.</param>
-    /// <param name="nativeOnly">Whether to return only native records.</param>
     /// <param name="ct">The cancellation token.</param>
     /// <returns>A collection of blood glucose checks.</returns>
-    public async Task<IEnumerable<BGCheck>> GetAsync(
+    public override async Task<IEnumerable<BGCheck>> GetAsync(
         DateTime? from,
         DateTime? to,
         string? device,
@@ -83,7 +72,6 @@ public class BGCheckRepository : SyncUpsertRepositoryBase<BGCheck, BGCheckEntity
         int limit = 100,
         int offset = 0,
         bool descending = true,
-        bool nativeOnly = false,
         CancellationToken ct = default
     )
     {
@@ -97,8 +85,6 @@ public class BGCheckRepository : SyncUpsertRepositoryBase<BGCheck, BGCheckEntity
             query = query.Where(e => e.Device == device);
         if (source != null)
             query = query.Where(e => e.DataSource == source);
-        if (nativeOnly)
-            query = query.Where(e => e.LegacyId == null);
 
         query = ApplyReadVisibility(query, ctx);
 

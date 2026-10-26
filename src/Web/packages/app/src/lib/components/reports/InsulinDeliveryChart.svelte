@@ -142,6 +142,7 @@
         props={{
           xAxis: {
             format: formatHour,
+            tickOcclusion: true,
           },
           yAxis: {
             label: "Avg insulin (U)",

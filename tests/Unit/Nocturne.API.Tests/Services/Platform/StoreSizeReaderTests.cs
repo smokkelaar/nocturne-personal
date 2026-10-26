@@ -45,7 +45,7 @@ public class StoreSizeReaderTests
         var partition = new Mock<IReaderCachePartition>();
         partition.SetupGet(x => x.Current).Returns(isClamped ? null : "full");
         var reader = new StoreSizeReader(
-            contexts.Object, new StoreSizeEstimator(contexts.Object), cache.Object, readContext.Object, Tenant(), partition.Object, NullLogger<StoreSizeReader>.Instance);
+            contexts.Object, cache.Object, readContext.Object, Tenant(), partition.Object, NullLogger<StoreSizeReader>.Instance);
 
         var stats = await reader.ReadAsync();
 
@@ -65,7 +65,7 @@ public class StoreSizeReaderTests
         var partition = new Mock<IReaderCachePartition>();
         partition.SetupGet(x => x.Current).Returns("full");
         var reader = new StoreSizeReader(
-            Mock.Of<INocturneDbContextFactory>(), new StoreSizeEstimator(Mock.Of<INocturneDbContextFactory>()), cache.Object, Mock.Of<ICategoryReadContext>(), Tenant(), partition.Object, NullLogger<StoreSizeReader>.Instance);
+            Mock.Of<INocturneDbContextFactory>(), cache.Object, Mock.Of<ICategoryReadContext>(), Tenant(), partition.Object, NullLogger<StoreSizeReader>.Instance);
 
         (await reader.ReadAsync()).Should().BeSameAs(cached);
     }
@@ -79,7 +79,7 @@ public class StoreSizeReaderTests
         var partition = new Mock<IReaderCachePartition>();
         partition.SetupGet(x => x.Current).Returns("full");
         var reader = new StoreSizeReader(
-            contexts.Object, new StoreSizeEstimator(contexts.Object), TestTenantCache.Create(), Mock.Of<ICategoryReadContext>(), Tenant(), partition.Object, NullLogger<StoreSizeReader>.Instance);
+            contexts.Object, TestTenantCache.Create(), Mock.Of<ICategoryReadContext>(), Tenant(), partition.Object, NullLogger<StoreSizeReader>.Instance);
         return (reader, contexts);
     }
 
@@ -101,7 +101,7 @@ public class StoreSizeReaderTests
         var partition = new Mock<IReaderCachePartition>();
         partition.SetupGet(x => x.Current).Returns("full");
         var reader = new StoreSizeReader(
-            Mock.Of<INocturneDbContextFactory>(), new StoreSizeEstimator(Mock.Of<INocturneDbContextFactory>()), cache.Object, Mock.Of<ICategoryReadContext>(), Tenant(), partition.Object, NullLogger<StoreSizeReader>.Instance);
+            Mock.Of<INocturneDbContextFactory>(), cache.Object, Mock.Of<ICategoryReadContext>(), Tenant(), partition.Object, NullLogger<StoreSizeReader>.Instance);
 
         await reader.ReadAsync();
 
@@ -110,24 +110,24 @@ public class StoreSizeReaderTests
     }
 
     private static StoreSizeReader ReaderOver(
-        INocturneDbContextFactory contexts, ITenantAccessor tenant, ITenantCache? cache = null, StoreSizeEstimator? estimator = null)
+        INocturneDbContextFactory contexts, ITenantAccessor tenant, ITenantCache? cache = null)
     {
         var partition = new Mock<IReaderCachePartition>();
         partition.SetupGet(x => x.Current).Returns("full");
         return new StoreSizeReader(
-            contexts, estimator ?? new StoreSizeEstimator(contexts), cache ?? TestTenantCache.Create(tenantId: tenant.TenantId), Mock.Of<ICategoryReadContext>(), tenant, partition.Object,
+            contexts, cache ?? TestTenantCache.Create(tenantId: tenant.TenantId), Mock.Of<ICategoryReadContext>(), tenant, partition.Object,
             NullLogger<StoreSizeReader>.Instance);
     }
 
     private static Mock<INocturneDbContextFactory> BlockedContexts(
-        TaskCompletionSource release, Action onOpen, ConcurrentBag<CancellationToken>? tokens = null)
+        TaskCompletionSource release, Action onOpen, ConcurrentQueue<CancellationToken>? tokens = null)
     {
         var contexts = new Mock<INocturneDbContextFactory>();
         contexts
             .Setup(x => x.CreateForTenantAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .Returns(async (Guid _, CancellationToken ct) =>
             {
-                tokens?.Add(ct);
+                tokens?.Enqueue(ct);
                 onOpen();
                 await release.Task;
                 ct.ThrowIfCancellationRequested();
@@ -143,12 +143,9 @@ public class StoreSizeReaderTests
         var release = new TaskCompletionSource();
         var contexts = BlockedContexts(release, () => Interlocked.Increment(ref opened));
         var tenant = Tenant(Guid.NewGuid());
+        var cache = TestTenantCache.Create(tenantId: tenant.TenantId);
 
-        var estimator = new StoreSizeEstimator(contexts.Object);
-
-        var reads = Enumerable.Range(0, 8).Select(_ => ReaderOver(contexts.Object, tenant, estimator: estimator).ReadAsync()).ToList();
-        while (opened == 0)
-            await Task.Delay(10);
+        var reads = Enumerable.Range(0, 8).Select(_ => ReaderOver(contexts.Object, tenant, cache).ReadAsync()).ToList();
         release.SetResult();
         await Task.WhenAll(reads);
 
@@ -156,27 +153,26 @@ public class StoreSizeReaderTests
     }
 
     [Fact]
-    public async Task ReadAsync_LetsOtherCallersFinishWhenOneCancels()
+    public async Task ReadAsync_RunsTheCountWithTheCallersOwnTokenAndAnotherCallerRetriesWhenItCancels()
     {
         var release = new TaskCompletionSource();
         var opened = 0;
-        var tokens = new ConcurrentBag<CancellationToken>();
+        var tokens = new ConcurrentQueue<CancellationToken>();
         var contexts = BlockedContexts(release, () => Interlocked.Increment(ref opened), tokens);
-        var estimator = new StoreSizeEstimator(contexts.Object);
         var tenant = Tenant(Guid.NewGuid());
+        var cache = TestTenantCache.Create(tenantId: tenant.TenantId);
         using var cts = new CancellationTokenSource();
 
-        var cancelled = ReaderOver(contexts.Object, tenant, estimator: estimator).ReadAsync(cts.Token);
-        var other = ReaderOver(contexts.Object, tenant, estimator: estimator).ReadAsync();
-        while (opened == 0)
-            await Task.Delay(10);
+        var cancelled = ReaderOver(contexts.Object, tenant, cache).ReadAsync(cts.Token);
+        var other = ReaderOver(contexts.Object, tenant, cache).ReadAsync();
+        opened.Should().Be(1);
         cts.Cancel();
         release.SetResult();
 
         var waiting = () => cancelled;
         await waiting.Should().ThrowAsync<OperationCanceledException>();
         (await other).Should().BeEquivalentTo(new DbStats());
-        tokens.Should().ContainSingle().Which.Should().Be(CancellationToken.None);
+        tokens.Should().Equal(cts.Token, CancellationToken.None);
     }
 
     [Fact]
@@ -194,7 +190,6 @@ public class StoreSizeReaderTests
         await ReaderOver(contexts.Object, Tenant(Guid.NewGuid()), cache.Object).ReadAsync();
 
         cache.Verify(x => x.SetLocal(It.IsAny<string>(), true, TimeSpan.FromMinutes(1)), Times.Once);
-        cache.Verify(x => x.SetAsync(It.IsAny<string>(), It.IsAny<DbStats>(), It.IsAny<TimeSpan>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
@@ -202,7 +197,7 @@ public class StoreSizeReaderTests
     {
         var tenant = Tenant(Guid.NewGuid());
         var cache = TestTenantCache.Create(tenantId: tenant.TenantId);
-        await cache.SetAsync("dbstats:size", new DbStats { DataSize = 7 }, TimeSpan.FromMinutes(10));
+        await cache.GetOrSetAsync("dbstats:size", () => Task.FromResult(new DbStats { DataSize = 7 }), TimeSpan.FromMinutes(10));
         var contexts = new Mock<INocturneDbContextFactory>(MockBehavior.Strict);
 
         var stats = await ReaderOver(contexts.Object, tenant, cache).ReadAsync();

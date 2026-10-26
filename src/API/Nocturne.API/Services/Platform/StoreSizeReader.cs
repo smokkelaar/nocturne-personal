@@ -12,7 +12,6 @@ namespace Nocturne.API.Services.Platform;
 /// <inheritdoc cref="IStoreSizeReader"/>
 public sealed class StoreSizeReader(
     INocturneDbContextFactory contexts,
-    StoreSizeEstimator estimator,
     ITenantCache cache,
     ICategoryReadContext readContext,
     ITenantAccessor tenantAccessor,
@@ -29,7 +28,7 @@ public sealed class StoreSizeReader(
 
     public async Task<DbStats> ReadAsync(CancellationToken ct = default)
     {
-        if (readContext.IsShare || partition.Current is not { } current)
+        if (readContext.IsShare || partition.Current is null)
             return new DbStats();
 
         if (cache.TryGetLocal<bool>(FailureKey, out _))
@@ -39,7 +38,7 @@ public sealed class StoreSizeReader(
 
         try
         {
-            return await cache.GetOrSetAsync(CacheKey, () => estimator.SharedAsync(tenantId, current).WaitAsync(ct), CacheTtl, ct);
+            return await cache.GetOrSetAsync(CacheKey, () => EstimateAsync(tenantId, ct), CacheTtl, ct);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {

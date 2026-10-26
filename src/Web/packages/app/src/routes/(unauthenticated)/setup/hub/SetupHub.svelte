@@ -43,9 +43,9 @@
         </div>
       </Card.Root>
     {:else}
-      <Card.Root size="flush" data-testid="hub-header">
+      <Card.Root size="flush" class="@container" data-testid="hub-header">
         <div class="flex flex-col gap-2 p-6">
-          <h1 class="font-brand font-hairline text-3xl leading-tight md:text-4xl">
+          <h1 class="font-brand font-hairline text-3xl leading-tight @xl:text-4xl">
             {#if voice.kind === "self"}
               Make Nocturne <em class="not-italic font-light text-primary">yours</em>.
             {:else if voice.kind === "named"}

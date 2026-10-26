@@ -246,6 +246,27 @@
     }))
   );
 
+  /** Pixels around a lab marker within which the tooltip shows that lab draw. */
+  const LAB_SNAP_PX = 12;
+
+  /**
+   * Personal: a lab draw is one day wide on a year of daily estimates, so the tooltip snaps to the
+   * nearest lab date within {@link LAB_SNAP_PX} of the hovered date.
+   */
+  function snapToLabDate(hovered: Date, xScale: (value: Date) => number): Date {
+    const hoveredX = xScale(hovered);
+    let nearest = hovered;
+    let nearestDistance = LAB_SNAP_PX;
+    for (const labPoint of labChartPoints) {
+      const distance = Math.abs(xScale(labPoint.date) - hoveredX);
+      if (distance <= nearestDistance) {
+        nearest = labPoint.date;
+        nearestDistance = distance;
+      }
+    }
+    return nearest;
+  }
+
   function displayValueForChartDate(date: Date): number | null {
     if (chartData.length === 0) return null;
     const timestamp = date.getTime();
@@ -425,7 +446,7 @@
             {#snippet tooltip({ context })}
               <Tooltip.Root {context} class="bg-popover text-popover-foreground rounded-md border p-3 shadow-lg">
                 {#snippet children({ data })}
-                  {@const hoveredDate = context.x(data)}
+                  {@const hoveredDate = snapToLabDate(context.x(data), context.xScale)}
                   {@const hoveredDateKey = dateKey(hoveredDate)}
                   {@const eHbA1cPoint = chartData.find((point) => dateKey(point.date) === hoveredDateKey)}
                   {@const labResultsForDate = labChartPoints.filter((point) => dateKey(point.date) === hoveredDateKey)}

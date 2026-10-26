@@ -176,3 +176,46 @@ describe("eHbA1c chart tooltips", () => {
     expect(screenLineStart.x).toBeGreaterThan(markerBounds.right);
   });
 });
+
+describe("eHbA1c lab tooltip on a dense timeline", () => {
+  const sparseLength = timelinePoints.length;
+
+  beforeEach(() => {
+    for (let day = 6; day <= 95; day++) {
+      const date = new Date(Date.UTC(2025, 0, day));
+      timelinePoints.push({
+        date: date.toISOString().slice(0, 10),
+        estimatedA1cPercent: 6.3,
+        a1cDisplay: { percent: 6.3, mmolMol: 45.35535 },
+        weightedAverageGlucoseMgdl: 180,
+        readingCount: 100,
+        daysWithData: 30,
+      });
+    }
+    applyPreferences({ a1cName: "HbA1c", a1cUnits: "percent" });
+    render(EHbA1cPage, {});
+    return () => {
+      timelinePoints.length = sparseLength;
+    };
+  });
+
+  it("shows a lab result when the pointer is next to its marker rather than on it", async () => {
+    await expect.element(page.getByTestId("lab-marker").first()).toBeVisible();
+    const chart = page.getByTestId("ehba1c-chart");
+    const chartBounds = ((await chart.elements())[0] as HTMLElement).getBoundingClientRect();
+    const markers = (await page.getByTestId("lab-marker").elements()) as SVGPolygonElement[];
+    const markerX = (marker: SVGPolygonElement) => {
+      const bounds = marker.getBoundingClientRect();
+      return bounds.x + bounds.width / 2 - chartBounds.x;
+    };
+    const dayWidth = (markerX(markers[1]) - markerX(markers[0])) / 2;
+    expect(dayWidth).toBeLessThan(9);
+
+    await userEvent.hover(chart, {
+      position: { x: markerX(markers[1]) + dayWidth * 1.3, y: chartBounds.height / 2 },
+    });
+    const tooltip = page.getByTestId("ehba1c-tooltip");
+    await expect.element(tooltip).toBeVisible();
+    expect((await tooltip.elements())[0].textContent ?? "").toContain("Same-day lab test");
+  });
+});

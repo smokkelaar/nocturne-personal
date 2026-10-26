@@ -1,4 +1,3 @@
-// Copy drafted locally by Qwen and checked against the production chart components.
 export function chartLessons() {
   return {
     median: {
@@ -13,7 +12,7 @@ export function chartLessons() {
       meaning:
         "Blank sections indicate missing aggregate data for that period, not a value of zero.",
       check:
-        "Move across the blank section and compare it with the neighbouring time slots.",
+        "Move across the blank section and compare it with the neighboring time slots.",
     },
     comparison: {
       title: "Comparison period",

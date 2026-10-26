@@ -110,12 +110,21 @@ describe("contextual documentation", () => {
   it("opens a distinct guide for each Loop Analysis page and rejected uploads", () => {
     const visible = documentationLinks(buildAppNavigation(viewer));
     for (const [path, title] of [
-      ["/reports/loop-analysis/daily-profile", "Daily Profile"],
-      ["/reports/loop-analysis/meals-and-events", "Meals and Events"],
-      ["/reports/loop-analysis/prediction-accuracy", "Prediction Accuracy"],
-      ["/reports/loop-analysis/loop-health", "Loop Health"],
-      ["/reports/loop-analysis/settings-evidence", "Settings Evidence"],
-      ["/reports/data-quality/rejected-uploads", "Rejected Uploads"],
+      ["/reports/loop-analysis/daily-profile", "Loop analysis: Daily profile"],
+      [
+        "/reports/loop-analysis/meals-and-events",
+        "Loop analysis: Meals and events",
+      ],
+      [
+        "/reports/loop-analysis/prediction-accuracy",
+        "Loop analysis: Prediction accuracy",
+      ],
+      ["/reports/loop-analysis/loop-health", "Loop analysis: Loop health"],
+      [
+        "/reports/loop-analysis/settings-evidence",
+        "Loop analysis: Settings evidence",
+      ],
+      ["/reports/data-quality/rejected-uploads", "Rejected uploads"],
     ]) {
       expect(
         visible.some((link) => link.href === path),

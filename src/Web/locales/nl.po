@@ -4224,7 +4224,7 @@ msgstr ""
 
 #: src/lib/help/settings.svelte.ts
 msgid "Sharing & Privacy"
-msgstr ""
+msgstr "Delen en privacy"
 
 #: ../portal/src/routes/studio/+page.svelte
 #: src/lib/coach-marks/copy.svelte.ts
@@ -5099,7 +5099,7 @@ msgstr ""
 #: src/routes/(authenticated)/reports/+layout.svelte
 #: src/routes/(authenticated)/reports/+page.svelte
 msgid "Reports"
-msgstr ""
+msgstr "Rapporten"
 
 #: src/lib/components/dashboard/widgets/ClockWidget.svelte
 #: src/lib/help/dashboard-guide.svelte.ts
@@ -5177,17 +5177,17 @@ msgstr ""
 #: src/lib/navigation/app-navigation.svelte.ts
 #: src/routes/(authenticated)/settings/appearance/+page.svelte
 msgid "Appearance"
-msgstr ""
+msgstr "Weergave"
 
 #: src/lib/components/help/DashboardExplanation.svelte
 #: src/lib/help/settings.svelte.ts
 #: src/lib/navigation/app-navigation.svelte.ts
 msgid "Therapy"
-msgstr ""
+msgstr "Therapie"
 
 #: src/lib/components/help/DashboardExplanation.svelte
 msgid "Data Quality"
-msgstr ""
+msgstr "Gegevenskwaliteit"
 
 #: src/lib/help/settings.svelte.ts
 msgid "Notifications & Trackers"
@@ -5196,14 +5196,14 @@ msgstr ""
 #: src/lib/components/help/DashboardExplanation.svelte
 #: src/lib/help/settings.svelte.ts
 msgid "Connectors & Apps"
-msgstr ""
+msgstr "Koppelingen en apps"
 
 #~ msgid "Audit Log"
 #~ msgstr ""
 
 #: src/lib/help/settings.svelte.ts
 msgid "Support & Community"
-msgstr ""
+msgstr "Ondersteuning en community"
 
 #: src/lib/help/settings.svelte.ts
 msgid "Tenant Management"
@@ -13535,7 +13535,7 @@ msgstr ""
 #: src/lib/components/help/HelpPanel.svelte
 #: src/routes/(authenticated)/settings/support/+page.svelte
 msgid "Documentation"
-msgstr ""
+msgstr "Documentatie"
 
 #: src/routes/(authenticated)/settings/support/+page.svelte
 msgid "Guides, tutorials, and API reference"
@@ -15702,8 +15702,9 @@ msgid "FAQ"
 msgstr ""
 
 #: ../portal/src/lib/components/SiteFooter.svelte
+#: src/lib/help/workflows.svelte.ts
 msgid "Getting Started"
-msgstr ""
+msgstr "Snel starten"
 
 #: ../portal/src/lib/components/SiteFooter.svelte
 #: ../portal/src/routes/faq/+page.svelte
@@ -22022,10 +22023,11 @@ msgstr ""
 #~ msgid "{0} against {1}, readings matched within {2} minutes."
 #~ msgstr ""
 
+#: src/lib/help/chart-lessons.svelte.ts
 #: src/routes/(authenticated)/reports/data-quality/cgm-comparison/+page.svelte
 #: src/routes/(authenticated)/reports/data-quality/cgm-comparison/+page.svelte
 msgid "Paired readings"
-msgstr ""
+msgstr "Gekoppelde metingen"
 
 #. 0: bgLabel()
 #: src/routes/(authenticated)/reports/data-quality/cgm-comparison/+page.svelte
@@ -26962,9 +26964,10 @@ msgstr ""
 
 #: src/lib/components/reports/InsulinDeliveryChart.svelte
 #: src/lib/components/reports/InsulinDeliveryChart.svelte
+#: src/lib/help/chart-lessons.svelte.ts
 #: src/routes/(authenticated)/reports/idp/+page.svelte
 msgid "Scheduled basal rate"
-msgstr ""
+msgstr "Geplande basaalsnelheid"
 
 #: src/lib/components/reports/InsulinDeliveryChart.svelte
 msgid "Evening/Night (6pm-6am)"
@@ -27870,9 +27873,10 @@ msgstr ""
 msgid "Mostly calculated from carbs"
 msgstr ""
 
+#: src/lib/components/help/HelpChartExample.svelte
 #: src/lib/components/reports/loop-analysis/DailyProfileBody.svelte
 msgid "U per day"
-msgstr ""
+msgstr "E per dag"
 
 #: src/lib/components/reports/loop-analysis/DailyProfileBody.svelte
 msgid "No manual boluses in this range"
@@ -38139,19 +38143,19 @@ msgstr ""
 
 #: src/lib/components/help/HelpBrowser.svelte
 msgid "Search all documentation"
-msgstr ""
+msgstr "Zoeken in alle documentatie"
 
 #: src/lib/components/help/HelpBrowser.svelte
 msgid "Search all documentation…"
-msgstr ""
+msgstr "Zoeken in alle documentatie…"
 
 #: src/lib/components/help/HelpBrowser.svelte
 msgid "No documentation found. Try a page name, a setting, or a connector."
-msgstr ""
+msgstr "Geen documentatie gevonden. Probeer een paginanaam, instelling of connector."
 
 #: src/lib/components/help/HelpBrowser.svelte
 msgid "Search results"
-msgstr ""
+msgstr "Zoekresultaten"
 
 #. 0: results.length
 #: src/lib/components/help/HelpBrowser.svelte
@@ -38161,11 +38165,11 @@ msgstr ""
 #: src/lib/components/help/HelpBrowser.svelte
 #: src/lib/help/documentation.svelte.ts
 msgid "Page guide"
-msgstr ""
+msgstr "Handleiding"
 
 #: src/lib/components/help/HelpBrowser.svelte
 msgid "Continue exploring"
-msgstr ""
+msgstr "Verder lezen"
 
 #: src/lib/components/help/HelpHarness.test.svelte
 msgid "Your activity report stays open while you explore documentation."
@@ -38178,22 +38182,22 @@ msgstr ""
 #: src/lib/components/help/HelpIcon.svelte
 #: src/lib/components/help/HelpIcon.svelte
 msgid "Open page help"
-msgstr ""
+msgstr "Paginahulp openen"
 
 #: src/lib/components/help/HelpPreferences.svelte
 #: src/lib/components/help/HelpPreferences.svelte
 msgid "Full help bar"
-msgstr ""
+msgstr "Volledige hulpbalk"
 
 #: src/lib/components/help/HelpPreferences.svelte
 #: src/lib/components/help/HelpPreferences.svelte
 msgid "Library icon only"
-msgstr ""
+msgstr "Alleen het boekicoon"
 
 #: src/lib/components/help/HelpPreferences.svelte
 #: src/lib/components/help/HelpPreferences.svelte
 msgid "Hidden"
-msgstr ""
+msgstr "Verborgen"
 
 #: src/lib/components/help/HelpPreferences.svelte
 msgid "<0/>Documentation & help"
@@ -38201,47 +38205,47 @@ msgstr ""
 
 #: src/lib/components/help/HelpPreferences.svelte
 msgid "Choose how to access page help. This preference is saved in this browser."
-msgstr ""
+msgstr "Kies hoe je paginahulp opent. Deze voorkeur wordt in deze browser opgeslagen."
 
 #: src/lib/components/help/HelpPreferences.svelte
 msgid "Help visibility"
-msgstr ""
+msgstr "Zichtbaarheid van hulp"
 
 #: src/lib/components/help/HelpPreferences.svelte
 msgid "When hidden, help can always be enabled again here."
-msgstr ""
+msgstr "Je kunt verborgen hulp hier altijd weer inschakelen."
 
 #: src/lib/components/help/HelpIcon.svelte
 #: src/lib/components/help/HelpIcon.svelte
 msgid "Close page help"
-msgstr ""
+msgstr "Paginahulp sluiten"
 
 #: src/lib/components/help/HelpBrowser.svelte
 msgid "Open connector settings"
-msgstr ""
+msgstr "Connectorinstellingen openen"
 
 #: src/lib/components/help/HelpBrowser.svelte
 msgid "Page documentation"
-msgstr ""
+msgstr "Paginadocumentatie"
 
 #~ msgid "Underlying report"
 #~ msgstr ""
 
 #: src/lib/help/help-context.svelte.ts
 msgid "Navigation drawer"
-msgstr ""
+msgstr "Navigatiedrawer"
 
 #: src/lib/help/help-context.svelte.ts
 msgid "Right drawer"
-msgstr ""
+msgstr "Rechterdrawer"
 
 #: src/lib/help/help-context.svelte.ts
 msgid "Side by side"
-msgstr ""
+msgstr "Naast elkaar"
 
 #: src/lib/help/help-context.svelte.ts
 msgid "Replace page"
-msgstr ""
+msgstr "Pagina vervangen"
 
 #: src/lib/components/help/HelpHarness.test.svelte
 msgid "Report notes"
@@ -38249,79 +38253,79 @@ msgstr ""
 
 #: src/lib/components/help/HelpPanel.svelte
 msgid "Close documentation"
-msgstr ""
+msgstr "Documentatie sluiten"
 
 #: src/lib/components/help/HelpPanel.svelte
 msgid "Documentation panel"
-msgstr ""
+msgstr "Documentatiepaneel"
 
 #: src/lib/components/help/HelpPanel.svelte
 msgid "Your page stays open underneath"
-msgstr ""
+msgstr "Je pagina blijft hieronder open"
 
 #: src/lib/components/help/HelpPanel.svelte
 msgid "<0/>Close"
-msgstr ""
+msgstr "<0/>Sluiten"
 
 #: src/lib/components/help/HelpPanel.svelte
 msgid "Browse documentation"
-msgstr ""
+msgstr "Door documentatie bladeren"
 
 #: src/lib/components/help/HelpPreferences.svelte
 msgid "Opens a narrower drawer on the right, with guide navigation inside the panel."
-msgstr ""
+msgstr "Opent een smaller paneel aan de rechterkant, met documentatienavigatie in het paneel."
 
 #: src/lib/components/help/HelpPreferences.svelte
 msgid "Keeps the page usable beside its guide. On smaller screens, opens a full-width drawer."
-msgstr ""
+msgstr "Je pagina blijft bruikbaar naast de handleiding. Op kleinere schermen opent een drawer over de volledige breedte."
 
 #: src/lib/components/help/HelpPreferences.svelte
 msgid "Replaces the page content temporarily and uses the existing menu for documentation."
-msgstr ""
+msgstr "Vervangt de pagina-inhoud tijdelijk en gebruikt het bestaande menu voor documentatie."
 
 #: src/lib/components/help/HelpPreferences.svelte
 msgid "Documentation layout"
-msgstr ""
+msgstr "Documentatieweergave"
 
 #: src/lib/components/help/HelpPreferences.svelte
 msgid "<0/> Close help with the book beside Nocturne, the close button, or Escape. Your page and its inputs stay in place."
-msgstr ""
+msgstr "<0/> Sluit hulp met het boek naast Nocturne, de sluitknop of Escape. Je pagina en ingevulde velden blijven behouden."
 
 #: src/lib/components/help/HelpPreferences.svelte
 msgid "Opens like a transparent book from the boundary between menu and page. Your existing navigation stays in place and browses documentation while help is open."
-msgstr ""
+msgstr "Opent als een transparant boek vanaf de scheiding tussen menu en pagina. Je bestaande navigatie blijft op zijn plaats en navigeert door documentatie zolang hulp open is."
 
 #: src/lib/components/help/HelpAppearanceControls.svelte
 msgid "Documentation transparency"
-msgstr ""
+msgstr "Transparantie van documentatie"
 
 #: src/lib/components/help/HelpAppearanceControls.svelte
 msgid "Transparency <0/>"
-msgstr ""
+msgstr "Transparantie <0/>"
 
 #: src/lib/components/help/HelpAppearanceControls.svelte
 msgid "Documentation background blur"
-msgstr ""
+msgstr "Vervaging van de achtergrond"
 
 #. 0.0: help.blur
 #: src/lib/components/help/HelpAppearanceControls.svelte
 msgid "Background blur <0>{0} px</0>"
-msgstr ""
+msgstr "Vervaging <0>{0} px</0>"
 
 #~ msgid "Only the background layer changes; documentation text stays fully visible. Saved in this browser."
 #~ msgstr ""
 
 #: src/lib/components/help/HelpAppearanceControls.svelte
 msgid "Reset help appearance"
-msgstr ""
+msgstr "Standaardweergave herstellen"
 
 #: src/lib/components/help/HelpPanel.svelte
 msgid "Display options"
-msgstr ""
+msgstr "Weergaveopties"
 
 #: src/lib/components/help/HelpPanel.svelte
 msgid "Documentation appearance"
-msgstr ""
+msgstr "Documentatieweergave"
 
 #: src/lib/help/documentation.svelte.ts
 msgid "Use this page's visible controls and field descriptions to inspect its information."
@@ -38544,19 +38548,19 @@ msgstr ""
 
 #: src/lib/help/guide.svelte.ts
 msgid "Where the information comes from"
-msgstr ""
+msgstr "Waar de informatie vandaan komt"
 
 #: src/lib/help/guide.svelte.ts
 msgid "Settings and controls"
-msgstr ""
+msgstr "Instellingen en bediening"
 
 #: src/lib/help/guide.svelte.ts
 msgid "Where this information is used"
-msgstr ""
+msgstr "Waar deze informatie wordt gebruikt"
 
 #: src/lib/help/guide.svelte.ts
 msgid "Limits and missing information"
-msgstr ""
+msgstr "Beperkingen en ontbrekende informatie"
 
 #: src/lib/help/reports.svelte.ts
 msgid "Reports overview"
@@ -39612,7 +39616,7 @@ msgstr ""
 #: src/lib/components/help/HelpBrowser.svelte
 #: src/lib/components/help/HelpBrowser.svelte
 msgid "Step-by-step setup"
-msgstr ""
+msgstr "Stapsgewijze uitleg"
 
 #: src/lib/components/help/HelpReference.svelte
 msgid "Steps report"
@@ -39880,8 +39884,9 @@ msgstr ""
 #~ msgstr ""
 
 #: src/lib/help/reading-guides.svelte.ts
+#: src/lib/help/workflows.svelte.ts
 msgid "Choose your display"
-msgstr ""
+msgstr "Kies je weergave"
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Use chart controls for the view and Appearance for units, theme, and widgets."
@@ -41381,16 +41386,15 @@ msgstr ""
 msgid "Page reading aid"
 msgstr ""
 
-#: src/lib/components/help/HelpReadingAid.svelte
-msgid "Schematic reading example, without personal data"
-msgstr ""
+#~ msgid "Schematic reading example, without personal data"
+#~ msgstr ""
 
 #~ msgid "Reading diagram — illustrative, not your measurements. Colours follow your Nocturne theme."
 #~ msgstr ""
 
 #: src/lib/components/help/HelpReadingAid.svelte
 msgid "How to read this page"
-msgstr ""
+msgstr "Zo lees je deze pagina"
 
 #: src/lib/components/help/HelpHarness.test.svelte
 msgid "Application dialog"
@@ -43246,9 +43250,8 @@ msgstr ""
 msgid "Auto is absent because this example has no algorithm bolus insulin. The total is 38 U."
 msgstr ""
 
-#: src/lib/components/help/HelpReadingAid.svelte
-msgid "Reading diagram: illustrative, not your measurements. Colors follow your Nocturne theme."
-msgstr ""
+#~ msgid "Reading diagram: illustrative, not your measurements. Colors follow your Nocturne theme."
+#~ msgstr ""
 
 #. 0: bg(facts.maximumPlausibleGlucose); 1: unit
 #: src/lib/components/help/HelpReference.svelte
@@ -43313,3 +43316,250 @@ msgstr ""
 #: src/lib/components/reports/year-overview/ColorPalettePicker.svelte
 msgid "<0/> Mirror"
 msgstr ""
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "Median and spread"
+msgstr "Mediaan en spreiding"
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "The solid line is P50, the median. The inner band spans P25–P75; the outer band spans P10–P90."
+msgstr "De doorgetrokken lijn is P50, de mediaan. De binnenste band loopt van P25 tot P75; de buitenste van P10 tot P90."
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "Wider bands mean more spread among the recorded values at that time; they are not a forecast."
+msgstr "Bredere banden betekenen meer spreiding tussen de geregistreerde waarden op dat tijdstip; het zijn geen voorspellingen."
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "Missing data"
+msgstr "Ontbrekende gegevens"
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "Blank sections indicate missing aggregate data for that period, not a value of zero."
+msgstr "Lege delen wijzen op ontbrekende samengevatte gegevens voor die periode, niet op een nulwaarde."
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "Move across the blank section and compare it with the neighboring time slots."
+msgstr "Beweeg over het lege deel en vergelijk het met de naastgelegen tijdvakken."
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "Comparison period"
+msgstr "Vergelijkingsperiode"
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "Dashed lines represent the median and band edges of a second selected period, not forecasts."
+msgstr "De stippellijnen tonen de mediaan en bandranden van een tweede geselecteerde periode, geen voorspellingen."
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "Compare the same time slot in both periods, and check the dates and available records."
+msgstr "Vergelijk hetzelfde tijdvak in beide periodes en controleer de datums en beschikbare registraties."
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "Compare amounts"
+msgstr "Vergelijk hoeveelheden"
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "Dashed outlines show the amount in the second period, over the same time intervals as the filled bars."
+msgstr "De gestippelde omlijningen tonen de hoeveelheid in de tweede periode, voor dezelfde tijdvakken als de gevulde balken."
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "Check both date ranges and their units before comparing bar heights."
+msgstr "Controleer beide periodes en hun eenheden voordat je de hoogte van de balken vergelijkt."
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "Amounts and intervals"
+msgstr "Hoeveelheden en tijdvakken"
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "Bars show values over time from the zero axis, with dashed outlines for comparisons."
+msgstr "Balken tonen waarden per tijdvak vanaf de nul-as, met gestippelde omlijningen voor vergelijkingen."
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "Check the units to identify the quantity, as taller bars do not mean better outcomes."
+msgstr "Controleer de eenheden om de grootheid te identificeren, want hogere balken betekenen geen beter resultaat."
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "Prediction error"
+msgstr "Voorspelfout"
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "The chart compares uploaded predictions against later glucose measurements, grouped by prediction horizon."
+msgstr "De grafiek vergelijkt aangeleverde voorspellingen met latere glucosemetingen, gegroepeerd naar voorspelhorizon."
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "Bias is signed; MAE is an unsigned error magnitude. Check n: it counts matched predictions."
+msgstr "Bias heeft een teken; MAE is de foutgrootte zonder teken. Controleer n: dit telt gekoppelde voorspellingen."
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "Each step keeps the scheduled rate until the next entry. This is a schedule, not a delivery record."
+msgstr "Elke trede houdt de geplande snelheid aan tot de volgende invoer. Dit is een schema, geen afgifteregistratie."
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "Read the time and U/h together; compare delivery records separately when checking what actually happened."
+msgstr "Lees de tijd en E/uur samen; bekijk afgifteregistraties apart om te controleren wat er werkelijk gebeurde."
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "This chart plots device B values horizontally against device A values vertically, with each point representing one paired reading."
+msgstr "Apparaat B staat op de horizontale as en apparaat A op de verticale as. Elk punt is één gekoppeld metingenpaar."
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "Remember that the diagonal line indicates equal values, but this comparison does not establish which device is correct."
+msgstr "De diagonale lijn geeft gelijke waarden aan; deze vergelijking bepaalt niet welk apparaat de juiste waarde meet."
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "Recorded sleep stages"
+msgstr "Geregistreerde slaapfasen"
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "This chart stacks recorded sleep-stage minutes for each calendar day, showing gaps for days without a recorded night."
+msgstr "De grafiek stapelt geregistreerde minuten per slaapfase voor elke kalenderdag. Een ontbrekende nacht laat een gat achter."
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "Note that sleep stages originate from the device source and this graph does not diagnose sleep quality."
+msgstr "Slaapfasen komen van het bronapparaat. Deze grafiek stelt geen diagnose over de slaapkwaliteit."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Learn how to configure display settings, connect data sources, and verify that your imported data appears correctly in Nocturne."
+msgstr "Leer hoe je weergave-instellingen configureert, databronnen verbindt en verifieert dat je geïmporteerde gegevens correct in Nocturne verschijnen."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "The selected tenant, saved display preferences and records received from your configured uploaders and connectors."
+msgstr "De geselecteerde tenant, opgeslagen weergavevoorkeuren en records ontvangen van je geconfigureerde uploaders en connectoren."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Open help with the book beside Nocturne. Close it with the close button or Escape to return to your original page and inputs. Appearance controls units, theme, language and help display."
+msgstr "Open de hulp met het boekje naast Nocturne. Gebruik de sluitknop of Escape om terug te keren naar je oorspronkelijke pagina en invoer. Onder Weergave stel je eenheden, thema, taal en de weergave van de hulp in."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "After connecting a source, use Dashboard to check freshness and Reports to review the selected period. Therapy shows imported schedules; Sharing & Privacy manages access."
+msgstr "Controleer na het koppelen de actualiteit van de gegevens op het Dashboard. Bekijk de geselecteerde periode onder Rapporten. Therapie toont geïmporteerde schema’s; bij Delen en privacy beheer je de toegang."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Available settings depend on your permissions. A connected status or completed setup checklist does not prove that an import has finished. Check actual records and their timestamps."
+msgstr "Beschikbare instellingen hangen af van je rechten. Een verbonden status of een voltooide configuratiechecklist bewijst niet dat een import is afgerond. Controleer de daadwerkelijke records en hun tijdstempels."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Open Appearance to set units, theme, language and help display. Display preferences do not change the stored readings."
+msgstr "Open Weergave om eenheden, thema, taal en hulpweergave in te stellen. Weergavevoorkeuren wijzigen de opgeslagen metingen niet."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Connect your data source"
+msgstr "Verbind je databron"
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Open Connectors & Apps and follow the guide for your source. Complete any required sign-in and import selection."
+msgstr "Open Koppelingen en apps en volg de handleiding voor je bron. Rond de vereiste aanmelding af en kies zo nodig welke gegevens je wilt importeren."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Verify incoming data"
+msgstr "Controleer de binnenkomende gegevens"
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Check the latest reading timestamp on Dashboard, then confirm dates and data coverage in Reports. If records are missing, open Missing Data and Troubleshooting."
+msgstr "Controleer op het Dashboard wanneer de laatste meting is ontvangen. Bekijk daarna de datums en beschikbare gegevens onder Rapporten. Open Ontbrekende gegevens en probleemoplossing als er records ontbreken."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Missing Data and Troubleshooting"
+msgstr "Ontbrekende gegevens en probleemoplossing"
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Diagnose missing data by checking scope, source records, and import status. Prepare evidence for support without including sensitive credentials."
+msgstr "Zoek uit waarom gegevens ontbreken door de werkruimte, periode, brongegevens en importstatus te controleren. Verzamel informatie voor ondersteuning zonder gevoelige inloggegevens te delen."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Dashboard timestamps, the selected report period, connector status, source-app records and rejected-upload diagnostics."
+msgstr "Tijdstempels op het Dashboard, de geselecteerde rapportperiode, connectorstatus, bronapp-records en diagnostiek van afgewezen uploads."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Check the selected tenant, report dates and applied filters first. In Connectors & Apps, inspect the source configuration and latest sync. Use Support & Community for version and issue-report details."
+msgstr "Controleer eerst de geselecteerde tenant, rapportdatums en filters. Bekijk bij Koppelingen en apps de broninstellingen en de laatste synchronisatie. Ondersteuning en community toont versie-informatie en opties om een probleem te melden."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Distinguish a date or access mismatch from missing source records, an incomplete import or a rejected upload before changing configuration."
+msgstr "Maak onderscheid tussen een datum- of toegangsconflict en ontbrekende bronrecords, een onvolledige import of een afgewezen upload voordat je de configuratie wijzigt."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Reports require different combinations of glucose, treatments and device status. An empty page is not proof that no event occurred. Clearing diagnostics does not repair or retry an import."
+msgstr "Rapporten hebben verschillende combinaties van glucose, behandelingen en apparaatstatus nodig. Een lege pagina bewijst niet dat er niets is gebeurd. Het wissen van meldingen herstelt geen gegevens en voert een import niet opnieuw uit."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Check the workspace and period"
+msgstr "Controleer de werkruimte en periode"
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Confirm the tenant, latest reading timestamp, selected dates and filters. Check whether your access includes the data the report needs."
+msgstr "Bevestig de tenant, de tijdstempel van de laatste meting, de geselecteerde datums en filters. Controleer of je toegang de gegevens omvat die het rapport nodig heeft."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Compare source and imported records"
+msgstr "Vergelijk bron- en geïmporteerde records"
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Check that the record exists in the source app, then review the connector latest sync and supported data types. Inspect Rejected Uploads when an uploader reports success but a record is missing."
+msgstr "Controleer of het record in de bronapp staat. Bekijk daarna de laatste synchronisatie van de connector en de ondersteunde gegevenstypen. Kijk bij Afgewezen uploads als de uploader succes meldt maar een record ontbreekt."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Prepare a useful support report"
+msgstr "Bereid een nuttig ondersteuningsrapport voor"
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Include the page, selected dates, expected result, version and steps to reproduce. Review any exported diagnostics and remove passwords, tokens and identifiable health records before sharing."
+msgstr "Neem de pagina, geselecteerde datums, verwacht resultaat, versie en stappen om te reproduceren op. Controleer geëxporteerde diagnostiek en verwijder wachtwoorden, tokens en identificeerbare gezondheidsrecords voordat je deelt."
+
+#: src/lib/components/help/HelpChartExample.svelte
+msgid "No data in this example slot"
+msgstr "Geen gegevens in dit voorbeeldtijdvak"
+
+#. 0: bars[slot]?.value ?? 0
+#: src/lib/components/help/HelpChartExample.svelte
+msgid "{0} U per day"
+msgstr "{0} E per dag"
+
+#. 0: bg(a.p50 ?? 0); 1: bgLabel(); 2: a.n
+#: src/lib/components/help/HelpChartExample.svelte
+msgid "{0} {1}, n={2}"
+msgstr ""
+
+#: src/lib/components/help/HelpChartExample.svelte
+msgid "Interactive chart example"
+msgstr "Interactief grafiekvoorbeeld"
+
+#: src/lib/components/help/HelpChartExample.svelte
+msgid "Explore the chart"
+msgstr "Verken de grafiek"
+
+#: src/lib/components/help/HelpChartExample.svelte
+msgid "Fictional example data. The chart uses the same components, theme colors and display units as the report."
+msgstr "Fictieve voorbeeldgegevens. De grafiek gebruikt dezelfde onderdelen, themakleuren en weergave-eenheden als het rapport."
+
+#: src/lib/components/help/HelpChartExample.svelte
+msgid "Chart explanations"
+msgstr "Uitleg bij de grafiek"
+
+#: src/lib/components/help/HelpChartExample.svelte
+msgid "Complete example"
+msgstr "Volledig voorbeeld"
+
+#: src/lib/components/help/HelpChartExample.svelte
+msgid "Missing records"
+msgstr "Ontbrekende registraties"
+
+#. 0: bg(slots[slot].value?.p25 ?? 0); 1: bg( slots[slot].value?.p75 ?? 0 ); 2: bgLabel()
+#: src/lib/components/help/HelpChartExample.svelte
+msgid "P25–P75: {0}–{1} {2}"
+msgstr ""
+
+#: src/lib/components/help/HelpChartExample.svelte
+msgid "Point to a time slot, or focus the chart and use the arrow keys. Click or press Enter to keep a selection."
+msgstr "Wijs een tijdvak aan of geef de grafiek focus en gebruik de pijltjestoetsen. Klik of druk op Enter om een selectie vast te houden."
+
+#: src/lib/components/help/HelpChartExample.svelte
+msgid "Point to a horizon or use the arrow keys to inspect bias, MAE and the number of matched predictions."
+msgstr "Wijs een voorspelhorizon aan of gebruik de pijltjestoetsen om bias, MAE en het aantal gekoppelde voorspellingen te bekijken."
+
+#: src/lib/components/help/HelpChartExample.svelte
+msgid "Scheduled rate (U/h), 00:00–23:00"
+msgstr "Geplande snelheid (E/uur), 00:00–23:00"
+
+#: src/lib/components/help/HelpChartExample.svelte
+msgid "These controls only change the example. Your records and saved settings stay the same."
+msgstr "Deze knoppen wijzigen alleen het voorbeeld. Je gegevens en opgeslagen instellingen blijven hetzelfde."

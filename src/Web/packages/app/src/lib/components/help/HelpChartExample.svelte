@@ -103,7 +103,7 @@
   <div class="space-y-1">
     <h3 class="font-semibold">Explore the chart</h3>
     <p class="text-sm text-muted-foreground">
-      Fictional example data. The chart uses the same components, theme colours
+      Fictional example data. The chart uses the same components, theme colors
       and display units as the report.
     </p>
   </div>

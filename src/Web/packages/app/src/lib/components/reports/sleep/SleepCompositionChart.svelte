@@ -2,8 +2,8 @@
   import { Key } from "@nocturne/ui/keys";
   /**
    * Stacked sleep-stage composition chart for the trends page: one bar per
-   * calendar day across the full selected range (gaps for days with no
-   * recorded night), plus a compact stage-composition reference panel.
+   * calendar day across the full selected range (gaps for days with no recorded
+   * night), plus a compact stage-composition reference panel.
    */
   import { formatShortDate, formatWeekdayLabel } from "$lib/utils/formatting";
   import { Chart, Svg, Axis, Tooltip } from "layerchart";
@@ -11,27 +11,45 @@
   import { bandScale } from "$lib/components/charts/scale-guards";
   import { goto } from "$app/navigation";
   import { resolve } from "$app/paths";
-  import { SLEEP_COMPOSITION_SEGMENTS, laneTexture } from "$lib/utils/sleep-stages";
+  import {
+    SLEEP_COMPOSITION_SEGMENTS,
+    laneTexture,
+  } from "$lib/utils/sleep-stages";
   import { patternClass } from "$lib/components/charts/print/chart-print-patterns";
   import ChartKey from "$lib/components/charts/print/ChartKey.svelte";
-  import { dayKeyFor, buildNightsByDayKey } from "$lib/utils/sleep-night-mapping";
+  import {
+    dayKeyFor,
+    buildNightsByDayKey,
+  } from "$lib/utils/sleep-night-mapping";
   import { formatMinutesDuration } from "$lib/utils/duration";
-  import type { SleepNightSummary, SleepStageReferenceRangeSet } from "$lib/api";
+  import type {
+    SleepNightSummary,
+    SleepStageReferenceRangeSet,
+  } from "$lib/api";
 
   interface Props {
     /** Nights already filtered to the selected date range / source. */
     nights: SleepNightSummary[];
+    /** Override drill-through for embedded examples. */
+    onSelectNight?: (night: SleepNightSummary) => void;
     /** Every calendar day in the selected (unpadded) range — including gaps. */
     days: Date[];
     meanDeepPct?: number | undefined;
     meanRemPct?: number | undefined;
     referenceRanges?: SleepStageReferenceRangeSet | undefined;
-    /** deepMinutesDelta from summary.last7dVsPrior7d, when available. */
+    /** DeepMinutesDelta from summary.last7dVsPrior7d, when available. */
     deepMinutesDelta?: number | undefined;
   }
 
-  let { nights, days, meanDeepPct, meanRemPct, referenceRanges, deepMinutesDelta }: Props =
-    $props();
+  let {
+    nights,
+    days,
+    onSelectNight,
+    meanDeepPct,
+    meanRemPct,
+    referenceRanges,
+    deepMinutesDelta,
+  }: Props = $props();
 
   type SegmentKey = (typeof SLEEP_COMPOSITION_SEGMENTS)[number]["key"];
 
@@ -62,7 +80,14 @@
         const minutes = night?.[seg.key] ?? 0;
         const y0 = cumulative;
         cumulative += minutes;
-        return { key: seg.key, label: seg.label, lane: seg.lane, minutes, y0, y1: cumulative };
+        return {
+          key: seg.key,
+          label: seg.label,
+          lane: seg.lane,
+          minutes,
+          y0,
+          y1: cumulative,
+        };
       });
       return {
         dayKey: dayKeyFor(date).toString(),
@@ -74,9 +99,13 @@
     });
   });
 
-  const hasUnspecified = $derived(nights.some((n) => (n.unspecifiedMinutes ?? 0) > 0));
+  const hasUnspecified = $derived(
+    nights.some((n) => (n.unspecifiedMinutes ?? 0) > 0)
+  );
   const visibleSegments = $derived(
-    SLEEP_COMPOSITION_SEGMENTS.filter((seg) => seg.key !== "unspecifiedMinutes" || hasUnspecified)
+    SLEEP_COMPOSITION_SEGMENTS.filter(
+      (seg) => seg.key !== "unspecifiedMinutes" || hasUnspecified
+    )
   );
 
   const yMaxMinutes = $derived.by(() => {
@@ -98,10 +127,21 @@
     return formatShortDate(row.date);
   }
 
-  /** Navigate to a night's drill-down using the backend's authoritative display date. */
+  /**
+   * Navigate to a night's drill-down using the backend's authoritative display
+   * date.
+   */
   function navigateToNight(row: DayRow | undefined) {
     if (!row?.night?.displayDate) return;
-    goto(resolve("/(authenticated)/reports/sleep/[date]", { date: row.night.displayDate }));
+    if (onSelectNight) {
+      onSelectNight(row.night);
+      return;
+    }
+    goto(
+      resolve("/(authenticated)/reports/sleep/[date]", {
+        date: row.night.displayDate,
+      })
+    );
   }
 
   function handleKeydown(e: KeyboardEvent, row: DayRow) {
@@ -165,7 +205,12 @@
                 ticks={4}
                 format={(v: number) => `${Math.round(v / 60)}h`}
               />
-              <Axis placement="bottom" rule ticks={xTickKeys} format={formatDayTick} />
+              <Axis
+                placement="bottom"
+                rule
+                ticks={xTickKeys}
+                format={formatDayTick}
+              />
               <!-- Stacked stage segments. Native SVG: layerchart marks each call
                    registerMark() on mount and every registration re-runs the
                    chart's mark deriveds over all marks, so days x segments rects
@@ -180,9 +225,15 @@
                       x={xPos}
                       y={context.yScale(segment.y1)}
                       width={bandwidth}
-                      height={Math.max(context.yScale(segment.y0) - context.yScale(segment.y1), 0)}
+                      height={Math.max(
+                        context.yScale(segment.y0) - context.yScale(segment.y1),
+                        0
+                      )}
                       data-lane={segment.lane}
-                      class={["fill-lane", patternClass(laneTexture(segment.lane))]}
+                      class={[
+                        "fill-lane",
+                        patternClass(laneTexture(segment.lane)),
+                      ]}
                       rx={2}
                     />
                   {/if}
@@ -203,13 +254,18 @@
                   width={bandwidth}
                   height={context.height}
                   fill="transparent"
-                  role={row.night ? "link" : undefined}
+                  role={row.night
+                    ? onSelectNight
+                      ? "button"
+                      : "link"
+                    : undefined}
                   tabindex={row.night ? 0 : undefined}
                   aria-label={row.night
                     ? `Sleep session on ${formatShortDate(row.date)}`
                     : undefined}
                   class={row.night ? "cursor-pointer" : undefined}
-                  onpointermove={(e: PointerEvent) => context.tooltip?.show(e, row)}
+                  onpointermove={(e: PointerEvent) =>
+                    context.tooltip?.show(e, row)}
                   onpointerleave={() => context.tooltip?.hide()}
                   onclick={() => navigateToNight(row)}
                   onkeydown={(e: KeyboardEvent) => handleKeydown(e, row)}
@@ -236,7 +292,10 @@
                         />
                       {/if}
                     {/each}
-                    <Tooltip.Item label="Awake" value={formatMinutesDuration(night.awakeMinutes ?? 0)} />
+                    <Tooltip.Item
+                      label="Awake"
+                      value={formatMinutesDuration(night.awakeMinutes ?? 0)}
+                    />
                     {#if night.sleepScore != null}
                       <Tooltip.Separator />
                       <Tooltip.Item
@@ -252,7 +311,9 @@
                     {/if}
                   </Tooltip.List>
                 {:else}
-                  <div class="text-xs text-muted-foreground">No recorded night</div>
+                  <div class="text-xs text-muted-foreground">
+                    No recorded night
+                  </div>
                 {/if}
               {/snippet}
             </Tooltip.Root>
@@ -263,7 +324,10 @@
 
     <ChartKey
       class="mt-3 justify-start"
-      items={visibleSegments.map((seg) => ({ texture: laneTexture(seg.lane), label: seg.label }))}
+      items={visibleSegments.map((seg) => ({
+        texture: laneTexture(seg.lane),
+        label: seg.label,
+      }))}
     />
   </div>
 
@@ -272,7 +336,10 @@
     {#each referenceRows as row (row.label)}
       <div class="space-y-1.5">
         <div class="flex items-center gap-2 text-sm">
-          <span class="size-2.5 shrink-0 rounded-full bg-lane" data-lane={row.lane}></span>
+          <span
+            class="size-2.5 shrink-0 rounded-full bg-lane"
+            data-lane={row.lane}
+          ></span>
           <span class="font-medium">{row.label}</span>
           <span class="ml-auto tabular-nums font-medium">
             {row.meanPct != null ? `${Math.round(row.meanPct)}%` : "—"}
@@ -283,7 +350,10 @@
             <div
               class="absolute left-(--band-left) h-full w-(--band-w) rounded-full bg-muted-foreground/25"
               style:--band-left="{Math.min(row.band.min, 100)}%"
-              style:--band-w="{Math.max(Math.min(row.band.max, 100) - Math.min(row.band.min, 100), 0)}%"
+              style:--band-w="{Math.max(
+                Math.min(row.band.max, 100) - Math.min(row.band.min, 100),
+                0
+              )}%"
             ></div>
             {#if row.meanPct != null}
               <div
@@ -294,7 +364,9 @@
             {/if}
           </div>
           <p class="text-xs text-muted-foreground">
-            Typical range{referenceRanges?.label ? ` (${referenceRanges.label})` : ""}
+            Typical range{referenceRanges?.label
+              ? ` (${referenceRanges.label})`
+              : ""}
             {Math.round(row.band.min)}–{Math.round(row.band.max)}%
           </p>
         {/if}
@@ -303,9 +375,11 @@
 
     {#if deepMinutesDelta != null}
       <p class="text-xs text-muted-foreground">
-        Deep sleep vs prior 7 nights: {deepMinutesDelta > 0 ? "+" : deepMinutesDelta < 0 ? "−" : "±"}{Math.abs(
-          Math.round(deepMinutesDelta)
-        )}m
+        Deep sleep vs prior 7 nights: {deepMinutesDelta > 0
+          ? "+"
+          : deepMinutesDelta < 0
+            ? "−"
+            : "±"}{Math.abs(Math.round(deepMinutesDelta))}m
       </p>
     {/if}
   </div>

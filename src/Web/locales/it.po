@@ -22563,7 +22563,7 @@ msgstr ""
 msgid "Typical range{0} {1}–{2}%"
 msgstr ""
 
-#. 0: deepMinutesDelta > 0 ? "+" \\: deepMinutesDelta < 0 ? "−" \\: "±"; 1: Math.abs( Math.round(deepMinutesDelta) )
+#. 0: deepMinutesDelta > 0 ? "+" \\: deepMinutesDelta < 0 ? "−" \\: "±"; 1: Math.abs(Math.round(deepMinutesDelta))
 #: src/lib/components/reports/sleep/SleepCompositionChart.svelte
 msgid "Deep sleep vs prior 7 nights: {0}{1}m"
 msgstr ""
@@ -22681,6 +22681,7 @@ msgstr ""
 #~ msgid "{0} against {1}, readings matched within {2} minutes."
 #~ msgstr ""
 
+#: src/lib/help/chart-lessons.svelte.ts
 #: src/routes/(authenticated)/reports/data-quality/cgm-comparison/+page.svelte
 #: src/routes/(authenticated)/reports/data-quality/cgm-comparison/+page.svelte
 msgid "Paired readings"
@@ -27860,6 +27861,7 @@ msgstr ""
 
 #: src/lib/components/reports/InsulinDeliveryChart.svelte
 #: src/lib/components/reports/InsulinDeliveryChart.svelte
+#: src/lib/help/chart-lessons.svelte.ts
 msgid "Scheduled basal rate"
 msgstr ""
 
@@ -28774,6 +28776,7 @@ msgstr ""
 msgid "Mostly calculated from carbs"
 msgstr ""
 
+#: src/lib/components/help/HelpChartExample.svelte
 #: src/lib/components/reports/loop-analysis/DailyProfileBody.svelte
 msgid "U per day"
 msgstr ""
@@ -34198,13 +34201,11 @@ msgstr "Open the relevant controls in a new tab. Your original page stays in pla
 msgid "Page reading aid"
 msgstr "Page reading aid"
 
-#: src/lib/components/help/HelpReadingAid.svelte
-msgid "Schematic reading example, without personal data"
-msgstr "Schematic reading example, without personal data"
+#~ msgid "Schematic reading example, without personal data"
+#~ msgstr "Schematic reading example, without personal data"
 
-#: src/lib/components/help/HelpReadingAid.svelte
-msgid "Reading diagram — illustrative, not your measurements. Colours follow your Nocturne theme."
-msgstr "Reading diagram — illustrative, not your measurements. Colours follow your Nocturne theme."
+#~ msgid "Reading diagram — illustrative, not your measurements. Colours follow your Nocturne theme."
+#~ msgstr "Reading diagram — illustrative, not your measurements. Colours follow your Nocturne theme."
 
 #: src/lib/components/help/HelpReadingAid.svelte
 msgid "How to read this page"
@@ -35385,4 +35386,163 @@ msgstr ""
 
 #: src/lib/help/workflows.svelte.ts
 msgid "Include the page, selected dates, expected result, version and steps to reproduce. Review any exported diagnostics and remove passwords, tokens and identifiable health records before sharing."
+msgstr ""
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "Median and spread"
+msgstr ""
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "The solid line is P50, the median. The inner band spans P25–P75; the outer band spans P10–P90."
+msgstr ""
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "Wider bands mean more spread among the recorded values at that time; they are not a forecast."
+msgstr ""
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "Missing data"
+msgstr ""
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "Blank sections indicate missing aggregate data for that period, not a value of zero."
+msgstr ""
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "Move across the blank section and compare it with the neighbouring time slots."
+msgstr ""
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "Comparison period"
+msgstr ""
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "Dashed lines represent the median and band edges of a second selected period, not forecasts."
+msgstr ""
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "Compare the same time slot in both periods, and check the dates and available records."
+msgstr ""
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "Compare amounts"
+msgstr ""
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "Dashed outlines show the amount in the second period, over the same time intervals as the filled bars."
+msgstr ""
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "Check both date ranges and their units before comparing bar heights."
+msgstr ""
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "Amounts and intervals"
+msgstr ""
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "Bars show values over time from the zero axis, with dashed outlines for comparisons."
+msgstr ""
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "Check the units to identify the quantity, as taller bars do not mean better outcomes."
+msgstr ""
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "Prediction error"
+msgstr ""
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "The chart compares uploaded predictions against later glucose measurements, grouped by prediction horizon."
+msgstr ""
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "Bias is signed; MAE is an unsigned error magnitude. Check n: it counts matched predictions."
+msgstr ""
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "Each step keeps the scheduled rate until the next entry. This is a schedule, not a delivery record."
+msgstr ""
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "Read the time and U/h together; compare delivery records separately when checking what actually happened."
+msgstr ""
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "This chart plots device B values horizontally against device A values vertically, with each point representing one paired reading."
+msgstr ""
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "Remember that the diagonal line indicates equal values, but this comparison does not establish which device is correct."
+msgstr ""
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "Recorded sleep stages"
+msgstr ""
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "This chart stacks recorded sleep-stage minutes for each calendar day, showing gaps for days without a recorded night."
+msgstr ""
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "Note that sleep stages originate from the device source and this graph does not diagnose sleep quality."
+msgstr ""
+
+#: src/lib/components/help/HelpChartExample.svelte
+msgid "No data in this example slot"
+msgstr ""
+
+#. 0: bars[slot]?.value ?? 0
+#: src/lib/components/help/HelpChartExample.svelte
+msgid "{0} U per day"
+msgstr ""
+
+#. 0: bg(a.p50 ?? 0); 1: bgLabel(); 2: a.n
+#: src/lib/components/help/HelpChartExample.svelte
+msgid "{0} {1}, n={2}"
+msgstr ""
+
+#: src/lib/components/help/HelpChartExample.svelte
+msgid "Interactive chart example"
+msgstr ""
+
+#: src/lib/components/help/HelpChartExample.svelte
+msgid "Explore the chart"
+msgstr ""
+
+#: src/lib/components/help/HelpChartExample.svelte
+msgid "Fictional example data. The chart uses the same components, theme colours and display units as the report."
+msgstr ""
+
+#: src/lib/components/help/HelpChartExample.svelte
+msgid "Chart explanations"
+msgstr ""
+
+#: src/lib/components/help/HelpChartExample.svelte
+msgid "Complete example"
+msgstr ""
+
+#: src/lib/components/help/HelpChartExample.svelte
+msgid "Missing records"
+msgstr ""
+
+#. 0: bg(slots[slot].value?.p25 ?? 0); 1: bg( slots[slot].value?.p75 ?? 0 ); 2: bgLabel()
+#: src/lib/components/help/HelpChartExample.svelte
+msgid "P25–P75: {0}–{1} {2}"
+msgstr ""
+
+#: src/lib/components/help/HelpChartExample.svelte
+msgid "Point to a time slot, or focus the chart and use the arrow keys. Click or press Enter to keep a selection."
+msgstr ""
+
+#: src/lib/components/help/HelpChartExample.svelte
+msgid "Point to a horizon or use the arrow keys to inspect bias, MAE and the number of matched predictions."
+msgstr ""
+
+#: src/lib/components/help/HelpChartExample.svelte
+msgid "Scheduled rate (U/h), 00:00–23:00"
+msgstr ""
+
+#: src/lib/components/help/HelpChartExample.svelte
+msgid "These controls only change the example. Your records and saved settings stay the same."
 msgstr ""

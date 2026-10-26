@@ -4,6 +4,7 @@ import Harness from "./HelpContentHarness.test.svelte";
 import { loadLocales, runWithLocale } from "wuchale/load-utils/server";
 import * as main from "../../../../../../locales/main.loader.server.svelte.js";
 import { locales } from "../../../../../../locales/data.js";
+import { chartLessons } from "$lib/help/chart-lessons.svelte";
 
 beforeAll(async () => {
   await loadLocales(main.key, main.loadCount, main.loadCatalog, locales);
@@ -12,6 +13,13 @@ const content = (path: string, locale = "en") =>
   runWithLocale(locale, () => render(Harness, { props: { path } }).body);
 
 describe("translation-aware help factories", () => {
+  it("translates interactive chart lessons without leaking implementation names", async () => {
+    const lessons = await runWithLocale("nl", () => chartLessons());
+    expect(lessons.median.title).toBe("Mediaan en spreiding");
+    expect(lessons.prediction.meaning).toContain("voorspelhorizon");
+    expect(lessons.barComparison.meaning).toContain("omlijningen");
+    expect(lessons.schedule.check).toContain("afgifteregistraties");
+  });
   it("renders the new report guides instead of the generic parent guide", async () => {
     for (const [path, title] of [
       ["/reports/loop-analysis/daily-profile", "Daily Profile"],

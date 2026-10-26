@@ -6,12 +6,14 @@ import { reportArticles } from "./reports.svelte";
 import { settingsArticles } from "./settings.svelte";
 import { connectorArticles } from "./connectors.svelte";
 import { readingGuides } from "./reading-guides.svelte";
+import { pageMeanings } from "./meanings.svelte";
 import { glucoseReferenceArticle } from "./glucose-reference.svelte";
 import { GLUCOSE_REFERENCE_PATH } from "./reference-path";
 
 // Per-call factories let translated titles follow the current locale.
 export function articles(): HelpArticle[] {
   const readings = readingGuides();
+  const meanings = pageMeanings();
   const entries = [
     ...pageArticles(),
     ...reportArticles(),
@@ -34,13 +36,15 @@ export function articles(): HelpArticle[] {
             })),
           ]
         : article.sections;
-    return { ...article, ...reading, related, sections };
+    const meaning = article.meaning ?? meanings[article.href];
+    return { ...article, ...reading, meaning, related, sections };
   });
 }
 
 function parentFor(href: string): string | undefined {
   // The report overview is not permission to visit every report.
-  if (href.startsWith("/reports/loop-analysis/")) return "/reports/loop-analysis";
+  if (href.startsWith("/reports/loop-analysis/"))
+    return "/reports/loop-analysis";
   if (href.startsWith("/reports/"))
     return href.startsWith("/reports/data-quality/")
       ? "/reports/data-quality"
@@ -111,7 +115,10 @@ export function documentationLinks(navigation: NavItem[]): NavLink[] {
   return links;
 }
 
-/** Whether `path` fills the `[param]` segments of a detail route such as `/alerts/[id]`. */
+/**
+ * Whether `path` fills the `[param]` segments of a detail route such as
+ * `/alerts/[id]`.
+ */
 function matchesDetailRoute(route: string, path: string): boolean {
   if (!route.includes("[")) return false;
   const expected = route.split("/");
@@ -130,7 +137,9 @@ export function articleFor(path: string, links: NavLink[]): HelpArticle {
   const all = articles();
   const exact = all.find((entry) => entry.href === normalized);
   if (exact) return exact;
-  const detail = all.find((entry) => matchesDetailRoute(entry.href, normalized));
+  const detail = all.find((entry) =>
+    matchesDetailRoute(entry.href, normalized)
+  );
   if (detail) return detail;
   const parent = all
     .filter(
@@ -165,6 +174,7 @@ export function searchDocumentation(query: string, links: NavLink[]) {
         article.title,
         article.introduction,
         ...(article.reading ?? []).flatMap((step) => [step.title, step.text]),
+        ...(article.meaning ?? []).flatMap((item) => [item.title, item.text]),
 
         ...article.sections.flatMap((section) => [section.title, section.text]),
         ...(article.steps ?? []).flatMap((step) => [step.title, step.text]),

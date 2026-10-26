@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Nocturne.API.Controllers.V4.Profiles;
+using Nocturne.API.Services.V4;
 using Nocturne.API.Tests.Infrastructure;
 using Nocturne.Core.Contracts.Profiles;
 using Nocturne.Core.Contracts.V4;
@@ -34,7 +35,8 @@ public class ProfileControllerNameResolutionTests
             Mock.Of<ITargetRangeScheduleRepository>(),
             Mock.Of<IProfileProjectionService>(),
             _deletionService.Object,
-            TempBasalTestDeps.NoReresolution());
+            TempBasalTestDeps.NoReresolution(),
+            Mock.Of<ILoopClosedLoopStamper>());
     }
 
     private void Stored(params TherapySettings[] settings) =>

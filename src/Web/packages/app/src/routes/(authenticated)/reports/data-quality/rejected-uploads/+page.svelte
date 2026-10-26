@@ -116,7 +116,7 @@
       </div>
     </div>
     {#if rows.length > 0}
-      <div class="flex shrink-0 gap-2">
+      <div class="flex shrink-0 flex-wrap gap-2">
         <Button variant="outline" onclick={exportJson}>
           <Download class="mr-2 size-4" aria-hidden="true" />
           Export this page

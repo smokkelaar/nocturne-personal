@@ -66,7 +66,7 @@
         !analysis?.siteChangeCount && "print:hidden",
       ]}
     >
-      <div class="flex items-center gap-2 text-sm print:hidden">
+      <div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm print:hidden">
         <Calendar class="h-4 w-4 text-muted-foreground" />
         <span class="font-medium">{formatDate(startDate)}</span>
         <span class="text-muted-foreground">to</span>
@@ -74,7 +74,7 @@
         <span class="text-muted-foreground">({dayCount} days)</span>
       </div>
       {#if analysis?.siteChangeCount}
-        <div class="flex items-center gap-4 text-sm">
+        <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
           <div class="flex items-center gap-2">
             <RefreshCw class="h-4 w-4 text-muted-foreground" />
             <span class="font-medium">{analysis.siteChangeCount}</span>

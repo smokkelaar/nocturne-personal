@@ -13,8 +13,8 @@ namespace Nocturne.API.Services.AidDetection;
 /// <see cref="StatisticsService.TempBasalReadStart"/>, not only those inside the window: a record
 /// counts for the time it ran inside the window, as <see cref="StatisticsService.DeliveredWithin"/>
 /// decides, and what cancels or supersedes it can lie outside.
-/// <see cref="AidSegmentMetrics.LoopCycleCount"/> and <see cref="AidSegmentMetrics.EnactedCount"/>
-/// are not applicable for this strategy and are returned as <see langword="null"/>.
+/// <see cref="AidSegmentMetrics.LoopCycleCount"/>, <see cref="AidSegmentMetrics.EnactedCount"/> and
+/// <see cref="AidSegmentMetrics.ClosedLoopCount"/> are not applicable for this strategy and are returned as <see langword="null"/>.
 /// </remarks>
 /// <seealso cref="IAidDetectionStrategy"/>
 public class TbrBasedStrategy : IAidDetectionStrategy
@@ -49,7 +49,8 @@ public class TbrBasedStrategy : IAidDetectionStrategy
             AidActivePercent = Percent(delivered.Where(t => t.Origin == TempBasalOrigin.Algorithm), total),
             PumpUsePercent = Percent(delivered, total),
             LoopCycleCount = null,
-            EnactedCount = null
+            EnactedCount = null,
+            ClosedLoopCount = null
         };
     }
 

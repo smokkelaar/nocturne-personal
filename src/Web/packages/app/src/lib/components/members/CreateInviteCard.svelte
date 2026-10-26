@@ -46,6 +46,11 @@
     onCancel,
   }: Props = $props();
 
+  const grantableRoles = $derived(roles.filter((r) => r.canGrant));
+  const grantableChoices = $derived(
+    (roleChoices ?? []).filter((c) => grantableRoles.some((r) => r.id === c.roleId)),
+  );
+
   // The API refuses anything past 90 days: the token is a bearer credential for tenant
   // membership, so its lifetime is bounded rather than free-form.
   const EXPIRY_OPTIONS = [
@@ -196,7 +201,7 @@
           />
         </div>
 
-        {#if roleChoices?.length}
+        {#if grantableChoices.length}
           <div class="space-y-2">
             <Label id="invite-access-label">What can they do?</Label>
             <RadioGroup.Root
@@ -205,7 +210,7 @@
               value={inviteRoleIds[0]}
               onValueChange={(value) => (inviteRoleIds = [value])}
             >
-              {#each roleChoices as choice (choice.roleId)}
+              {#each grantableChoices as choice (choice.roleId)}
                 <RadioGroup.Card value={choice.roleId}>
                   <span class="text-sm font-medium">{choice.label}</span>
                   <span class="text-xs text-muted-foreground">{choice.description}</span>
@@ -218,7 +223,7 @@
         <div class="space-y-2">
           <Label>Roles</Label>
           <div class="grid gap-2 @sm:grid-cols-2">
-            {#each roles as role (role.id)}
+            {#each grantableRoles as role (role.id)}
               <div class="flex items-center gap-2">
                 <Checkbox
                   id="invite-role-{role.id}"
@@ -258,7 +263,7 @@
           </p>
         </div>
 
-        {#if !roleChoices?.length}
+        {#if !grantableChoices.length}
         <!-- Direct permissions (collapsible) -->
         <Collapsible.Root
           open={showInvitePermissions}

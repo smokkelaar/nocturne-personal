@@ -451,7 +451,7 @@
         />
 
         {#if formState === "idle"}
-          <div class="flex-1 overflow-y-auto space-y-4 pr-1">
+          <div class="@container flex-1 overflow-y-auto space-y-4 pr-1">
             <!-- Title -->
             <div class="space-y-2">
               <Label for="issue-title">Title *</Label>
@@ -491,7 +491,7 @@
                 />
               </div>
 
-              <div class="grid grid-cols-2 gap-4">
+              <div class="grid gap-4 @md:grid-cols-2">
                 <div class="space-y-2">
                   <Label for="issue-expected">Expected behavior</Label>
                   <Textarea
@@ -515,7 +515,7 @@
 
             <!-- Data issue-specific fields -->
             {#if template === "data-issue"}
-              <div class="grid grid-cols-2 gap-4">
+              <div class="grid gap-4 @md:grid-cols-2">
                 <div class="space-y-2">
                   <Label for="issue-cgm">CGM source</Label>
                   <Input
@@ -631,7 +631,7 @@
                   <Switch bind:checked={includeRecentLogs} disabled={recentFailureCount === 0} />
                 </div>
 
-                <div class="flex items-center justify-between">
+                <div class="flex items-center justify-between gap-3">
                   <div class="space-y-0.5">
                     <Label>Settings</Label>
                     <p class="text-xs text-muted-foreground">
@@ -674,7 +674,7 @@
           {/if}
           <input type="hidden" name="diagnosticInfo" value={diagnosticInfo} />
 
-          <div class="flex-1 overflow-y-auto space-y-4 pr-1">
+          <div class="@container flex-1 overflow-y-auto space-y-4 pr-1">
             <div class="space-y-1">
               <p class="text-xs font-medium text-muted-foreground uppercase tracking-wide">Title</p>
               <h3 class="text-lg font-semibold">{title}</h3>
@@ -698,7 +698,7 @@
 
               {#if expectedBehavior.trim() || actualBehavior.trim()}
                 <Separator />
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid gap-4 @md:grid-cols-2">
                   {#if expectedBehavior.trim()}
                     <div class="space-y-1">
                       <p class="text-xs font-medium text-muted-foreground uppercase tracking-wide">Expected behavior</p>
@@ -717,7 +717,7 @@
 
             {#if template === "data-issue" && (cgmSource.trim() || timeRange.trim())}
               <Separator />
-              <div class="grid grid-cols-2 gap-4">
+              <div class="grid gap-4 @md:grid-cols-2">
                 {#if cgmSource.trim()}
                   <div class="space-y-1">
                     <p class="text-xs font-medium text-muted-foreground uppercase tracking-wide">CGM source</p>

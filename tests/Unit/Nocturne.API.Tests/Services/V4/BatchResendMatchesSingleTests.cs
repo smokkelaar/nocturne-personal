@@ -154,6 +154,7 @@ public class BatchResendMatchesSingleTests : IDisposable
             Mock.Of<IStateSpanService>(),
             Mock.Of<IDeviceService>(),
             _audit,
+            Mock.Of<ILoopClosedLoopStamper>(),
             NullLogger<DeviceStatusDecomposer>.Instance);
 
         DeviceStatus Status(int battery) => new()
@@ -183,6 +184,7 @@ public class BatchResendMatchesSingleTests : IDisposable
             Mock.Of<IStateSpanService>(),
             Mock.Of<IDeviceService>(),
             _audit,
+            Mock.Of<ILoopClosedLoopStamper>(),
             NullLogger<DeviceStatusDecomposer>.Instance);
 
         const string legacyId = "6500000000000000000000d2";
@@ -225,6 +227,7 @@ public class BatchResendMatchesSingleTests : IDisposable
             Mock.Of<IStateSpanService>(),
             Mock.Of<IDeviceService>(),
             _audit,
+            Mock.Of<ILoopClosedLoopStamper>(),
             NullLogger<DeviceStatusDecomposer>.Instance);
 
         const string legacyId = "6500000000000000000000d3";

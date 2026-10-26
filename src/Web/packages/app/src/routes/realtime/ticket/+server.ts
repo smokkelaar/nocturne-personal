@@ -80,10 +80,13 @@ export const GET: RequestHandler = async (event) => {
     );
     if (probe.ok) {
       const admission: Partial<RealtimeAdmission> = await probe.json();
+      // Sign no ticket the bridge would refuse.
+      if (!admission.tenantId) return json({ token: null, retry: true });
       return json({
         token: signHandshakeTicket(
           secret,
           effectiveHost,
+          admission.tenantId,
           readRealtimeGrant(admission)
         ),
       });

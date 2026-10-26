@@ -22,6 +22,7 @@ const viewer: TenantRoleDto = {
   name: "Viewer",
   slug: "viewer",
   permissions: ["glucose.read"],
+  canGrant: true,
 };
 
 vi.mock("$lib/api/generated/memberInvites.generated.remote", () => ({

@@ -110,7 +110,7 @@ public class TotalIobAgreementTests
         _carbs
             .Setup(r => r.GetAsync(
                 It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), It.IsAny<string?>(), It.IsAny<string?>(),
-                It.IsAny<int>(), It.IsAny<int>(), It.IsAny<bool>(), It.IsAny<bool>(),
+                It.IsAny<int>(), It.IsAny<int>(), It.IsAny<bool>(),
                 It.IsAny<DateTime?>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync([]);
 
@@ -126,7 +126,7 @@ public class TotalIobAgreementTests
 
     private List<ApsIobCobPoint> ApsPoints(DateTime from, DateTime to) =>
         [.. _apsRows.Where(s => s.Timestamp >= from && s.Timestamp <= to).OrderBy(s => s.Timestamp)
-            .Select(s => new ApsIobCobPoint(s.Timestamp, s.Iob, s.Cob))];
+            .Select(s => new ApsIobCobPoint(s.Timestamp, s.Iob, s.Cob, null))];
 
     private List<PumpIobPoint> PumpPoints(DateTime from, DateTime to) =>
         [.. _pumpRows.Where(s => s.Timestamp >= from && s.Timestamp <= to).OrderBy(s => s.Timestamp)
@@ -157,7 +157,7 @@ public class TotalIobAgreementTests
         boluses
             .Setup(r => r.GetAsync(
                 It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), It.IsAny<string?>(), It.IsAny<string?>(),
-                It.IsAny<int>(), It.IsAny<int>(), It.IsAny<bool>(), It.IsAny<bool>(),
+                It.IsAny<int>(), It.IsAny<int>(), It.IsAny<bool>(),
                 It.IsAny<BolusKind?>(), It.IsAny<DateTime?>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(_noTreatments ? [] : [BolusBefore(reading)]);
         return boluses.Object;
@@ -491,9 +491,9 @@ public class TotalIobAgreementTests
         boluses
             .Setup(r => r.GetAsync(
                 It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), It.IsAny<string?>(), It.IsAny<string?>(),
-                It.IsAny<int>(), It.IsAny<int>(), It.IsAny<bool>(), It.IsAny<bool>(),
+                It.IsAny<int>(), It.IsAny<int>(), It.IsAny<bool>(),
                 It.IsAny<BolusKind?>(), It.IsAny<DateTime?>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()))
-            .Callback((DateTime? _, DateTime? to, string? _, string? _, int _, int _, bool _, bool _, BolusKind? _, DateTime? _, Guid? _, CancellationToken _) => bolusTo = to)
+            .Callback((DateTime? _, DateTime? to, string? _, string? _, int _, int _, bool _, BolusKind? _, DateTime? _, Guid? _, CancellationToken _) => bolusTo = to)
             .ReturnsAsync([]);
         var temps = new Mock<ITempBasalRepository>();
         temps

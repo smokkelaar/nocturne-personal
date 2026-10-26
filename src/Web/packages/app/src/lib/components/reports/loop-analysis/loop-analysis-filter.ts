@@ -1,7 +1,6 @@
 import { DayOfWeek, LoopAnalysisComparison } from "$lib/api";
 import type { getDailyProfile } from "$api/generated/loopAnalysis.generated.remote";
 import { isDayString } from "$lib/utils/date-range";
-import { formatLocale } from "$lib/utils/formatting";
 
 type DailyProfileQuery = Parameters<typeof getDailyProfile>[0];
 
@@ -173,9 +172,4 @@ export function withoutUnavailable(
   const dropProfile = names.has("profileName") && filter.profileName != null;
   if (!changed && !dropProfile) return null;
   return { ...filter, masks, profileName: dropProfile ? null : filter.profileName };
-}
-
-/** A weekday's short name in the viewer's locale. 4 January 2026 is a Sunday, so day d falls on the 4th + d. */
-export function weekdayLabel(day: DayOfWeek): string {
-  return new Date(2026, 0, 4 + day).toLocaleDateString(formatLocale(), { weekday: "short" });
 }

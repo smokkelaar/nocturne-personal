@@ -2251,7 +2251,14 @@ public class AidSegmentMetrics
     /// <summary>Number of loop iterations (applicable to open-source AIDs)</summary>
     public int? LoopCycleCount { get; set; }
 
+    /// <summary>Loop cycles the uploader reported enacted, Loop's open-loop cycles included</summary>
     public int? EnactedCount { get; set; }
+
+    /// <summary>
+    /// Loop cycles enacted with the loop closed (<see cref="V4.ApsLoopCycle.EnactedClosedLoop"/>), whose
+    /// time is <see cref="AidActivePercent"/>
+    /// </summary>
+    public int? ClosedLoopCount { get; set; }
 }
 
 /// <summary>

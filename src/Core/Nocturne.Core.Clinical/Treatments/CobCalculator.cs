@@ -333,6 +333,7 @@ public class CobCalculator(
             Source = reading.Name,
             Device = reading.Device,
             Mills = reading.Mills,
+            ReportedByDevice = true,
         };
     }
 

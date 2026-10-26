@@ -104,7 +104,7 @@ public class DemoLoopHealthTests
             .Select(s => new MillsInterval(Mills(s.StartLocal), s.EndLocal is { } end ? Mills(end) : to));
         var sources = new LoopAnalysisMaskSources
         {
-            OpenLoop = LoopAnalysisMask.OpenLoop(manualModes, [], [], cycles.Select(c => c.Mills)).Intervals,
+            OpenLoop = LoopAnalysisMask.OpenLoop(manualModes, [], [], cycles.Select(c => new ApsLoopState(c.Mills, c.LoopClosed))).Intervals,
         };
         var mask = LoopAnalysisMask.Build(
             new LoopAnalysisMasks { ExcludeIllness = false, ExcludeOpenLoop = true }, from, to, zone, sources);

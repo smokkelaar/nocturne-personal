@@ -18,7 +18,7 @@ public class DeviceReadingsTests
     [Fact]
     public void APastInstant_DoesNotTakeALaterSnapshot_ButALiveOneDoes()
     {
-        var readings = Of(aps: [new ApsIobCobPoint(At(2), 1.5, 10)]);
+        var readings = Of(aps: [new ApsIobCobPoint(At(2), 1.5, 10, null)]);
 
         Assert.Null(readings.At(Now, live: false).Iob);
         Assert.Null(readings.At(Now, live: false).Cob);
@@ -29,7 +29,7 @@ public class DeviceReadingsTests
     [Fact]
     public void ALiveInstant_TakesNothingStampedMoreThanTheSkewAllowanceLater()
     {
-        var readings = Of(aps: [new ApsIobCobPoint(At(6), 1.5, 10)]);
+        var readings = Of(aps: [new ApsIobCobPoint(At(6), 1.5, 10, null)]);
 
         Assert.Null(readings.At(Now, live: true).Iob);
     }
@@ -37,14 +37,14 @@ public class DeviceReadingsTests
     [Fact]
     public void ASnapshot_CountsForThirtyMinutes()
     {
-        Assert.Equal(1.5, Of(aps: [new ApsIobCobPoint(At(-30), 1.5, null)]).At(Now, live: false).Iob?.Iob);
-        Assert.Null(Of(aps: [new ApsIobCobPoint(At(-31), 1.5, null)]).At(Now, live: false).Iob);
+        Assert.Equal(1.5, Of(aps: [new ApsIobCobPoint(At(-30), 1.5, null, null)]).At(Now, live: false).Iob?.Iob);
+        Assert.Null(Of(aps: [new ApsIobCobPoint(At(-31), 1.5, null, null)]).At(Now, live: false).Iob);
     }
 
     [Fact]
     public void TheApsSnapshot_HoldsBeforeTheNewerPumpSnapshot()
     {
-        var device = Of(aps: [new ApsIobCobPoint(At(-4), 1.5, null)], pump: [new PumpIobPoint(At(-1), 0.7, null)])
+        var device = Of(aps: [new ApsIobCobPoint(At(-4), 1.5, null, null)], pump: [new PumpIobPoint(At(-1), 0.7, null)])
             .At(Now, live: false);
 
         Assert.Equal(DeviceSource.Aps, device.Iob?.Source);
@@ -54,7 +54,7 @@ public class DeviceReadingsTests
     [Fact]
     public void EachComponent_TakesTheFirstSourceThatReportsIt()
     {
-        var device = Of(aps: [new ApsIobCobPoint(At(-2), null, 12)], pump: [new PumpIobPoint(At(-3), 0.7, null)])
+        var device = Of(aps: [new ApsIobCobPoint(At(-2), null, 12, null)], pump: [new PumpIobPoint(At(-3), 0.7, null)])
             .At(Now, live: false);
 
         Assert.Equal(DeviceSource.Pump, device.Iob?.Source);
@@ -66,7 +66,7 @@ public class DeviceReadingsTests
     [Fact]
     public void OnlyTheNewestSnapshotOfASource_Counts()
     {
-        var device = Of(aps: [new ApsIobCobPoint(At(-10), 1.5, 8), new ApsIobCobPoint(At(-2), null, 12)])
+        var device = Of(aps: [new ApsIobCobPoint(At(-10), 1.5, 8, null), new ApsIobCobPoint(At(-2), null, 12, null)])
             .At(Now, live: false);
 
         Assert.Null(device.Iob);

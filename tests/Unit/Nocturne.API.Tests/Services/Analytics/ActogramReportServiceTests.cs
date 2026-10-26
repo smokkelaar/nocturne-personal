@@ -122,7 +122,7 @@ public class ActogramReportServiceTests
 
         _glucose
             .Setup(g => g.GetForAnalyticsAsync(It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), null, null,
-                It.IsAny<int>(), 0, false, false, It.IsAny<DateTime?>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()))
+                It.IsAny<int>(), 0, false, It.IsAny<DateTime?>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new[] { glucoseRow });
         _sleep
             .Setup(s => s.GetSessionsAsync(
@@ -425,7 +425,7 @@ public class ActogramReportServiceTests
     {
         _glucose
             .Setup(g => g.GetForAnalyticsAsync(It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), null, null,
-                It.IsAny<int>(), 0, false, false, It.IsAny<DateTime?>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()))
+                It.IsAny<int>(), 0, false, It.IsAny<DateTime?>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Array.Empty<SensorGlucose>());
         _sleep
             .Setup(s => s.GetSessionsAsync(

@@ -32,6 +32,7 @@ public class ProfileDeletionServiceRecreationTests : IDisposable
     private readonly SqliteTestDatabase _db;
     private readonly NocturneDbContext _context;
     private readonly TestNocturneDbContextFactory _factory;
+    private readonly Moq.Mock<ILoopClosedLoopStamper> _closedLoop = new();
 
     public ProfileDeletionServiceRecreationTests()
     {
@@ -143,6 +144,19 @@ public class ProfileDeletionServiceRecreationTests : IDisposable
     }
 
     [Fact]
+    public async Task Delete_RestampsTheLoopSnapshotsTheDeletedVersionsGoverned()
+    {
+        await Decomposer(new UserAuditContext()).DecomposeBatchAsync([UpstreamProfile()], WriteOrigin.Live);
+
+        await Deletion(new UserAuditContext()).DeleteByProfileNameAsync("Default");
+
+        _closedLoop.Verify(s => s.AfterLoopSettingsWrittenAsync(
+            Moq.It.Is<IReadOnlyCollection<DateTime>>(starts =>
+                starts.SequenceEqual(new[] { new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc) })),
+            Moq.It.IsAny<CancellationToken>()), Moq.Times.Once);
+    }
+
+    [Fact]
     public async Task Delete_RefusesTheActiveProfile()
     {
         await Decomposer(new UserAuditContext()).DecomposeBatchAsync(
@@ -185,12 +199,14 @@ public class ProfileDeletionServiceRecreationTests : IDisposable
         new SensitivityScheduleRepository(_factory, audit, NullLogger<SensitivityScheduleRepository>.Instance),
         new TargetRangeScheduleRepository(_factory, audit, NullLogger<TargetRangeScheduleRepository>.Instance),
         TempBasalTestDeps.NoReresolution(),
+        Moq.Mock.Of<ILoopClosedLoopStamper>(),
         NullLogger<ProfileDecomposer>.Instance);
 
     private ProfileDeletionService Deletion(IAuditContext audit) => new(
         _factory,
         new TherapySettingsRepository(_factory, audit, NullLogger<TherapySettingsRepository>.Instance),
         audit,
+        _closedLoop.Object,
         NullLogger<ProfileDeletionService>.Instance);
 
     private async Task<List<string>> LiveProfileNames()

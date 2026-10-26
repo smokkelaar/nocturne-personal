@@ -184,7 +184,7 @@ public class EntryReadService : IEntryStore
         const int fetchLimit = 60;
         var results = await _sgRepo.GetForEntriesAsync(
             from: null, to: null, device: null, source: source,
-            limit: fetchLimit, offset: 0, descending: true, nativeOnly: false, ct: ct);
+            limit: fetchLimit, offset: 0, descending: true, ct: ct);
 
         var visible = ExcludeDemoIfNeeded(results, excludeDemo).ToList();
         var canonical = await _canonicalGlucose.SelectAsync(visible, ct);
@@ -504,7 +504,7 @@ public class EntryReadService : IEntryStore
         var window = new Dictionary<Guid, SensorGlucose>();
         foreach (var (from, to) in CanonicalBucketRuns(deleted))
         {
-            var stored = await _sgRepo.GetForEntriesAsync(from, to, device: null, source, MaxFilterFetch, 0, false, false, null, null, ct);
+            var stored = await _sgRepo.GetForEntriesAsync(from, to, device: null, source, MaxFilterFetch, 0, false, null, null, ct);
             foreach (var reading in ExcludeDemoIfNeeded(stored, excludeDemo))
                 window.TryAdd(reading.Id, reading);
         }
@@ -533,7 +533,7 @@ public class EntryReadService : IEntryStore
         var window = new Dictionary<Guid, SensorGlucose>();
         foreach (var (from, to) in CanonicalBucketRuns(readings))
         {
-            var stored = await _sgRepo.GetForEntriesAsync(from, to, device: null, source, MaxFilterFetch, 0, false, false, null, null, ct);
+            var stored = await _sgRepo.GetForEntriesAsync(from, to, device: null, source, MaxFilterFetch, 0, false, null, null, ct);
             foreach (var reading in ExcludeDemoIfNeeded(stored, excludeDemo))
                 window.TryAdd(reading.Id, reading);
         }
@@ -605,7 +605,7 @@ public class EntryReadService : IEntryStore
         {
             var results = (sort == ReadSortField.Sgv
                 ? await _sgRepo.GetForEntriesByValueAsync(from, to, source, fetchCount, 0, descending, ct)
-                : await _sgRepo.GetForEntriesAsync(from, to, device: null, source, fetchCount, 0, descending, false, null, null, ct)).ToList();
+                : await _sgRepo.GetForEntriesAsync(from, to, device: null, source, fetchCount, 0, descending, null, null, ct)).ToList();
             var visible = ExcludeDemoIfNeeded(results, excludeDemo).ToList();
             var canonical = await _canonicalGlucose.SelectAsync(visible, ct);
 

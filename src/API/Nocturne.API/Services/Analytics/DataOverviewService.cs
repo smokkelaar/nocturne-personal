@@ -495,10 +495,20 @@ public class DataOverviewService : IDataOverviewService
             : "all";
         var cacheKey = $"{EHbA1cCacheFamily(year)}:{sourceKey}";
 
-        var cached = await _cache.GetAsync<EHbA1cTimelineResponse>(cacheKey, cancellationToken);
-        if (cached != null)
-            return cached;
+        return await _cache.GetOrSetAsync(
+            cacheKey,
+            () => BuildEHbA1cTimelineAsync(year, dataSources, tz, cancellationToken),
+            cancellationToken
+        );
+    }
 
+    private async Task<CacheResult<EHbA1cTimelineResponse>> BuildEHbA1cTimelineAsync(
+        int year,
+        string[]? dataSources,
+        TimeZoneInfo tz,
+        CancellationToken cancellationToken
+    )
+    {
         await using var context = await _factory.CreateAsync(cancellationToken);
 
         var hasFilter = dataSources is { Length: > 0 };
@@ -560,18 +570,16 @@ public class DataOverviewService : IDataOverviewService
         var points = BuildEHbA1cPoints(dailySum, dailyCount, localRangeStart, EHbA1cWindowDays, year, localNow.Date);
         var response = new EHbA1cTimelineResponse { Year = year, Points = points };
 
-        // Caching a partial timeline would blank the missing source for the whole expiry below.
+        // Caching a partial timeline would blank the missing source for the whole TTL below.
         if (!allSourcesRead)
-            return response;
+            return new CacheResult<EHbA1cTimelineResponse>(response, null);
 
         var isCurrentYear = year == localNow.Year;
         // A sensor or meter glucose write through the V4 repositories clears the years its readings
-        // reach or leave (EHbA1cCacheFamilies), and a bulk delete clears every year; the expiry bounds
+        // reach or leave (EHbA1cCacheFamilies), and a bulk delete clears every year; the TTL bounds
         // any write that bypasses the repositories.
-        var expiry = isCurrentYear ? DateTime.UtcNow.AddHours(1) : DateTime.UtcNow.AddDays(14);
-        await _cache.SetAsync(cacheKey, response, expiry, cancellationToken);
-
-        return response;
+        var ttl = isCurrentYear ? TimeSpan.FromHours(1) : TimeSpan.FromDays(14);
+        return new CacheResult<EHbA1cTimelineResponse>(response, ttl);
     }
 
     /// <summary>

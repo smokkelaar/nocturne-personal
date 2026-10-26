@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Nocturne.API.Attributes;
 using Nocturne.API.Controllers.V4.Base;
 using Nocturne.API.Models.Requests.V4;
+using Nocturne.API.Services.V4;
 using Nocturne.Core.Models.Authorization;
 using Nocturne.Core.Models.V4;
 using Nocturne.Core.Contracts.V4;
@@ -27,7 +28,7 @@ namespace Nocturne.API.Controllers.V4.Devices;
 [Route("api/v4/device-status/aps")]
 [RequireScope(Scope.DevicesRead)]
 [Produces("application/json")]
-public class ApsSnapshotController(IApsSnapshotRepository repo)
+public class ApsSnapshotController(IApsSnapshotRepository repo, ILoopClosedLoopStamper closedLoop)
     : V4ReadOnlyControllerBase<ApsSnapshot, IApsSnapshotRepository>(repo)
 {
     /// <summary>
@@ -55,8 +56,9 @@ public class ApsSnapshotController(IApsSnapshotRepository repo)
             return invalid;
 
         var models = requests.Select(MapToModel).ToList();
-        var persisted = await Repository.BulkCreateAsync(models, WriteOrigin.Live, ct);
-        return StatusCode(201, persisted.ToArray());
+        var persisted = (await Repository.BulkCreateAsync(models, WriteOrigin.Live, ct)).ToArray();
+        await closedLoop.AfterSnapshotsWrittenAsync(persisted, ct);
+        return StatusCode(201, persisted);
     }
 
     private static ApsSnapshot MapToModel(UpsertApsSnapshotRequest request) => new()

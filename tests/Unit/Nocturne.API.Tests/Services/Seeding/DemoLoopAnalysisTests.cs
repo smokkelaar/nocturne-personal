@@ -103,7 +103,7 @@ public class DemoLoopAnalysisTests(ITestOutputHelper output)
                 Carbs = [.. carbs.Select(c => new CarbEvent(c.Mills, c.Carbs))],
                 IobCob = IobCobSeries.Build(
                     iob, cob, boluses, carbs, temps, timeline, scheduled,
-                    DeviceReadings.Of(run.Snapshots.Select(s => new ApsIobCobPoint(s.Timestamp, s.Iob, s.Cob)), null),
+                    DeviceReadings.Of(run.Snapshots.Select(s => new ApsIobCobPoint(s.Timestamp, s.Iob, s.Cob, null)), null),
                     from, to - 1, to - 1, 5 * Minute),
                 CalculatedIobCobTime = DailyProfileCalculator.CalculableIobCobTime(
                     evidence, boluses.Select(b => b.Mills).Concat(carbs.Select(c => c.Mills))),
@@ -115,7 +115,7 @@ public class DemoLoopAnalysisTests(ITestOutputHelper output)
                 TemporaryTargets = SpansOf(StateSpanCategory.TemporaryTarget),
                 Illness = SpansOf(StateSpanCategory.Illness),
                 OpenLoop = LoopAnalysisMask.OpenLoop(
-                    SpansOf(StateSpanCategory.PumpMode, nameof(PumpModeState.Manual)), [], [], run.Cycles.Select(c => c.Mills)).Intervals,
+                    SpansOf(StateSpanCategory.PumpMode, nameof(PumpModeState.Manual)), [], [], run.Cycles.Select(c => new ApsLoopState(c.Mills, c.LoopClosed))).Intervals,
             },
             Therapy = timeline,
         };

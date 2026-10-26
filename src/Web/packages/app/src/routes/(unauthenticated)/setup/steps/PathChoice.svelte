@@ -56,12 +56,12 @@
   ] as const);
 </script>
 
-<div class="flex flex-col items-center gap-10 px-4 py-8">
+<div class="@container flex flex-col items-center gap-10 px-4 py-8">
   <div class="flex flex-col items-center gap-4 text-center">
     <!-- prettier-ignore -->
     <h1
       id="path-choice-heading"
-      class="font-brand font-hairline leading-tight tracking-tight text-foreground text-3xl md:text-4xl xl:text-5xl"
+      class="font-brand font-hairline leading-tight tracking-tight text-foreground text-3xl @lg:text-4xl @min-[40rem]:text-5xl"
     >
       How are you <em class="not-italic font-light text-primary">arriving</em>?
     </h1>
@@ -73,7 +73,7 @@
   </div>
 
   <RadioGroup.Root
-    class="w-full max-w-170 grid-cols-1 gap-5 sm:grid-cols-2"
+    class="w-full max-w-170 grid-cols-1 gap-5 @lg:grid-cols-2"
     aria-labelledby="path-choice-heading"
     value={path}
     onValueChange={(value) => {

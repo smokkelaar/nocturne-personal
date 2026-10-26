@@ -13,9 +13,33 @@ inputs:
 runs:
   using: composite
   steps:
-    - uses: actions/setup-dotnet@v5
+    - id: install
+      uses: actions/setup-dotnet@v5
+      continue-on-error: true
       with:
         dotnet-version: "10.0"
+    # The install script downloads from Microsoft's blob CDN, which can refuse every request for
+    # hours (HTTP 409 on 2026-10-25). The SDK image on mcr.microsoft.com is served by separate
+    # infrastructure and carries the same SDK, so a refused download copies it out of the image.
+    - if: steps.install.outcome == 'failure'
+      shell: bash
+      run: |
+        set -euo pipefail
+        echo "::warning::actions/setup-dotnet failed; taking the .NET 10 SDK from mcr.microsoft.com/dotnet/sdk:10.0"
+        dest="$RUNNER_TEMP/dotnet"
+        mkdir -p "$dest"
+        for attempt in 1 2 3; do
+          docker pull --quiet mcr.microsoft.com/dotnet/sdk:10.0 && break
+          [ "$attempt" = 3 ] && exit 1
+          sleep $((attempt * 15))
+        done
+        container=$(docker create mcr.microsoft.com/dotnet/sdk:10.0)
+        docker cp "$container:/usr/share/dotnet/." "$dest"
+        docker rm "$container" > /dev/null
+        echo "DOTNET_ROOT=$dest" >> "$GITHUB_ENV"
+        echo "$dest" >> "$GITHUB_PATH"
+        echo "$HOME/.dotnet/tools" >> "$GITHUB_PATH"
+        "$dest/dotnet" --version
     - if: inputs.nuget-cache-key != ''
       uses: actions/cache@v5
       with:

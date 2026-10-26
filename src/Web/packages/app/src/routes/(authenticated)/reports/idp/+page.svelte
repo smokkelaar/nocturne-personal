@@ -80,7 +80,7 @@
       </p>
     </div>
 
-    <div class="flex items-center gap-2 text-sm text-muted-foreground">
+    <div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
       <Calendar class="w-4 h-4 print:hidden" />
       <span class="print:hidden">
         {formatNumericDate(startDate)} – {formatNumericDate(endDate)}

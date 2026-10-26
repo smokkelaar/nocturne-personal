@@ -276,7 +276,7 @@
                   >
                     <div class="min-w-0 flex-1">
                       <div class="font-medium text-foreground">{report.title}</div>
-                      <div class="truncate text-sm text-muted-foreground">{report.description}</div>
+                      <div class="text-sm text-muted-foreground">{report.description}</div>
                     </div>
                     <ChevronRight class="size-4 shrink-0 text-muted-foreground transition-transform group-hover/report:translate-x-0.5" aria-hidden="true" />
                   </a>

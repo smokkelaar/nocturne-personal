@@ -87,7 +87,7 @@
   }
 </script>
 
-<div class="mx-auto max-w-2xl space-y-6 p-4">
+<div class="@container mx-auto max-w-2xl space-y-6 p-4">
   <div class="space-y-1">
     <h1 class="text-xl font-semibold">Timezone history</h1>
     <p class="text-muted-foreground text-sm">
@@ -146,7 +146,7 @@
       <Card.Title>Add a location change</Card.Title>
     </Card.Header>
     <Card.Content class="space-y-4">
-      <div class="grid gap-3 sm:grid-cols-2">
+      <div class="grid gap-3 @md:grid-cols-2">
         <div class="space-y-1.5">
           <Label for="tz-zone">Location (timezone)</Label>
           <TimezoneCombobox id="tz-zone" bind:value={newZone} />

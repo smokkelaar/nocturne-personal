@@ -29,7 +29,7 @@
         <a href="{report.href}{page.url.search}"
           aria-current={current ? "page" : undefined}
           class={cn(
-            "rounded-md px-2.5 py-1 text-sm font-medium whitespace-nowrap text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
+            "rounded-md px-2.5 py-1 text-sm pointer-coarse:py-2 font-medium whitespace-nowrap text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
             current && "bg-muted text-foreground"
           )}
         >

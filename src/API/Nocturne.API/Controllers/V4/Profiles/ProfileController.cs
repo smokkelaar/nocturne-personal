@@ -47,6 +47,7 @@ public class ProfileController : ControllerBase, IWriteScopedController
     private readonly IProfileProjectionService _projectionService;
     private readonly IProfileDeletionService _deletionService;
     private readonly ITempBasalRateReresolver _tempBasalRates;
+    private readonly ILoopClosedLoopStamper _closedLoop;
 
     /// <summary>
     /// Initializes a new instance of <see cref="ProfileController"/>.
@@ -59,6 +60,7 @@ public class ProfileController : ControllerBase, IWriteScopedController
     /// <param name="projectionService">Service for reading legacy profile projections from V4 data.</param>
     /// <param name="deletionService">Service for deleting a whole named therapy profile.</param>
     /// <param name="tempBasalRates">Re-resolves the percent temp basals a written basal schedule covers.</param>
+    /// <param name="closedLoop">Restamps the Loop snapshots written therapy settings govern.</param>
     public ProfileController(
         ITherapySettingsRepository therapyRepo,
         IBasalScheduleRepository basalRepo,
@@ -67,7 +69,8 @@ public class ProfileController : ControllerBase, IWriteScopedController
         ITargetRangeScheduleRepository targetRangeRepo,
         IProfileProjectionService projectionService,
         IProfileDeletionService deletionService,
-        ITempBasalRateReresolver tempBasalRates
+        ITempBasalRateReresolver tempBasalRates,
+        ILoopClosedLoopStamper closedLoop
     )
     {
         _therapyRepo = therapyRepo;
@@ -78,6 +81,7 @@ public class ProfileController : ControllerBase, IWriteScopedController
         _projectionService = projectionService;
         _deletionService = deletionService;
         _tempBasalRates = tempBasalRates;
+        _closedLoop = closedLoop;
     }
 
     #region Summary
@@ -456,6 +460,7 @@ public class ProfileController : ControllerBase, IWriteScopedController
             created.IsDefault = true;
         }
         await _tempBasalRates.AfterProfilesChangedAsync([created.ProfileName], ct);
+        await _closedLoop.AfterLoopSettingsWrittenAsync([created.Timestamp], ct);
         return CreatedAtAction(nameof(GetTherapySettingsById), new { id = created.Id }, created);
     }
 
@@ -483,7 +488,8 @@ public class ProfileController : ControllerBase, IWriteScopedController
     {
         if (model.Timestamp == default)
             return Problem(detail: "Timestamp must be set", statusCode: 400, title: "Bad Request");
-        model.DocumentDefaultProfile = (await _therapyRepo.GetByIdAsync(id, ct))?.DocumentDefaultProfile;
+        var stored = await _therapyRepo.GetByIdAsync(id, ct);
+        model.DocumentDefaultProfile = stored?.DocumentDefaultProfile;
         TherapySettings updated;
         try
         {
@@ -499,6 +505,8 @@ public class ProfileController : ControllerBase, IWriteScopedController
             updated.IsDefault = true;
         }
         await _tempBasalRates.AfterProfilesChangedAsync([updated.ProfileName], ct);
+        await _closedLoop.AfterLoopSettingsWrittenAsync(
+            stored is null ? [updated.Timestamp] : [stored.Timestamp, updated.Timestamp], ct);
         return Ok(updated);
     }
 
@@ -523,6 +531,7 @@ public class ProfileController : ControllerBase, IWriteScopedController
         }
 
         await _tempBasalRates.AfterProfilesChangedAsync(stored is null ? [] : [stored.ProfileName], ct);
+        await _closedLoop.AfterLoopSettingsWrittenAsync(stored is null ? [] : [stored.Timestamp], ct);
         return NoContent();
     }
 

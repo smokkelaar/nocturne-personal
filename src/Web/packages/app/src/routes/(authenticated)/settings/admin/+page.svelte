@@ -184,7 +184,7 @@
 <div class="@container container mx-auto p-3 @md:p-6 max-w-5xl">
   <!-- Header -->
   <div class="flex items-center gap-3">
-    <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+    <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10">
       <Shield class="h-6 w-6 text-primary" />
     </div>
     <div>

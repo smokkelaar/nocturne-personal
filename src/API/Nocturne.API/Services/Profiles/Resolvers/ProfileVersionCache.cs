@@ -48,7 +48,7 @@ internal sealed class ProfileVersionCache
         string profileName,
         CancellationToken ct)
         where TRecord : class, IV4Record, IProfileScoped =>
-        _cache.GetOrCreateLocalAsync(Key<TRecord>(profileName), () => LoadAsync(repo, profileName, ct), Ttl);
+        _cache.GetOrCreateLocalAsync(Key<TRecord>(profileName), () => LoadAsync(repo, profileName, ct), Ttl, ct);
 
     /// <summary>
     /// Reloads the cached versions of <paramref name="profileName"/>, for a reader that must see a

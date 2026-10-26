@@ -8,6 +8,13 @@ import { signHandshakeTicket, type RealtimeGrant } from './handshake-ticket.js';
 import MessageTranslator from './message-translator.js';
 
 const SECRET = 'test-instance-key-0123456789';
+const TENANT_ID = '0198a3c4-7e21-7b10-9d2f-5c6e7f809a1b';
+
+/** The server, with `TENANT_ID` as the tenant every slug names. */
+function servingTenant(server: SocketIOServer): SocketIOServer {
+  server.isCurrentTenant = async (_slug, id) => id === TENANT_ID;
+  return server;
+}
 
 function grant(tenantRelay: boolean, extra: Partial<RealtimeGrant> = {}): RealtimeGrant {
   return { tenantRelay, categories: [], historyClamped: false, mayAck: false, ...extra };
@@ -62,7 +69,7 @@ describe('pickHandshakeHost', () => {
 type HandshakeHeaders = Record<string, string | string[] | undefined>;
 
 function makeServer(apexTenantSlug: string | null = null): SocketIOServer {
-  return new SocketIOServer(createServer(), {}, 'nocturne.run', apexTenantSlug, SECRET);
+  return servingTenant(new SocketIOServer(createServer(), {}, 'nocturne.run', apexTenantSlug, SECRET));
 }
 
 function fakeSocket(headers: HandshakeHeaders, auth: { token?: string } = {}) {
@@ -90,7 +97,7 @@ async function connect(server: SocketIOServer, socket: ReturnType<typeof fakeSoc
 
 /** A ticket signed with the instance key but carrying no admission, as minted before it existed. */
 function ticketWithoutAdmission(host: string): string {
-  const payload = Buffer.from(JSON.stringify({ h: host, exp: Date.now() + 60_000 }), 'utf-8')
+  const payload = Buffer.from(JSON.stringify({ h: host, t: TENANT_ID, exp: Date.now() + 60_000 }), 'utf-8')
     .toString('base64url');
   return `${payload}.${createHmac('sha256', SECRET).update(payload).digest('hex')}`;
 }
@@ -101,7 +108,7 @@ describe('SocketIOServer.authorizeHandshake', () => {
     const next = vi.fn();
 
     await server.authorizeHandshake(
-      fakeSocket({ host: 'evil.com' }, { token: signHandshakeTicket(SECRET, 'evil.com', grant(true)) }) as never,
+      fakeSocket({ host: 'evil.com' }, { token: signHandshakeTicket(SECRET, 'evil.com', TENANT_ID, grant(true)) }) as never,
       next,
     );
 
@@ -130,7 +137,7 @@ describe('SocketIOServer.authorizeHandshake', () => {
     // only a connection offering no ticket at all falls through to the legacy path.
     const server = makeServer();
     const next = vi.fn();
-    const ticket = signHandshakeTicket(SECRET, 'rhys.nocturne.run', grant(true));
+    const ticket = signHandshakeTicket(SECRET, 'rhys.nocturne.run', TENANT_ID, grant(true));
     const socket = fakeSocket(
       { 'x-forwarded-host': 'rhys.nocturne.run' },
       { token: ticket.slice(0, -1) + (ticket.endsWith('a') ? 'b' : 'a') },
@@ -148,7 +155,7 @@ describe('SocketIOServer.authorizeHandshake', () => {
     const next = vi.fn();
     const socket = fakeSocket(
       { 'x-forwarded-host': 'rhys.nocturne.run' },
-      { token: signHandshakeTicket(SECRET, 'someone-else.nocturne.run', grant(true)) },
+      { token: signHandshakeTicket(SECRET, 'someone-else.nocturne.run', TENANT_ID, grant(true)) },
     );
 
     await server.authorizeHandshake(socket as never, next);
@@ -161,7 +168,7 @@ describe('SocketIOServer.authorizeHandshake', () => {
     const server = makeServer();
     const next = vi.fn();
     // Sign a ticket that expired one minute ago.
-    const expired = signHandshakeTicket(SECRET, 'rhys.nocturne.run', grant(true), -60_000);
+    const expired = signHandshakeTicket(SECRET, 'rhys.nocturne.run', TENANT_ID, grant(true), -60_000);
     const socket = fakeSocket({ 'x-forwarded-host': 'rhys.nocturne.run' }, { token: expired });
 
     await server.authorizeHandshake(socket as never, next);
@@ -176,7 +183,7 @@ describe('SocketIOServer.authorizeHandshake', () => {
     const next = vi.fn();
     const socket = fakeSocket(
       { 'x-forwarded-host': 'rhys.nocturne.run' },
-      { token: signHandshakeTicket(SECRET, 'rhys.nocturne.run', grant(true)) },
+      { token: signHandshakeTicket(SECRET, 'rhys.nocturne.run', TENANT_ID, grant(true)) },
     );
 
     await server.authorizeHandshake(socket as never, next);
@@ -185,12 +192,43 @@ describe('SocketIOServer.authorizeHandshake', () => {
     expect(socket.data.tenantSlug).toBe('rhys');
   });
 
+  it('rejects a ticket for a tenant its slug no longer names, asking about the slug the host resolved to', async () => {
+    const server = makeServer();
+    const isCurrentTenant = vi.fn(async (_slug: string, id: string) => id === TENANT_ID);
+    server.isCurrentTenant = isCurrentTenant;
+    const next = vi.fn();
+    const replaced = '0198a3c4-0000-7000-8000-000000000000';
+    const socket = fakeSocket(
+      { 'x-forwarded-host': 'rhys.nocturne.run' },
+      { token: signHandshakeTicket(SECRET, 'rhys.nocturne.run', replaced, grant(true)) },
+    );
+
+    await server.authorizeHandshake(socket as never, next);
+
+    expect(isCurrentTenant).toHaveBeenCalledWith('rhys', replaced);
+    expect(next).toHaveBeenCalledWith(expect.objectContaining({ message: 'unauthorized' }));
+    expect(socket.data.tenantSlug).toBeUndefined();
+  });
+
+  it('rejects every ticket until it is told which tenant a slug names', async () => {
+    const server = new SocketIOServer(createServer(), {}, 'nocturne.run', null, SECRET);
+    const next = vi.fn();
+    const socket = fakeSocket(
+      { 'x-forwarded-host': 'rhys.nocturne.run' },
+      { token: signHandshakeTicket(SECRET, 'rhys.nocturne.run', TENANT_ID, grant(true)) },
+    );
+
+    await server.authorizeHandshake(socket as never, next);
+
+    expect(next).toHaveBeenCalledWith(expect.objectContaining({ message: 'unauthorized' }));
+  });
+
   it('ignores a port difference between the ticket and the connection host', async () => {
     const server = makeServer();
     const next = vi.fn();
     const socket = fakeSocket(
       { 'x-forwarded-host': 'rhys.nocturne.run' },
-      { token: signHandshakeTicket(SECRET, 'rhys.nocturne.run:443', grant(true)) },
+      { token: signHandshakeTicket(SECRET, 'rhys.nocturne.run:443', TENANT_ID, grant(true)) },
     );
 
     await server.authorizeHandshake(socket as never, next);
@@ -204,7 +242,7 @@ describe('SocketIOServer.authorizeHandshake', () => {
     const next = vi.fn();
     const socket = fakeSocket(
       { host: 'nocturne.run' },
-      { token: signHandshakeTicket(SECRET, 'nocturne.run', grant(true)) },
+      { token: signHandshakeTicket(SECRET, 'nocturne.run', TENANT_ID, grant(true)) },
     );
 
     await server.authorizeHandshake(socket as never, next);
@@ -217,7 +255,7 @@ describe('SocketIOServer.authorizeHandshake', () => {
     const server = makeServer();
     const socket = fakeSocket(
       { 'x-forwarded-host': 'rhys.nocturne.run' },
-      { token: signHandshakeTicket(SECRET, 'rhys.nocturne.run', grant(true)) },
+      { token: signHandshakeTicket(SECRET, 'rhys.nocturne.run', TENANT_ID, grant(true)) },
     );
 
     await connect(server, socket);
@@ -231,7 +269,7 @@ describe('SocketIOServer.authorizeHandshake', () => {
     const subjectB = '0b6f2c1e-1111-4222-8333-444455556666';
     const socket = fakeSocket(
       { 'x-forwarded-host': 'rhys.nocturne.run' },
-      { token: signHandshakeTicket(SECRET, 'rhys.nocturne.run', grant(true, { subjectId: subjectA })) },
+      { token: signHandshakeTicket(SECRET, 'rhys.nocturne.run', TENANT_ID, grant(true, { subjectId: subjectA })) },
     );
 
     await connect(server, socket);
@@ -246,7 +284,7 @@ describe('SocketIOServer.authorizeHandshake', () => {
     const server = makeServer();
     const socket = fakeSocket(
       { 'x-forwarded-host': 'rhys.nocturne.run' },
-      { token: signHandshakeTicket(SECRET, 'rhys.nocturne.run', grant(true, { categories: ['entries', 'care'] })) },
+      { token: signHandshakeTicket(SECRET, 'rhys.nocturne.run', TENANT_ID, grant(true, { categories: ['entries', 'care'] })) },
     );
 
     await connect(server, socket);
@@ -265,6 +303,7 @@ describe('SocketIOServer.authorizeHandshake', () => {
         token: signHandshakeTicket(
           SECRET,
           'rhys.nocturne.run',
+          TENANT_ID,
           grant(true, { categories: ['entries', 'care'], historyClamped: true }),
         ),
       },
@@ -280,7 +319,7 @@ describe('SocketIOServer.authorizeHandshake', () => {
     const server = makeServer();
     const socket = fakeSocket(
       { 'x-forwarded-host': 'rhys.nocturne.run' },
-      { token: signHandshakeTicket(SECRET, 'rhys.nocturne.run', grant(true)) },
+      { token: signHandshakeTicket(SECRET, 'rhys.nocturne.run', TENANT_ID, grant(true)) },
     );
 
     await connect(server, socket);
@@ -292,16 +331,16 @@ describe('SocketIOServer.authorizeHandshake', () => {
   });
 
   it.each([
-    ['a restricted ticket', () => signHandshakeTicket(SECRET, 'rhys.nocturne.run', grant(false))],
+    ['a restricted ticket', () => signHandshakeTicket(SECRET, 'rhys.nocturne.run', TENANT_ID, grant(false))],
     ['a ticket carrying no admission', () => ticketWithoutAdmission('rhys.nocturne.run')],
     [
       'a restricted ticket granted categories',
-      () => signHandshakeTicket(SECRET, 'rhys.nocturne.run', grant(false, { categories: ['entries', 'care'] })),
+      () => signHandshakeTicket(SECRET, 'rhys.nocturne.run', TENANT_ID, grant(false, { categories: ['entries', 'care'] })),
     ],
     [
       'a restricted ticket naming a subject',
       () =>
-        signHandshakeTicket(SECRET, 'rhys.nocturne.run', grant(false, { subjectId: '0a5f2c1e-1111-4222-8333-444455556666' })),
+        signHandshakeTicket(SECRET, 'rhys.nocturne.run', TENANT_ID, grant(false, { subjectId: '0a5f2c1e-1111-4222-8333-444455556666' })),
     ],
   ])('admits %s but keeps it out of every tenant room', async (_case, mint) => {
     // The tenant room carries every category and every member's in-app
@@ -328,14 +367,14 @@ describe('SocketIOServer.handleAuthorize', () => {
   }
 
   function makeApiServer(apiBaseUrl = 'http://api.internal') {
-    return new SocketIOServer(
+    return servingTenant(new SocketIOServer(
       createServer(),
       {},
       'nocturne.run',
       null,
       SECRET,
       apiBaseUrl,
-    );
+    ));
   }
 
   afterEach(() => {
@@ -540,14 +579,14 @@ describe('SocketIOServer.handleAuthorize', () => {
 
 describe('SocketIOServer tracker broadcast fan-out', () => {
   async function startedServer() {
-    const server = new SocketIOServer(
+    const server = servingTenant(new SocketIOServer(
       createServer(),
       {},
       'nocturne.run',
       null,
       SECRET,
       'http://api.internal',
-    );
+    ));
     await server.start();
     return server;
   }
@@ -613,14 +652,14 @@ describe('SocketIOServer in-app notification fan-out', () => {
   const SUBJECT_A = '0a5f2c1e-1111-4222-8333-444455556666';
 
   async function startedServer() {
-    const server = new SocketIOServer(
+    const server = servingTenant(new SocketIOServer(
       createServer(),
       {},
       'nocturne.run',
       null,
       SECRET,
       'http://api.internal',
-    );
+    ));
     await server.start();
     return server;
   }
@@ -670,7 +709,7 @@ describe('SocketIOServer v3 /storage namespace', () => {
   });
 
   function makeStorageServer(apiBaseUrl = 'http://api.internal') {
-    return new SocketIOServer(createServer(), {}, 'nocturne.run', null, SECRET, apiBaseUrl);
+    return servingTenant(new SocketIOServer(createServer(), {}, 'nocturne.run', null, SECRET, apiBaseUrl));
   }
 
   /** A fake socket carrying a pending tenant slug (post-handshake state). */
@@ -890,7 +929,7 @@ describe('SocketIOServer storage category fan-out', () => {
 
   async function listening() {
     const http = createServer();
-    const server = new SocketIOServer(http, {}, 'nocturne.run', null, SECRET);
+    const server = servingTenant(new SocketIOServer(http, {}, 'nocturne.run', null, SECRET));
     await server.start();
     await new Promise<void>((resolve) => http.listen(0, '127.0.0.1', resolve));
     return { server, port: (http.address() as AddressInfo).port };
@@ -901,7 +940,7 @@ describe('SocketIOServer storage category fan-out', () => {
     const client = connectClient(`http://127.0.0.1:${port}`, {
       transports: ['websocket'],
       extraHeaders: { 'X-Forwarded-Host': 'rhys.nocturne.run' },
-      auth: { token: signHandshakeTicket(SECRET, 'rhys.nocturne.run', ticket) },
+      auth: { token: signHandshakeTicket(SECRET, 'rhys.nocturne.run', TENANT_ID, ticket) },
     });
     clients.push(client);
     const received: { event: string; payload: unknown }[] = [];
@@ -991,14 +1030,14 @@ describe('SocketIOServer v3 /storage broadcast fan-out', () => {
   /** Build a started server with a real socket.io Namespace so we can assert
    *  on the actual emit target and payload via the BroadcastingWildcard. */
   async function startedServer() {
-    const server = new SocketIOServer(
+    const server = servingTenant(new SocketIOServer(
       createServer(),
       {},
       'nocturne.run',
       null,
       SECRET,
       'http://api.internal',
-    );
+    ));
     await server.start();
     return server;
   }
@@ -1074,7 +1113,7 @@ describe('SocketIOServer v3 /alarm namespace', () => {
   });
 
   function makeAlarmServer(apiBaseUrl = 'http://api.internal') {
-    return new SocketIOServer(createServer(), {}, 'nocturne.run', null, SECRET, apiBaseUrl);
+    return servingTenant(new SocketIOServer(createServer(), {}, 'nocturne.run', null, SECRET, apiBaseUrl));
   }
 
   function alarmSocket(pendingTenantSlug?: string) {
@@ -1267,14 +1306,14 @@ describe('SocketIOServer v3 /alarm broadcast fan-out', () => {
   });
 
   async function startedServer() {
-    const server = new SocketIOServer(
+    const server = servingTenant(new SocketIOServer(
       createServer(),
       {},
       'nocturne.run',
       null,
       SECRET,
       'http://api.internal',
-    );
+    ));
     await server.start();
     return server;
   }

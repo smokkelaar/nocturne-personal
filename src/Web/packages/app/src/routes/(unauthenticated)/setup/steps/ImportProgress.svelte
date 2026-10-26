@@ -286,7 +286,7 @@
   });
 </script>
 
-<div class="flex flex-col gap-8 px-4 py-8">
+<div class="@container flex flex-col gap-8 px-4 py-8">
   <!-- Heading -->
   <div class="flex flex-col items-center gap-4 text-center">
     <Artwork
@@ -297,7 +297,7 @@
       class="size-48"
     />
     <h1
-      class="font-brand font-hairline leading-tight tracking-tight text-foreground text-3xl md:text-4xl xl:text-5xl"
+      class="font-brand font-hairline leading-tight tracking-tight text-foreground text-3xl @lg:text-4xl @min-[40rem]:text-5xl"
     >
       {#if voice.kind === "self"}
         Bringing your <em class="not-italic font-light text-primary">history</em> across.
@@ -334,7 +334,7 @@
   {:else}
     <!-- Import hero card -->
     <div
-      class="grid grid-cols-1 justify-items-center lg:grid-cols-[1fr_260px] lg:justify-items-stretch gap-6 p-7 rounded-2xl border overflow-hidden relative bg-card"
+      class="grid grid-cols-1 justify-items-center @xl:grid-cols-[1fr_260px] @xl:justify-items-stretch gap-6 p-5 @lg:p-7 rounded-2xl border overflow-hidden relative bg-card"
     >
       <!-- Left side -->
       <div class="flex flex-col gap-3">
@@ -345,7 +345,7 @@
         </span>
         <div class="flex items-baseline gap-1">
           <span
-            class="font-brand font-hairline tabular-nums text-5xl md:text-6xl xl:text-7xl text-primary"
+            class="font-brand font-hairline tabular-nums text-5xl @lg:text-6xl @min-[40rem]:text-7xl text-primary"
           >
             {Math.round(progress)}
           </span>
@@ -370,7 +370,7 @@
           {/if}
         </p>
         {#if currentOperation}
-          <p class="font-mono text-xs text-muted-foreground">{currentOperation}</p>
+          <p class="font-mono text-xs text-muted-foreground break-all">{currentOperation}</p>
         {/if}
       </div>
 

@@ -7,7 +7,6 @@
   import WidgetStatSkeleton from "./WidgetStatSkeleton.svelte";
   import TIRStackedChart from "$lib/components/reports/TIRStackedChart.svelte";
   import { getMultiPeriodStatistics } from "$api/generated/statistics.generated.remote";
-  import { MediaQuery } from "svelte/reactivity";
   import { Button } from "$lib/components/ui/button";
   import ReliabilityBadge from "$lib/components/reports/ReliabilityBadge.svelte";
   import { remoteErrorMessage } from "$lib/api/remote-error";
@@ -23,9 +22,6 @@
   onMount(() => {
     if (!examples) statsPromise = getMultiPeriodStatistics();
   });
-
-  // Responsive breakpoint - use horizontal for larger screens (>= 640px / sm breakpoint)
-  const isLargeScreen = new MediaQuery("(min-width: 640px)");
 
   $effect(() => {
     if (examples) statsPromise = Promise.resolve(examples.statistics);
@@ -77,14 +73,13 @@
         ? (stats?.last90Days?.entryCount ?? 0)
         : (stats?.lastDay?.entryCount ?? 0)}
 
-      <!-- Stacked bar chart - horizontal on larger screens, vertical on mobile -->
-      <div class={isLargeScreen.current ? "h-6 mb-2" : "h-32 mb-2"}>
-        <TIRStackedChart
-          {percentages}
-          orientation={isLargeScreen.current ? "horizontal" : "vertical"}
-          showLabels={!isLargeScreen.current}
-          compact
-        />
+      <!-- Sized by WidgetGrid's @container: vertical while the widgets stack, a bar once they
+           share a row. -->
+      <div class="mb-2 h-32 @2xl:hidden">
+        <TIRStackedChart {percentages} orientation="vertical" showLabels compact />
+      </div>
+      <div class="mb-2 hidden h-6 @2xl:block">
+        <TIRStackedChart {percentages} orientation="horizontal" showLabels={false} compact />
       </div>
 
       <div class="flex items-baseline justify-between gap-2">

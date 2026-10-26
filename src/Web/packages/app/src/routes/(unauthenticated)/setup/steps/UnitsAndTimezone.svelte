@@ -53,12 +53,12 @@
   );
 </script>
 
-<div class="flex flex-col items-center gap-10 px-4 py-8">
+<div class="@container flex flex-col items-center gap-10 px-4 py-8">
   <div class="flex flex-col items-center gap-4 text-center">
     <!-- prettier-ignore -->
     <h1
       id="units-heading"
-      class="font-brand font-hairline leading-tight tracking-tight text-foreground text-3xl md:text-4xl xl:text-5xl"
+      class="font-brand font-hairline leading-tight tracking-tight text-foreground text-3xl @lg:text-4xl @min-[40rem]:text-5xl"
     >
       Glucose units and <em class="not-italic font-light text-primary">time</em>.
     </h1>
@@ -93,7 +93,7 @@
   {/if}
 
   <RadioGroup.Root
-    class="w-full max-w-200 grid-cols-1 gap-5 sm:grid-cols-2"
+    class="w-full max-w-200 grid-cols-1 gap-5 @lg:grid-cols-2"
     aria-labelledby="units-heading"
     value={units}
     onValueChange={(value) => {

@@ -43,7 +43,7 @@
 
 <div class="@container container mx-auto max-w-4xl p-3 @md:p-6 space-y-10">
   <div class="flex items-center gap-3">
-    <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+    <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10">
       <Settings class="h-6 w-6 text-primary" />
     </div>
     <div>

@@ -129,7 +129,7 @@ public class RecentGlucoseAndDeviceStatusPublishTests : IDisposable
         var uploader = new Mock<IUploaderSnapshotRepository>();
         var decomposer = new DeviceStatusDecomposer(
             aps.Object, pump.Object, uploader.Object, extras.Object, Mock.Of<IStateSpanService>(),
-            Mock.Of<IDeviceService>(), Mock.Of<IAuditContext>(), NullLogger<DeviceStatusDecomposer>.Instance);
+            Mock.Of<IDeviceService>(), Mock.Of<IAuditContext>(), Mock.Of<ILoopClosedLoopStamper>(), NullLogger<DeviceStatusDecomposer>.Instance);
         var publisher = DevicePublisher(decomposer, aps.Object, pump.Object, uploader.Object);
 
         var written = await publisher.PublishRecentDeviceStatusAsync(

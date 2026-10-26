@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Nocturne.Core.Models.V4;
 
 namespace Nocturne.Core.Models;
@@ -36,6 +37,10 @@ public class IobResult
     public string? Source { get; set; }
 
     public string? Device { get; set; }
+
+    /// <summary>Whether <see cref="Iob"/> is a device's own total rather than a calculation, zero included.</summary>
+    [JsonIgnore]
+    public bool ReportedByDevice { get; set; }
 
     /// <summary>Timestamp of the IOB calculation (Unix milliseconds).</summary>
     public long? Mills { get; set; }

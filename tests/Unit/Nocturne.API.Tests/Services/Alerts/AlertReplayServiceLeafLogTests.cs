@@ -147,7 +147,7 @@ public class AlertReplayServiceLeafLogTests
             .ReturnsAsync(new[] { rule });
         _glucoseRepository.Setup(g => g.GetAsync(
                 It.IsAny<DateTime>(), It.IsAny<DateTime>(), null, null,
-                It.IsAny<int>(), It.IsAny<int>(), It.IsAny<bool>(), It.IsAny<bool>(),
+                It.IsAny<int>(), It.IsAny<int>(), It.IsAny<bool>(),
                 It.IsAny<DateTime?>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(readings);
 
@@ -189,7 +189,7 @@ public class AlertReplayServiceLeafLogTests
             .ReturnsAsync(new[] { rule });
         _glucoseRepository.Setup(g => g.GetAsync(
                 It.IsAny<DateTime>(), It.IsAny<DateTime>(), null, null,
-                It.IsAny<int>(), It.IsAny<int>(), It.IsAny<bool>(), It.IsAny<bool>(),
+                It.IsAny<int>(), It.IsAny<int>(), It.IsAny<bool>(),
                 It.IsAny<DateTime?>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(readings);
 
@@ -228,7 +228,7 @@ public class AlertReplayServiceLeafLogTests
             .ReturnsAsync(new[] { rule });
         _glucoseRepository.Setup(g => g.GetAsync(
                 It.IsAny<DateTime>(), It.IsAny<DateTime>(), null, null,
-                It.IsAny<int>(), It.IsAny<int>(), It.IsAny<bool>(), It.IsAny<bool>(),
+                It.IsAny<int>(), It.IsAny<int>(), It.IsAny<bool>(),
                 It.IsAny<DateTime?>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(readings);
 

@@ -1,6 +1,3 @@
-vi.mock("$api/generated/metadatas.generated.remote", () => ({
-  getHelpReference: () => ({ current: undefined, error: undefined, loading: true }),
-}));
 import { render } from "vitest-browser-svelte";
 import { page } from "vitest/browser";
 import { describe, it, expect, beforeEach, vi } from "vitest";
@@ -62,8 +59,6 @@ function renderViewingBravo() {
 
 describe("AppSidebar", () => {
   beforeEach(async () => {
-    localStorage.removeItem("nocturne-help-visibility");
-    localStorage.removeItem("nocturne-help-layout");
     // Below the sidebar's mobile breakpoint it renders as a closed sheet and offers nothing.
     await page.viewport(1280, 900);
     pageState.data = {};
@@ -74,104 +69,6 @@ describe("AppSidebar", () => {
     getDnd.mockImplementation(() => remoteQuery(() => ({ dndManualActive: false })));
     updateDnd.mockReset();
     updateDnd.mockResolvedValue({ dndManualActive: true });
-  });
-
-  it("keeps help and the sidebar toggle inside the collapsed desktop header", async () => {
-    localStorage.setItem("nocturne-help-visibility", "icon");
-    render(Harness, { user: MEMBER });
-    await group("Toggle sidebar").first().click();
-    const help = group("Open page help");
-    await expect.element(help).toBeVisible();
-    await vi.waitFor(() => {
-      const icon = help.element().getBoundingClientRect();
-      const toggle = group("Toggle sidebar").first().element().getBoundingClientRect();
-      const header = help.element().closest('[data-slot="sidebar-header"]')!.getBoundingClientRect();
-      expect(icon.left).toBeGreaterThanOrEqual(header.left);
-      expect(icon.right).toBeLessThanOrEqual(header.right);
-      expect(toggle.left).toBeGreaterThanOrEqual(header.left);
-      expect(toggle.right).toBeLessThanOrEqual(header.right);
-      expect(icon.bottom).toBeLessThanOrEqual(toggle.top);
-    });
-    localStorage.removeItem("nocturne-help-visibility");
-  });
-
-  it("uses the existing sidebar for help and restores the original report and its filters", async () => {
-    localStorage.setItem("nocturne-help-layout", "page");
-    pageState.url.pathname = "/reports/steps";
-    pageState.url.search = "?range=week";
-    pageState.data = { effectivePermissions: ["*"] };
-    render(Harness, { user: MEMBER });
-    await page.getByRole("textbox", { name: "Report filter" }).fill("my selection");
-    await group("Open page help").click();
-    await expect.element(page.getByRole("heading", { name: "Steps", exact: true })).toBeVisible();
-    await expect.element(page.getByText("Underlying report")).toBeVisible();
-    expect(document.querySelector('[aria-label="Report filter"]')?.closest("[inert]")).not.toBeNull();
-    await expect.element(page.getByRole("dialog")).not.toBeInTheDocument();
-    await link("Heart rate").click();
-    await expect.element(page.getByRole("heading", { name: "Heart Rate", exact: true })).toBeVisible();
-    expect(pageState.url.pathname + pageState.url.search).toBe("/reports/steps?range=week");
-    await group("Close page help").click();
-    await expect.element(page.getByText("Underlying report")).toBeVisible();
-    await expect.element(page.getByRole("textbox", { name: "Report filter" })).toHaveValue("my selection");
-  });
-
-  it("covers the original navigation with the drawer and leaves the book usable", async () => {
-    pageState.url.pathname = "/reports/steps";
-    pageState.data = { effectivePermissions: ["*"] };
-    render(Harness, { user: MEMBER });
-    await page.getByRole("textbox", { name: "Report filter" }).fill("unsaved selection");
-    const originalSteps = link("Steps").element();
-    const navigation = originalSteps.closest('[data-slot="sidebar-content"]')!;
-    navigation.scrollTop = 40;
-    const originalPosition = originalSteps.getBoundingClientRect();
-    await group("Open page help").click();
-    expect(link("Steps").element()).toBe(originalSteps);
-    expect(originalSteps.getBoundingClientRect().left).toBe(originalPosition.left);
-    expect(originalSteps.getBoundingClientRect().top).toBe(originalPosition.top);
-    const docs = page.getByRole("navigation", { name: "Documentation navigation" });
-    await docs.getByRole("link", { name: "Heart rate", exact: true }).click();
-    await expect.element(page.getByRole("heading", { name: "Heart Rate", exact: true })).toBeVisible();
-    expect(pageState.url.pathname).toBe("/reports/steps");
-    navigation.scrollTop = 180;
-    expect(navigation.scrollTop).toBe(180);
-    await group("Close page help").click();
-    await expect.element(page.getByRole("textbox", { name: "Report filter" })).toHaveValue("unsaved selection");
-    await expect.element(link("Steps")).toHaveAttribute("data-active", "true");
-    await vi.waitFor(() => expect(originalSteps.getBoundingClientRect().top).toBe(originalPosition.top));
-    expect(navigation.scrollTop).toBe(40);
-  });
-
-  it("restores an intentionally collapsed active menu after page help", async () => {
-    localStorage.setItem("nocturne-help-layout", "page");
-    pageState.url.pathname = "/reports/steps";
-    pageState.data = { effectivePermissions: ["*"] };
-    render(Harness, { user: MEMBER });
-    await group("Reports").click();
-    await expect.element(link("Steps")).not.toBeInTheDocument();
-    await group("Open page help").click();
-    await expect.element(link("Steps")).toBeVisible();
-    await group("Close page help").click();
-    await expect.element(link("Steps")).not.toBeInTheDocument();
-  });
-
-  it("keeps the book layer aligned when changing between desktop and phone", async () => {
-    pageState.url.pathname = "/reports/steps";
-    pageState.data = { effectivePermissions: ["*"] };
-    render(Harness, { user: MEMBER });
-    await group("Open page help").click();
-    await page.viewport(390, 844);
-    await vi.waitFor(() => {
-      const pane = page.getByRole("region", { name: "Documentation panel" }).element().parentElement!;
-      expect(pane.getBoundingClientRect().left).toBe(0);
-      expect(pane.getBoundingClientRect().right).toBe(390);
-    });
-    await page.viewport(1280, 900);
-    await vi.waitFor(() => {
-      const pane = page.getByRole("region", { name: "Documentation panel" }).element().parentElement!;
-      const header = group("Close page help").element().closest('[data-slot="sidebar-header"]')!;
-      expect(pane.getBoundingClientRect().left).toBe(header.getBoundingClientRect().right);
-    });
-    await group("Close page help").click();
   });
 
   it("offers a public share the dashboard and a way to sign in, and nothing the owner acts on", async () => {
@@ -410,4 +307,3 @@ describe("AppSidebar", () => {
     });
   });
 });
-

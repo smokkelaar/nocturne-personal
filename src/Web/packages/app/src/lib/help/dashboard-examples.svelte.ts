@@ -7,6 +7,7 @@ import {
   ChartColor,
   ChartSpanKind,
   GlucoseTrend,
+  GlycemicVariabilityStatus,
   PumpModeState,
   DashboardVisibility,
   DeviceEventType,
@@ -42,6 +43,11 @@ export function exampleStatistics(automatic = true): MultiPeriodStatistics {
       entryCount: 288,
       treatmentSummary: { totals: { food: { carbs: 160 } } },
       analytics: {
+        basicStats: { count: 288, mean: 142, min: 62, max: 238 },
+        glycemicVariability: {
+          coefficientOfVariation: 31,
+          coefficientOfVariationStatus: GlycemicVariabilityStatus.Stable,
+        },
         timeInRange: {
           percentages: {
             veryLow: 1,

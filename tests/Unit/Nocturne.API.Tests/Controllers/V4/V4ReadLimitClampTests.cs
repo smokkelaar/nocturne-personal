@@ -238,7 +238,8 @@ public class V4ReadLimitClampTests
             Mock.Of<ITargetRangeScheduleRepository>(),
             Mock.Of<IProfileProjectionService>(),
             Mock.Of<IProfileDeletionService>(),
-            TempBasalTestDeps.NoReresolution());
+            TempBasalTestDeps.NoReresolution(),
+            Mock.Of<Nocturne.API.Services.V4.ILoopClosedLoopStamper>());
 
     private static void VerifyTherapySettingsFetched(Mock<ITherapySettingsRepository> repo, int limit, int offset) =>
         repo.Verify(r => r.GetAsync(null, null, null, null, limit, offset, true, It.IsAny<CancellationToken>()), Times.Once);

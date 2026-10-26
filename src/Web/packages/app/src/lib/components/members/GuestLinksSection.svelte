@@ -241,7 +241,7 @@
 
 {#if canCreateGuestLinks}
   <div class="space-y-4" data-testid="guest-links">
-    <div class="flex items-center justify-between gap-4">
+    <div class="flex flex-wrap items-center justify-between gap-3">
       <div>
         <h2 class="text-lg font-semibold flex items-center gap-2">
           <Clock class="h-5 w-5" />
@@ -362,9 +362,9 @@
               </div>
 
               {#if selectableCategories.length > 0}
-                <div class="space-y-2" data-testid="guest-link-scopes">
+                <div class="@container space-y-2" data-testid="guest-link-scopes">
                   <Label>What they can see</Label>
-                  <div class="grid gap-2 sm:grid-cols-2">
+                  <div class="grid gap-2 @sm:grid-cols-2">
                     {#each selectableCategories as cat (cat.scope)}
                       {@const on = chosenScopes.includes(cat.scope)}
                       {@const ScopeIcon = cat.icon}

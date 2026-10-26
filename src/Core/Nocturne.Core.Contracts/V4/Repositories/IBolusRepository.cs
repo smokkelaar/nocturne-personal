@@ -7,9 +7,7 @@ namespace Nocturne.Core.Contracts.V4.Repositories;
 /// Repository for <see cref="Bolus"/> records representing delivered insulin doses.
 /// </summary>
 /// <remarks>
-/// Extends <see cref="IV4Repository{T}"/> with bolus-specific filtering by <see cref="BolusKind"/>
-/// and a <paramref name="nativeOnly"/> flag to distinguish between boluses entered natively in
-/// Nocturne v4 versus those projected from legacy V1/V2/V3 treatment records.
+/// Extends <see cref="IV4Repository{T}"/> with bolus-specific filtering by <see cref="BolusKind"/>.
 /// </remarks>
 /// <seealso cref="Bolus"/>
 /// <seealso cref="BolusKind"/>
@@ -28,7 +26,6 @@ public interface IBolusRepository
     /// <param name="limit">Maximum number of records to return (default 100).</param>
     /// <param name="offset">Number of records to skip for pagination (default 0).</param>
     /// <param name="descending">When <c>true</c>, results are ordered newest-first (default).</param>
-    /// <param name="nativeOnly">When <c>true</c>, excludes boluses projected from legacy V1/V2/V3 treatments.</param>
     /// <param name="kind">Optional <see cref="BolusKind"/> filter (e.g., Manual, SMB, Extended).</param>
     Task<IEnumerable<Bolus>> GetAsync(
         DateTime? from,
@@ -38,7 +35,6 @@ public interface IBolusRepository
         int limit = 100,
         int offset = 0,
         bool descending = true,
-        bool nativeOnly = false,
         BolusKind? kind = null,
         DateTime? afterTimestamp = null,
         Guid? afterId = null,
@@ -49,7 +45,7 @@ public interface IBolusRepository
     Task<IEnumerable<Bolus>> IV4Repository<Bolus>.GetAsync(
         DateTime? from, DateTime? to, string? device, string? source,
         int limit, int offset, bool descending, CancellationToken ct)
-        => GetAsync(from, to, device, source, limit, offset, descending, false, null, null, null, ct);
+        => GetAsync(from, to, device, source, limit, offset, descending, null, null, null, ct);
 
     /// <summary>Delete <see cref="Bolus"/> records matching the given data source and sync identifier.</summary>
     /// <param name="dataSource">The external data source name.</param>

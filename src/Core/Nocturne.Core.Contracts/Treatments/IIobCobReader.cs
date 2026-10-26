@@ -36,4 +36,22 @@ public sealed record IobCobInputs(List<Bolus> Boluses, List<TempBasal> TempBasal
 /// <param name="Cob">Null when the COB calculation failed, so a COB failure does not take the IOB
 /// with it.</param>
 /// <remarks>A live reading is shared through the cache: read it, never change it.</remarks>
-public sealed record IobCobReading(IobResult Iob, CobResult? Cob, IobCobInputs Inputs);
+public sealed record IobCobReading(IobResult Iob, CobResult? Cob, IobCobInputs Inputs)
+{
+    /// <summary>
+    /// Whether a bolus or a temp basal that reaches the insulin window stood behind <see cref="Iob"/>.
+    /// Set by the reader, which knows the window: <see cref="Inputs"/> holds temp basals from before it.
+    /// </summary>
+    public bool InsulinInWindow { get; init; }
+
+    /// <summary>
+    /// Whether anything stood behind <see cref="Iob"/>: a device total, or insulin in the window.
+    /// Without it the total is unknown, not zero.
+    /// </summary>
+    public bool HasIob => Iob.ReportedByDevice || InsulinInWindow;
+
+    /// <summary>
+    /// Whether anything stood behind <see cref="Cob"/>: a device total, or a carb intake in the window.
+    /// </summary>
+    public bool HasCob => Cob is not null && (Cob.ReportedByDevice || Inputs.CarbIntakes.Count > 0);
+}

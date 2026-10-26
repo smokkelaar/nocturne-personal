@@ -72,11 +72,11 @@
   <title>Clock faces - Nocturne</title>
 </svelte:head>
 
-<div class="min-h-dvh overflow-y-auto bg-background p-4 text-foreground sm:p-6 md:p-8">
+<div class="@container min-h-dvh overflow-y-auto bg-background p-4 text-foreground @md:p-6 @3xl:p-8">
   <div class="mx-auto max-w-4xl">
-    <div class="mb-8 flex items-center justify-between">
+    <div class="mb-8 flex flex-wrap items-center justify-between gap-4">
       <div>
-        <h1 class="text-2xl font-bold sm:text-3xl">Clock faces</h1>
+        <h1 class="text-2xl font-bold @lg:text-3xl">Clock faces</h1>
         <p class="mt-1 text-muted-foreground">
           {canManage ? "Create and manage your custom clock displays" : "Your clock displays"}
         </p>
@@ -142,7 +142,7 @@
         </Card.Root>
       {:else}
         <!-- Clock Face Grid -->
-        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div class="grid gap-4 @lg:grid-cols-2 @3xl:grid-cols-3">
           {#each clockFaces as face (face.id)}
             <Card.Root interactive class="group cursor-pointer">
               <!-- Each preview reads its own query's state rather than awaiting it: an await here

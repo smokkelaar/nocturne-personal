@@ -23,7 +23,14 @@ export function pageArticles(): HelpArticle[] {
       "Use the chart's time buttons, zoom, and legend on this page. Settings → Appearance chooses units, theme, and which widgets appear at the top. Therapy holds your targets and schedules. Connectors & Apps manages incoming data. Alerts decides when you are notified.",
       "The same stored records feed the calendar, time spans, reports, clock faces, and alerts. A record corrected in Treatments changes all of them.",
       "Check the age of the newest reading first. When uploads stop, the value stays on screen but grows older and loses its trend arrow. Gaps and missing treatments limit what the chart can tell you. Report bands, personal targets, and alert thresholds serve different purposes.",
-      ["/reports", "/settings/connectors", "/settings/appearance", "/alerts"]
+      [
+        "/help/getting-started",
+        "/help/troubleshooting",
+        "/reports",
+        "/settings/connectors",
+        "/settings/appearance",
+        "/alerts",
+      ]
     ),
     withDetails(
       guide(

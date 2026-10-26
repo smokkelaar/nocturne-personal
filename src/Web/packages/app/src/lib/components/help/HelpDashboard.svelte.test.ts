@@ -59,7 +59,7 @@ describe("dashboard documentation demo", () => {
       .toBeVisible();
     await expect.element(page.getByText("42.0", { exact: true })).toBeVisible();
     await expect
-      .element(page.getByText("288 readings", { exact: true }))
+      .element(page.getByText("288 readings", { exact: true }).first())
       .toBeVisible();
     expect(getChartData).not.toHaveBeenCalled();
     expect(getPredictions).not.toHaveBeenCalled();
@@ -136,17 +136,30 @@ describe("dashboard documentation demo", () => {
   });
 
   it("draws and switches example forecasts even when personal predictions are disabled", async () => {
-    const { predictionEnabled, predictionDisplayMode, predictionMinutes } = await import("$lib/stores/appearance-store.svelte");
-    const saved = { enabled: predictionEnabled.current, mode: predictionDisplayMode.current, minutes: predictionMinutes.current };
+    const { predictionEnabled, predictionDisplayMode, predictionMinutes } =
+      await import("$lib/stores/appearance-store.svelte");
+    const saved = {
+      enabled: predictionEnabled.current,
+      mode: predictionDisplayMode.current,
+      minutes: predictionMinutes.current,
+    };
     try {
       predictionEnabled.current = false;
       predictionDisplayMode.current = "cone";
       predictionMinutes.current = 15;
       render(Demo, { allowedSettings });
       const plot = page.getByTestId("glucose-plot");
-      await vi.waitFor(() => expect(plot.element().querySelector('[class~="stroke-pred-main"]')).not.toBeNull());
+      await vi.waitFor(() =>
+        expect(
+          plot.element().querySelector('[class~="stroke-pred-main"]')
+        ).not.toBeNull()
+      );
       await page.getByRole("button", { name: "Lines", exact: true }).click();
-      await vi.waitFor(() => expect(plot.element().querySelector('[class~="stroke-pred-iob"]')).not.toBeNull());
+      await vi.waitFor(() =>
+        expect(
+          plot.element().querySelector('[class~="stroke-pred-iob"]')
+        ).not.toBeNull()
+      );
       expect(predictionEnabled.current).toBe(false);
       expect(predictionDisplayMode.current).toBe("cone");
       expect(predictionMinutes.current).toBe(15);
@@ -161,9 +174,14 @@ describe("dashboard documentation demo", () => {
 
   it("places help directly below the selected widget in a narrow panel", async () => {
     render(Demo, { allowedSettings, width: 360 });
-    const button = page.getByRole("button", { name: "View explanation: BG Delta", exact: true });
+    const button = page.getByRole("button", {
+      name: "View explanation: BG Delta",
+      exact: true,
+    });
     await button.click();
-    const explanation = page.getByRole("region", { name: "Widget explanation" });
+    const explanation = page.getByRole("region", {
+      name: "Widget explanation",
+    });
     await vi.waitFor(() => {
       const row = button.element().closest('[data-slot="card"]')?.parentElement;
       expect(row?.children).toHaveLength(1);
@@ -173,11 +191,22 @@ describe("dashboard documentation demo", () => {
 
   it("reconnects the local example without touching the patient connection", async () => {
     render(Demo, { allowedSettings });
-    await page.getByRole("button", { name: "View explanation: Connection", exact: true }).click();
-    await page.getByRole("button", { name: "No live connection", exact: true }).click();
-    await expect.element(page.getByText("Disconnected", { exact: true })).toBeVisible();
+    await page
+      .getByRole("button", {
+        name: "View explanation: Connection",
+        exact: true,
+      })
+      .click();
+    await page
+      .getByRole("button", { name: "No live connection", exact: true })
+      .click();
+    await expect
+      .element(page.getByText("Disconnected", { exact: true }))
+      .toBeVisible();
     await page.getByRole("button", { name: "Retry", exact: true }).click();
-    await expect.element(page.getByText("Connected", { exact: true })).toBeVisible();
+    await expect
+      .element(page.getByText("Connected", { exact: true }))
+      .toBeVisible();
     expect(getChartData).not.toHaveBeenCalled();
   });
 

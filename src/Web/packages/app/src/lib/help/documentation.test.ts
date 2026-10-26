@@ -93,6 +93,11 @@ describe("contextual documentation", () => {
       "Sleep night"
     );
     expect(articleFor("/alerts/editor/123", links).title).toBe("Alert Rules");
+    expect(articleFor("/alerts/123", links).title).toBe("Alert rule editor");
+    expect(articleFor("/alerts/simulator", links).title).toBe(
+      "Alert Simulator"
+    );
+    expect(articleFor("/clock/config/abc/", links).title).toBe("Clock builder");
     expect(articleFor("/", links).title).toBe("Dashboard");
   });
   it("searches tutorial steps as well as article bodies", () => {
@@ -190,6 +195,26 @@ describe("contextual documentation", () => {
     );
     expect(admin.some((link) => link.href.includes("[date]"))).toBe(false);
   });
+  it("files administration, audit, and app authorization guides under pages their readers can open", () => {
+    const member = documentationLinks(
+      buildAppNavigation({ ...viewer, isPlatformAdmin: false })
+    );
+    expect(member.some((link) => link.href === "/settings/audit")).toBe(true);
+    expect(member.some((link) => link.href === "/oauth/consent")).toBe(true);
+    expect(member.some((link) => link.href === "/settings/admin")).toBe(false);
+    const admin = documentationLinks(buildAppNavigation(viewer));
+    expect(admin.some((link) => link.href === "/settings/admin")).toBe(true);
+    expect(articleFor("/oauth/device", admin).title).toBe("Link a device");
+    expect(articleFor("/settings/translations/nl", admin).title).toBe(
+      "Translate a language"
+    );
+    expect(articleFor("/settings/connectors/unknown", admin).title).toBe(
+      "Connector setup"
+    );
+    expect(
+      articleFor("/settings/appearance", admin).meaning?.map((m) => m.title)
+    ).toContain("Glucose ranges");
+  });
   it("uses supplied thresholds instead of copying default glucose limits into help", () => {
     const bands = glucoseBands({
       veryLow: 55,
@@ -235,5 +260,17 @@ describe("contextual documentation", () => {
     expect(
       google.sources!.every((source) => source.href.startsWith("https://"))
     ).toBe(true);
+  });
+});
+
+describe("page meanings", () => {
+  it("opens daily guides with what their figures mean", () => {
+    for (const path of ["/", "/calendar", "/alerts", "/reports/steps"])
+      expect(articleFor(path, []).meaning?.length).toBeGreaterThan(0);
+    expect(
+      searchDocumentation("Health Connect", [
+        { title: "Steps", href: "/reports/steps" } as never,
+      ]).map((a) => a.href)
+    ).toContain("/reports/steps");
   });
 });

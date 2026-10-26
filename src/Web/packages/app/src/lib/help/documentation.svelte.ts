@@ -6,12 +6,15 @@ import { reportArticles } from "./reports.svelte";
 import { settingsArticles } from "./settings.svelte";
 import { connectorArticles } from "./connectors.svelte";
 import { readingGuides } from "./reading-guides.svelte";
+import { pageMeanings } from "./meanings.svelte";
+import { settingsMeanings } from "./settings-meaning.svelte";
 import { glucoseReferenceArticle } from "./glucose-reference.svelte";
 import { GLUCOSE_REFERENCE_PATH } from "./reference-path";
 
 // Per-call factories let translated titles follow the current locale.
 export function articles(): HelpArticle[] {
   const readings = readingGuides();
+  const meanings = { ...pageMeanings(), ...settingsMeanings() };
   const entries = [
     ...pageArticles(),
     ...reportArticles(),
@@ -34,13 +37,15 @@ export function articles(): HelpArticle[] {
             })),
           ]
         : article.sections;
-    return { ...article, ...reading, related, sections };
+    const meaning = article.meaning ?? meanings[article.href];
+    return { ...article, ...reading, meaning, related, sections };
   });
 }
 
 function parentFor(href: string): string | undefined {
   // The report overview is not permission to visit every report.
-  if (href.startsWith("/reports/loop-analysis/")) return "/reports/loop-analysis";
+  if (href.startsWith("/reports/loop-analysis/"))
+    return "/reports/loop-analysis";
   if (href.startsWith("/reports/"))
     return href.startsWith("/reports/data-quality/")
       ? "/reports/data-quality"
@@ -49,14 +54,21 @@ function parentFor(href: string): string | undefined {
     return "/settings/patient";
   if (
     href === "/settings/migration" ||
-    href === "/settings/nightscout-transition"
+    href === "/settings/nightscout-transition" ||
+    href.startsWith("/oauth/") ||
+    href.startsWith("/settings/connectors/")
   )
     return "/settings/connectors";
+  if (href.startsWith("/settings/translations/"))
+    return "/settings/translations";
+  if (href === "/settings/audit") return "/settings/members";
   if (href === "/settings/integrations/discord") return "/settings/account";
+  if (href === "/tools") return "/tools/packing";
+  if (href === "/notifications") return "/settings/trackers";
   if (
+    href === "/settings/admin" ||
     href.startsWith("/settings/admin/") ||
-    href === "/settings/access-requests" ||
-    href === "/settings/audit"
+    href === "/settings/access-requests"
   )
     return "/settings/admin/tenants";
   return undefined;
@@ -109,13 +121,32 @@ export function documentationLinks(navigation: NavItem[]): NavLink[] {
   return links;
 }
 
+/**
+ * Whether `path` fills the `[param]` segments of a detail route such as
+ * `/alerts/[id]`.
+ */
+function matchesDetailRoute(route: string, path: string): boolean {
+  if (!route.includes("[")) return false;
+  const expected = route.split("/");
+  const actual = path.split("/");
+  return (
+    expected.length === actual.length &&
+    expected.every(
+      (segment, i) =>
+        (segment.startsWith("[") && actual[i] !== "") || segment === actual[i]
+    )
+  );
+}
+
 export function articleFor(path: string, links: NavLink[]): HelpArticle {
   const normalized = path.replace(/\/+$/, "") || "/";
   const all = articles();
   const exact = all.find((entry) => entry.href === normalized);
   if (exact) return exact;
-  if (/^\/reports\/sleep\/[^/]+$/.test(normalized))
-    return all.find((entry) => entry.href === "/reports/sleep/[date]")!;
+  const detail = all.find((entry) =>
+    matchesDetailRoute(entry.href, normalized)
+  );
+  if (detail) return detail;
   const parent = all
     .filter(
       (entry) => entry.href !== "/" && normalized.startsWith(`${entry.href}/`)
@@ -149,6 +180,7 @@ export function searchDocumentation(query: string, links: NavLink[]) {
         article.title,
         article.introduction,
         ...(article.reading ?? []).flatMap((step) => [step.title, step.text]),
+        ...(article.meaning ?? []).flatMap((item) => [item.title, item.text]),
 
         ...article.sections.flatMap((section) => [section.title, section.text]),
         ...(article.steps ?? []).flatMap((step) => [step.title, step.text]),

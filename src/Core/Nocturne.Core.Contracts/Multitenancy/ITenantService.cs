@@ -110,9 +110,9 @@ public record TenantMemberDto(
     bool IsPlatformAdmin);
 
 /// <summary>
-/// Lightweight role reference attached to a <see cref="TenantMemberDto"/>.
+/// A role a <see cref="TenantMemberDto"/> holds, with the permissions it confers.
 /// </summary>
-public record TenantMemberRoleDto(Guid RoleId, string Name, string Slug);
+public record TenantMemberRoleDto(Guid RoleId, string Name, string Slug, List<string> Permissions);
 
 public record SlugValidationResult(bool IsValid, string? Message = null);
 

@@ -99,7 +99,7 @@
           <div class="text-right pr-2">
             <div class="text-xs text-muted-foreground">{formatActogramDay(day)}</div>
             <div class="text-xs font-medium tabular-nums" data-testid="day-total">
-              {formatNumber(dayTotals[day.date])} <span class="text-muted-foreground font-normal">steps</span>
+              {formatNumber(dayTotals[day.date])} <span class="text-muted-foreground font-normal @max-md/actogram:sr-only">steps</span>
             </div>
           </div>
         {/snippet}

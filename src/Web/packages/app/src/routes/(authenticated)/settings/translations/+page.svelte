@@ -20,7 +20,7 @@
 </svelte:head>
 
 <div class="@container flex flex-col h-full">
-  <div class="flex-1 p-3 sm:p-4 space-y-6">
+  <div class="flex-1 p-3 @sm:p-4 space-y-6">
     <div>
       <h1 class="flex items-center gap-3 text-2xl font-bold">
         <Languages class="h-6 w-6" />
@@ -33,7 +33,7 @@
       </p>
     </div>
 
-    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+    <div class="grid gap-3 @md:grid-cols-2 @3xl:grid-cols-3">
       {#each targetLocales as locale (locale)}
         <a href={resolve("/(authenticated)/settings/translations/[locale]", { locale })} class="group">
           <Card.Root interactive>

@@ -1,11 +1,12 @@
 <script lang="ts">
+  import { BAND_KEY_SUFFIX } from "$lib/constants/year-overview-keys";
   import { browser } from "$app/environment";
   import { goto } from "$app/navigation";
   import { resolve } from "$app/paths";
   import Loader2 from "@lucide/svelte/icons/loader-circle";
-  import CalendarDays from "@lucide/svelte/icons/calendar-days";
   import { scaleThreshold } from "d3-scale";
   import { Button } from "$lib/components/ui/button";
+  import { Artwork } from "@nocturne/watercolour";
   import {
     getAvailableYears,
     getYearSummary,
@@ -15,29 +16,31 @@
   import HeatmapLegend from "$lib/components/reports/year-overview/HeatmapLegend.svelte";
   import YearHeatmap from "$lib/components/reports/year-overview/YearHeatmap.svelte";
   import VisibleChart from "$lib/components/reports/year-overview/VisibleChart.svelte";
+  import TimeZoneNote from "$lib/components/reports/TimeZoneNote.svelte";
   import type {
     DailySummaryDay,
     GlycemicThresholds,
     GriTimelinePeriod,
+    TimeZoneUnavailableReason,
+    YearOverviewColorPreferences,
   } from "$api/generated/nocturne-api-client";
   import { getUnitLabel } from "$lib/utils/formatting";
-  import { getGlucoseHeatmapFill } from "$lib/utils/chart-colors";
   import {
     glucoseUnits,
     yearOverviewColors,
   } from "$lib/stores/appearance-store.svelte";
   import {
-    getFocusedIntensityFill,
-    resolveColorFocusRange,
-    resolveGlucoseColorThresholds,
-    applyGlucosePalette,
-    DEFAULT_GLUCOSE_COLOR_THRESHOLDS,
-    GLUCOSE_COLOR_MIN,
-    GLUCOSE_COLOR_MAX,
-    glucoseColorFocusStops,
+    glucoseScale,
+    intensityScale,
+    metricRamp,
+    scaleFill,
+    GLUCOSE_LIMITS,
+    GLUCOSE_RAMP,
+    type ColorBoundary,
+    type ColorEnds,
     type ColorFocusRange,
-    type GlucoseColorThresholds,
   } from "$lib/utils/metric-color-focus";
+  import { resolvePalette, type RampLook } from "$lib/utils/metric-color-palette";
   import { onMount, untrack, tick } from "svelte";
   import { fade } from "svelte/transition";
   import { YearLoader } from "$lib/components/reports/year-overview/year-loader";
@@ -62,6 +65,7 @@
   let loadingYears = $state<Set<number>>(new Set());
   let failedYears = $state<Set<number>>(new Set());
   let metadataLoaded = $state(false);
+  let timeZoneReason = $state<TimeZoneUnavailableReason>();
   let metadataLoading = $state(false);
   let sentinelElements: Record<number, HTMLDivElement | undefined> = $state({});
 
@@ -74,8 +78,8 @@
     | "carbs";
 
   const METRIC_OPTIONS: { value: HeatmapMetric; label: string }[] = [
-    { value: "avgGlucose", label: "Avg Glucose" },
-    { value: "tir", label: "Time in Range" },
+    { value: "avgGlucose", label: "Avg glucose" },
+    { value: "tir", label: "Time in range" },
     { value: "bolus", label: "Bolus" },
     { value: "basal", label: "Basal" },
     { value: "tdd", label: "TDD" },
@@ -83,126 +87,215 @@
   ];
 
   let selectedMetric = $state<HeatmapMetric>("avgGlucose");
-  const colorsKey = $derived<`${HeatmapMetric}Colors`>(
-    `${selectedMetric}Colors`
-  );
-  const invertKey = $derived<`${HeatmapMetric}Invert`>(
-    `${selectedMetric}Invert`
-  );
-  const bandKey = $derived<`${HeatmapMetric}Band`>(`${selectedMetric}Band`);
-  const colorFocusPreferences = $derived(yearOverviewColors.current);
-  const advancedMode = $derived(colorFocusPreferences.advancedMode ?? false);
-  const transparencyPercent = $derived(
-    Math.max(
-      0,
-      Math.min(100, colorFocusPreferences.outOfBandTransparency ?? 90)
-    )
+
+  /** Each metric's own theme color; glucose draws the heatmap ramp instead. */
+  const METRIC_CSS_VARS: Record<Exclude<HeatmapMetric, "avgGlucose">, string> = {
+    tir: "--glucose-in-range",
+    bolus: "--insulin-bolus",
+    basal: "--basal",
+    tdd: "--insulin",
+    carbs: "--carbs",
+  };
+  const METRIC_UNITS: Record<HeatmapMetric, string> = {
+    avgGlucose: "",
+    tir: "%",
+    bolus: "U",
+    basal: "U",
+    tdd: "U",
+    carbs: "g",
+  };
+
+  type ScaleKeys = {
+    band: `${HeatmapMetric}Band`;
+    boundaries: `${HeatmapMetric}Boundaries`;
+    low: `${HeatmapMetric}LowColor`;
+    high: `${HeatmapMetric}HighColor`;
+    palette: `${HeatmapMetric}Palette`;
+    mirror: `${HeatmapMetric}Mirror`;
+  };
+  const scaleKeys = $derived<ScaleKeys>({
+    band: `${selectedMetric}Band`,
+    boundaries: `${selectedMetric}Boundaries`,
+    low: `${selectedMetric}LowColor`,
+    high: `${selectedMetric}HighColor`,
+    palette: `${selectedMetric}Palette`,
+    mirror: `${selectedMetric}Mirror`,
+  });
+  /**
+   * The retired shape applied its bands and dimming only in advanced mode. A blob saved with
+   * advanced mode off carries settings its owner turned off, so they stay off.
+   */
+  const colorPreferences = $derived.by((): YearOverviewColorPreferences => {
+    const stored = yearOverviewColors.current;
+    if (!("advancedMode" in stored)) return stored;
+    if (stored.advancedMode === true) return withRetiredPalettes(stored);
+    return Object.fromEntries(
+      Object.entries(stored).filter(
+        ([key]) => !key.endsWith(BAND_KEY_SUFFIX) && key !== "outOfBandTransparency"
+      )
+    );
+  });
+  /**
+   * The retired shape's palette (`<metric>Colors`) and invert flag become the palette and
+   * mirror of the current one, unless those are already set.
+   */
+  function withRetiredPalettes(stored: YearOverviewColorPreferences): YearOverviewColorPreferences {
+    const retired = new Map<string, unknown>(Object.entries(stored));
+    const next: YearOverviewColorPreferences = { ...stored };
+    for (const { value } of METRIC_OPTIONS) {
+      const palette = resolvePalette(retired.get(`${value}Colors`));
+      if (palette && !next[`${value}Palette`]) next[`${value}Palette`] = palette;
+      if (retired.get(`${value}Invert`) === true && next[`${value}Mirror`] === undefined)
+        next[`${value}Mirror`] = true;
+    }
+    return next;
+  }
+
+  const dim = $derived(
+    Math.max(0, Math.min(100, colorPreferences.outOfBandTransparency ?? 90))
   );
 
-  const currentMetricColors = $derived.by(() => {
-    const colors = colorFocusPreferences[colorsKey];
-    return colors && colors.length >= 2 ? colors : undefined;
+  /** The largest daily value of a dose or carb metric across the loaded years. */
+  const metricMax = $derived.by(() => {
+    let max = 0;
+    for (const days of yearData.values()) {
+      for (const day of days) {
+        const value =
+          selectedMetric === "bolus"
+            ? day.totalBolusUnits
+            : selectedMetric === "basal"
+              ? day.totalBasalUnits
+              : selectedMetric === "tdd"
+                ? day.totalDailyDose
+                : selectedMetric === "carbs"
+                  ? day.totalCarbs
+                  : undefined;
+        if (value != null && Number.isFinite(value) && value > max) max = value;
+      }
+    }
+    return max;
   });
 
-  const lowColor = $derived(currentMetricColors?.[0]);
-  const highColor = $derived(currentMetricColors?.at(-1));
-  const invert = $derived(!!colorFocusPreferences[invertKey]);
-
-  const focusRange = $derived.by(() => {
-    if (!advancedMode || selectedMetric === "avgGlucose") return null;
-    return resolveColorFocusRange(colorFocusPreferences[selectedMetric]);
-  });
-  const focusBand = $derived.by(() => {
-    if (!advancedMode) return null;
-    return resolveColorFocusRange(colorFocusPreferences[bandKey]);
-  });
-  const glucoseThresholds = $derived(
-    advancedMode
-      ? (resolveGlucoseColorThresholds(colorFocusPreferences.avgGlucose) ??
-          DEFAULT_GLUCOSE_COLOR_THRESHOLDS)
-      : DEFAULT_GLUCOSE_COLOR_THRESHOLDS
+  const scaleLimits = $derived<ColorFocusRange>(
+    selectedMetric === "avgGlucose"
+      ? GLUCOSE_LIMITS
+      : [0, selectedMetric === "tir" ? 100 : Infinity]
   );
-  // Unrecolored ramp, used by the Theme swatch preview so it never reflects the currently active palette.
-  const glucoseThemeStops = $derived(glucoseColorFocusStops(glucoseThresholds));
-  const glucoseLegendStops = $derived(
-    advancedMode
-      ? applyGlucosePalette(
-          glucoseThemeStops,
-          glucoseThresholds[0],
-          glucoseThresholds[3],
-          colorFocusPreferences.avgGlucoseColors?.[0],
-          colorFocusPreferences.avgGlucoseColors?.at(-1),
-          !!colorFocusPreferences.avgGlucoseInvert,
-          colorFocusPreferences.avgGlucoseColors
+  const scaleEnds = $derived<ColorEnds>({
+    low: colorPreferences[scaleKeys.low],
+    high: colorPreferences[scaleKeys.high],
+  });
+  const scaleLook = $derived<RampLook>({
+    palette: resolvePalette(colorPreferences[scaleKeys.palette]) ?? undefined,
+    mirror: colorPreferences[scaleKeys.mirror] === true,
+  });
+  const scale = $derived(
+    selectedMetric === "avgGlucose"
+      ? glucoseScale(
+          colorPreferences.avgGlucoseBand,
+          colorPreferences.avgGlucoseBoundaries,
+          dim,
+          scaleEnds,
+          scaleLook
         )
-      : glucoseThemeStops
+      : intensityScale(
+          METRIC_CSS_VARS[selectedMetric],
+          scaleLimits,
+          metricMax,
+          colorPreferences[scaleKeys.band],
+          colorPreferences[scaleKeys.boundaries],
+          dim,
+          scaleEnds,
+          scaleLook
+        )
+  );
+  const themeColors = $derived(
+    (selectedMetric === "avgGlucose"
+      ? GLUCOSE_RAMP
+      : metricRamp(METRIC_CSS_VARS[selectedMetric])
+    ).map((stop) => stop.color)
   );
 
-  function setAdvancedMode(value: boolean) {
-    const next = { ...colorFocusPreferences, advancedMode: value };
+  /** Writes only the current shape, so keys from a retired one are dropped on the next save. */
+  function saveColorPreferences(
+    change: (next: YearOverviewColorPreferences) => void
+  ) {
+    const next: YearOverviewColorPreferences = {};
+    if (colorPreferences.outOfBandTransparency !== undefined)
+      next.outOfBandTransparency = colorPreferences.outOfBandTransparency;
+    for (const { value } of METRIC_OPTIONS) {
+      const band = colorPreferences[`${value}Band`];
+      const boundaries = colorPreferences[`${value}Boundaries`];
+      const low = colorPreferences[`${value}LowColor`];
+      const high = colorPreferences[`${value}HighColor`];
+      if (band) next[`${value}Band`] = band;
+      if (boundaries) next[`${value}Boundaries`] = boundaries;
+      if (low) next[`${value}LowColor`] = low;
+      if (high) next[`${value}HighColor`] = high;
+      const palette = resolvePalette(colorPreferences[`${value}Palette`]);
+      if (palette) next[`${value}Palette`] = palette;
+      if (colorPreferences[`${value}Mirror`] === true) next[`${value}Mirror`] = true;
+    }
+    change(next);
     yearOverviewColors.current = next;
   }
 
-  function setTransparency(value: number | undefined) {
-    const next = { ...colorFocusPreferences };
-    if (value !== undefined && Number.isFinite(value)) {
+  function setScaleWindow(focusWindow: ColorFocusRange | null) {
+    saveColorPreferences((next) => {
+      if (focusWindow) next[scaleKeys.band] = [...focusWindow];
+      else delete next[scaleKeys.band];
+    });
+  }
+
+  function setScaleBoundaries(boundaries: ColorBoundary[] | null) {
+    saveColorPreferences((next) => {
+      if (boundaries?.length)
+        next[scaleKeys.boundaries] = boundaries.map((b) => ({ ...b }));
+      else delete next[scaleKeys.boundaries];
+    });
+  }
+
+  function setScaleEnds(ends: ColorEnds) {
+    saveColorPreferences((next) => {
+      if (ends.low) next[scaleKeys.low] = ends.low;
+      else delete next[scaleKeys.low];
+      if (ends.high) next[scaleKeys.high] = ends.high;
+      else delete next[scaleKeys.high];
+    });
+  }
+
+  /** A palette shows its own ends, so it clears the end colors chosen over the last one. */
+  function setScalePalette(palette: string[] | null) {
+    saveColorPreferences((next) => {
+      if (palette) next[scaleKeys.palette] = palette;
+      else delete next[scaleKeys.palette];
+      delete next[scaleKeys.low];
+      delete next[scaleKeys.high];
+    });
+  }
+
+  function setScaleMirror(mirror: boolean) {
+    saveColorPreferences((next) => {
+      if (mirror) next[scaleKeys.mirror] = true;
+      else delete next[scaleKeys.mirror];
+    });
+  }
+
+  function setDim(value: number) {
+    saveColorPreferences((next) => {
       next.outOfBandTransparency = Math.max(0, Math.min(100, value));
-    } else {
-      delete next.outOfBandTransparency;
-    }
-    yearOverviewColors.current = next;
+    });
   }
 
-  function setCustomColors(colors: string[] | undefined) {
-    const next = { ...colorFocusPreferences };
-    if (colors && colors.length >= 2) {
-      next[colorsKey] = [...colors];
-    } else {
-      delete next[colorsKey];
-    }
-    yearOverviewColors.current = next;
-  }
-
-  function setInvert(value: boolean) {
-    const next = { ...colorFocusPreferences };
-    delete next[invertKey];
-    yearOverviewColors.current = value ? { ...next, [invertKey]: true } : next;
-  }
-
-  function setFocusRange(candidate: ColorFocusRange | null) {
-    if (selectedMetric === "avgGlucose") return;
-    const range = resolveColorFocusRange(candidate);
-    if (
-      candidate !== null &&
-      (!range || (selectedMetric === "tir" && range[1] > 100))
-    )
-      return;
-    const next = { ...colorFocusPreferences };
-    if (range) next[selectedMetric] = [...range];
-    else delete next[selectedMetric];
-    yearOverviewColors.current = next;
-  }
-
-  function setGlucoseThresholds(candidate: GlucoseColorThresholds | null) {
-    const thresholds = resolveGlucoseColorThresholds(candidate);
-    if (candidate !== null && !thresholds) return;
-    const next = { ...colorFocusPreferences };
-    if (thresholds) next.avgGlucose = [...thresholds];
-    else delete next.avgGlucose;
-    yearOverviewColors.current = next;
-  }
-
-  function setFocusBand(candidate: ColorFocusRange | null) {
-    const range = resolveColorFocusRange(candidate);
-    if (
-      candidate !== null &&
-      (!range || (selectedMetric === "tir" && range[1] > 100))
-    )
-      return;
-    const next = { ...colorFocusPreferences };
-    if (range) next[bandKey] = [...range];
-    else delete next[bandKey];
-    yearOverviewColors.current = next;
+  function resetScale() {
+    saveColorPreferences((next) => {
+      delete next[scaleKeys.band];
+      delete next[scaleKeys.boundaries];
+      delete next[scaleKeys.low];
+      delete next[scaleKeys.high];
+      delete next[scaleKeys.palette];
+      delete next[scaleKeys.mirror];
+    });
   }
 
   /** All known data types that can appear in counts */
@@ -228,7 +321,6 @@
   // Glucose color scale
   // =========================================================================
 
-  const DEFAULT_GLUCOSE_BANDS = [54, 70, 180, 250];
   let thresholds = $state<GlycemicThresholds>();
 
   const glucoseBands = $derived(
@@ -237,7 +329,7 @@
       thresholds.high != null &&
       thresholds.veryHigh != null
       ? [thresholds.veryLow, thresholds.low, thresholds.high, thresholds.veryHigh]
-      : DEFAULT_GLUCOSE_BANDS
+      : []
   );
 
   const glucoseColorScale = $derived(
@@ -269,77 +361,6 @@
     return glucoseHatchScale(data.value);
   }
 
-  /** CSS variable names for each metric's hue */
-  const METRIC_CSS_VARS: Record<
-    Exclude<HeatmapMetric, "avgGlucose">,
-    string
-  > = {
-    tir: "--chart-2",
-    bolus: "--chart-1",
-    basal: "--chart-3",
-    tdd: "--chart-4",
-    carbs: "--chart-5",
-  };
-
-  function metricCssVar(metric: Exclude<HeatmapMetric, "avgGlucose">): string {
-    switch (metric) {
-      case "tir":
-        return METRIC_CSS_VARS.tir;
-      case "bolus":
-        return METRIC_CSS_VARS.bolus;
-      case "basal":
-        return METRIC_CSS_VARS.basal;
-      case "tdd":
-        return METRIC_CSS_VARS.tdd;
-      case "carbs":
-        return METRIC_CSS_VARS.carbs;
-    }
-  }
-
-  /** Compute max value for a metric across all loaded year data */
-  function getMetricMax(metric: HeatmapMetric): number {
-    let max = 0;
-    for (const days of yearData.values()) {
-      for (const day of days) {
-        let val: number | undefined | null;
-        switch (metric) {
-          case "bolus":
-            val = day.totalBolusUnits;
-            break;
-          case "basal":
-            val = day.totalBasalUnits;
-            break;
-          case "tdd":
-            val = day.totalDailyDose;
-            break;
-          case "carbs":
-            val = day.totalCarbs;
-            break;
-          case "tir":
-            val = day.timeInRangePercent;
-            break;
-          default:
-            val = day.averageGlucoseMgdl;
-            break;
-        }
-        if (val != null && Number.isFinite(val) && val > max) max = val;
-      }
-    }
-    return max || 1;
-  }
-
-  /**
-   * Memoized max for current metric — recomputed only when metric or data
-   * changes
-   */
-  const metricMaxCached = $derived.by(() => {
-    // Depend on yearData and selectedMetric
-    void yearData;
-    if (selectedMetric === "avgGlucose") return 1;
-    if (selectedMetric === "tir") return 100;
-    return getMetricMax(selectedMetric);
-  });
-
   /** Get cell value for the selected metric */
   function getMetricCellValue(data: CalendarDatum): number | null {
     switch (selectedMetric) {
@@ -360,51 +381,11 @@
 
   function getCellFill(data: CalendarDatum | undefined): string {
     if (!data) return "rgb(0 0 0 / 5%)";
-
-    const opacity = advancedMode ? Math.round(100 - transparencyPercent) : 100;
-
-    if (selectedMetric === "avgGlucose") {
-      if (data.value != null && Number.isFinite(data.value)) {
-        const baseColor = getGlucoseHeatmapFill(data.value, glucoseLegendStops);
-        if (advancedMode) {
-          const band = focusBand ?? [GLUCOSE_COLOR_MIN, GLUCOSE_COLOR_MAX];
-          const lower = band[0] <= GLUCOSE_COLOR_MIN ? -Infinity : band[0];
-          const upper = band[1] >= GLUCOSE_COLOR_MAX ? Infinity : band[1];
-          if (data.value < lower || data.value > upper) {
-            return `color-mix(in srgb, ${baseColor} ${opacity}%, transparent)`;
-          }
-        }
-        return baseColor;
-      }
-      if (data.filteredCount > 0) return "var(--muted)";
-      return "rgb(0 0 0 / 5%)";
-    }
-
-    const metricValue = getMetricCellValue(data);
-    if (metricValue == null || !Number.isFinite(metricValue)) {
-      if (data.filteredCount > 0) return "var(--muted)";
-      return "rgb(0 0 0 / 5%)";
-    }
-
-    const cssVar = metricCssVar(selectedMetric);
-    const baseColor = getFocusedIntensityFill(
-      metricValue,
-      focusRange ?? [0, metricMaxCached],
-      cssVar,
-      advancedMode ? lowColor : undefined,
-      advancedMode ? highColor : undefined,
-      advancedMode ? invert : false,
-      advancedMode ? currentMetricColors : undefined
-    );
-    if (advancedMode) {
-      const band = focusBand ?? [0, metricMaxCached];
-      const lower = band[0] <= 0 ? -Infinity : band[0];
-      const upper = band[1] >= metricMaxCached ? Infinity : band[1];
-      if (metricValue < lower || metricValue > upper) {
-        return `color-mix(in srgb, ${baseColor} ${opacity}%, transparent)`;
-      }
-    }
-    return baseColor;
+    const value =
+      selectedMetric === "avgGlucose" ? data.value : getMetricCellValue(data);
+    if (value != null && Number.isFinite(value)) return scaleFill(value, scale);
+    if (data.filteredCount > 0) return "var(--muted)";
+    return "rgb(0 0 0 / 5%)";
   }
 
   // =========================================================================
@@ -416,12 +397,10 @@
   const sortedYears = $derived([...availableYears].sort((a, b) => b - a));
 
   setReportPrintMeta(() => {
-    const title = "Year Overview";
-    if (sortedYears.length === 0) return { title };
+    if (sortedYears.length === 0) return {};
     const first = sortedYears.at(-1);
     const last = sortedYears[0];
     return {
-      title,
       period: { label: first === last ? `${last}` : `${first} – ${last}` },
     };
   });
@@ -449,6 +428,7 @@
         availableYears = result.years ?? [];
         availableDataSources = result.availableDataSources ?? [];
         thresholds = result.thresholds;
+        timeZoneReason = result.timeZoneUnavailableReason;
         metadataLoaded = true;
       } catch (err) {
         console.error("Failed to load available years:", err);
@@ -700,7 +680,7 @@
 
 <div class="year-overview @container flex min-h-full">
   <!-- Main Content -->
-  <div class="flex-1">
+  <div class="min-w-0 flex-1">
     {#if !metadataLoaded || sortedYears.some((year) => !yearData.has(year) || !griTimelineData.has(year))}
       <p class="hidden print:block">
         This overview is incomplete. Use the report's Print button to load all years before printing.
@@ -722,29 +702,22 @@
     <!-- Color Legend -->
     <HeatmapLegend
       bind:selectedMetric
+      metricOptions={METRIC_OPTIONS}
       {units}
-      {METRIC_OPTIONS}
-      HEATMAP_STOPS={glucoseLegendStops}
-      themeStops={glucoseThemeStops}
-      {METRIC_CSS_VARS}
-      {getMetricMax}
-      {focusRange}
-      onFocusRangeChange={setFocusRange}
-      {glucoseThresholds}
-      onGlucoseThresholdsChange={setGlucoseThresholds}
-      {focusBand}
-      onFocusBandChange={setFocusBand}
-      {lowColor}
-      {highColor}
-      metricColors={currentMetricColors}
-      {advancedMode}
-      onAdvancedModeChange={setAdvancedMode}
-      {transparencyPercent}
-      onTransparencyChange={setTransparency}
-      onCustomColorsChange={setCustomColors}
-      {invert}
-      onInvertChange={setInvert}
-      glucoseBands={glucoseBands}
+      unit={METRIC_UNITS[selectedMetric]}
+      {scale}
+      limits={scaleLimits}
+      onWindowChange={setScaleWindow}
+      onBoundariesChange={setScaleBoundaries}
+      onEndsChange={setScaleEnds}
+      onDimChange={setDim}
+      onReset={resetScale}
+      {themeColors}
+      palette={scaleLook.palette}
+      mirror={scaleLook.mirror}
+      onPaletteChange={setScalePalette}
+      onMirrorChange={setScaleMirror}
+      {glucoseBands}
     />
 
     <!-- Loading state for metadata -->
@@ -760,19 +733,29 @@
       </div>
     {/if}
 
-    <!-- No data state -->
-    {#if metadataLoaded && sortedYears.length === 0}
+    {#if metadataLoaded && sortedYears.length === 0 && timeZoneReason}
+      <div class="py-20">
+        <p class="text-sm text-muted-foreground">
+          <TimeZoneNote reason={timeZoneReason}>
+            This report cannot group the data into local days and years.
+          </TimeZoneNote>
+        </p>
+      </div>
+    {:else if metadataLoaded && sortedYears.length === 0}
+      <!-- No data state -->
       <div
         class="flex items-center justify-center py-20"
         in:fade={{ duration: 300 }}
       >
         <div class="max-w-md space-y-4 text-center">
-          <div
-            class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-muted"
-          >
-            <CalendarDays class="h-8 w-8 text-muted-foreground" />
-          </div>
-          <h2 class="text-xl font-semibold">No Data Available</h2>
+          <Artwork
+            artwork="calendar"
+            palette="moonlight"
+            motion="auto"
+            autoplay="once"
+            class="mx-auto size-48"
+          />
+          <h2 class="text-xl font-semibold">No data available</h2>
           <p class="text-muted-foreground">
             There is no data to display yet. Connect a data source in your
             settings to get started.
@@ -782,7 +765,7 @@
             variant="outline"
             class="print:hidden"
           >
-            Configure Data Sources
+            Configure data sources
           </Button>
         </div>
       </div>
@@ -804,7 +787,7 @@
             {getCellHatch}
             {navigateToDayInReview}
             {glucoseColorScale}
-            glucoseBands={glucoseBands}
+            {glucoseBands}
             {units}
             {unitLabel}
             {formatUnits}

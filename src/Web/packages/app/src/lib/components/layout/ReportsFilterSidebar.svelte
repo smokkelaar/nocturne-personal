@@ -164,7 +164,7 @@
       </Sheet.Description>
     </Sheet.Header>
 
-    <ScrollArea class="h-[calc(100vh-180px)]">
+    <ScrollArea class="h-[calc(100dvh-180px)]">
       <div class="px-6 py-4 space-y-6">
         <!-- Quick Date Presets -->
         <div class="space-y-3">

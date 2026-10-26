@@ -60,7 +60,7 @@
         { value: "other", apps: otherApps },
       ] as tab (tab.value)}
         <Tabs.Content value={tab.value} class="mt-4">
-          <div class="grid gap-3 @xl:grid-cols-2">
+          <div class="grid grid-cols-1 gap-3 @xl:grid-cols-2">
             {#each tab.apps as uploader (uploader.id)}
               {@const active = isUploaderActive(uploader)}
               <Item
@@ -95,7 +95,7 @@
                   </p>
                 </div>
                 <ChevronRight
-                  class="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors"
+                  class="h-4 w-4 shrink-0 text-muted-foreground group-hover:text-foreground transition-colors"
                 />
               </Item>
             {/each}

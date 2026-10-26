@@ -172,7 +172,7 @@ public static class LoopHealthCalculator
     /// req Y") or needing none, it enacts nothing while still in control, so its state is the
     /// outcome of the newest cycle that asked for a change, closed if that was enacted and open if
     /// not. An enacted cycle closes it whether or not its suggestion was stored. Loop records nothing it decided apart from what it enacted, so only an enacted cycle
-    /// shows it closed.
+    /// shows it closed (<see cref="ApsLoopCycle.EnactedClosedLoop"/>).
     /// </summary>
     private static List<long> ClosedLoopCycles(List<ApsLoopCycle> cycles)
     {
@@ -189,7 +189,7 @@ public static class LoopHealthCalculator
                 if (orefClosed)
                     closed.Add(cycle.Mills);
             }
-            else if (cycle.Enacted)
+            else if (cycle.EnactedClosedLoop)
                 closed.Add(cycle.Mills);
         }
         return closed;

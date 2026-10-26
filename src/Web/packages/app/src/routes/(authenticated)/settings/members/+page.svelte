@@ -197,7 +197,7 @@
   <!-- Page header -->
   <div class="flex flex-col gap-4 @md:flex-row @md:items-start @md:justify-between">
     <div class="flex items-center gap-3">
-      <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+      <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10">
         <Users class="h-6 w-6 text-primary" />
       </div>
       <div>
@@ -341,7 +341,6 @@
       {#if canInvite && activeInvites.length > 0 && !showCreateInvite}
         <PendingInvitesList
           invites={activeInvites}
-          roles={allRoles}
           isRevoking={isRevokingInvite !== null}
           onRevoke={async (inviteId) => {
             isRevokingInvite = inviteId;

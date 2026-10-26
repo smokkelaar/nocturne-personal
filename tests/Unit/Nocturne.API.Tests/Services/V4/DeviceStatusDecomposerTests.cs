@@ -50,6 +50,7 @@ public class DeviceStatusDecomposerTests : IDisposable
             _stateSpanServiceMock.Object,
             _deviceServiceMock.Object,
             Mock.Of<IAuditContext>(),
+            Mock.Of<ILoopClosedLoopStamper>(),
             NullLogger<DeviceStatusDecomposer>.Instance);
     }
 
@@ -2065,6 +2066,7 @@ public class DeviceStatusDecomposerTests : IDisposable
             _stateSpanServiceMock.Object,
             new DeviceService(deviceRepo.Object, patientDeviceRepo.Object, MockTenantAccessor.Create().Object, DeviceDateClockDoubles.Utc()),
             Mock.Of<IAuditContext>(),
+            Mock.Of<ILoopClosedLoopStamper>(),
             NullLogger<DeviceStatusDecomposer>.Instance);
     }
 

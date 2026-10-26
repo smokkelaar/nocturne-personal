@@ -60,7 +60,7 @@ public class BolusRepository : SyncUpsertRepositoryBase<Bolus, BolusEntity>, IBo
         int limit = 100, int offset = 0, bool descending = true,
         CancellationToken ct = default)
         => GetAsync(from, to, device, source, limit, offset, descending,
-            nativeOnly: false, kind: null, afterTimestamp: null, afterId: null, ct);
+            kind: null, afterTimestamp: null, afterId: null, ct);
 
     /// <summary>
     /// Gets bolus records based on filter criteria.
@@ -73,7 +73,6 @@ public class BolusRepository : SyncUpsertRepositoryBase<Bolus, BolusEntity>, IBo
     /// <param name="limit">The maximum number of records to return.</param>
     /// <param name="offset">The number of records to skip.</param>
     /// <param name="descending">Whether to sort by timestamp in descending order.</param>
-    /// <param name="nativeOnly">Whether to return only native records.</param>
     /// <param name="kind">Optional bolus kind filter.</param>
     /// <param name="afterTimestamp">Keyset cursor timestamp. When paired with <paramref name="afterId"/>, replaces offset-based pagination.</param>
     /// <param name="afterId">Keyset cursor record ID (tiebreaker). When paired with <paramref name="afterTimestamp"/>, replaces offset-based pagination.</param>
@@ -87,7 +86,6 @@ public class BolusRepository : SyncUpsertRepositoryBase<Bolus, BolusEntity>, IBo
         int limit = 100,
         int offset = 0,
         bool descending = true,
-        bool nativeOnly = false,
         BolusKind? kind = null,
         DateTime? afterTimestamp = null,
         Guid? afterId = null,
@@ -104,8 +102,6 @@ public class BolusRepository : SyncUpsertRepositoryBase<Bolus, BolusEntity>, IBo
             query = query.Where(e => e.Device == device);
         if (source != null)
             query = query.Where(e => e.DataSource == source);
-        if (nativeOnly)
-            query = query.Where(e => e.LegacyId == null);
         if (kind.HasValue)
             query = query.Where(e => e.BolusKind == kind.Value.ToString());
 

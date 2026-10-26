@@ -210,11 +210,7 @@ public class CrossSourceIngestDedupTests : IDisposable
         var native = await _carbs.CreateAsync(Carb(18, EventTime, Manual), WriteOrigin.Live);
         await _carbs.BulkCreateAsync([Carb(18, EventTime, Connector)], WriteOrigin.Live);
 
-        var nativeOnly = await _carbs.GetAsync(
-            EventTime.AddHours(-1), EventTime.AddHours(1), null, null, nativeOnly: true);
-
-        nativeOnly.Should().ContainSingle().Which.Id.Should().Be(native.Id);
-        (await VisibleCarbsAsync()).Should().ContainSingle();
+        (await VisibleCarbsAsync()).Should().ContainSingle().Which.Id.Should().Be(native.Id);
     }
 
     [Fact]

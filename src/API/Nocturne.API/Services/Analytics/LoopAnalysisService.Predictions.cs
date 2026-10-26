@@ -28,8 +28,8 @@ internal sealed partial class LoopAnalysisService
     /// carbs and manual boluses that set the context, from
     /// <see cref="PredictionAccuracyCalculator.ContextLookbackMs"/> before it to
     /// <see cref="PredictionAccuracyCalculator.TreatmentsAfterRangeMs"/> after it. Each cycle counts
-    /// once (<see cref="LoopCycles.Distinct"/>), and every APS snapshot is AID evidence for the
-    /// open-loop mask, as on the other pages.
+    /// once (<see cref="LoopCycles.Distinct"/>), and every APS snapshot is evidence for the open-loop
+    /// mask, as on the other pages.
     /// </summary>
     private async Task<PredictionsLoaded> LoadPredictionsAsync(
         Window window, TimeZoneInfo zone, bool needsProfiles, LoopAnalysisFilter filter, CancellationToken ct)
@@ -64,7 +64,7 @@ internal sealed partial class LoopAnalysisService
             spans,
             await deviceTask,
             await deviceDates.ResolveAsync(ct),
-            SnapshotMills((await evidenceTask).Select(p => p.Timestamp)),
+            LoopStates(await evidenceTask),
             profiles,
             readingsEnd);
 

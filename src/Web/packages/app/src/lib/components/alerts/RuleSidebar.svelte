@@ -36,7 +36,7 @@
   import { FactSnapshotLog, leafFactBinding } from "./factSnapshot";
   import { rowLeafNode, rowLeafKind } from "./ruleTree";
   import { FACT_GROUP_COLOURS, getFact, type LucideIconName } from "./factCatalog";
-  import { summarizeCondition } from "./summarizeCondition";
+  import { summarizeCondition } from "./summarizeCondition.svelte";
   import { severity as severitySlot, severityVar } from "./severity";
 
   interface Props {

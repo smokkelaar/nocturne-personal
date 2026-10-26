@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { AlertWeekday, defaultPayload, GlucoseBucket, PumpModeState, type ConditionNode } from "./types";
-import { summarizeCondition } from "./summarizeCondition";
+import { AlertWeekday, defaultPayload, GlucoseBucket, PumpModeState, StateSpanCategory, type ConditionNode } from "./types";
+import { alertWeekdayLabel, summarizeCondition } from "./summarizeCondition.svelte";
 import { LEAF_FACTS } from "./factCatalog";
 import { glucoseUnits } from "$lib/stores/appearance-store.svelte";
 
@@ -22,7 +22,70 @@ describe("summarizeCondition", () => {
 			type: "day_of_week",
 			day_of_week: { days: [AlertWeekday.Saturday, AlertWeekday.Sunday] },
 		};
-		expect(summarizeCondition(node)).toBe("Day in Sat, Sun");
+		expect(summarizeCondition(node)).toBe("On Sat or Sun");
+	});
+
+	it("starts every leaf chip with an uppercase letter", () => {
+		for (const fact of LEAF_FACTS) {
+			const summary = summarizeCondition(defaultPayload(fact.kind));
+			expect(summary, `kind=${fact.kind}`).toMatch(/^\p{Lu}/u);
+		}
+	});
+
+	it("renders every pump mode as one sentence-case phrase, active and not", () => {
+		for (const mode of Object.values(PumpModeState)) {
+			for (const isActive of [true, false]) {
+				const chip = summarizeCondition({ type: "pump_state", pump_state: { mode, is_active: isActive } });
+				expect(chip, `mode=${mode} active=${isActive}`).toMatch(/^Pump (not )?(in (automatic|manual|sleep|exercise) mode|in Liberty mode|limited|boosting|easing off|suspended|off)$/);
+			}
+		}
+	});
+
+	it("keeps pump mode names lowercase except the named Liberty mode", () => {
+		const chip = (mode: PumpModeState): string =>
+			summarizeCondition({ type: "pump_state", pump_state: { mode, is_active: true } });
+		expect(chip(PumpModeState.Automatic)).toBe("Pump in automatic mode");
+		expect(chip(PumpModeState.Manual)).toBe("Pump in manual mode");
+		expect(chip(PumpModeState.Sleep)).toBe("Pump in sleep mode");
+		expect(chip(PumpModeState.Exercise)).toBe("Pump in exercise mode");
+		expect(chip(PumpModeState.Liberty)).toBe("Pump in Liberty mode");
+	});
+
+	it("renders a boosting pump and its negation", () => {
+		const boosting = (isActive: boolean): ConditionNode => ({
+			type: "pump_state",
+			pump_state: { mode: PumpModeState.Boost, is_active: isActive },
+		});
+		expect(summarizeCondition(boosting(true))).toBe("Pump boosting");
+		expect(summarizeCondition(boosting(false))).toBe("Pump not boosting");
+	});
+
+	it("adds the duration to a pump mode", () => {
+		const node: ConditionNode = {
+			type: "pump_state",
+			pump_state: { mode: PumpModeState.Boost, is_active: true, for_minutes: 90 },
+		};
+		expect(summarizeCondition(node)).toBe("Pump boosting for 90 minutes");
+	});
+
+	it("renders rate of change by direction", () => {
+		const chip = (direction: string): ConditionNode => ({
+			type: "rate_of_change",
+			rate_of_change: { direction, rate: 3 },
+		});
+		expect(summarizeCondition(chip("falling"))).toBe("Glucose falling at least 3 mg/dL per minute");
+		expect(summarizeCondition(chip("rising"))).toBe("Glucose rising at least 3 mg/dL per minute");
+	});
+
+	it("joins composite OR with the word or", () => {
+		const node: ConditionNode = {
+			type: "composite",
+			composite: {
+				operator: "or",
+				conditions: [defaultPayload("threshold"), { type: "trend", trend: { bucket: "rising_fast" } }],
+			},
+		};
+		expect(summarizeCondition(node)).toBe("Glucose below 70 mg/dL or Trend rising fast");
 	});
 
 	it("returns empty string for null/undefined input", () => {
@@ -31,7 +94,7 @@ describe("summarizeCondition", () => {
 	});
 
 	it("renders a simple threshold below", () => {
-		expect(summarizeCondition(defaultPayload("threshold"))).toBe("BG < 70 mg/dL");
+		expect(summarizeCondition(defaultPayload("threshold"))).toBe("Glucose below 70 mg/dL");
 	});
 
 	it("renders a threshold above", () => {
@@ -39,13 +102,13 @@ describe("summarizeCondition", () => {
 			type: "threshold",
 			threshold: { direction: "above", value: 200 },
 		};
-		expect(summarizeCondition(node)).toBe("BG > 200 mg/dL");
+		expect(summarizeCondition(node)).toBe("Glucose above 200 mg/dL");
 	});
 
 	it("uses mmol/L when configured", () => {
 		glucoseUnits.current = "mmol";
 		try {
-			expect(summarizeCondition(defaultPayload("threshold"))).toBe("BG < 3.9 mmol/L");
+			expect(summarizeCondition(defaultPayload("threshold"))).toBe("Glucose below 3.9 mmol/L");
 		} finally {
 			glucoseUnits.current = "mg/dl";
 		}
@@ -53,7 +116,7 @@ describe("summarizeCondition", () => {
 
 	it("renders predicted with horizon", () => {
 		expect(summarizeCondition(defaultPayload("predicted"))).toBe(
-			"Predicted BG ≤ 70 mg/dL in 30m",
+			"Predicted glucose ≤ 70 mg/dL in 30 minutes",
 		);
 	});
 
@@ -62,7 +125,7 @@ describe("summarizeCondition", () => {
 			type: "trend",
 			trend: { bucket: "falling_fast" },
 		};
-		expect(summarizeCondition(node)).toBe("Trend: falling fast");
+		expect(summarizeCondition(node)).toBe("Trend falling fast");
 	});
 
 	it("renders time-of-day window", () => {
@@ -70,7 +133,7 @@ describe("summarizeCondition", () => {
 			type: "time_of_day",
 			time_of_day: { from: "22:00", to: "06:00" },
 		};
-		expect(summarizeCondition(node)).toBe("between 22:00 and 06:00");
+		expect(summarizeCondition(node)).toBe("Between 22:00 and 06:00");
 	});
 
 	it("renders sustained as suffix", () => {
@@ -78,7 +141,7 @@ describe("summarizeCondition", () => {
 			type: "sustained",
 			sustained: { minutes: 15, child: defaultPayload("threshold") },
 		};
-		expect(summarizeCondition(node)).toBe("BG < 70 mg/dL for 15m");
+		expect(summarizeCondition(node)).toBe("Glucose below 70 mg/dL for 15 minutes");
 	});
 
 	it("formats hour-aligned minute durations as hours", () => {
@@ -86,7 +149,7 @@ describe("summarizeCondition", () => {
 			type: "sustained",
 			sustained: { minutes: 120, child: defaultPayload("threshold") },
 		};
-		expect(summarizeCondition(node)).toBe("BG < 70 mg/dL for 2h");
+		expect(summarizeCondition(node)).toBe("Glucose below 70 mg/dL for 2 hours");
 	});
 
 	it("renders day-aligned site age in days", () => {
@@ -94,10 +157,10 @@ describe("summarizeCondition", () => {
 			type: "site_age",
 			site_age: { operator: ">=", value: 72 },
 		};
-		expect(summarizeCondition(node)).toBe("Site age ≥ 3d");
+		expect(summarizeCondition(node)).toBe("Site age ≥ 3 days");
 	});
 
-	it("joins composite AND with the AND keyword", () => {
+	it("joins composite AND with the word and", () => {
 		const node: ConditionNode = {
 			type: "composite",
 			composite: {
@@ -108,7 +171,7 @@ describe("summarizeCondition", () => {
 				],
 			},
 		};
-		expect(summarizeCondition(node)).toBe("BG < 70 mg/dL AND Trend: falling");
+		expect(summarizeCondition(node)).toBe("Glucose below 70 mg/dL and Trend falling");
 	});
 
 	it("brackets a nested OR group inside an outer AND", () => {
@@ -132,7 +195,7 @@ describe("summarizeCondition", () => {
 			},
 		};
 		expect(summarizeCondition(node)).toBe(
-			"(BG < 70 mg/dL OR Trend: falling) AND Predicted BG ≤ 70 mg/dL in 30m",
+			"(Glucose below 70 mg/dL or Trend falling) and Predicted glucose ≤ 70 mg/dL in 30 minutes",
 		);
 	});
 
@@ -157,7 +220,7 @@ describe("summarizeCondition", () => {
 			},
 		};
 		expect(summarizeCondition(node)).toBe(
-			"IOB ≥ 1 U AND COB ≥ 10 g AND BG < 70 mg/dL",
+			"Insulin on board ≥ 1 U and Carbs on board ≥ 10 g and Glucose below 70 mg/dL",
 		);
 	});
 
@@ -166,7 +229,7 @@ describe("summarizeCondition", () => {
 			type: "not",
 			not: { child: defaultPayload("threshold") },
 		};
-		expect(summarizeCondition(node)).toBe("not (BG < 70 mg/dL)");
+		expect(summarizeCondition(node)).toBe("Not (Glucose below 70 mg/dL)");
 	});
 
 	it("renders alert_state with a name resolver", () => {
@@ -176,7 +239,7 @@ describe("summarizeCondition", () => {
 		};
 		expect(
 			summarizeCondition(node, { resolveAlertName: () => "Approaching Low" }),
-		).toBe("Approaching Low firing for 2m");
+		).toBe("Alert Approaching Low firing for 2 minutes");
 	});
 
 	it("falls back to a short id when no resolver is provided", () => {
@@ -184,7 +247,7 @@ describe("summarizeCondition", () => {
 			type: "alert_state",
 			alert_state: { alert_id: "01234567-89ab-cdef-0123-456789abcdef", state: "firing" },
 		};
-		expect(summarizeCondition(node)).toBe("alert abcdef firing");
+		expect(summarizeCondition(node)).toBe("Alert abcdef firing");
 	});
 
 	it("renders tracker age with hour-aligned minutes as hours", () => {
@@ -196,7 +259,7 @@ describe("summarizeCondition", () => {
 				minutes: 2880,
 			},
 		};
-		expect(summarizeCondition(node)).toBe("Tracker age ≥ 48h");
+		expect(summarizeCondition(node)).toBe("Tracker age ≥ 48 hours");
 	});
 
 	it("keeps the sign on a negative tracker age", () => {
@@ -208,7 +271,7 @@ describe("summarizeCondition", () => {
 				minutes: -120,
 			},
 		};
-		expect(summarizeCondition(node)).toBe("Tracker age ≤ -2h");
+		expect(summarizeCondition(node)).toBe("Tracker age ≤ -2 hours");
 	});
 
 	it("renders DND with sustained duration", () => {
@@ -216,7 +279,7 @@ describe("summarizeCondition", () => {
 			type: "do_not_disturb",
 			do_not_disturb: { is_active: true, for_minutes: 30 },
 		};
-		expect(summarizeCondition(node)).toBe("Do not disturb on for 30m");
+		expect(summarizeCondition(node)).toBe("Do not disturb on for 30 minutes");
 	});
 
 	it("renders a pump mode from the wire enum member, not the raw value", () => {
@@ -224,7 +287,7 @@ describe("summarizeCondition", () => {
 			type: "pump_state",
 			pump_state: { mode: PumpModeState.EaseOff, is_active: true },
 		};
-		expect(summarizeCondition(node)).toBe("Pump Easing off");
+		expect(summarizeCondition(node)).toBe("Pump easing off");
 	});
 
 	it("renders a negated pump mode from the wire enum member", () => {
@@ -240,7 +303,7 @@ describe("summarizeCondition", () => {
 			type: "composite",
 			composite: { operator: "and", conditions: [defaultPayload("threshold")] },
 		};
-		expect(summarizeCondition(node)).toBe("BG < 70 mg/dL");
+		expect(summarizeCondition(node)).toBe("Glucose below 70 mg/dL");
 	});
 
 	it("names every glucose bucket in a bucket condition", () => {
@@ -258,7 +321,42 @@ describe("summarizeCondition", () => {
 			},
 		};
 		expect(summarizeCondition(node)).toBe(
-			"BG in Very low / Low / Tight range / In range / High / Very high",
+			"Glucose range: Very low, Low, Tight range, In range, High, or Very high",
 		);
+	});
+
+	it("gives wuchale a chip it can extract for every state of every leaf", () => {
+		const both = [true, false];
+		const stateSpans = Object.values(StateSpanCategory).flatMap((category) =>
+			both.map((is_active): ConditionNode => ({ type: "state_span_active", state_span_active: { category, is_active } })),
+		);
+		const pumpModes = Object.values(PumpModeState).flatMap((mode) =>
+			both.map((is_active): ConditionNode => ({ type: "pump_state", pump_state: { mode, is_active } })),
+		);
+		const alertStates = ["firing", "unacknowledged", "acknowledged", "other"].map(
+			(state): ConditionNode => ({ type: "alert_state", alert_state: { alert_id: "abc-123", state } }),
+		);
+		const trends = ["falling_fast", "falling", "flat", "rising", "rising_fast", "other"].map(
+			(bucket): ConditionNode => ({ type: "trend", trend: { bucket } }),
+		);
+		const sleep = both.map(
+			(is_active): ConditionNode => ({ type: "sleep_session_active", sleep_session_active: { is_active } }),
+		);
+		const buckets = Object.values(GlucoseBucket).map(
+			(bucket): ConditionNode => ({ type: "glucose_bucket", glucose_bucket: { buckets: [bucket] } }),
+		);
+		const defaults = LEAF_FACTS.map((fact) => defaultPayload(fact.kind));
+		const nodes = [...defaults, ...stateSpans, ...pumpModes, ...alertStates, ...trends, ...sleep, ...buckets];
+		for (const node of nodes) {
+			const chip = summarizeCondition(node);
+			expect(chip, JSON.stringify(node)).toMatch(/^\p{Lu}/u);
+			expect(chip, JSON.stringify(node)).not.toMatch(/^([A-Z]|\P{L})+$/u);
+		}
+	});
+});
+
+describe("alertWeekdayLabel", () => {
+	it("returns a day the enum does not hold as it came", () => {
+		expect(alertWeekdayLabel("someday" as AlertWeekday)).toBe("someday");
 	});
 });

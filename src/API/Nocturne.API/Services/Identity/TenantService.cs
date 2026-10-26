@@ -201,7 +201,7 @@ public partial class TenantService : ITenantService
                     m.Subject?.Name,
                     m.Subject != null && m.Subject.IsSystemSubject,
                     m.MemberRoles.Select(mr => new TenantMemberRoleDto(
-                        mr.TenantRoleId, mr.TenantRole.Name, mr.TenantRole.Slug)).ToList(),
+                        mr.TenantRoleId, mr.TenantRole.Name, mr.TenantRole.Slug, mr.TenantRole.Permissions)).ToList(),
                     m.DirectPermissions,
                     m.Label,
                     m.LimitTo24Hours,

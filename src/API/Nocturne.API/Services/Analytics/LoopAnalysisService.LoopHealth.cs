@@ -60,7 +60,7 @@ internal sealed partial class LoopAnalysisService
 
         return new LoopHealthLoaded(
             inputs,
-            Sources(common, SnapshotMills(cycles.Select(c => c.Timestamp)), to),
+            Sources(common, LoopStates(cycles), to),
             common.Devices,
             common.DeviceDates,
             common.TempBasals);

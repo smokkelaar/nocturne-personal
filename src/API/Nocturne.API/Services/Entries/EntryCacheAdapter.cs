@@ -49,28 +49,14 @@ public class EntryCacheAdapter : IEntryCache
             ct);
     }
 
-    public async Task<Entry?> GetOrComputeCurrentAsync(
+    public Task<Entry?> GetOrComputeCurrentAsync(
         Func<Task<Entry?>> compute,
-        CancellationToken ct = default)
-    {
-        const string cacheKey = $"{CacheFamily}:current";
-
-        var cached = await _cache.GetAsync<Entry>(cacheKey, ct);
-        if (cached != null)
-            return cached;
-
-        var entry = await compute();
-        if (entry != null)
-        {
-            await _cache.SetAsync(
-                cacheKey,
-                entry,
-                TimeSpan.FromSeconds(CacheConstants.Defaults.CurrentEntryExpirationSeconds),
-                ct);
-        }
-
-        return entry;
-    }
+        CancellationToken ct = default) =>
+        _cache.GetOrSetUnlessNullAsync(
+            $"{CacheFamily}:current",
+            compute,
+            TimeSpan.FromSeconds(CacheConstants.Defaults.CurrentEntryExpirationSeconds),
+            ct);
 
     public async Task InvalidateAsync(CancellationToken ct = default)
     {

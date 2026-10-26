@@ -117,7 +117,7 @@
 
 <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 <div
-  class="flex flex-col w-full"
+  class="@container/actogram flex flex-col w-full"
   tabindex={visibleCount !== undefined ? 0 : undefined}
   onkeydown={handleKeydown}
   role={visibleCount !== undefined ? 'toolbar' : undefined}
@@ -125,7 +125,7 @@
 >
   <!-- X-axis labels (top) -->
   <div class="flex">
-    <div class="w-20 shrink-0 flex items-center justify-center">
+    <div class="w-14 @md/actogram:w-20 shrink-0 flex items-center justify-center">
       {#if visibleCount !== undefined}
         <Button
           variant="ghost-muted"
@@ -143,7 +143,7 @@
       {#each hourLabels as hour (hour)}
         {@const pct = (hour / HOURS_PER_ROW) * 100}
         <span
-          class="absolute left-(--hour-left) text-xs text-muted-foreground -translate-x-1/2"
+          class={["absolute left-(--hour-left) text-xs text-muted-foreground -translate-x-1/2", hour % 12 !== 0 && "hidden @md/actogram:inline"]}
           style:--hour-left="{pct}%"
         >
           {hour % 24 === 0 && hour < 48 ? '0' : hour % 24}h
@@ -164,7 +164,7 @@
       out:fly={{ y: direction === 'down' ? -rowHeight : rowHeight, duration: 300, easing: cubicOut }}
     >
       <!-- Date label -->
-      <div class="w-20 shrink-0">
+      <div class="w-14 @md/actogram:w-20 shrink-0">
         {#if rowLabel}
           {@render rowLabel({ day: dataRow.day })}
         {:else}
@@ -189,7 +189,7 @@
   {/each}
 
   {#if legend.length > 0}
-    <ChartKey items={legend} class="mt-3 justify-start pl-20" />
+    <ChartKey items={legend} class="mt-3 justify-start pl-14 @md/actogram:pl-20" />
   {/if}
   {#if bgData?.length && thresholds}
     {@const target = resolveTargetRange(thresholds)}
@@ -199,13 +199,13 @@
         { texture: 'glucose-trace', label: 'Glucose', shape: 'line' },
         { texture: 'target-range-limit', label: `Glucose target range ${bgRange(target.low, target.high)}`, color: 'var(--muted-foreground)', shape: 'line' },
       ]}
-      class="mt-1 hidden justify-start pl-20 [.chart-patterns-on_&]:flex"
+      class="mt-1 hidden justify-start pl-14 @md/actogram:pl-20 [.chart-patterns-on_&]:flex"
     />
   {/if}
 
   {#if visibleCount !== undefined}
     <div class="flex print:hidden">
-      <div class="w-20 shrink-0 flex items-center justify-center">
+      <div class="w-14 @md/actogram:w-20 shrink-0 flex items-center justify-center">
         <Button
           variant="ghost-muted"
           size="icon-2xs"

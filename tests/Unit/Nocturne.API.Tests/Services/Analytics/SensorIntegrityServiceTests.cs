@@ -177,9 +177,9 @@ public class SensorIntegrityServiceTests
         glucoseRepo
             .Setup(r => r.GetForAnalyticsAsync(
                 It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), It.IsAny<string?>(), It.IsAny<string?>(),
-                It.IsAny<int>(), It.IsAny<int>(), It.IsAny<bool>(), It.IsAny<bool>(),
+                It.IsAny<int>(), It.IsAny<int>(), It.IsAny<bool>(),
                 It.IsAny<DateTime?>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>(), It.IsAny<Guid?>()))
-            .ReturnsAsync((DateTime? _, DateTime? _, string? _, string? source, int _, int _, bool _, bool _,
+            .ReturnsAsync((DateTime? _, DateTime? _, string? _, string? source, int _, int _, bool _,
                 DateTime? _, Guid? _, CancellationToken _, Guid? _) =>
                 source is null ? readings : readings.Where(r => r.DataSource == source).ToList());
 
@@ -187,7 +187,7 @@ public class SensorIntegrityServiceTests
         bolusRepo
             .Setup(r => r.GetAsync(
                 It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), It.IsAny<string?>(), It.IsAny<string?>(),
-                It.IsAny<int>(), It.IsAny<int>(), It.IsAny<bool>(), It.IsAny<bool>(),
+                It.IsAny<int>(), It.IsAny<int>(), It.IsAny<bool>(),
                 It.IsAny<BolusKind?>(), It.IsAny<DateTime?>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(boluses);
 

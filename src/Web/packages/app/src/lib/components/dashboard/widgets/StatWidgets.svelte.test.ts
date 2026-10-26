@@ -27,6 +27,7 @@ vi.mock("$api/generated/statistics.generated.remote", () => ({
 }));
 
 import WithTooltipProvider from "$lib/test-stubs/WithTooltipProvider.test-stub.svelte";
+import WidgetContainerHarness from "./WidgetContainerHarness.test.svelte";
 import TirChartWidget from "./TirChartWidget.svelte";
 import TddWidget from "./TddWidget.svelte";
 import DailySummaryWidget from "./DailySummaryWidget.svelte";
@@ -82,9 +83,12 @@ describe("stat widgets", () => {
   ])(
     "%s keeps its height when its statistics arrive, in three columns and in one",
     async (_name, Widget, loadedText, data) => {
-      for (const width of [1440, 375]) {
+      for (const [width, wide] of [
+        [1440, true],
+        [375, false],
+      ] as const) {
         await page.viewport(width, 900);
-        const { container, unmount } = render(Widget);
+        const { container, unmount } = render(WidgetContainerHarness, { props: { component: Widget, wide } });
         const skeletonHeight = cellHeight(container);
 
         statistics.resolve(data);
@@ -95,6 +99,32 @@ describe("stat widgets", () => {
       }
     }
   );
+
+  it("Time in range draws a bar beside the other widgets and a column when they stack", async () => {
+    for (const [width, wide] of [
+      [1440, true],
+      [375, false],
+    ] as const) {
+      await page.viewport(width, 900);
+      const { container, unmount } = render(WidgetContainerHarness, {
+        props: { component: TirChartWidget, wide },
+      });
+      statistics.resolve(stats);
+      await expect.element(page.getByText("in range", { exact: true })).toBeVisible();
+
+      const heights = [...container.querySelectorAll("svg")]
+        .filter((svg) => svg.checkVisibility())
+        .map((svg) => svg.getBoundingClientRect().height);
+      expect(heights.length).toBeGreaterThan(0);
+      const tallest = Math.max(...heights);
+      if (wide) expect(tallest).toBeLessThanOrEqual(24);
+      else expect(tallest).toBeGreaterThan(100);
+      expect(page.getByText("1% Very low").elements().some((el) => el.checkVisibility())).toBe(
+        !wide
+      );
+      unmount();
+    }
+  });
 
   it("Total Daily Dose shows an Auto row only for accounts with automatic boluses", async () => {
     await page.viewport(1440, 900);

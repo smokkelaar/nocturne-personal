@@ -5,7 +5,8 @@
 <script lang="ts">
   import type { LoopAnalysisMasks } from "$lib/api";
   import Funnel from "@lucide/svelte/icons/funnel";
-  import { MASK_KEYS, weekdayLabel } from "./loop-analysis-filter";
+  import { MASK_KEYS } from "./loop-analysis-filter";
+  import { weekdayLabel } from "$lib/utils/formatting";
   import { maskLabels } from "./filter-labels.svelte";
 
   let { applied }: { applied: LoopAnalysisMasks | null | undefined } = $props();

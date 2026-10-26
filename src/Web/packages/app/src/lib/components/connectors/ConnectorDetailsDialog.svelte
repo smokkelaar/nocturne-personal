@@ -400,7 +400,7 @@
         {#if canManage && (selectedConnector.isHealthy || selectedConnector.state === ConnectorState.Configured) && selectedConnector.state !== ConnectorState.Offline && (selectedConnectorCapabilities?.supportsManualSync ?? true)}
           <Separator />
 
-          <div class="space-y-3">
+          <div class="@container space-y-3">
             <div class="flex items-center gap-2">
               <Download class="h-4 w-4" />
               <h4 class="font-medium text-sm">Manual sync</h4>
@@ -413,7 +413,7 @@
               <p class="text-xs text-muted-foreground">
                 Select a date range to re-sync specific data.
               </p>
-              <div class="grid grid-cols-2 gap-2">
+              <div class="grid gap-2 @sm:grid-cols-2">
                 <div class="space-y-1">
                   <label for="granular-sync-from" class="text-xs font-medium">
                     From

@@ -85,7 +85,7 @@
 </script>
 
 <div
-  class="w-80 shrink-0 overflow-y-auto overflow-x-hidden border-l bg-muted/30 p-4"
+  class="w-80 shrink-0 overflow-y-auto overflow-x-hidden border-l bg-muted/30 p-4 @max-2xl:max-h-[50dvh] @max-2xl:w-full @max-2xl:border-t @max-2xl:border-l-0"
 >
   <div class="flex items-center justify-between">
     <Badge>{info?.name ?? element.type}</Badge>

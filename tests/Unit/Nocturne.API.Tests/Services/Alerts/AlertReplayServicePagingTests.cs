@@ -140,10 +140,10 @@ public class AlertReplayServicePagingTests
         _glucoseRepository
             .Setup(r => r.GetAsync(
                 It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), null, null,
-                It.IsAny<int>(), It.IsAny<int>(), false, false,
+                It.IsAny<int>(), It.IsAny<int>(), false,
                 It.IsAny<DateTime?>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()))
             .Returns((DateTime? from, DateTime? to, string? _, string? _,
-                int limit, int _, bool _, bool _,
+                int limit, int _, bool _,
                 DateTime? afterTimestamp, Guid? afterId, CancellationToken _, Guid? _) =>
             {
                 IEnumerable<SensorGlucose> rows = all
@@ -317,11 +317,11 @@ public class AlertReplayServicePagingTests
 
         _glucoseRepository.Verify(r => r.GetAsync(
             It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), null, null,
-            250, It.IsAny<int>(), false, false,
+            250, It.IsAny<int>(), false,
             It.IsAny<DateTime?>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()), Times.AtLeastOnce);
         _glucoseRepository.Verify(r => r.GetAsync(
             It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), null, null,
-            int.MaxValue, It.IsAny<int>(), It.IsAny<bool>(), It.IsAny<bool>(),
+            int.MaxValue, It.IsAny<int>(), It.IsAny<bool>(),
             It.IsAny<DateTime?>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
@@ -387,7 +387,7 @@ public class AlertReplayServicePagingTests
         _glucoseRepository
             .Setup(r => r.GetAsync(
                 It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), null, null,
-                It.IsAny<int>(), It.IsAny<int>(), false, false,
+                It.IsAny<int>(), It.IsAny<int>(), false,
                 It.IsAny<DateTime?>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(stuck);
 
@@ -474,7 +474,7 @@ public class AlertReplayServicePagingTests
             r => r.GetEnabledRulesAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
         _glucoseRepository.Verify(
             r => r.GetAsync(It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), It.IsAny<string?>(), It.IsAny<string?>(),
-                It.IsAny<int>(), It.IsAny<int>(), It.IsAny<bool>(), It.IsAny<bool>(),
+                It.IsAny<int>(), It.IsAny<int>(), It.IsAny<bool>(),
                 It.IsAny<DateTime?>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 

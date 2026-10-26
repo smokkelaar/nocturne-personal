@@ -29,19 +29,12 @@ internal sealed record LegacyTreatmentRepositories(
 );
 
 /// <summary>
-/// The time window, page size, direction and provenance filter of one time-range projection read.
+/// The time window, page size and direction of one time-range projection read.
 /// </summary>
-/// <remarks>
-/// When <paramref name="NativeOnly"/> is <see langword="true"/>, records that mirror a legacy
-/// v1/v2/v3 write (<c>LegacyId</c> set) are dropped. Treatments have no legacy table left to double
-/// up against, so every caller passes <see langword="false"/>; the filter survives for callers that
-/// want V4-native records only.
-/// </remarks>
 internal readonly record struct LegacyTreatmentRange(
     DateTime? From,
     DateTime? To,
     int Limit,
-    bool NativeOnly,
     bool Descending
 );
 
@@ -90,11 +83,6 @@ internal interface ILegacyTreatmentTable
     /// A page of records within the requested window: the newest <see cref="LegacyTreatmentRange.Limit"/>
     /// newest first, or the oldest oldest first when <see cref="LegacyTreatmentRange.Descending"/> is false.
     /// </summary>
-    /// <remarks>
-    /// <see cref="LegacyTreatmentRange.NativeOnly"/> is honoured after the page is taken, so for a
-    /// type whose repository cannot push the provenance filter down (TempBasal, BolusCalculation)
-    /// the page can come back short of <see cref="LegacyTreatmentRange.Limit"/>.
-    /// </remarks>
     Task<IReadOnlyList<FetchedRecord>> InRangeAsync(
         LegacyTreatmentRepositories repositories,
         NocturneDbContext context,
@@ -162,7 +150,6 @@ internal sealed class LegacyTreatmentTable<TRecord, TEntity>(
         CancellationToken,
         Task<IEnumerable<TRecord>>
     > inRange,
-    Func<TRecord, string?> legacyId,
     Func<NocturneDbContext, IQueryable<TEntity>> table,
     Nocturne.Core.Models.RecordType dedupType,
     Func<TEntity, TRecord> toRecord,
@@ -183,10 +170,6 @@ internal sealed class LegacyTreatmentTable<TRecord, TEntity>(
     )
     {
         var records = await inRange(repositories, range, ct);
-
-        if (range.NativeOnly)
-            records = records.Where(r => legacyId(r) is null);
-
         return records.Select(Fetch).ToList();
     }
 
@@ -312,9 +295,6 @@ internal sealed class LegacyStateSpanTable(
         new(this, span, span.Id, span.CreatedAt, span.UpdatedAt);
 
     /// <inheritdoc />
-    /// <remarks>
-    /// Every span here mirrors a legacy write, so <see cref="LegacyTreatmentRange.NativeOnly"/> leaves none.
-    /// </remarks>
     public async Task<IReadOnlyList<FetchedRecord>> InRangeAsync(
         LegacyTreatmentRepositories repositories,
         NocturneDbContext context,
@@ -322,9 +302,6 @@ internal sealed class LegacyStateSpanTable(
         CancellationToken ct
     )
     {
-        if (range.NativeOnly)
-            return [];
-
         var window = InWindow(context, range.From, range.To);
         var spans = await (range.Descending
                 ? window.OrderByDescending(s => s.StartTimestamp)
@@ -460,7 +437,6 @@ internal sealed class LegacyProfileActivationTable : ILegacyTreatmentTable
     }
 
     /// <inheritdoc />
-    /// <remarks>Every activation served here mirrors a legacy write, so <see cref="LegacyTreatmentRange.NativeOnly"/> leaves none.</remarks>
     public async Task<IReadOnlyList<FetchedRecord>> InRangeAsync(
         LegacyTreatmentRepositories repositories,
         NocturneDbContext context,
@@ -468,9 +444,6 @@ internal sealed class LegacyProfileActivationTable : ILegacyTreatmentTable
         CancellationToken ct
     )
     {
-        if (range.NativeOnly)
-            return [];
-
         var window = InWindow(context, range.From, range.To);
         var rows = await (range.Descending
                 ? window.OrderByDescending(a => a.Timestamp)
@@ -677,8 +650,7 @@ internal static class LegacyTreatmentTables
     private static readonly LegacyTreatmentTable<DeviceEvent, DeviceEventEntity> DeviceEventTable = new(
         (repositories, range, ct) => repositories.DeviceEvents.GetAsync(
             from: range.From, to: range.To, device: null, source: null,
-            limit: range.Limit, offset: 0, descending: range.Descending, nativeOnly: range.NativeOnly, ct: ct),
-        r => r.LegacyId,
+            limit: range.Limit, offset: 0, descending: range.Descending, ct: ct),
         c => c.DeviceEvents, RecordType.DeviceEvent, DeviceEventMapper.ToDomainModel,
         (r, _) => ProjectDeviceEvent(r));
 
@@ -687,29 +659,25 @@ internal static class LegacyTreatmentTables
         new LegacyTreatmentTable<Bolus, BolusEntity>(
             (repositories, range, ct) => repositories.Boluses.GetAsync(
                 from: range.From, to: range.To, device: null, source: null,
-                limit: range.Limit, offset: 0, descending: range.Descending, nativeOnly: range.NativeOnly, ct: ct),
-            r => r.LegacyId,
+                limit: range.Limit, offset: 0, descending: range.Descending, ct: ct),
             c => c.Boluses, RecordType.Bolus, BolusMapper.ToDomainModel,
             (r, _) => ProjectCorrectionBolus(r)),
         new LegacyTreatmentTable<CarbIntake, CarbIntakeEntity>(
             (repositories, range, ct) => repositories.CarbIntakes.GetAsync(
                 from: range.From, to: range.To, device: null, source: null,
-                limit: range.Limit, offset: 0, descending: range.Descending, nativeOnly: range.NativeOnly, ct: ct),
-            r => r.LegacyId,
+                limit: range.Limit, offset: 0, descending: range.Descending, ct: ct),
             c => c.CarbIntakes, RecordType.CarbIntake, CarbIntakeMapper.ToDomainModel,
             (r, foods) => ProjectCarbCorrection(r, foods.For(r.Id))),
         new LegacyTreatmentTable<BGCheck, BGCheckEntity>(
             (repositories, range, ct) => repositories.BGChecks.GetAsync(
                 from: range.From, to: range.To, device: null, source: null,
-                limit: range.Limit, offset: 0, descending: range.Descending, nativeOnly: range.NativeOnly, ct: ct),
-            r => r.LegacyId,
+                limit: range.Limit, offset: 0, descending: range.Descending, ct: ct),
             c => c.BGChecks, RecordType.BGCheck, BGCheckMapper.ToDomainModel,
             (r, _) => ProjectBgCheck(r)),
         new LegacyTreatmentTable<Note, NoteEntity>(
             (repositories, range, ct) => repositories.Notes.GetAsync(
                 from: range.From, to: range.To, device: null, source: null,
-                limit: range.Limit, offset: 0, descending: range.Descending, nativeOnly: range.NativeOnly, ct: ct),
-            r => r.LegacyId,
+                limit: range.Limit, offset: 0, descending: range.Descending, ct: ct),
             c => c.Notes, RecordType.Note, NoteMapper.ToDomainModel,
             (r, _) => ProjectNote(r)),
         DeviceEventTable,
@@ -717,14 +685,12 @@ internal static class LegacyTreatmentTables
             (repositories, range, ct) => repositories.TempBasals.GetAsync(
                 from: range.From, to: range.To, device: null, source: null,
                 limit: range.Limit, offset: 0, descending: range.Descending, ct: ct),
-            r => r.LegacyId,
             c => c.TempBasals, RecordType.TempBasal, TempBasalMapper.ToDomainModel,
             (r, _) => TempBasalToTreatmentMapper.ToTreatment(r)),
         new LegacyTreatmentTable<BolusCalculation, BolusCalculationEntity>(
             (repositories, range, ct) => repositories.BolusCalculations.GetAsync(
                 from: range.From, to: range.To, device: null, source: null,
                 limit: range.Limit, offset: 0, descending: range.Descending, ct: ct),
-            r => r.LegacyId,
             c => c.BolusCalculations, RecordType.BolusCalculation, BolusCalculationMapper.ToDomainModel,
             (r, _) => ProjectBolusCalculation(r)),
         .. StateSpanTables,

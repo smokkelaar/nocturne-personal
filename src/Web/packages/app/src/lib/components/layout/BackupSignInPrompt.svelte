@@ -29,7 +29,7 @@
 </script>
 
 {#if show && !dismissedHere}
-  <Banner variant="warning" class="items-start">
+  <Banner variant="warning" class="flex-col items-start @xl:flex-row">
     <div class="flex items-start gap-2">
       <KeyRound class="mt-0.5 h-4 w-4 shrink-0" />
       <div class="space-y-0.5">
@@ -39,7 +39,7 @@
         </p>
       </div>
     </div>
-    <div class="flex shrink-0 items-center gap-1">
+    <div class="ml-6 flex shrink-0 items-center gap-1 @xl:ml-0">
       <Button size="sm" variant="outline" href="/settings/account">
         Account settings
       </Button>

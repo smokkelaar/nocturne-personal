@@ -164,7 +164,7 @@
   const errorMessage = $derived(passkeyError ?? oidcError);
 </script>
 
-<div class="flex flex-col items-center gap-10 px-4 py-8">
+<div class="@container flex flex-col items-center gap-10 px-4 py-8">
   <!-- Heading -->
   <div class="flex flex-col items-center gap-4 text-center">
     <Artwork
@@ -175,7 +175,7 @@
       class="size-56"
     />
     <h1
-      class="font-brand font-hairline leading-tight tracking-tight text-foreground text-3xl md:text-4xl xl:text-5xl"
+      class="font-brand font-hairline leading-tight tracking-tight text-foreground text-3xl @lg:text-4xl @min-[40rem]:text-5xl"
     >
       Create your <em class="not-italic font-light text-primary">account</em>.
     </h1>

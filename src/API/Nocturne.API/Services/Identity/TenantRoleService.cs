@@ -21,48 +21,34 @@ namespace Nocturne.API.Services.Identity;
 /// <seealso cref="ITenantRoleService"/>
 public partial class TenantRoleService(INocturneDbContextFactory contexts) : ITenantRoleService
 {
-    public async Task<List<TenantRoleDto>> GetRolesAsync(Guid tenantId, CancellationToken ct = default)
+    public async Task<List<TenantRoleDto>> GetRolesAsync(
+        Guid tenantId, IReadOnlyCollection<string> granterScopes, CancellationToken ct = default)
     {
         await using var db = await contexts.CreateAsync(ct);
-        return await db.TenantRoles
+        var rows = await db.TenantRoles
             .Where(r => r.TenantId == tenantId)
-            .Select(r => new TenantRoleDto(
-                r.Id,
-                r.Name,
-                r.Slug,
-                r.Description,
-                r.Permissions,
-                r.IsSystem,
-                r.MemberRoles.Count,
-                r.SysCreatedAt
-            ))
+            .Select(r => new { Role = r, MemberCount = r.MemberRoles.Count })
             .ToListAsync(ct);
+        return rows.Select(row => ToDto(row.Role, row.MemberCount, granterScopes)).ToList();
     }
 
     /// <inheritdoc />
     public async Task<List<TenantRoleDto>> GetAssignableRolesAsync(
         Guid tenantId, IReadOnlyCollection<string> granterScopes, CancellationToken ct = default)
     {
-        var roles = await GetRolesAsync(tenantId, ct);
-        return roles.Where(r => Scope.ValidateGrant(r.Permissions, granterScopes) is null).ToList();
+        var roles = await GetRolesAsync(tenantId, granterScopes, ct);
+        return roles.Where(r => r.CanGrant).ToList();
     }
 
-    public async Task<TenantRoleDto?> GetRoleByIdAsync(Guid tenantId, Guid roleId, CancellationToken ct = default)
+    public async Task<TenantRoleDto?> GetRoleByIdAsync(
+        Guid tenantId, Guid roleId, IReadOnlyCollection<string> granterScopes, CancellationToken ct = default)
     {
         await using var db = await contexts.CreateAsync(ct);
-        return await db.TenantRoles
+        var row = await db.TenantRoles
             .Where(r => r.Id == roleId && r.TenantId == tenantId)
-            .Select(r => new TenantRoleDto(
-                r.Id,
-                r.Name,
-                r.Slug,
-                r.Description,
-                r.Permissions,
-                r.IsSystem,
-                r.MemberRoles.Count,
-                r.SysCreatedAt
-            ))
+            .Select(r => new { Role = r, MemberCount = r.MemberRoles.Count })
             .FirstOrDefaultAsync(ct);
+        return row is null ? null : ToDto(row.Role, row.MemberCount, granterScopes);
     }
 
     public async Task<TenantRoleDto> CreateRoleAsync(
@@ -70,6 +56,7 @@ public partial class TenantRoleService(INocturneDbContextFactory contexts) : ITe
         string name,
         string? description,
         List<string> permissions,
+        IReadOnlyCollection<string> granterScopes,
         CancellationToken ct = default)
     {
         await using var db = await contexts.CreateAsync(ct);
@@ -87,16 +74,7 @@ public partial class TenantRoleService(INocturneDbContextFactory contexts) : ITe
         db.TenantRoles.Add(entity);
         await db.SaveChangesAsync(ct);
 
-        return new TenantRoleDto(
-            entity.Id,
-            entity.Name,
-            entity.Slug,
-            entity.Description,
-            entity.Permissions,
-            entity.IsSystem,
-            0,
-            entity.SysCreatedAt
-        );
+        return ToDto(entity, 0, granterScopes);
     }
 
     public async Task<TenantRoleDto?> UpdateRoleAsync(
@@ -105,6 +83,7 @@ public partial class TenantRoleService(INocturneDbContextFactory contexts) : ITe
         string name,
         string? description,
         List<string> permissions,
+        IReadOnlyCollection<string> granterScopes,
         CancellationToken ct = default)
     {
         await using var db = await contexts.CreateAsync(ct);
@@ -126,16 +105,7 @@ public partial class TenantRoleService(INocturneDbContextFactory contexts) : ITe
 
         await db.SaveChangesAsync(ct);
 
-        return new TenantRoleDto(
-            entity.Id,
-            entity.Name,
-            entity.Slug,
-            entity.Description,
-            entity.Permissions,
-            entity.IsSystem,
-            entity.MemberRoles.Count,
-            entity.SysCreatedAt
-        );
+        return ToDto(entity, entity.MemberRoles.Count, granterScopes);
     }
 
     public async Task<DeleteRoleResult> DeleteRoleAsync(Guid tenantId, Guid roleId, CancellationToken ct = default)
@@ -288,6 +258,22 @@ public partial class TenantRoleService(INocturneDbContextFactory contexts) : ITe
 
         return permissionSets.SelectMany(permissions => permissions).Distinct().ToList();
     }
+
+    /// <summary>
+    /// <c>CanGrant</c> applies the grant ceiling of <see cref="ValidateRoleGrantAsync"/> to this role alone.
+    /// </summary>
+    private static TenantRoleDto ToDto(
+        TenantRoleEntity role, int memberCount, IReadOnlyCollection<string> granterScopes) =>
+        new(
+            role.Id,
+            role.Name,
+            role.Slug,
+            role.Description,
+            role.Permissions,
+            role.IsSystem,
+            memberCount,
+            role.SysCreatedAt,
+            Scope.ValidateGrant(role.Permissions, granterScopes) is null);
 
     private static string GenerateSlug(string name)
     {

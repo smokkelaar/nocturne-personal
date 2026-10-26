@@ -58,13 +58,13 @@
 
     <Card class="@4xl:col-span-2">
       <CardHeader>
-        <div class="flex items-center justify-between">
+        <div class="flex flex-wrap items-center justify-between gap-2">
           <div>
             <div class="flex items-center gap-2">
               <Skeleton class="h-5 w-5 rounded" />
               <Skeleton class="h-5 w-32" />
             </div>
-            <Skeleton class="h-4 w-56 mt-1" />
+            <Skeleton class="h-4 w-56 max-w-full mt-1" />
           </div>
           <Skeleton class="h-9 w-28 rounded-md" />
         </div>

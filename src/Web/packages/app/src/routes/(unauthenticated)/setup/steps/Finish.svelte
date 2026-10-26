@@ -33,10 +33,10 @@
   } = $props();
 </script>
 
-<div class="px-4 py-8">
+<div class="@container px-4 py-8">
   <div class="flex flex-col gap-8">
     <h1
-      class="font-brand font-hairline text-5xl max-[820px]:text-4xl leading-tight text-foreground"
+      class="font-brand font-hairline text-4xl @xl:text-5xl leading-tight text-foreground"
     >
       {#if path === "migration" && importResult === "complete"}
         {#if voice.kind === "self"}

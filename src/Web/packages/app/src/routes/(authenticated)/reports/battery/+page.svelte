@@ -116,7 +116,7 @@
     </Button>
   </div>
 
-  <div class="flex items-center gap-2 text-sm text-muted-foreground print:hidden">
+  <div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground print:hidden">
     <Calendar class="h-4 w-4" />
     <span>
       {formatNumericDate(new Date(dateRange.from))} – {formatNumericDate(new Date(
@@ -176,7 +176,7 @@
         )}
         <Card>
           <CardHeader class="pb-2">
-            <div class="flex items-center justify-between">
+            <div class="flex flex-wrap items-center justify-between gap-2">
               <div class="flex items-center gap-2">
                 <span class="battery-status" data-status={stat?.status ?? ""}>
                   <StatIcon class="h-5 w-5" />
@@ -319,7 +319,7 @@
 
             {#if (stat?.warningEventCount ?? 0) > 0 || (stat?.urgentEventCount ?? 0) > 0}
               <Separator />
-              <div class="flex gap-4 text-sm">
+              <div class="flex flex-wrap gap-x-4 gap-y-1 text-sm">
                 {#if (stat?.warningEventCount ?? 0) > 0}
                   <div class="flex items-center gap-1 text-warning print:text-foreground">
                     <AlertTriangle class="h-4 w-4" />

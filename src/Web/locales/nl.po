@@ -7350,7 +7350,7 @@ msgstr ""
 
 #: src/routes/(authenticated)/settings/support/+page.svelte
 msgid "About Nocturne"
-msgstr ""
+msgstr "Over Nocturne"
 
 #: src/routes/(authenticated)/settings/support/+page.svelte
 msgid "License"
@@ -27051,19 +27051,19 @@ msgstr "Meldingsgeschiedenis"
 
 #: src/lib/help/settings.svelte.ts
 msgid "Connectors bring information from device services into Nocturne."
-msgstr ""
+msgstr "Connectors halen informatie uit de diensten van apparaten naar Nocturne."
 
 #: src/lib/help/settings.svelte.ts
 msgid "Find your source under Server Connectors and open its setup/settings. Review connection status and latest sync. Apps, uploaders, and API tokens have separate controls here."
-msgstr ""
+msgstr "Zoek uw bron onder Server Connectors en open de instellingen ervan. Bekijk de verbindingsstatus en de laatste synchronisatie. Apps, uploaders en API-tokens hebben hier eigen knoppen."
 
 #: src/lib/help/settings.svelte.ts
 msgid "Imported records feed the dashboard, reports, and patient histories. Each connector supports its own data types."
-msgstr ""
+msgstr "Geïmporteerde gegevens voeden het dashboard, de rapporten en de patiëntgeschiedenis. Elke connector ondersteunt eigen gegevenstypen."
 
 #: src/lib/help/settings.svelte.ts
 msgid "A configured connector may still need sign-in or import selection. Connected does not prove a historical import is complete. Empty data may be a permission, date, or source-sync problem."
-msgstr ""
+msgstr "Een ingestelde connector kan nog een aanmelding of een importkeuze nodig hebben. Verbonden bewijst niet dat een historische import klaar is. Lege gegevens kunnen komen door rechten, datums of de synchronisatie van de bron."
 
 #: src/lib/help/settings.svelte.ts
 msgid "Find support links and deployment information."
@@ -27087,55 +27087,55 @@ msgstr "Beschrijf de pagina, het verwachte resultaat en de stappen om het proble
 
 #: src/lib/help/settings.svelte.ts
 msgid "Review and record dated body weights."
-msgstr ""
+msgstr "Bekijk en noteer gedateerde lichaamsgewichten."
 
 #: src/lib/help/settings.svelte.ts
 msgid "Inspect the transition status between Nightscout and Nocturne."
-msgstr ""
+msgstr "Bekijk de status van de overgang tussen Nightscout en Nocturne."
 
 #: src/lib/help/settings.svelte.ts
 msgid "Server transition configuration and recorded transition status."
-msgstr ""
+msgstr "De overgangsinstellingen van de server en de vastgelegde overgangsstatus."
 
 #: src/lib/help/settings.svelte.ts
 msgid "The status helps the administrator see how the deployment is progressing."
-msgstr ""
+msgstr "De status helpt de beheerder te zien hoe de overgang vordert."
 
 #: src/lib/help/settings.svelte.ts
 msgid "Availability depends on the server's transition configuration. It is not a control for changing glucose values."
-msgstr ""
+msgstr "Beschikbaarheid hangt af van de overgangsinstellingen van de server. Het is geen knop om glucosewaarden te wijzigen."
 
 #: src/lib/help/settings.svelte.ts
 msgid "Ask a connector to read a chosen historical period again."
-msgstr ""
+msgstr "Laat een connector een gekozen periode uit het verleden opnieuw lezen."
 
 #: src/lib/help/settings.svelte.ts
 msgid "Stored connector import watermarks and reset-job progress for the selected tenant."
-msgstr ""
+msgstr "Opgeslagen importmarkeringen van connectors en de voortgang van de resettaak voor de gekozen tenant."
 
 #: src/lib/help/settings.svelte.ts
 msgid "Platform administrators choose Tenant, connector, and optional Lower bound here, then monitor or cancel the job."
-msgstr ""
+msgstr "Platformbeheerders kiezen hier Tenant, connector en eventueel Lower bound, en volgen of annuleren daarna de taak."
 
 #: src/lib/help/settings.svelte.ts
 msgid "A successful re-read fills or updates the normal imported histories, using normal duplicate protection."
-msgstr ""
+msgstr "Een geslaagde herlezing vult of werkt de gewone geïmporteerde geschiedenis bij, met de gewone bescherming tegen dubbele gegevens."
 
 #: src/lib/help/settings.svelte.ts
 msgid "This does not delete source data. It may be useful when an already-completed month received data late. Refresh inventory only scans availability and is not a historical re-import."
-msgstr ""
+msgstr "Dit verwijdert geen brongegevens. Het helpt als een afgesloten maand later nog gegevens kreeg. Refresh inventory controleert alleen de beschikbaarheid en is geen historische herimport."
 
 #: src/lib/help/settings.svelte.ts
 msgid "Link a Discord identity and manage its use with Nocturne."
-msgstr ""
+msgstr "Koppel een Discord-identiteit en beheer het gebruik ervan met Nocturne."
 
 #: src/lib/help/settings.svelte.ts
 msgid "Your linked chat identities and server bot configuration."
-msgstr ""
+msgstr "Uw gekoppelde chatidentiteiten en de botinstellingen van de server."
 
 #: src/lib/help/settings.svelte.ts
 msgid "Bot availability depends on deployment configuration. Revoking a link does not delete patient data or messages already sent."
-msgstr ""
+msgstr "Of de bot beschikbaar is, hangt af van de installatie. Een koppeling intrekken verwijdert geen patiëntgegevens of berichten die al verstuurd zijn."
 
 #: src/lib/components/help/HelpBrowser.svelte
 msgid "Official instructions and sources"
@@ -29208,19 +29208,19 @@ msgstr ""
 
 #: src/lib/help/settings.svelte.ts
 msgid "Server connectors, uploaders, authorized apps, client devices, and tokens configured for this tenant."
-msgstr ""
+msgstr "Serverconnectors, uploaders, toegestane apps, clientapparaten en tokens die voor deze tenant zijn ingesteld."
 
 #: src/lib/help/settings.svelte.ts
 msgid "Review the status on this page. Migration history is under Data Migration. Ongoing data sources are under Connectors & Apps."
-msgstr ""
+msgstr "Bekijk de status op deze pagina. De migratiegeschiedenis staat onder Data Migration. Doorlopende gegevensbronnen staan onder Connectors & Apps."
 
 #: src/lib/help/settings.svelte.ts
 msgid "Link, label, select the default, or revoke an identity here. Follow the bot's server-install controls where available."
-msgstr ""
+msgstr "Koppel, benoem, kies de standaard of trek een identiteit hier in. Volg de knoppen voor het installeren van de bot op de server waar die er zijn."
 
 #: src/lib/help/settings.svelte.ts
 msgid "The linked identity supports bot interactions authorized for your account."
-msgstr ""
+msgstr "De gekoppelde identiteit ondersteunt botacties die voor uw account zijn toegestaan."
 
 #: src/lib/help/reports.svelte.ts
 msgid "Use the chart's date and display controls. Points are samples. A connecting line is not an extra measurement."
@@ -34481,6 +34481,594 @@ msgstr "Geplande snelheid (E/uur), 00:00–23:00"
 #: src/lib/components/help/HelpChartExample.svelte
 msgid "These controls only change the example. Your records and saved settings stay the same."
 msgstr "Deze knoppen wijzigen alleen het voorbeeld. Je gegevens en opgeslagen instellingen blijven hetzelfde."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Yours or the tenant's"
+msgstr "Van u of van de tenant"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Account, Appearance, and Active access are yours. The other categories change the record of the selected tenant, so every member sees the change."
+msgstr "Account, Appearance en Active access zijn van u. De andere categorieën wijzigen het dossier van de geselecteerde tenant, dus elk lid ziet de wijziging."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "A missing category"
+msgstr "Een ontbrekende categorie"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Nocturne shows only the categories that your role permits. A missing category is not an error."
+msgstr "Nocturne toont alleen de categorieën die uw rol toestaat. Een ontbrekende categorie is geen fout."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Each row is a device or security key that can sign you in. Created and Last used show when it was added and last used. A passkey that you never use is a backup."
+msgstr "Elke regel is een apparaat of beveiligingssleutel waarmee u zich kunt aanmelden. Created en Last used tonen wanneer die is toegevoegd en voor het laatst is gebruikt. Een passkey die u nooit gebruikt, is een reserve."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Linked sign-in methods"
+msgstr "Gekoppelde aanmeldmethoden"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Each row is an account at Google, Microsoft, GitHub, or another provider that can sign you in. The email is the address of that provider account."
+msgstr "Elke regel is een account bij Google, Microsoft, GitHub of een andere provider waarmee u zich kunt aanmelden. Het e-mailadres is het adres van dat account bij de provider."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "The badge shows the number of unused codes. A red badge means 2 or fewer codes are left. Generate new codes before you use the last one."
+msgstr "Het label toont het aantal ongebruikte codes. Een rood label betekent dat er 2 of minder codes over zijn. Maak nieuwe codes aan voordat u de laatste gebruikt."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Session expires is the time at which you must sign in again. Roles and Permissions show what you can do in the selected tenant, not in other tenants."
+msgstr "Session expires is het moment waarop u zich opnieuw moet aanmelden. Roles en Permissions tonen wat u in de geselecteerde tenant mag, niet in andere tenants."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "These details describe the person, not the account. The timezone sets the local hours for alerts and schedules. Sex and date of birth select the typical ranges in sleep reports."
+msgstr "Deze gegevens beschrijven de persoon, niet het account. De tijdzone bepaalt de lokale uren voor meldingen en schema's. Geslacht en geboortedatum kiezen de gebruikelijke bereiken in slaaprapporten."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Devices and the order"
+msgstr "Apparaten en de volgorde"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Current means that the device has no end date. If two CGMs send readings at the same time, the higher device in the list supplies the charts, statistics, and alerts. The readings of the other CGM stay stored."
+msgstr "Current betekent dat het apparaat geen einddatum heeft. Als twee CGM's tegelijk metingen sturen, levert het hoogste apparaat in de lijst de grafieken, statistieken en meldingen. De metingen van de andere CGM blijven bewaard."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Each row is a stream of readings that is not linked to a device. The count and Last seen show how active it is. When you register it, it gets priority over unregistered streams."
+msgstr "Elke regel is een stroom metingen die niet aan een apparaat gekoppeld is. Het aantal en Last seen tonen hoe actief die is. Als u hem registreert, krijgt hij voorrang op niet-geregistreerde stromen."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Fixed bands and your target"
+msgstr "Vaste banden en uw doel"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "These color bands are the standard clinical bands and are the same for everyone. Your personal target from the therapy profile shows as a separate line on the chart."
+msgstr "Deze kleurbanden zijn de standaard klinische banden en zijn voor iedereen gelijk. Uw persoonlijke doel uit het therapieprofiel verschijnt als een aparte lijn in de grafiek."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Threshold bands colors each part of the line with the band color. Continuous gradient changes the color smoothly with the value. Single color uses one color for the full line."
+msgstr "Threshold bands kleurt elk deel van de lijn met de kleur van de band. Continuous gradient laat de kleur geleidelijk meegaan met de waarde. Single color gebruikt één kleur voor de hele lijn."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Outside target only fills the space between the glucose line and the target range when glucose is out of range. Then you can see quickly how far and how long glucose was out of range."
+msgstr "Outside target only kleurt alleen de ruimte tussen de glucoselijn en het doelbereik als glucose buiten bereik is. Zo ziet u snel hoe ver en hoe lang glucose buiten bereik was."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Smoothed and unsmoothed"
+msgstr "Afgevlakt en niet afgevlakt"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Smoothed values remove sensor noise but react later. Unsmoothed values react faster but jump more. This setting changes only the display, never the stored readings."
+msgstr "Afgevlakte waarden filteren sensorruis weg, maar reageren later. Niet-afgevlakte waarden reageren sneller, maar springen meer. Deze instelling verandert alleen de weergave, nooit de opgeslagen metingen."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Basal rates (U/hr)"
+msgstr "Basaalstanden (E/uur)"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "The insulin per hour that the pump is set to give in the background. Each row starts at its time and applies until the time of the next row."
+msgstr "De insuline per uur die de pomp op de achtergrond hoort te geven. Elke regel begint op zijn tijd en geldt tot de tijd van de volgende regel."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Carb ratios (g/U)"
+msgstr "Koolhydraatratio's (g/E)"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "The expected drop in glucose from one unit of insulin, in your glucose unit per unit. A higher number means that one unit has a stronger effect."
+msgstr "De verwachte daling van glucose door één eenheid insuline, in uw glucose-eenheid per eenheid. Een hoger getal betekent dat één eenheid sterker werkt."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "The glucose range that the profile aims for. It shows as a reference line on the charts. It does not change the colors of the standard range bands."
+msgstr "Het glucosebereik waar het profiel naar streeft. Het verschijnt als referentielijn in de grafieken. Het verandert de kleuren van de standaard bereikbanden niet."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "DIA, Carbs/hr, and Delay"
+msgstr "DIA, Carbs/hr en Delay"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Badges and the switch card"
+msgstr "Labels en de wisselkaart"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Default is the profile that applies without a switch. Read-only means that another app manages it. The switch card shows the percentage, the time shift, and when the switch started and ends."
+msgstr "Default is het profiel dat geldt zonder profielwissel. Read-only betekent dat een andere app het beheert. De wisselkaart toont het percentage, de tijdverschuiving en wanneer de wissel begon en eindigt."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Sleep schedule"
+msgstr "Slaapschema"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Bedtime and wake time mark the night in overnight analysis. They do not change alerts."
+msgstr "Bedtijd en opstaantijd markeren de nacht in de nachtanalyse. Ze veranderen geen meldingen."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Compression low"
+msgstr "Compressielow"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "A compression low is a short, sharp drop that recovers quickly, often while you lie on the sensor. The detection sends a suggestion that you confirm or dismiss in the data quality report."
+msgstr "Een compressielow is een korte, scherpe daling die snel herstelt, vaak terwijl u op de sensor ligt. De detectie stuurt een suggestie die u in het rapport over gegevenskwaliteit bevestigt of afwijst."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Two sources can upload the same event, such as a bolus from the pump and from the loop app. Deduplication links these copies, so that totals count each event once."
+msgstr "Twee bronnen kunnen dezelfde gebeurtenis uploaden, zoals een bolus van de pomp en van de loop-app. Ontdubbelen koppelt die kopieën, zodat totalen elke gebeurtenis één keer tellen."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "This is the time left until the expected end. Without a lifespan, it is the age of the tracker. Overdue in red means that the expected end has passed."
+msgstr "Dit is de tijd tot het verwachte einde. Zonder levensduur is het de leeftijd van de tracker. Overdue in rood betekent dat het verwachte einde voorbij is."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Border colors"
+msgstr "Randkleuren"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "The border shows the highest threshold that the tracker reached. Blue is Info, yellow is Warning, orange is Hazard, and red is Urgent."
+msgstr "De rand toont de hoogste drempel die de tracker bereikte. Blauw is Info, geel is Warning, oranje is Hazard en rood is Urgent."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Age and start"
+msgstr "Leeftijd en start"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Below the name, old shows the time since the start, and Started shows the date. Ages show as 45m, 6h, or 3d 4h."
+msgstr "Onder de naam toont old de tijd sinds de start, en Started de datum. Leeftijden verschijnen als 45m, 6h of 3d 4h."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Each completed tracker shows how long it ran and the reason, such as Completed, Failed, Fell off, or Replaced early. Use the reasons to see how often a sensor or site fails early."
+msgstr "Elke afgeronde tracker toont hoe lang hij liep en de reden, zoals Completed, Failed, Fell off of Replaced early. Gebruik de redenen om te zien hoe vaak een sensor of infuus te vroeg uitvalt."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Each row is a browser that is signed in to your account. This device marks the one that you use now. Last active and IP help you identify a session."
+msgstr "Elke regel is een browser die bij uw account is aangemeld. This device markeert de browser die u nu gebruikt. Last active en IP helpen u een sessie te herkennen."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "An unknown session"
+msgstr "Een onbekende sessie"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "If you do not recognize a session, sign it out. Then add a new passkey or recovery codes if you think that someone else has your sign-in method."
+msgstr "Als u een sessie niet herkent, meld die dan af. Voeg daarna een nieuwe passkey of herstelcodes toe als u denkt dat iemand anders uw aanmeldmethode heeft."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Owner has full control. Administrator manages data, members, and settings. Caretaker logs treatments and manages alerts. Clinician reads everything without changes. Viewer sees only glucose and reports."
+msgstr "Owner heeft volledige controle. Administrator beheert gegevens, leden en instellingen. Caretaker noteert behandelingen en beheert meldingen. Clinician leest alles zonder te wijzigen. Viewer ziet alleen glucose en rapporten."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Badges on a member"
+msgstr "Labels bij een lid"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Direct permissions are permissions in addition to the roles. 24-hour limit means that the member sees only the most recent 24 hours. Joined and Last active show the dates."
+msgstr "Losse rechten zijn rechten bovenop de rollen. 24-hour limit betekent dat het lid alleen de laatste 24 uur ziet. Joined en Last active tonen de datums."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Pending invites"
+msgstr "Openstaande uitnodigingen"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Each invite shows its role, its expiry date, and how many times it was used, such as 1/3 uses. Used by lists the people who joined with it."
+msgstr "Elke uitnodiging toont de rol, de vervaldatum en hoe vaak hij is gebruikt, zoals 1/3 uses. Used by toont wie ermee lid werd."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Guest link status"
+msgstr "Status van gastlinks"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Pending means that nobody used the code yet. Active means that a device is signed in for 48 hours. Expired and Revoked links no longer give access."
+msgstr "Pending betekent dat nog niemand de code gebruikte. Active betekent dat een apparaat 48 uur aangemeld is. Expired en Revoked links geven geen toegang meer."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "The summary sentence tells you exactly which categories and which time window anyone with the link can see. If no category is on, the link shows nothing."
+msgstr "De samenvattende zin vertelt precies welke categorieën en welke periode iedereen met de link kan zien. Als geen categorie aan staat, toont de link niets."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Data changes"
+msgstr "Gegevenswijzigingen"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Each row shows the time, who made the change, the action, and the type of record. System means that Nocturne made the change. Select a row to see the reason and the changed fields."
+msgstr "Elke regel toont de tijd, wie de wijziging deed, de actie en het soort gegeven. System betekent dat Nocturne de wijziging deed. Kies een regel om de reden en de gewijzigde velden te zien."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Actions"
+msgstr "Acties"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Create, Update, and Delete change one record. Bulk delete removed many records at once. Restore brought back a deleted record. Allow re-import let deleted records come back on the next import."
+msgstr "Create, Update en Delete wijzigen één gegeven. Bulk delete verwijderde veel gegevens tegelijk. Restore zette een verwijderd gegeven terug. Allow re-import liet verwijderde gegevens bij de volgende import terugkomen."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Data access"
+msgstr "Gegevenstoegang"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Each row shows who read data, the address that was used, the type of record, the number of records returned, and the result code. A code from 200 to 299 means success."
+msgstr "Elke regel toont wie gegevens las, het gebruikte adres, het soort gegeven, het aantal teruggegeven gegevens en de resultaatcode. Een code van 200 tot 299 betekent succes."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "The counters"
+msgstr "De tellers"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "The number on each tab is the total in the date range. The list shows only the most recent entries."
+msgstr "Het getal op elk tabblad is het totaal in het datumbereik. De lijst toont alleen de nieuwste regels."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Connection test"
+msgstr "Verbindingstest"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "A successful test shows the number of entries and treatments that Nocturne found. If the numbers are much lower than you expect, check the URL and the date range."
+msgstr "Een geslaagde test toont het aantal metingen en behandelingen dat Nocturne vond. Als de aantallen veel lager zijn dan u verwacht, controleer dan de URL en het datumbereik."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Each collection shows documents migrated against the total. The percentage is for the full job."
+msgstr "Elke collectie toont de gemigreerde documenten tegenover het totaal. Het percentage geldt voor de hele taak."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "History status"
+msgstr "Status in de geschiedenis"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Completed means that the job finished. Failed shows the reason. Interrupted means that the server stopped during the job. Canceled means that someone stopped it."
+msgstr "Completed betekent dat de taak klaar is. Failed toont de reden. Interrupted betekent dat de server tijdens de taak stopte. Canceled betekent dat iemand de taak stopte."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Running it again"
+msgstr "Opnieuw uitvoeren"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "A second migration of the same source updates the records that it already imported. It does not make duplicates, and records that you deleted do not come back."
+msgstr "Een tweede migratie van dezelfde bron werkt de gegevens bij die al geïmporteerd zijn. Er komen geen dubbele gegevens, en gegevens die u verwijderde, komen niet terug."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "The language list"
+msgstr "De lijst met talen"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Each language shows its name in English and in the language itself, with its code."
+msgstr "Elke taal toont haar naam in het Engels en in de taal zelf, met haar code."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Untranslated text"
+msgstr "Onvertaalde tekst"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "If a message has no translation, Nocturne shows the English text in its place."
+msgstr "Als een tekst geen vertaling heeft, toont Nocturne de Engelse tekst."
+
+#: src/lib/help/settings-meaning.svelte.ts src/lib/help/settings-meaning.svelte.ts
+msgid "Each entry"
+msgstr "Elk item"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "An entry shows the weight in kilograms and the time of the measurement. The newest entry is the current weight."
+msgstr "Een item toont het gewicht in kilogram en de tijd van de meting. Het nieuwste item is het huidige gewicht."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "How Nocturne uses it"
+msgstr "Hoe Nocturne het gebruikt"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Nocturne keeps weight as a record of the patient. It does not use weight in insulin or glucose calculations."
+msgstr "Nocturne bewaart gewicht als gegeven van de patiënt. Het gebruikt gewicht niet in berekeningen voor insuline of glucose."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "An entry shows a timezone and the local date and time of arrival. It applies until the next entry."
+msgstr "Een item toont een tijdzone en de lokale datum en tijd van aankomst. Het geldt tot het volgende item."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "When it matters"
+msgstr "Wanneer het ertoe doet"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "If readings from Glooko appear one or more hours early or late, the timezone history is probably wrong for that period."
+msgstr "Als metingen uit Glooko een of meer uren te vroeg of te laat verschijnen, klopt de tijdzonegeschiedenis waarschijnlijk niet voor die periode."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Migration status"
+msgstr "Migratiestatus"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "The counts show the records per type that Nocturne copied from Nightscout. Complete means that all old records were processed."
+msgstr "De aantallen tonen per type de gegevens die Nocturne uit Nightscout kopieerde. Complete betekent dat alle oude gegevens verwerkt zijn."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Write-back health"
+msgstr "Status van terugschrijven"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Nocturne also sends new data to Nightscout. Circuit open means that Nocturne paused these sends after failures. It tries again later."
+msgstr "Nocturne stuurt nieuwe gegevens ook naar Nightscout. Circuit open betekent dat Nocturne dit na fouten tijdelijk stopte. Het probeert het later opnieuw."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "The score is the percentage of compared fields that were the same in Nocturne and Nightscout. Below 95 percent, check the discrepancies before you disconnect."
+msgstr "De score is het percentage vergeleken velden dat in Nocturne en Nightscout gelijk was. Onder 95 procent controleert u de verschillen voordat u Nightscout loskoppelt."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Safe means that no blockers remain. Almost ready and Not ready list the blockers, such as a connector that is not configured or an unhealthy write-back."
+msgstr "Safe betekent dat er geen blokkades meer zijn. Almost ready en Not ready tonen de blokkades, zoals een connector die niet is ingesteld of een terugschrijfverbinding die niet werkt."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Each provider shows its name and whether it is enabled. An enabled provider appears as a button on the sign-in page."
+msgstr "Elke provider toont zijn naam en of hij is ingeschakeld. Een ingeschakelde provider verschijnt als knop op de aanmeldpagina."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Integrations"
+msgstr "Koppelingen"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Each chat platform shows whether its bot is enabled. A bot sends alerts and answers questions in that platform."
+msgstr "Elk chatplatform toont of de bot is ingeschakeld. Een bot stuurt meldingen en beantwoordt vragen op dat platform."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Active means that members can use the tenant. Inactive means that it is not available."
+msgstr "Active betekent dat leden de tenant kunnen gebruiken. Inactive betekent dat de tenant niet beschikbaar is."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Platform administrators"
+msgstr "Platformbeheerders"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "A switch that is on means that this member can manage every tenant on the instance. This is not a role inside the tenant."
+msgstr "Een schakelaar die aan staat, betekent dat dit lid elke tenant op de instantie kan beheren. Dit is geen rol binnen de tenant."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Used shows the database size as a percentage of the budget, 2048 MiB by default. The database size pill warns from 60 percent and is urgent from 75 percent. Nothing is blocked when it is full."
+msgstr "Used toont de grootte van de database als percentage van het budget, standaard 2048 MiB. Het label voor de databasegrootte waarschuwt vanaf 60 procent en is urgent vanaf 75 procent. Bij een vol budget wordt niets geblokkeerd."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Connector status"
+msgstr "Status van de connector"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Healthy means that the last sync worked. Unhealthy shows the last error. Last successful sync and Last attempt show the times."
+msgstr "Healthy betekent dat de laatste synchronisatie werkte. Unhealthy toont de laatste fout. Last successful sync en Last attempt tonen de tijden."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Reset progress"
+msgstr "Voortgang van de reset"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Each connector goes from Queued to Re-pulling to Reset, or to Failed. Records that come in again do not make duplicates."
+msgstr "Elke connector gaat van Queued naar Re-pulling naar Reset, of naar Failed. Gegevens die opnieuw binnenkomen, worden niet dubbel opgeslagen."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Each request"
+msgstr "Elk verzoek"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "A request shows the name and the message that the visitor typed, and how long ago they sent it. Nocturne does not check the name."
+msgstr "Een verzoek toont de naam en het bericht die de bezoeker typte, en hoe lang geleden het verzoek kwam. Nocturne controleert de naam niet."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "If the title says Additional permissions, the app already has access. New permissions requested lists only the new access. Previously approved lists what it already has."
+msgstr "Als de titel Additional permissions is, heeft de app al toegang. New permissions requested toont alleen de nieuwe toegang. Previously approved toont wat de app al heeft."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "The warnings"
+msgstr "De waarschuwingen"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Not in the known app directory means that Nocturne cannot identify the app. Full access means that the app can also delete data."
+msgstr "Not in the known app directory betekent dat Nocturne de app niet herkent. Volledige toegang betekent dat de app ook gegevens kan verwijderen."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "The result"
+msgstr "Het resultaat"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Device authorized means that the device now has access. Authorization denied means that it gets nothing. Code expired means that you must start again on the device."
+msgstr "Device authorized betekent dat het apparaat nu toegang heeft. Authorization denied betekent dat het niets krijgt. Code expired betekent dat u op het apparaat opnieuw moet beginnen."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "The counter"
+msgstr "De teller"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "The top line shows how many messages are translated or drafted, out of all messages. The draft count shows how many edits wait for Submit."
+msgstr "De bovenste regel toont hoeveel teksten vertaald of als concept ingevuld zijn, van alle teksten. Het aantal concepten toont hoeveel wijzigingen wachten op Submit."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Message status"
+msgstr "Status van een tekst"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Translated means that Nocturne has a translation. Untranslated means that users see English. Fuzzy means that the English text changed, so check the old translation. Draft means your unsent edit."
+msgstr "Translated betekent dat Nocturne een vertaling heeft. Untranslated betekent dat gebruikers Engels zien. Fuzzy betekent dat de Engelse tekst veranderde, dus controleer de oude vertaling. Draft is uw nog niet verstuurde wijziging."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Active or Inactive"
+msgstr "Actief of inactief"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "The badge shows whether the connector is enabled and syncs data. Inactive means that it does not import anything."
+msgstr "Het label toont of de connector is ingeschakeld en gegevens synchroniseert. Inactive betekent dat hij niets importeert."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Supported data types lists what the connector can import. Max historical days is how far back it can download. If historical sync is not supported, it cannot fill old gaps."
+msgstr "Supported data types toont wat de connector kan importeren. Max historical days is hoe ver terug hij kan downloaden. Als historische synchronisatie niet wordt ondersteund, kan hij oude gaten niet vullen."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Fill in missing history"
+msgstr "Ontbrekende geschiedenis aanvullen"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "A normal sync only looks for data newer than your newest reading. A history download fetches everything from the day you choose. Readings you already have are kept, not duplicated."
+msgstr "Een gewone synchronisatie zoekt alleen naar gegevens die nieuwer zijn dan uw nieuwste meting. Een geschiedenisdownload haalt alles op vanaf de dag die u kiest. Metingen die u al hebt, blijven staan zonder dubbels."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Active, Stale, and Inactive"
+msgstr "Active, Stale en Inactive"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Active means data arrived in the last 15 minutes. Stale means 15 to 60 minutes ago. Inactive means more than 60 minutes ago. Some connectors use longer times because they sync less often."
+msgstr "Active betekent dat er in de laatste 15 minuten gegevens binnenkwamen. Stale betekent 15 tot 60 minuten geleden. Inactive betekent meer dan 60 minuten geleden. Sommige connectors gebruiken langere tijden omdat ze minder vaak synchroniseren."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "The total is the number of records from that source. In 24h is the number from the last 24 hours. Hover over it to see the count per data type."
+msgstr "Het totaal is het aantal gegevens uit die bron. In 24h is het aantal uit de laatste 24 uur. Ga erop staan met de muis om het aantal per gegevenstype te zien."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Sync status"
+msgstr "Synchronisatiestatus"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Syncing and Sync complete show a running or finished sync. Backing off means that the source refused requests, so Nocturne waits before it tries again. Error shows the last message."
+msgstr "Syncing en Sync complete tonen een lopende of afgeronde synchronisatie. Backing off betekent dat de bron verzoeken weigerde, dus Nocturne wacht voordat het opnieuw probeert. Error toont het laatste bericht."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Connected apps and tokens"
+msgstr "Gekoppelde apps en tokens"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Each app or token shows its permissions and when it was last used. Revoke one that you do not recognize."
+msgstr "Elke app of token toont de rechten en wanneer die voor het laatst is gebruikt. Trek er een in die u niet herkent."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Translate a language"
+msgstr "Een taal vertalen"
+
+#: src/lib/help/settings.svelte.ts
+msgid "Translate the messages of Nocturne into one language, and submit your drafts."
+msgstr "Vertaal de teksten van Nocturne in één taal en verstuur uw concepten."
+
+#: src/lib/help/settings.svelte.ts
+msgid "The English messages of this version, the translations that Nocturne already has, and the drafts saved to your account for this language."
+msgstr "De Engelse teksten van deze versie, de vertalingen die Nocturne al heeft en de concepten die voor deze taal in uw account zijn opgeslagen."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Search the source text or the translations. The filter shows all messages, only untranslated messages, or only your drafts. Type in a field to make a draft. Discard draft removes one. Submit sends all drafts with your name."
+msgstr "Zoek in de brontekst of de vertalingen. Het filter toont alle teksten, alleen onvertaalde teksten of alleen uw concepten. Typ in een veld om een concept te maken. Discard draft verwijdert er een. Submit verstuurt alle concepten met uw naam."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Submitted drafts are proposed to the Nocturne project as a pull request. After review, they appear in a later version for every user of that language."
+msgstr "Verstuurde concepten worden als pull request aan het Nocturne-project voorgesteld. Na beoordeling verschijnen ze in een latere versie voor iedereen die die taal gebruikt."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Drafts are saved to your account only. Other users do not see them before a release. A message with plural forms has one field for each form, and you must fill in all of them."
+msgstr "Concepten worden alleen in uw account opgeslagen. Andere gebruikers zien ze niet vóór een release. Een tekst met meervoudsvormen heeft een veld per vorm, en u moet ze allemaal invullen."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Connector setup"
+msgstr "Een connector instellen"
+
+#: src/lib/help/settings.svelte.ts
+msgid "Configure one connector, see what it can import, and fill gaps in its history."
+msgstr "Stel één connector in, zie wat hij kan importeren en vul gaten in de geschiedenis aan."
+
+#: src/lib/help/settings.svelte.ts
+msgid "The settings of this connector stored on the server, and the sync capabilities that the connector reports."
+msgstr "De instellingen van deze connector die op de server zijn opgeslagen, en de synchronisatiemogelijkheden die de connector doorgeeft."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Enable connector starts or stops the sync. Enter the credentials and settings, then save. Fill in missing history downloads data again from a day that you choose."
+msgstr "Enable connector start of stopt de synchronisatie. Vul de inloggegevens en instellingen in en sla op. Fill in missing history downloadt opnieuw gegevens vanaf een dag die u kiest."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Imported records appear in the dashboard, the reports, and Connectors & apps as a data source."
+msgstr "Geïmporteerde gegevens verschijnen in het dashboard, de rapporten en in Connectors & apps als gegevensbron."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Only members who can manage the settings of the tenant can change a connector. Some connectors are configured only with environment variables on the server."
+msgstr "Alleen leden die de tenantinstellingen mogen beheren, kunnen een connector wijzigen. Sommige connectors zijn alleen in te stellen met omgevingsvariabelen op de server."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "When at least one app is listed, every sign-in also requires its 6-digit code. The code changes every 30 seconds."
+msgstr "Als er ten minste één app in de lijst staat, vraagt elke aanmelding ook om de 6-cijferige code. De code verandert elke 30 seconden."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "DIA is the duration of insulin action in hours. Unless another app manages the profile, the rapid-acting insulin in use sets the action time for insulin on board and predictions."
+msgstr "DIA is de werkingsduur van insuline in uren. Tenzij een andere app het profiel beheert, bepaalt de snelwerkende insuline die in gebruik is de werkingsduur voor actieve insuline en voorspellingen."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "The grams of carbs that one unit of insulin covers. A higher number means less insulin for the same meal."
+msgstr "Het aantal gram koolhydraten dat één eenheid insuline dekt. Een hoger getal betekent minder insuline voor dezelfde maaltijd."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "DIA is the hours that insulin stays active. Carbs/hr is the grams of carbs absorbed per hour for carbs on board. Delay is a value from the source app."
+msgstr "DIA is het aantal uren dat insuline actief blijft. Carbs/hr is het aantal gram koolhydraten dat per uur wordt opgenomen, voor actieve koolhydraten. Delay is een waarde uit de bron-app."
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Filter the messages"
+msgstr "Filter de teksten"
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Show the untranslated messages first, or search for a word on the page that you want to translate."
+msgstr "Toon eerst de onvertaalde teksten, of zoek een woord van de pagina die u wilt vertalen."
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Type the translation"
+msgstr "Typ de vertaling"
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Each edit is saved as a draft. Copy placeholders and markup tags exactly as they are in the English text."
+msgstr "Elke wijziging wordt als concept opgeslagen. Neem plaatshouders en opmaaktags precies over zoals ze in de Engelse tekst staan."
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Submit sends your drafts with your name. Other users see them after review, in a later version."
+msgstr "Submit verstuurt uw concepten met uw naam. Andere gebruikers zien ze na beoordeling, in een latere versie."
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Check the status"
+msgstr "Controleer de status"
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "The badge shows whether the connector is active. Sync capabilities show what it can import."
+msgstr "Het label toont of de connector actief is. Sync capabilities toont wat hij kan importeren."
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Save the settings"
+msgstr "Sla de instellingen op"
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Enter the credentials and settings, then save. Enable connector starts the sync."
+msgstr "Vul de inloggegevens en instellingen in en sla op. Enable connector start de synchronisatie."
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Fill a gap"
+msgstr "Vul een gat aan"
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "If old data is missing, use Fill in missing history from the first day without data."
+msgstr "Als oude gegevens ontbreken, gebruik dan Fill in missing history vanaf de eerste dag zonder gegevens."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Commit and Built identify the exact version of the server. Give these values when you report a problem."
+msgstr "Commit en Built geven de precieze versie van de server aan. Vermeld deze waarden als u een probleem meldt."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Diagnostic logs"
+msgstr "Diagnostische logboeken"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "The logs contain technical details only. They never contain glucose data, API tokens, or passwords."
+msgstr "De logboeken bevatten alleen technische details. Ze bevatten nooit glucosegegevens, API-tokens of wachtwoorden."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Each row is a Discord account linked to your Nocturne account. The label is the name that you type after /bg in Discord."
+msgstr "Elke regel is een Discord-account dat aan uw Nocturne-account gekoppeld is. Het label is de naam die u in Discord na /bg typt."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "The default link answers /bg when you type no label."
+msgstr "De standaardkoppeling antwoordt op /bg als u geen label typt."
 
 #~ msgid "Sharing & Privacy"
 #~ msgstr "Delen en privacy"
@@ -44833,4 +45421,16 @@ msgstr "Deze knoppen wijzigen alleen het voorbeeld. Je gegevens en opgeslagen in
 #~ msgstr ""
 
 #~ msgid "The glucose line runs under the stages, so you can see lows and rises in each stage. A low wakes you up more often than a deep sleep stage suggests."
+#~ msgstr ""
+
+#~ msgid "When at least one app is listed, every sign-in also asks for its 6-digit code. The code changes every 30 seconds."
+#~ msgstr ""
+
+#~ msgid "DIA is the duration of insulin action in hours. The rapid-acting insulin that is in use sets the action time for insulin on board and predictions, unless another app manages the profile."
+#~ msgstr ""
+
+#~ msgid "The grams of carbohydrate that one unit of insulin covers. A higher number means less insulin for the same meal."
+#~ msgstr ""
+
+#~ msgid "DIA is the hours that insulin stays active. Carbs/hr is the grams of carbohydrate absorbed per hour for carbs on board. Delay is a value from the source app."
 #~ msgstr ""

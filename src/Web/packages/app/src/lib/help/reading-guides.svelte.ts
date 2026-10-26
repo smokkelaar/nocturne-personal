@@ -1133,6 +1133,42 @@ export function readingGuides(): Record<string, ReadingGuide> {
         ],
       ]
     ),
+    "/settings/translations/[locale]": entry(
+      "flow",
+      ["/settings/translations"],
+      [
+        [
+          "Filter the messages",
+          "Show the untranslated messages first, or search for a word on the page that you want to translate.",
+        ],
+        [
+          "Type the translation",
+          "Each edit is saved as a draft. Copy placeholders and markup tags exactly as they are in the English text.",
+        ],
+        [
+          "Submit the drafts",
+          "Submit sends your drafts with your name. Other users see them after review, in a later version.",
+        ],
+      ]
+    ),
+    "/settings/connectors/[connector]": entry(
+      "flow",
+      ["/settings/connectors"],
+      [
+        [
+          "Check the status",
+          "The badge shows whether the connector is active. Sync capabilities show what it can import.",
+        ],
+        [
+          "Save the settings",
+          "Enter the credentials and settings, then save. Enable connector starts the sync.",
+        ],
+        [
+          "Fill a gap",
+          "If old data is missing, use Fill in missing history from the first day without data.",
+        ],
+      ]
+    ),
     "/settings/translations": entry(
       "flow",
       ["/settings/appearance"],

@@ -284,8 +284,14 @@ describe("contextual documentation", () => {
     expect(admin.some((link) => link.href === "/settings/admin")).toBe(true);
     expect(articleFor("/oauth/device", admin).title).toBe("Link a device");
     expect(articleFor("/settings/translations/nl", admin).title).toBe(
-      "Translations"
+      "Translate a language"
     );
+    expect(articleFor("/settings/connectors/unknown", admin).title).toBe(
+      "Connector setup"
+    );
+    expect(
+      articleFor("/settings/appearance", admin).meaning?.map((m) => m.title)
+    ).toContain("Glucose ranges");
   });
   it("uses supplied thresholds instead of copying default glucose limits into help", () => {
     const bands = glucoseBands({

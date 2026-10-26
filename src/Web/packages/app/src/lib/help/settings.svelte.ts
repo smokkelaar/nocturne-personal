@@ -332,6 +332,26 @@ export function settingsArticles(): HelpArticle[] {
       ["/settings/appearance"]
     ),
     guide(
+      "/settings/translations/[locale]",
+      "Translate a language",
+      "Translate the messages of Nocturne into one language, and submit your drafts.",
+      "The English messages of this version, the translations that Nocturne already has, and the drafts saved to your account for this language.",
+      "Search the source text or the translations. The filter shows all messages, only untranslated messages, or only your drafts. Type in a field to make a draft. Discard draft removes one. Submit sends all drafts with your name.",
+      "Submitted drafts are proposed to the Nocturne project as a pull request. After review, they appear in a later version for every user of that language.",
+      "Drafts are saved to your account only. Other users do not see them before a release. A message with plural forms has one field for each form, and you must fill in all of them.",
+      ["/settings/translations", "/settings/appearance"]
+    ),
+    guide(
+      "/settings/connectors/[connector]",
+      "Connector setup",
+      "Configure one connector, see what it can import, and fill gaps in its history.",
+      "The settings of this connector stored on the server, and the sync capabilities that the connector reports.",
+      "Enable connector starts or stops the sync. Enter the credentials and settings, then save. Fill in missing history downloads data again from a day that you choose.",
+      "Imported records appear in the dashboard, the reports, and Connectors & apps as a data source.",
+      "Only members who can manage the settings of the tenant can change a connector. Some connectors are configured only with environment variables on the server.",
+      ["/settings/connectors"]
+    ),
+    guide(
       "/settings/weight",
       "Weight history",
       "Review and record dated body weights.",

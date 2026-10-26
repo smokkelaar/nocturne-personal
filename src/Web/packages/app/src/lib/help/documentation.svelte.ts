@@ -7,6 +7,7 @@ import { settingsArticles } from "./settings.svelte";
 import { connectorArticles } from "./connectors.svelte";
 import { readingGuides } from "./reading-guides.svelte";
 import { pageMeanings } from "./meanings.svelte";
+import { reportMeanings } from "./report-meanings.svelte";
 import { glucoseReferenceArticle } from "./glucose-reference.svelte";
 import { dataRoutesArticle } from "./data-routes.svelte";
 import { DATA_ROUTES_PATH, GLUCOSE_REFERENCE_PATH } from "./reference-path";
@@ -14,7 +15,7 @@ import { DATA_ROUTES_PATH, GLUCOSE_REFERENCE_PATH } from "./reference-path";
 // Per-call factories let translated titles follow the current locale.
 export function articles(): HelpArticle[] {
   const readings = readingGuides();
-  const meanings = pageMeanings();
+  const meanings = { ...pageMeanings(), ...reportMeanings() };
   const entries = [
     ...pageArticles(),
     ...reportArticles(),

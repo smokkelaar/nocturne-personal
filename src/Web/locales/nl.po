@@ -18378,7 +18378,7 @@ msgstr ""
 
 #: src/lib/components/reports/loop-analysis/event-labels.svelte.ts
 msgid "Lowest glucose"
-msgstr ""
+msgstr "Laagste glucose"
 
 #: src/lib/components/reports/loop-analysis/event-labels.svelte.ts
 msgid "Time to lowest glucose"
@@ -18465,7 +18465,7 @@ msgstr ""
 
 #: src/lib/components/reports/loop-analysis/filter-labels.svelte.ts src/lib/help/reports.svelte.ts
 msgid "Only rises with extra loop insulin"
-msgstr ""
+msgstr "Alleen stijgingen met extra loopinsuline"
 
 #: src/lib/components/reports/loop-analysis/filter-labels.svelte.ts
 msgid "Before the event"
@@ -18549,7 +18549,7 @@ msgstr ""
 
 #: src/lib/components/reports/loop-analysis/loop-analysis-pages.svelte.ts src/lib/help/reports.svelte.ts
 msgid "This page aligns your glucose and insulin on meals, corrections and other events. It shows the time before and after each event."
-msgstr ""
+msgstr "Deze pagina legt je glucose en insuline naast maaltijden, correcties en andere gebeurtenissen. Ze toont de tijd voor en na elke gebeurtenis."
 
 #: src/lib/components/reports/loop-analysis/loop-analysis-pages.svelte.ts
 msgid "This page compares the glucose predictions of the loop with the glucose readings that followed them."
@@ -18557,7 +18557,7 @@ msgstr ""
 
 #: src/lib/components/reports/loop-analysis/loop-analysis-pages.svelte.ts src/lib/help/reports.svelte.ts
 msgid "This page shows how much of the time the loop was closed, why it stopped and how frequently it reached its limits."
-msgstr ""
+msgstr "Deze pagina toont hoeveel van de tijd de loop gesloten was, waarom ze stopte en hoe vaak ze haar grenzen bereikte."
 
 #: src/lib/components/reports/loop-analysis/loop-analysis-pages.svelte.ts
 msgid "This page compares your profile settings with observations from your data. Speak to your diabetes care team before you change a setting."
@@ -26923,23 +26923,23 @@ msgstr "Grenzen en ontbrekende informatie"
 
 #: src/lib/help/reports.svelte.ts
 msgid "Reports overview"
-msgstr ""
+msgstr "Overzicht van rapporten"
 
 #: src/lib/help/reports.svelte.ts
 msgid "Explore the recorded glucose trace and its treatment context."
-msgstr ""
+msgstr "Bekijk het opgeslagen glucoseverloop met de behandelingen eromheen."
 
 #: src/lib/help/reports.svelte.ts
 msgid "These readings also feed the dashboard, calendar, and glucose statistics."
-msgstr ""
+msgstr "Dezelfde metingen gebruiken het dashboard, de kalender en de glucosestatistieken."
 
 #: src/lib/help/reports.svelte.ts
 msgid "Compare devices that recorded glucose near the same time."
-msgstr ""
+msgstr "Vergelijk apparaten die rond hetzelfde moment glucose maten."
 
 #: src/lib/help/reports.svelte.ts
 msgid "Readings paired between your selected device and reference."
-msgstr ""
+msgstr "Metingen van je gekozen apparaat, gekoppeld aan metingen van de referentie."
 
 #: src/lib/help/reports.svelte.ts
 msgid "This guide covers Steps: counting steps and viewing your activity over time."
@@ -26983,31 +26983,31 @@ msgstr ""
 
 #: src/lib/help/reports.svelte.ts
 msgid "Browse, search, add, or edit diabetes events."
-msgstr ""
+msgstr "Bekijk, zoek, voeg toe of bewerk diabetesgebeurtenissen."
 
 #: src/lib/help/reports.svelte.ts
 msgid "Event time, units, and type matter. Deletion changes later analysis. A source can recreate records on import unless the applicable deletion protection prevents it."
-msgstr ""
+msgstr "Tijd, eenheden en type van een gebeurtenis zijn belangrijk. Verwijderen verandert latere analyses. Een bron kan records bij een import opnieuw aanmaken, tenzij de verwijderbeveiliging dat voorkomt."
 
 #: src/lib/help/reports.svelte.ts
 msgid "Review battery information uploaded by devices."
-msgstr ""
+msgstr "Bekijk de batterij-informatie die apparaten uploaden."
 
 #: src/lib/help/reports.svelte.ts
 msgid "Device-status records containing battery values."
-msgstr ""
+msgstr "Apparaatstatusrecords met batterijwaarden."
 
 #: src/lib/help/reports.svelte.ts
 msgid "Choose dates here. Configure devices and uploaders in Connectors & Apps."
-msgstr ""
+msgstr "Kies hier de datums. Stel apparaten en uploaders in bij Connectors & Apps."
 
 #: src/lib/help/reports.svelte.ts
 msgid "Battery history helps identify devices needing charging or missing uploads."
-msgstr ""
+msgstr "De batterijgeschiedenis toont apparaten die opgeladen moeten worden of die geen uploads meer sturen."
 
 #: src/lib/help/reports.svelte.ts
 msgid "Devices use different formats and update intervals. Missing battery information means unknown, not empty."
-msgstr ""
+msgstr "Apparaten gebruiken verschillende formaten en intervallen. Ontbrekende batterij-informatie betekent onbekend, niet leeg."
 
 #: src/lib/help/reports.svelte.ts
 msgid "Sleep night"
@@ -27333,11 +27333,11 @@ msgstr "Gebruik de grafiekknoppen voor de weergave en Appearance voor eenheden, 
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Choose a question"
-msgstr ""
+msgstr "Kies een vraag"
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Use the summary for an overview, patterns for timing, and lifestyle reports for activity."
-msgstr ""
+msgstr "Gebruik de samenvatting voor een overzicht, patronen voor timing en leefstijlrapporten voor activiteit."
 
 #: src/lib/help/reading-guides.svelte.ts src/lib/help/reading-guides.svelte.ts src/lib/help/reading-guides.svelte.ts
 msgid "Choose dates"
@@ -27345,19 +27345,19 @@ msgstr "Kies datums"
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Open the detail"
-msgstr ""
+msgstr "Open de details"
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Follow the relevant report rather than trying to explain a change from one summary figure."
-msgstr ""
+msgstr "Open het passende rapport in plaats van een verandering uit één samenvattend cijfer te verklaren."
 
 #: src/lib/help/reading-guides.svelte.ts src/lib/help/reading-guides.svelte.ts
 msgid "Check coverage"
-msgstr ""
+msgstr "Controleer de dekking"
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Read the reliability indicator before trusting the headline measures."
-msgstr ""
+msgstr "Lees de betrouwbaarheidsindicator voordat je op de hoofdcijfers vertrouwt."
 
 #: src/lib/help/reading-guides.svelte.ts src/lib/help/reading-guides.svelte.ts
 msgid "Read the summary"
@@ -27365,195 +27365,195 @@ msgstr "Lees de samenvatting"
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Average, range percentages, and variation answer different questions."
-msgstr ""
+msgstr "Gemiddelde, bereikpercentages en variatie beantwoorden verschillende vragen."
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Investigate a pattern"
-msgstr ""
+msgstr "Onderzoek een patroon"
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Use AGP for typical timing and Day in Review for an actual day's events."
-msgstr ""
+msgstr "Gebruik AGP voor de gebruikelijke timing en Day in Review voor de gebeurtenissen van een echte dag."
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Find the middle line"
-msgstr ""
+msgstr "Zoek de middelste lijn"
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "The median describes the middle of the recorded values at each time of day."
-msgstr ""
+msgstr "De mediaan beschrijft het midden van de gemeten waarden op elk moment van de dag."
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Read the width"
-msgstr ""
+msgstr "Lees de breedte"
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "A wider percentile envelope means more variation between days at that time."
-msgstr ""
+msgstr "Een bredere percentielband betekent meer verschil tussen dagen op dat moment."
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Open an actual day"
-msgstr ""
+msgstr "Open een echte dag"
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "AGP combines days. Use Day in Review to see the events behind an individual trace."
-msgstr ""
+msgstr "AGP combineert dagen. Gebruik Day in Review om de gebeurtenissen achter één dag te zien."
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Read the histogram"
-msgstr ""
+msgstr "Lees het histogram"
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Taller bars mean more recorded readings in that glucose interval."
-msgstr ""
+msgstr "Hogere balken betekenen meer metingen in dat glucose-interval."
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Compare the spread"
-msgstr ""
+msgstr "Vergelijk de spreiding"
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "A narrow cluster and a wide spread describe different degrees of variation."
-msgstr ""
+msgstr "Een smalle groep en een brede spreiding beschrijven een verschillende mate van variatie."
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Check hourly differences"
-msgstr ""
+msgstr "Controleer verschillen per uur"
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "The hourly panel shows whether the overall distribution hides time-of-day differences."
-msgstr ""
+msgstr "Het paneel per uur laat zien of de totale verdeling verschillen per tijdstip verbergt."
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Add a lab result"
-msgstr ""
+msgstr "Voeg een labuitslag toe"
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Select the interval you want to inspect on the chart."
-msgstr ""
+msgstr "Selecteer in de grafiek de periode die je wilt bekijken."
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Follow samples"
-msgstr ""
+msgstr "Volg de metingen"
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Inspect context"
-msgstr ""
+msgstr "Bekijk de context"
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Use the chart's tracks and event details rather than treating every nearby event as a cause."
-msgstr ""
+msgstr "Gebruik de sporen en details van de grafiek, in plaats van elke gebeurtenis in de buurt als oorzaak te zien."
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Pick the day"
-msgstr ""
+msgstr "Kies de dag"
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Review one actual date instead of a typical-day average."
-msgstr ""
+msgstr "Bekijk één echte datum in plaats van een gemiddelde dag."
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Align the events"
-msgstr ""
+msgstr "Leg de gebeurtenissen naast elkaar"
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Compare treatment timestamps with the glucose trace and available device context."
-msgstr ""
+msgstr "Vergelijk de tijden van behandelingen met het glucoseverloop en de beschikbare apparaatgegevens."
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Check the record"
-msgstr ""
+msgstr "Controleer het record"
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "If an event is wrong or missing, review Treatments or its source import."
-msgstr ""
+msgstr "Als een gebeurtenis fout is of ontbreekt, controleer dan Treatments of de import van de bron."
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Compare the same weekday"
-msgstr ""
+msgstr "Vergelijk dezelfde weekdag"
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Look for timing"
-msgstr ""
+msgstr "Let op de timing"
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Notice consistent differences between weekdays before checking individual days."
-msgstr ""
+msgstr "Zoek vaste verschillen tussen weekdagen voordat je losse dagen bekijkt."
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Choose A and B"
-msgstr ""
+msgstr "Kies A en B"
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Select a preset or edit both periods and their labels."
-msgstr ""
+msgstr "Selecteer een voorinstelling of pas beide periodes en hun namen aan."
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Apply with Load"
-msgstr ""
+msgstr "Toepassen met Load"
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Draft dates do not change the displayed results until Load. Swap exchanges the loaded periods."
-msgstr ""
+msgstr "Gekozen datums veranderen de getoonde resultaten pas na Load. Swap wisselt de geladen periodes om."
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Compare equivalent data"
-msgstr ""
+msgstr "Vergelijk gelijkwaardige gegevens"
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Check duration, coverage, and source changes before interpreting a difference."
-msgstr ""
+msgstr "Controleer duur, dekking en wijzigingen van bron voordat je een verschil uitlegt."
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Read one hour"
-msgstr ""
+msgstr "Lees één uur"
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Each bar groups that hour's readings across the selected days."
-msgstr ""
+msgstr "Elke balk groepeert de metingen van dat uur over de gekozen dagen."
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Read the composition"
-msgstr ""
+msgstr "Lees de opbouw"
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Inspect the timing"
-msgstr ""
+msgstr "Bekijk de timing"
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Use the hourly summaries to select a time window for the readings chart."
-msgstr ""
+msgstr "Gebruik de samenvattingen per uur om een tijdvenster voor de metingengrafiek te kiezen."
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Choose the question"
-msgstr ""
+msgstr "Kies de vraag"
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Inspect nearby glucose"
-msgstr ""
+msgstr "Bekijk de glucose eromheen"
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Choose two devices"
-msgstr ""
+msgstr "Kies twee apparaten"
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Set Match within"
-msgstr ""
+msgstr "Stel Match within in"
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "A larger tolerance admits readings farther apart in time."
-msgstr ""
+msgstr "Met een grotere tolerantie mogen metingen verder uit elkaar liggen in tijd."
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Read the diagonal"
-msgstr ""
+msgstr "Lees de diagonaal"
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Find a suggestion"
-msgstr ""
+msgstr "Zoek een suggestie"
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Accept or dismiss"
-msgstr ""
+msgstr "Accepteren of afwijzen"
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Read daily totals"
@@ -27645,127 +27645,127 @@ msgstr ""
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Find an event"
-msgstr ""
+msgstr "Zoek een gebeurtenis"
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Choose a category and use Search to narrow the treatment table."
-msgstr ""
+msgstr "Kies een categorie en gebruik Search om de tabel met behandelingen te verkleinen."
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Check its fields"
-msgstr ""
+msgstr "Controleer de velden"
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Save deliberately"
-msgstr ""
+msgstr "Sla bewust op"
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Add/edit and bulk deletion change the stored events used by other reports."
-msgstr ""
+msgstr "Toevoegen, bewerken en meerdere tegelijk verwijderen veranderen de opgeslagen gebeurtenissen die andere rapporten gebruiken."
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Separate rate and amount"
-msgstr ""
+msgstr "Houd stand en hoeveelheid uit elkaar"
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Compare schedule and records"
-msgstr ""
+msgstr "Vergelijk schema en records"
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Profiles supply the schedule, while delivery and temporary-basal records describe changes."
-msgstr ""
+msgstr "Profielen leveren het schema. Records van afgifte en tijdelijke basaal beschrijven de wijzigingen."
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Check missing context"
-msgstr ""
+msgstr "Controleer ontbrekende context"
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "A missing historical profile or delivery interval leaves part of the analysis uncertain."
-msgstr ""
+msgstr "Een ontbrekend oud profiel of een ontbrekende afgifteperiode maakt een deel van de analyse onzeker."
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Compare basal and bolus"
-msgstr ""
+msgstr "Vergelijk basaal en bolus"
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "The ratio chart shows their contribution to recorded delivery."
-msgstr ""
+msgstr "De verhoudingsgrafiek toont hun aandeel in de vastgelegde afgifte."
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Inspect daily and hourly totals"
-msgstr ""
+msgstr "Bekijk totalen per dag en per uur"
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "These views reveal different timing patterns within the selected period."
-msgstr ""
+msgstr "Deze weergaven tonen verschillende patronen in timing binnen de gekozen periode."
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Check completeness"
-msgstr ""
+msgstr "Controleer de volledigheid"
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Missing basal durations or bolus uploads can understate delivered totals."
-msgstr ""
+msgstr "Ontbrekende basaalduren of bolusuploads maken de afgegeven totalen te laag."
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Locate the change"
-msgstr ""
+msgstr "Zoek de wissel"
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Read before and after"
-msgstr ""
+msgstr "Lees voor en na"
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Compare the available glucose in the surrounding windows."
-msgstr ""
+msgstr "Vergelijk de beschikbare glucose in de periodes eromheen."
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Check event timing"
-msgstr ""
+msgstr "Controleer de tijd van de gebeurtenis"
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "A missing or incorrectly dated site-change record makes the comparison less useful."
-msgstr ""
+msgstr "Een ontbrekend of verkeerd gedateerd record van een wissel maakt de vergelijking minder bruikbaar."
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Read the combined view"
-msgstr ""
+msgstr "Lees de gecombineerde weergave"
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Glucose patterns and delivery summaries share a daily time scale."
-msgstr ""
+msgstr "Glucosepatronen en samenvattingen van afgifte delen één tijdschaal van een dag."
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Separate planned and delivered"
-msgstr ""
+msgstr "Houd gepland en afgegeven uit elkaar"
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Check individual panels"
-msgstr ""
+msgstr "Controleer de afzonderlijke panelen"
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "A complete glucose trace does not guarantee complete treatment or profile data."
-msgstr ""
+msgstr "Een volledig glucoseverloop betekent niet dat behandelingen of profielgegevens ook volledig zijn."
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Choose a device and period"
-msgstr ""
+msgstr "Kies een apparaat en een periode"
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Review the available battery records in the report's selected window."
-msgstr ""
+msgstr "Bekijk de beschikbare batterijrecords in de gekozen periode van het rapport."
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Check the latest upload"
-msgstr ""
+msgstr "Controleer de laatste upload"
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Compare the source"
-msgstr ""
+msgstr "Vergelijk de bron"
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Different devices report battery differently and at different intervals."
-msgstr ""
+msgstr "Apparaten melden de batterij op verschillende manieren en met verschillende intervallen."
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Read a span"
@@ -27949,7 +27949,7 @@ msgstr "Controleer de geïmporteerde records"
 
 #: src/lib/help/report-context.svelte.ts
 msgid "The glucose chart uses recorded samples and available treatment/device tracks in the chosen interval."
-msgstr ""
+msgstr "De glucosegrafiek gebruikt de opgeslagen metingen en de beschikbare sporen van behandelingen en apparaten in de gekozen periode."
 
 #: src/lib/components/help/HelpBrowser.svelte
 msgid "Settings for this page"
@@ -28692,27 +28692,27 @@ msgstr "Punten op de lijn zijn glucosemetingen. Markeringen voor insuline, koolh
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "The line connects recorded points. A gap does not contain additional measurements."
-msgstr ""
+msgstr "De lijn verbindt gemeten punten. Een gat bevat geen extra metingen."
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Each weekday curve summarizes readings from that part of the selected period."
-msgstr ""
+msgstr "Elke lijn per weekdag vat de metingen van dat deel van de gekozen periode samen."
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Sparse weekdays can differ because fewer readings were available."
-msgstr ""
+msgstr "Weekdagen met weinig metingen kunnen afwijken omdat er minder gegevens waren."
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "The colored parts show how those readings are distributed between ranges."
-msgstr ""
+msgstr "De gekleurde delen tonen hoe die metingen over de bereiken zijn verdeeld."
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Device is compared with your selected Reference. Both need readings in the chosen period."
-msgstr ""
+msgstr "Device wordt vergeleken met de gekozen Reference. Beide hebben metingen nodig in de gekozen periode."
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Points near equal values indicate closer agreement. Only paired samples enter this view."
-msgstr ""
+msgstr "Punten bij gelijke waarden tonen een betere overeenkomst. Alleen gekoppelde metingen staan in deze weergave."
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "A day total summarizes imported step-count records for that date."
@@ -28724,19 +28724,19 @@ msgstr ""
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Inspect event type, time, insulin/carb units, and source before editing."
-msgstr ""
+msgstr "Controleer type, tijd, eenheden insuline of koolhydraten en bron voordat je iets bewerkt."
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "A basal rate describes delivery per hour. A delivered total describes accumulated insulin."
-msgstr ""
+msgstr "Een basaalstand beschrijft de afgifte per uur. Een afgegeven totaal beschrijft de opgetelde insuline."
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "The comparison is centered on a recorded infusion-site change."
-msgstr ""
+msgstr "De vergelijking draait om een vastgelegde wissel van infuusplaats."
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Scheduled basal comes from the profile. Actual delivery needs imported insulin records."
-msgstr ""
+msgstr "Ingestelde basaal komt uit het profiel. Voor de echte afgifte zijn geïmporteerde insulinerecords nodig."
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Choose month and view"
@@ -29224,11 +29224,11 @@ msgstr ""
 
 #: src/lib/help/reports.svelte.ts
 msgid "Use the chart's date and display controls. Points are samples. A connecting line is not an extra measurement."
-msgstr ""
+msgstr "Gebruik de datum- en weergaveknoppen van de grafiek. Punten zijn metingen. Een verbindingslijn is geen extra meting."
 
 #: src/lib/help/reports.svelte.ts
 msgid "Unpaired readings are excluded. A wider tolerance allows paired readings farther apart in time. Your chosen reference is not guaranteed ground truth."
-msgstr ""
+msgstr "Metingen zonder paar tellen niet mee. Met een ruimere tolerantie mogen gekoppelde metingen verder uit elkaar liggen. Je gekozen referentie is niet per se de juiste waarde."
 
 #: src/lib/help/reports.svelte.ts
 msgid "Values are beats per minute. Sampling and averaging can hide brief changes. Missing readings are not a zero heart rate. This page defines no universal high or low threshold."
@@ -29236,11 +29236,11 @@ msgstr ""
 
 #: src/lib/help/reports.svelte.ts
 msgid "Uploaded, imported, and manually saved insulin, carb, notes, and device events."
-msgstr ""
+msgstr "Geüploade, geïmporteerde en handmatig opgeslagen insuline, koolhydraten, notities en apparaatgebeurtenissen."
 
 #: src/lib/help/reports.svelte.ts
 msgid "Events appear on glucose timelines and feed insulin and carb analysis."
-msgstr ""
+msgstr "Gebeurtenissen staan op de glucosetijdlijnen en tellen mee in de analyses van insuline en koolhydraten."
 
 #: src/lib/help/pages.svelte.ts
 msgid "See your current glucose, its trend, and what happened around it."
@@ -33474,6 +33474,766 @@ msgstr "Fitbit en Pixel Watch schrijven direct naar Google Health. Garmin, Samsu
 #: src/lib/help/meanings.svelte.ts
 msgid "Overnight time in range uses the readings between falling asleep and waking up. Compare a low with the stage at the same time in the hypnogram. No CGM data means that no readings overlap the session."
 msgstr "Nachtelijke tijd binnen bereik gebruikt de metingen tussen inslapen en wakker worden. Vergelijk een hypo met de fase op hetzelfde moment in het hypnogram. Geen CGM-gegevens betekent dat er geen metingen in de sessie vallen."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Very low is below 3.0 mmol/L (54 mg/dL). Low is 3.0 to 3.8 mmol/L (54 to 69 mg/dL). In range is 3.9 to 10.0 mmol/L (70 to 180 mg/dL). High is 10.1 to 13.9 mmol/L (181 to 250 mg/dL). Very high is above 13.9 mmol/L (250 mg/dL). Reports always use these consensus ranges, not your personal targets."
+msgstr "Zeer laag is onder 3,0 mmol/L (54 mg/dL). Laag is 3,0 tot 3,8 mmol/L (54 tot 69 mg/dL). Binnen bereik is 3,9 tot 10,0 mmol/L (70 tot 180 mg/dL). Hoog is 10,1 tot 13,9 mmol/L (181 tot 250 mg/dL). Zeer hoog is boven 13,9 mmol/L (250 mg/dL). Rapporten gebruiken altijd deze consensusbereiken, niet je persoonlijke doelen."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Days of data badge"
+msgstr "Label met dagen aan gegevens"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The badge counts the days with readings. Below the recommended number, which is 14 days or the length of a shorter period, the figures describe only part of your usual pattern."
+msgstr "Het label telt de dagen met metingen. Onder het aanbevolen aantal, 14 dagen of de lengte van een kortere periode, beschrijven de cijfers maar een deel van je gebruikelijke patroon."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The share of your readings between 70 and 180 mg/dL. The consensus target is at least 70%. Each extra 5% in range is about one more hour in range each day."
+msgstr "Het deel van je metingen tussen 3,9 en 10,0 mmol/L (70 en 180 mg/dL). Het consensusdoel is minstens 70%. Elke 5% extra binnen bereik is ongeveer een uur per dag extra binnen bereik."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Average glucose and CV"
+msgstr "Gemiddelde glucose en CV"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Average glucose is the mean of all readings. The coefficient of variation (CV) is the spread as a percentage of that mean. A CV of 36% or lower means stable glucose."
+msgstr "Gemiddelde glucose is het gemiddelde van alle metingen. De variatiecoëfficiënt (CV) is de spreiding als percentage van dat gemiddelde. Een CV van 36% of lager betekent een stabiele glucose."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The share of readings under 70 mg/dL. The consensus target is less than 4%, and less than 1% under 54 mg/dL. Look at this figure first, because lows are the most urgent risk."
+msgstr "Het deel van de metingen onder 3,9 mmol/L (70 mg/dL). Het consensusdoel is minder dan 4%, en minder dan 1% onder 3,0 mmol/L (54 mg/dL). Kijk eerst naar dit cijfer, want lage waarden zijn het meest urgente risico."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "A small preview of the glucose profile. The line is the middle value at each time of day. Open the AGP report for the full chart."
+msgstr "Een klein voorbeeld van het glucoseprofiel. De lijn is de middelste waarde op elk moment van de dag. Open het AGP-rapport voor de volledige grafiek."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Target met or not met"
+msgstr "Doel gehaald of niet gehaald"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Each card compares one figure with the international consensus target and says Target met or Target not met. The targets are general. Your care team sets your personal targets."
+msgstr "Elke kaart vergelijkt één cijfer met het internationale consensusdoel en toont Target met (gehaald) of Target not met (niet gehaald). Deze doelen zijn algemeen. Je behandelteam stelt je persoonlijke doelen vast."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Time breakdown per day"
+msgstr "Tijdsverdeling per dag"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The percentages are also shown as hours and minutes on an average day. For example, 4% below range is about 1 hour each day."
+msgstr "De percentages staan ook als uren en minuten op een gemiddelde dag. Zo is 4% onder bereik ongeveer 1 uur per dag."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Estimated A1c (GMI)"
+msgstr "Geschatte A1c (GMI)"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The glucose management indicator estimates a lab HbA1c from your mean glucose. GMI (%) = 3.31 + 0.02392 x mean glucose in mg/dL. The general target is below 7%."
+msgstr "De glucose management indicator schat een laboratorium-HbA1c uit je gemiddelde glucose. GMI (%) = 3,31 + 0,02392 x gemiddelde glucose in mg/dL. Het algemene doel is onder 7% (53 mmol/mol)."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Glucose stability"
+msgstr "Stabiliteit van de glucose"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "CV at or below 36% means stable glucose. Above 36% means large swings and a higher risk of lows. Standard deviation and MAGE show the size of the swings in glucose units."
+msgstr "Een CV van 36% of lager betekent een stabiele glucose. Boven 36% zijn er grote schommelingen en een hoger risico op lage waarden. Standaarddeviatie en MAGE tonen de grootte van de schommelingen in glucose-eenheden."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The share of the period with sensor readings. Aim for at least 70% over 14 days. The figures on the page are most reliable at 90% or higher."
+msgstr "Het deel van de periode met sensormetingen. Streef naar minstens 70% over 14 dagen. De cijfers op de pagina zijn het betrouwbaarst bij 90% of meer."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "What your data is telling us"
+msgstr "Wat je gegevens laten zien"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Short notes that the report makes from your figures. They describe the data. They are not medical advice."
+msgstr "Korte notities die het rapport uit je cijfers maakt. Ze beschrijven de gegevens. Ze zijn geen medisch advies."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The dark line"
+msgstr "De donkere lijn"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Your median glucose at each time of day: on half of the days glucose was lower, on half higher. It shows what happens most often."
+msgstr "Je mediane glucose op elk moment van de dag: op de helft van de dagen was de glucose lager, op de andere helft hoger. Ze toont wat het vaakst gebeurt."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The dark band"
+msgstr "De donkere band"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The 25th to 75th percentile. On half of the days, glucose at that time was inside this band. A narrow band means a predictable time of day."
+msgstr "Het 25e tot 75e percentiel. Op de helft van de dagen lag de glucose op dat moment binnen deze band. Een smalle band betekent een voorspelbaar moment van de dag."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The light band"
+msgstr "De lichte band"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The 10th to 90th percentile. It holds 80% of the readings at that time. Its edges show the lows and highs that happen regularly, not the extremes."
+msgstr "Het 10e tot 90e percentiel. Hierin liggen 80% van de metingen op dat moment. De randen tonen de lage en hoge waarden die regelmatig voorkomen, niet de uitschieters."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The shaded target zone"
+msgstr "Het gearceerde doelgebied"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The consensus target range of 70 to 180 mg/dL. Times where the bands cross its lower edge show when lows occur. Times above its upper edge show when highs occur."
+msgstr "Het consensusdoelbereik van 3,9 tot 10,0 mmol/L (70 tot 180 mg/dL). Waar de banden onder de onderrand komen, zie je wanneer lage waarden optreden. Boven de bovenrand zie je wanneer hoge waarden optreden."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "How to use it"
+msgstr "Zo gebruik je het"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Find the time of day with the widest band or the lowest dip. Then open Day in review for days in this period to find the cause."
+msgstr "Zoek het moment van de dag met de breedste band of de laagste dip. Open daarna Day in review voor dagen uit deze periode om de oorzaak te vinden."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The ring chart"
+msgstr "De ringgrafiek"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Each slice is the share of readings in one glucose range. Tight range, 70 to 140 mg/dL, is part of in range. Show tight range adds it as its own slice."
+msgstr "Elk segment is het deel van de metingen in één glucosebereik. Het nauwe bereik, 3,9 tot 7,8 mmol/L (70 tot 140 mg/dL), is een deel van binnen bereik. Met de knop voor tight range krijgt het een eigen segment."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Estimated A1c"
+msgstr "Geschatte A1c"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Based on average glucose. It uses the GMI formula, 3.31 + 0.02392 x mean glucose in mg/dL. It is an estimate, not a blood test."
+msgstr "Gebaseerd op de gemiddelde glucose, met de GMI-formule 3,31 + 0,02392 x gemiddelde glucose in mg/dL. Het is een schatting, geen bloedtest."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The glycemic variability index compares the length of your glucose line with a flat line. 1.0 to 1.2 is low variability, 1.2 to 1.5 is moderate, above 1.5 is high."
+msgstr "De glycemische variabiliteitsindex vergelijkt de lengte van je glucoselijn met een vlakke lijn. 1,0 tot 1,2 is weinig variatie, 1,2 tot 1,5 is matig, boven 1,5 is veel."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Patient glycemic status combines GVI, mean glucose and time in range. 35 or less is excellent, 35 to 100 is good, 100 to 150 is poor, above 150 is very poor."
+msgstr "De patient glycemic status combineert GVI, gemiddelde glucose en tijd binnen bereik. 35 of lager is uitstekend, 35 tot 100 is goed, 100 tot 150 is matig, boven 150 is slecht."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Mean total daily change adds up how far glucose moved up and down on an average day. Time in fluctuation is the share of readings that changed more than 15 mg/dL in about 5 minutes."
+msgstr "De gemiddelde totale dagverandering telt op hoe ver de glucose op een gemiddelde dag omhoog en omlaag ging. Tijd in fluctuatie is het deel van de metingen dat in ongeveer 5 minuten meer dan 0,8 mmol/L (15 mg/dL) veranderde."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "One stacked bar for each hour of the day. Hours with a large share below range are the times when lows occur. Hours with a large share above range are the times of highs."
+msgstr "Eén gestapelde balk per uur van de dag. Uren met een groot deel onder bereik zijn de momenten van lage waarden. Uren met een groot deel boven bereik zijn de momenten van hoge waarden."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The line"
+msgstr "De lijn"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Each point is the estimate for one day, from the readings of the 90 days before it. The line moves slowly, because each day shares most of its window with the day before."
+msgstr "Elk punt is de schatting voor één dag, uit de metingen van de 90 dagen ervoor. De lijn verandert langzaam, omdat elke dag bijna dezelfde periode gebruikt als de dag ervoor."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Up to 5.7% is the non-diabetic range. Up to 7% is the usual target for type 1 diabetes. Up to 9% is elevated. Above 9% is very high."
+msgstr "Tot 5,7% (39 mmol/mol) is het bereik zonder diabetes. Tot 7% (53 mmol/mol) is het gebruikelijke doel bij diabetes type 1. Tot 9% (75 mmol/mol) is verhoogd. Boven 9% is zeer hoog."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Triangles"
+msgstr "Driehoekjes"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Lab results that you entered, placed on the day of the blood draw. Compare the triangle with the line on that day."
+msgstr "Laboratoriumuitslagen die je hebt ingevoerd, op de dag van de bloedafname. Vergelijk het driehoekje met de lijn op die dag."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Estimate and lab differ"
+msgstr "Schatting en lab verschillen"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "A difference of up to about 0.5% is common. A larger, constant difference can come from your red blood cells or from sensor accuracy. Discuss it with your care team."
+msgstr "Een verschil tot ongeveer 0,5% (5 mmol/mol) komt vaak voor. Een groter, blijvend verschil kan komen door je rode bloedcellen of door de nauwkeurigheid van de sensor. Bespreek het met je behandelteam."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Appearance sets % (NGSP) or mmol/mol (IFCC). 7% is 53 mmol/mol, and 9% is 75 mmol/mol."
+msgstr "Appearance stelt % (NGSP) of mmol/mol (IFCC) in. 7% is 53 mmol/mol, en 9% is 75 mmol/mol."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "One cell is one day"
+msgstr "Eén vakje is één dag"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Each cell is one day of the year. Its color shows the value of the selected metric on that day. The color scale shows which color belongs to which value."
+msgstr "Elk vakje is één dag van het jaar. De kleur toont de waarde van de gekozen maat op die dag. De kleurschaal laat zien welke kleur bij welke waarde hoort."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Glucose colors"
+msgstr "Glucosekleuren"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "With Avg glucose, a color always belongs to the same glucose value, so you can compare years. A good mean can hide lows and highs. Use Time in range to see how much of each day was in range."
+msgstr "Bij Avg glucose hoort een kleur altijd bij dezelfde glucosewaarde, zodat je jaren kunt vergelijken. Een goed gemiddelde kan lage en hoge waarden verbergen. Kies Time in range om te zien hoeveel van elke dag binnen bereik was."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Empty and gray cells"
+msgstr "Lege en grijze vakjes"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "An empty cell has no records at all. A gray cell has records, but no value for this metric, for example no carbs. Neither one means a good day."
+msgstr "Een leeg vakje heeft helemaal geen records. Een grijs vakje heeft wel records, maar geen waarde voor deze maat, bijvoorbeeld geen koolhydraten. Geen van beide betekent een goede dag."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Dimmed days"
+msgstr "Gedimde dagen"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "When you narrow the focus window, days outside it fade. The bright days are the days that match the values that you are looking for."
+msgstr "Als je het focusvenster smaller maakt, vervagen de dagen erbuiten. De heldere dagen zijn de dagen met de waarden die je zoekt."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Monthly GRI chart"
+msgstr "Grafiek met GRI per maand"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The glycemic risk index for each month, from 0 to 100. Zone A (0 to 20) is the lowest risk, zone E (above 80) the highest. Lows weigh more than highs."
+msgstr "De glycemische risico-index per maand, van 0 tot 100. Zone A (0 tot 20) is het laagste risico, zone E (boven 80) het hoogste. Lage waarden wegen zwaarder dan hoge."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Glucose dots and line"
+msgstr "Glucosepunten en lijn"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Each dot is one stored reading. The color shows its range, from the thresholds in your therapy settings. A line between dots is not an extra reading."
+msgstr "Elk punt is één opgeslagen meting. De kleur toont het bereik, volgens de grenzen in je therapie-instellingen. Een lijn tussen punten is geen extra meting."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Markers"
+msgstr "Markeringen"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Markers on the chart show boluses, carbs, finger-stick checks and device events at the time they were recorded."
+msgstr "Markeringen in de grafiek tonen bolussen, koolhydraten, vingerprikmetingen en apparaatgebeurtenissen op het moment dat ze zijn vastgelegd."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Tracks"
+msgstr "Sporen"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The tracks under the chart show basal delivery, insulin on board (IOB) and carbs on board (COB), when your uploader sends them."
+msgstr "De sporen onder de grafiek tonen basaalafgifte, actieve insuline (IOB) en actieve koolhydraten (COB), als je uploader die stuurt."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "A gap in the dots means no readings were stored for that time. It is not a level of glucose."
+msgstr "Een gat tussen de punten betekent dat er voor die tijd geen metingen zijn opgeslagen. Het is geen glucosewaarde."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Day figures"
+msgstr "Cijfers van de dag"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Mean, median, standard deviation, range and GMI describe the readings of this one day. One day is too short for an estimated A1c, so read GMI here as an indication."
+msgstr "Gemiddelde, mediaan, standaarddeviatie, bereik en GMI beschrijven de metingen van deze ene dag. Eén dag is te kort voor een geschatte A1c, dus lees de GMI hier als een indicatie."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The chart"
+msgstr "De grafiek"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Glucose with the events of the day: boluses, carbs, basal, and the loop state when your loop uploads it. Move the time scrubber to see the values at one time."
+msgstr "Glucose met de gebeurtenissen van de dag: bolussen, koolhydraten, basaal en de status van je loop als die wordt geüpload. Verschuif de tijdschuif om de waarden op één moment te zien."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Totals"
+msgstr "Totalen"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Total carbs, manual boluses and automatic boluses add up the records of the day. Missing uploads make them too low."
+msgstr "Totale koolhydraten, handmatige bolussen en automatische bolussen tellen de records van de dag op. Ontbrekende uploads maken ze te laag."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Treatments timeline"
+msgstr "Tijdlijn van behandelingen"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Every recorded event of the day in time order. Select an event to edit it, if you have write access."
+msgstr "Alle vastgelegde gebeurtenissen van de dag op volgorde van tijd. Selecteer een gebeurtenis om ze te bewerken, als je schrijfrechten hebt."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "One line for each weekday"
+msgstr "Eén lijn per weekdag"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Each weekday has its own color. Over the default 7 days, each line is one actual day. Over a longer range, each line is the mean of all days with that weekday."
+msgstr "Elke weekdag heeft een eigen kleur. Over de standaard 7 dagen is elke lijn één echte dag. Over een langere periode is elke lijn het gemiddelde van alle dagen met die weekdag."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Lines that run apart at the same time show a weekday with a different routine, for example a sports day or the weekend."
+msgstr "Lijnen die op hetzelfde moment uit elkaar lopen, tonen een weekdag met een andere routine, bijvoorbeeld een sportdag of het weekend."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "No line"
+msgstr "Geen lijn"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "A weekday without readings has no line. A short line means readings only for part of that day."
+msgstr "Een weekdag zonder metingen heeft geen lijn. Een korte lijn betekent metingen voor maar een deel van die dag."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Change column"
+msgstr "Kolom met verschil"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Each row shows a figure for both periods and the difference. Lower in and Higher in name the period with the lower or higher value."
+msgstr "Elke rij toont een cijfer voor beide periodes en het verschil. Lower in en Higher in noemen de periode met de lagere of hogere waarde."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Better or worse"
+msgstr "Beter of slechter"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "For time in range, more is better. For time below range, CV, GRI and very high time, less is better. Read the direction for each figure."
+msgstr "Bij tijd binnen bereik is meer beter. Bij tijd onder bereik, CV, GRI en tijd zeer hoog is minder beter. Lees per cijfer welke richting goed is."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Stacked bars"
+msgstr "Gestapelde balken"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "One bar for each period with the full range breakdown. Compare the parts below range at the bottom first, because they show lows."
+msgstr "Eén balk per periode met de volledige verdeling over de bereiken. Vergelijk eerst de delen onder bereik onderaan, want die tonen de lage waarden."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Data quality rows"
+msgstr "Rijen over datakwaliteit"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "CGM active time, days with data and readings per day show whether the two periods are comparable. A large difference makes the other rows less reliable."
+msgstr "CGM-tijd, dagen met gegevens en metingen per dag laten zien of de twee periodes vergelijkbaar zijn. Een groot verschil maakt de andere rijen minder betrouwbaar."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Bars"
+msgstr "Balken"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "One bar for each hour from midnight. Each band is the share of that hour's readings in one range, lowest range at the bottom."
+msgstr "Eén balk per uur vanaf middernacht. Elk deel is het aandeel van de metingen van dat uur in één bereik, het laagste bereik onderaan."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Lists the hours with the most time in range, the most time below range and the most time above range. Start with the hours below range."
+msgstr "Noemt de uren met de meeste tijd binnen bereik, de meeste tijd onder bereik en de meeste tijd boven bereik. Begin met de uren onder bereik."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "An hour is compared only when it has readings on at least 5 days and 20 readings in all. Best and worst hours need a difference of at least 5 percentage points."
+msgstr "Een uur telt alleen mee als het metingen heeft op minstens 5 dagen en minstens 20 metingen in totaal. Voor beste en slechtste uren moet het verschil minstens 5 procentpunten zijn."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "In the table, the range in which the central 50% of that hour's readings fell. A wide middle half means that hour changes much from day to day."
+msgstr "In de tabel het bereik waarin de middelste 50% van de metingen van dat uur viel. Een brede middelste helft betekent dat dat uur van dag tot dag sterk verschilt."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Median line"
+msgstr "Mediaanlijn"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The basal rate that was delivered most often at each hour, in units per hour. It includes the changes that your loop or you made."
+msgstr "De basaalstand die op elk uur het vaakst werd afgegeven, in eenheden per uur. De wijzigingen van je loop of van jezelf tellen mee."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Shaded bands"
+msgstr "Gearceerde banden"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The 10th to 90th percentile of the delivered rate. A wide band at an hour means your loop changes the basal often at that time."
+msgstr "Het 10e tot 90e percentiel van de afgegeven stand. Een brede band op een uur betekent dat je loop de basaal op dat moment vaak aanpast."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Average hourly basal"
+msgstr "Gemiddelde basaal per uur"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The mean insulin delivered in each hour of the day. Compare it with the scheduled rate in Therapy. A large difference at the same hour every day is a pattern."
+msgstr "De gemiddelde afgegeven insuline per uur van de dag. Vergelijk die met de ingestelde stand in Therapy. Een groot verschil op hetzelfde uur, elke dag, is een patroon."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Temp basals and suspends"
+msgstr "Tijdelijke basaal en onderbrekingen"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Many temp basals or zero temps per day mean that the loop corrects your schedule often. Discuss a repeated pattern with your care team."
+msgstr "Veel tijdelijke basaalstanden of nulstanden per dag betekenen dat de loop je schema vaak bijstuurt. Bespreek een terugkerend patroon met je behandelteam."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Total daily dose (TDD)"
+msgstr "Totale dagdosis (TDD)"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Basal plus bolus insulin for one day. For type 1 diabetes it is usually 0.4 to 1.0 units for each kg of body weight."
+msgstr "Basaal plus bolusinsuline voor één dag. Bij diabetes type 1 is dat meestal 0,4 tot 1,0 eenheid per kg lichaamsgewicht."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Basal and bolus split"
+msgstr "Verdeling basaal en bolus"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "A split of about 50% basal and 50% bolus is common. It changes with food, activity and the loop. With a loop, automatic boluses count as bolus."
+msgstr "Een verdeling van ongeveer 50% basaal en 50% bolus komt vaak voor. Ze verandert met eten, beweging en de loop. Met een loop tellen automatische bolussen als bolus."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Daily bars"
+msgstr "Balken per dag"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "One bar for each day, split into basal and bolus, with the carbs that you logged. Carbs without a bolus show as a note."
+msgstr "Eén balk per dag, verdeeld in basaal en bolus, met de koolhydraten die je hebt ingevoerd. Koolhydraten zonder bolus staan in een notitie."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Hourly delivery"
+msgstr "Afgifte per uur"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The mean insulin for each hour, split into basal, manual bolus and automatic bolus. Peaks show when you usually eat or correct."
+msgstr "De gemiddelde insuline per uur, verdeeld in basaal, handmatige bolus en automatische bolus. Pieken tonen wanneer je meestal eet of corrigeert."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Meal and correction boluses"
+msgstr "Maaltijd- en correctiebolussen"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "A manual bolus paired with a carb entry counts as a meal bolus. A manual bolus without carbs counts as a correction. Many corrections can point to a ratio or basal to discuss."
+msgstr "Een handmatige bolus die bij een koolhydraatinvoer hoort, telt als maaltijdbolus. Een handmatige bolus zonder koolhydraten telt als correctie. Veel correcties kunnen wijzen op een ratio of basaal om te bespreken."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Time 0"
+msgstr "Tijdstip 0"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The moment of each site, pod or cannula change. The chart shows 12 hours before and 24 hours after it."
+msgstr "Het moment van elke wissel van infuusplaats, pod of canule. De grafiek toont 12 uur ervoor en 24 uur erna."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Line and bands"
+msgstr "Lijn en banden"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The line is the median glucose of all changes at that time. The bands hold the middle 50% and 80%. A rise after time 0 shows a slow start of the new site."
+msgstr "De lijn is de mediane glucose van alle wissels op dat moment. De banden bevatten de middelste 50% en 80%. Een stijging na tijdstip 0 wijst op een trage start van de nieuwe plek."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Before and after"
+msgstr "Voor en na"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The summary compares time in range before and after the change. Higher glucose in the last hours before a change can point to a site that works less well."
+msgstr "De samenvatting vergelijkt de tijd binnen bereik voor en na de wissel. Hogere glucose in de laatste uren voor een wissel kan wijzen op een plek die minder goed werkt."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Insulin summary"
+msgstr "Overzicht van insuline"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Basal and bolus per day with their share of the total. Delivered basal is what your pump recorded. Scheduled basal comes from your therapy profile."
+msgstr "Basaal en bolus per dag met hun aandeel in het totaal. Afgegeven basaal is wat je pomp vastlegde. Ingestelde basaal komt uit je therapieprofiel."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Delivered and scheduled basal"
+msgstr "Afgegeven en ingestelde basaal"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "When delivered basal is much lower than scheduled, the loop often reduced it. When it is higher, the loop often added insulin."
+msgstr "Als de afgegeven basaal veel lager is dan ingesteld, heeft de loop die vaak verlaagd. Als ze hoger is, heeft de loop vaak insuline toegevoegd."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Glucose metrics and GRI"
+msgstr "Glucosecijfers en GRI"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Time in range and the glycemic risk index. GRI runs from 0 to 100. Zone A (0 to 20) is the lowest risk, zone E (above 80) the highest. Lows weigh more than highs."
+msgstr "Tijd binnen bereik en de glycemische risico-index. GRI loopt van 0 tot 100. Zone A (0 tot 20) is het laagste risico, zone E (boven 80) het hoogste. Lage waarden wegen zwaarder dan hoge."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Glucose pattern"
+msgstr "Glucosepatroon"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The glucose profile of a day, with the scheduled basal rate and the times of your boluses below it."
+msgstr "Het glucoseprofiel van een dag, met daaronder de ingestelde basaalstand en de momenten van je bolussen."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Five pages"
+msgstr "Vijf pagina's"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Daily profile shows the usual day. Meals and events shows what happens after events. Prediction accuracy checks the loop's predictions. Loop health shows how much the loop ran. Settings evidence compares your settings with the data."
+msgstr "Daily profile toont de gebruikelijke dag. Meals and events toont wat er na gebeurtenissen gebeurt. Prediction accuracy controleert de voorspellingen van de loop. Loop health toont hoeveel de loop draaide. Settings evidence vergelijkt je instellingen met de gegevens."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Medians and bands"
+msgstr "Medianen en banden"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Most charts put all days on one 24-hour axis. The line is the median and the bands hold the middle 50% and 80% of the days."
+msgstr "De meeste grafieken zetten alle dagen op één as van 24 uur. De lijn is de mediaan en de banden bevatten de middelste 50% en 80% van de dagen."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Faded areas"
+msgstr "Vervaagde delen"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "A faded time has too few days to show a pattern. Choose a longer range in Filters."
+msgstr "Een vervaagd tijdstip heeft te weinig dagen om een patroon te tonen. Kies een langere periode bij Filters."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The usual glucose at each time of day, as on the AGP report."
+msgstr "De gebruikelijke glucose op elk moment van de dag, zoals in het AGP-rapport."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Above zero, the loop gave more insulin than your schedule. Below zero, it gave less. A correction in the same direction at the same time every day is a pattern to discuss."
+msgstr "Boven nul gaf de loop meer insuline dan je schema. Onder nul gaf ze minder. Een correctie in dezelfde richting op hetzelfde tijdstip, elke dag, is een patroon om te bespreken."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Insulin on board and carbs on board as your loop calculated them. A high IOB before a low shows insulin that was still active."
+msgstr "Actieve insuline en actieve koolhydraten zoals je loop ze berekende. Een hoge IOB voor een lage waarde toont insuline die nog werkte."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The mean insulin of one day, split into basal, automatic boluses and manual boluses, with the net loop correction."
+msgstr "De gemiddelde insuline van één dag, verdeeld in basaal, automatische bolussen en handmatige bolussen, met de netto correctie van de loop."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "All events of a cohort are placed at time 0. The charts show glucose and insulin before and after them."
+msgstr "Alle gebeurtenissen van een groep staan op tijdstip 0. De grafieken tonen glucose en insuline ervoor en erna."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Peak rise and time to peak"
+msgstr "Hoogste stijging en tijd tot de piek"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "How far glucose rose after the event and how long it took. A late peak after meals can point to slow digestion or late bolus timing."
+msgstr "Hoe ver de glucose na de gebeurtenis steeg en hoe lang dat duurde. Een late piek na maaltijden kan wijzen op een trage vertering of een late bolus."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Glucose at 2 and 4 hours"
+msgstr "Glucose na 2 en 4 uur"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Glucose 2 and 4 hours after the event. A value well above the start at 4 hours shows that the insulin did not cover the event."
+msgstr "De glucose 2 en 4 uur na de gebeurtenis. Een waarde na 4 uur die ruim boven de start ligt, toont dat de insuline de gebeurtenis niet dekte."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The lowest reading in the window after the event. A low here can point to too much insulin for that event."
+msgstr "De laagste meting in de periode na de gebeurtenis. Een lage waarde hier kan wijzen op te veel insuline voor die gebeurtenis."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The prediction minus the reading that followed. Above zero means the loop expected higher glucose than happened. Below zero means it expected lower glucose."
+msgstr "De voorspelling min de meting die volgde. Boven nul verwachtte de loop een hogere glucose dan er kwam. Onder nul verwachtte ze een lagere glucose."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The mean absolute error: how far off the predictions were on average, up or down. Smaller is better."
+msgstr "De gemiddelde absolute fout: hoe ver de voorspellingen gemiddeld afweken, naar boven of naar beneden. Kleiner is beter."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Horizons"
+msgstr "Horizonnen"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The time between the prediction and the reading. Errors grow with the horizon. Only the horizon marked Settings signal says something about your settings."
+msgstr "De tijd tussen de voorspelling en de meting. Fouten worden groter met de horizon. Alleen de horizon met Settings signal zegt iets over je instellingen."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Heatmap"
+msgstr "Warmtekaart"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Bias for each hour of the day. A color that repeats at the same hour shows a time when your settings and your body do not agree."
+msgstr "De afwijking per uur van de dag. Een kleur die op hetzelfde uur terugkomt, toont een moment waarop je instellingen en je lichaam niet overeenkomen."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Closed loop time"
+msgstr "Tijd in gesloten loop"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The share of time in which the loop was able to change insulin. Low closed loop time makes the other loop pages less useful."
+msgstr "Het deel van de tijd waarin de loop de insuline kon aanpassen. Weinig tijd in gesloten loop maakt de andere looppagina's minder bruikbaar."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "CGM and pump active"
+msgstr "CGM en pomp actief"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The share of time with recent data from the sensor and the pump. Gaps here are the most common reason for an open loop."
+msgstr "Het deel van de tijd met recente gegevens van de sensor en de pomp. Gaten hier zijn de meest voorkomende reden voor een open loop."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Zero temps and maximum basal"
+msgstr "Nulstanden en maximale basaal"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Many zero temps show that the loop often stopped basal to prevent lows. Much time at maximum basal shows that it wanted more insulin than allowed."
+msgstr "Veel nulstanden tonen dat de loop vaak de basaal stopte om lage waarden te voorkomen. Veel tijd op maximale basaal toont dat ze meer insuline wilde dan toegestaan."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "A tile shows Unknown when your data cannot give that figure. The reason is shown on the tile."
+msgstr "Een tegel toont Unknown als je gegevens dat cijfer niet kunnen geven. De reden staat op de tegel."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Line and dots"
+msgstr "Lijn en punten"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The line is the value in your profile. Each dot is the value that your data showed for that time block."
+msgstr "De lijn is de waarde in je profiel. Elk punt is de waarde die je gegevens voor dat tijdsblok lieten zien."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Dot above or below the line"
+msgstr "Punt boven of onder de lijn"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "A dot far from the line means your data behaves differently from the setting. A row shows how many episodes support the figure."
+msgstr "Een punt ver van de lijn betekent dat je gegevens anders zijn dan de instelling. Een rij toont hoeveel episodes het cijfer onderbouwen."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "High, moderate or low. Low confidence means few or uneven episodes. Use only high-confidence rows as a topic for your care team."
+msgstr "Hoog, matig of laag. Lage betrouwbaarheid betekent weinig of ongelijke episodes. Gebruik alleen rijen met hoge betrouwbaarheid als onderwerp voor je behandelteam."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Compression lows by status"
+msgstr "Compressielaagtes per status"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Pending suggestions need your review. Accepted ones are marked as false lows. Dismissed ones are real lows."
+msgstr "Openstaande suggesties wachten op je beoordeling. Geaccepteerde zijn gemarkeerd als valse laagtes. Afgewezen suggesties zijn echte laagtes."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Signal integrity finds unlikely jumps in the readings. CGM comparison compares two sensors. Rejected uploads lists records that Nocturne did not store."
+msgstr "Signal integrity vindt onwaarschijnlijke sprongen in de metingen. CGM comparison vergelijkt twee sensoren. Rejected uploads toont records die Nocturne niet heeft opgeslagen."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Opens the pending compression lows. Accepted lows stay in most reports. Only Loop analysis removes them."
+msgstr "Opent de openstaande compressielaagtes. Geaccepteerde laagtes blijven in de meeste rapporten staan. Alleen Loop analysis haalt ze weg."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Times where the readings changed direction fast and often. Real glucose rarely does this. A flagged window often comes from a loose or new sensor."
+msgstr "Momenten waarop de metingen snel en vaak van richting veranderden. Echte glucose doet dat zelden. Een gemarkeerd venster komt vaak door een losse of nieuwe sensor."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Each day shows where its flagged windows were. Many flags on the first or last day of a sensor point to the sensor."
+msgstr "Elke dag toont waar de gemarkeerde vensters lagen. Veel markeringen op de eerste of laatste dag van een sensor wijzen op de sensor."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Lows after a flag"
+msgstr "Laagtes na een markering"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Lows in the 3 hours after a flagged window, and insulin given during it. Insulin given on a false reading can cause a real low."
+msgstr "Laagtes in de 3 uur na een gemarkeerd venster, en insuline die tijdens het venster werd gegeven. Insuline op basis van een valse meting kan een echte laagte veroorzaken."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Scatter plot"
+msgstr "Spreidingsdiagram"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Each point is one pair of readings taken close together. Points on the dashed line read the same value. Points above it read higher on the device than on the reference."
+msgstr "Elk punt is één paar metingen die kort na elkaar zijn gedaan. Punten op de stippellijn geven dezelfde waarde. Punten erboven zijn hoger op het apparaat dan op de referentie."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Mean absolute relative difference: the mean difference as a percentage of the reference. Lower is better."
+msgstr "Mean absolute relative difference: het gemiddelde verschil als percentage van de referentie. Lager is beter."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The mean of device minus reference. A negative bias means the device reads lower on average."
+msgstr "Het gemiddelde van apparaat min referentie. Een negatieve afwijking betekent dat het apparaat gemiddeld lager meet."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Within 15 mg/dL or 15%"
+msgstr "Binnen 15 mg/dL of 15%"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The share of pairs within 15 mg/dL when the reference is under 100 mg/dL, or within 15% above that. Higher is better."
+msgstr "Het deel van de paren dat binnen 0,8 mmol/L (15 mg/dL) ligt als de referentie onder 5,6 mmol/L (100 mg/dL) is, of daarboven binnen 15%. Hoger is beter."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "A suggestion"
+msgstr "Een suggestie"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "A fast drop during sleep, followed by a fast recovery. This pattern often comes from lying on the sensor."
+msgstr "Een snelle daling tijdens de slaap, gevolgd door een snel herstel. Dit patroon komt vaak door op de sensor te liggen."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Pending, accepted, dismissed"
+msgstr "Open, geaccepteerd, afgewezen"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Pending needs your review. Accepted marks a false low and removes it from Loop analysis. Dismissed keeps it as a real low."
+msgstr "Open wacht op je beoordeling. Geaccepteerd markeert een valse laagte en haalt die uit Loop analysis. Afgewezen houdt het als een echte laagte."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Accept when you slept on the sensor and felt no low. Dismiss when you had symptoms or a finger-stick check confirmed the low."
+msgstr "Accepteer als je op de sensor sliep en geen laagte voelde. Wijs af als je klachten had of een vingerprik de laagte bevestigde."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "One row"
+msgstr "Eén rij"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "One record that an uploader sent, with the time, the uploader, the reason and the record itself."
+msgstr "Eén record dat een uploader stuurde, met de tijd, de uploader, de reden en het record zelf."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Why Nocturne did not store it, for example a value that does not fit the field. Correct the cause in the uploader or its settings."
+msgstr "Waarom Nocturne het niet heeft opgeslagen, bijvoorbeeld een waarde die niet in het veld past. Los de oorzaak op in de uploader of de instellingen ervan."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Empty list"
+msgstr "Lege lijst"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "No records were rejected. This is the normal state."
+msgstr "Er zijn geen records geweigerd. Dat is de normale situatie."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "One recorded event: a bolus, carbs, a finger-stick check, a note or a device event, with its time and value."
+msgstr "Eén vastgelegde gebeurtenis: een bolus, koolhydraten, een vingerprik, een notitie of een apparaatgebeurtenis, met tijd en waarde."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Category and search"
+msgstr "Categorie en zoeken"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The tabs show one type of event. Search finds text in the events. The count above the list shows how many records match."
+msgstr "De tabbladen tonen één soort gebeurtenis. Zoeken vindt tekst in de gebeurtenissen. Het aantal boven de lijst toont hoeveel records overeenkomen."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Edit and delete"
+msgstr "Bewerken en verwijderen"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "A change here changes every chart and report that uses the record. A deleted record cannot be recovered."
+msgstr "Een wijziging hier verandert elke grafiek en elk rapport dat het record gebruikt. Een verwijderd record kun je niet terughalen."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Current and average level"
+msgstr "Huidig en gemiddeld niveau"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The newest battery level of each device and its mean over the period."
+msgstr "Het nieuwste batterijniveau van elk apparaat en het gemiddelde over de periode."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "The share of time above 80% and below 30%. Much time below 30% means the phone or uploader often runs low."
+msgstr "Het deel van de tijd boven 80% en onder 30%. Veel tijd onder 30% betekent dat de telefoon of uploader vaak bijna leeg is."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Warnings and critical"
+msgstr "Waarschuwingen en kritiek"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "How often the level dropped below 30% (warning) and below 20% (critical)."
+msgstr "Hoe vaak het niveau onder 30% (waarschuwing) en onder 20% (kritiek) zakte."
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Charge cycles"
+msgstr "Laadcycli"
+
+#: src/lib/help/report-meanings.svelte.ts
+msgid "Each cycle runs from one charge to the next. Lasted shows how long the battery ran. A shorter cycle than usual can point to an old battery or a busy app."
+msgstr "Elke cyclus loopt van de ene keer opladen tot de volgende. Lasted toont hoe lang de batterij het hield. Een kortere cyclus dan normaal kan wijzen op een oude batterij of een drukke app."
 
 #~ msgid "Sharing & Privacy"
 #~ msgstr ""

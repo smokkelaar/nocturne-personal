@@ -7,13 +7,14 @@ import { settingsArticles } from "./settings.svelte";
 import { connectorArticles } from "./connectors.svelte";
 import { readingGuides } from "./reading-guides.svelte";
 import { pageMeanings } from "./meanings.svelte";
+import { settingsMeanings } from "./settings-meaning.svelte";
 import { glucoseReferenceArticle } from "./glucose-reference.svelte";
 import { GLUCOSE_REFERENCE_PATH } from "./reference-path";
 
 // Per-call factories let translated titles follow the current locale.
 export function articles(): HelpArticle[] {
   const readings = readingGuides();
-  const meanings = pageMeanings();
+  const meanings = { ...pageMeanings(), ...settingsMeanings() };
   const entries = [
     ...pageArticles(),
     ...reportArticles(),
@@ -54,9 +55,12 @@ function parentFor(href: string): string | undefined {
   if (
     href === "/settings/migration" ||
     href === "/settings/nightscout-transition" ||
-    href.startsWith("/oauth/")
+    href.startsWith("/oauth/") ||
+    href.startsWith("/settings/connectors/")
   )
     return "/settings/connectors";
+  if (href.startsWith("/settings/translations/"))
+    return "/settings/translations";
   if (href === "/settings/audit") return "/settings/members";
   if (href === "/settings/integrations/discord") return "/settings/account";
   if (href === "/tools") return "/tools/packing";

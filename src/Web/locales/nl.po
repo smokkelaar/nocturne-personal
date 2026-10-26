@@ -831,6 +831,7 @@ msgstr ""
 #: src/lib/components/layout/UserMenu.svelte
 #: src/lib/components/members/CreateInviteCard.svelte
 #: src/lib/components/members/MemberCard.svelte
+#: src/lib/help/settings-meaning.svelte.ts
 #: src/routes/(authenticated)/settings/access-requests/+page.svelte
 msgid "Roles"
 msgstr ""
@@ -952,6 +953,7 @@ msgstr ""
 msgid "{0} reading{1}"
 msgstr ""
 
+#: src/lib/help/settings-meaning.svelte.ts
 #: src/routes/(authenticated)/settings/appearance/+page.svelte
 #: src/routes/(authenticated)/settings/appearance/+page.svelte
 #: src/routes/(authenticated)/settings/integrations/discord/+page.svelte
@@ -1019,6 +1021,7 @@ msgid "Custom"
 msgstr ""
 
 #: src/lib/components/admin/IntegrationsTabContent.svelte
+#: src/lib/help/settings.svelte.ts
 msgid "Telegram"
 msgstr ""
 
@@ -1185,6 +1188,7 @@ msgstr ""
 #: src/lib/components/dashboard/glucose-chart/dialogs/DeliveryInspectionDialog.svelte
 #: src/lib/components/meals/MealsTable.svelte
 #: src/lib/components/status-pills/COBPill.svelte
+#: src/lib/help/settings-meaning.svelte.ts
 #: src/routes/(authenticated)/compatibility/+page.svelte
 #: src/routes/(authenticated)/reports/data-quality/compression-lows/+page.svelte
 #: src/routes/(authenticated)/settings/admin/tenants/+page.svelte
@@ -2361,6 +2365,7 @@ msgid "Initializing"
 msgstr ""
 
 #: src/lib/components/connectors/DeduplicationDialog.svelte
+#: src/lib/help/settings-meaning.svelte.ts
 #: src/routes/(authenticated)/settings/migration/+page.svelte
 msgid "Progress"
 msgstr ""
@@ -2573,12 +2578,14 @@ msgid "({0} min)"
 msgstr ""
 
 #: src/lib/components/settings/ClientDevices.svelte
+#: src/lib/help/settings.svelte.ts
 #: src/lib/setup-hub/items.svelte.ts
 #: src/routes/(authenticated)/reports/data-quality/cgm-comparison/+page.svelte
 #: src/routes/(authenticated)/settings/patient/+page.svelte
 msgid "Devices"
 msgstr ""
 
+#: src/lib/help/settings-meaning.svelte.ts
 #: src/routes/(authenticated)/settings/patient/+page.svelte
 msgid "Insulins"
 msgstr ""
@@ -2592,9 +2599,8 @@ msgstr ""
 msgid "Alerts"
 msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "Sharing & Privacy"
-msgstr ""
+#~ msgid "Sharing & Privacy"
+#~ msgstr ""
 
 #: ../portal/src/routes/studio/+page.svelte
 #: src/lib/coach-marks/copy.svelte.ts
@@ -3239,6 +3245,7 @@ msgid "Accept"
 msgstr ""
 
 #: src/lib/help/pages.svelte.ts
+#: src/lib/help/settings.svelte.ts
 #: src/lib/navigation/app-navigation.svelte.ts
 msgid "Dashboard"
 msgstr "Dashboard"
@@ -3320,7 +3327,6 @@ msgid "Account"
 msgstr ""
 
 #: src/lib/components/help/DashboardExplanation.svelte
-#: src/lib/help/settings.svelte.ts
 msgid "Patient Record"
 msgstr ""
 
@@ -3341,9 +3347,8 @@ msgstr ""
 msgid "Data Quality"
 msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "Notifications & Trackers"
-msgstr ""
+#~ msgid "Notifications & Trackers"
+#~ msgstr ""
 
 #: src/lib/components/help/DashboardExplanation.svelte
 #: src/lib/help/settings.svelte.ts
@@ -3354,9 +3359,8 @@ msgstr ""
 msgid "Support & Community"
 msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "Tenant Management"
-msgstr ""
+#~ msgid "Tenant Management"
+#~ msgstr ""
 
 #: src/lib/components/layout/AppSidebar.svelte
 msgid "<0/> Viewing data for"
@@ -3559,6 +3563,7 @@ msgstr ""
 #: src/lib/components/members/CreateInviteCard.svelte
 #: src/lib/components/members/MemberCard.svelte
 #: src/lib/components/settings/ApiTokens.svelte
+#: src/lib/help/settings.svelte.ts
 #: src/routes/(authenticated)/settings/access-requests/+page.svelte
 msgid "Only last 24 hours"
 msgstr ""
@@ -4036,6 +4041,7 @@ msgid "Identity"
 msgstr ""
 
 #: src/lib/components/rbac/permission-categories.svelte.ts
+#: src/lib/help/settings.svelte.ts
 #: src/routes/(authenticated)/settings/admin/+page.svelte
 msgid "Administration"
 msgstr ""
@@ -5406,6 +5412,7 @@ msgid "<0/> Start"
 msgstr ""
 
 #: src/lib/components/trackers/TrackerHistoryTab.svelte
+#: src/lib/help/settings-meaning.svelte.ts
 #: src/lib/navigation/app-navigation.svelte.ts
 msgid "History"
 msgstr ""
@@ -6992,6 +6999,7 @@ msgid "TDD"
 msgstr ""
 
 #: src/lib/components/reports/year-overview/YearHeatmap.svelte
+#: src/lib/help/settings-meaning.svelte.ts
 msgid "Counts"
 msgstr ""
 
@@ -8020,9 +8028,8 @@ msgstr ""
 msgid "Access request denied."
 msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "Access Requests"
-msgstr ""
+#~ msgid "Access Requests"
+#~ msgstr ""
 
 #: src/routes/(authenticated)/settings/access-requests/+page.svelte
 msgid "Review and manage pending requests to access your data"
@@ -8109,6 +8116,7 @@ msgstr ""
 msgid "Manage your account and security settings"
 msgstr ""
 
+#: src/lib/help/settings-meaning.svelte.ts
 #: src/routes/(authenticated)/settings/account/+page.svelte
 #: src/routes/(unauthenticated)/auth/help/+page.svelte
 msgid "Passkeys"
@@ -8605,9 +8613,8 @@ msgstr ""
 msgid "Running"
 msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "Data Migration"
-msgstr ""
+#~ msgid "Data Migration"
+#~ msgstr ""
 
 #: src/routes/(authenticated)/settings/migration/+page.svelte
 msgid "Import your data from Nightscout or MongoDB"
@@ -8849,9 +8856,10 @@ msgstr ""
 msgid "Describe what you were doing when the issue occurred..."
 msgstr ""
 
+#: src/lib/help/settings-meaning.svelte.ts
 #: src/routes/(authenticated)/settings/support/+page.svelte
 msgid "About Nocturne"
-msgstr ""
+msgstr "Over Nocturne"
 
 #: src/routes/(authenticated)/settings/support/+page.svelte
 msgid "License"
@@ -9518,6 +9526,7 @@ msgstr ""
 msgid "Link your Discord account to query glucose and receive alerts through the Nocturne bot."
 msgstr ""
 
+#: src/lib/help/settings-meaning.svelte.ts
 #: src/routes/(authenticated)/settings/integrations/discord/+page.svelte
 msgid "Linked accounts"
 msgstr ""
@@ -10705,9 +10714,8 @@ msgstr ""
 msgid "This report is for informational purposes. Always consult your healthcare provider for medical advice."
 msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "Active Access"
-msgstr ""
+#~ msgid "Active Access"
+#~ msgstr ""
 
 #: src/routes/(authenticated)/settings/+page.svelte
 msgid "Manage your account, data, and how Nocturne works for you."
@@ -11129,6 +11137,8 @@ msgid "Move device down in priority"
 msgstr ""
 
 #: src/lib/components/patient/PatientDeviceManager.svelte
+#: src/lib/help/settings-meaning.svelte.ts
+#: src/lib/help/settings.svelte.ts
 msgid "Discovered sources"
 msgstr ""
 
@@ -11177,6 +11187,7 @@ msgstr ""
 
 #: src/lib/components/members/MembershipRequestsCard.svelte
 #: src/lib/components/members/MembershipRequestsCard.svelte
+#: src/lib/help/settings.svelte.ts
 msgid "Membership requests"
 msgstr ""
 
@@ -11204,6 +11215,8 @@ msgstr ""
 
 #: src/lib/components/members/PublicAccessCard.svelte
 #: src/lib/components/members/PublicAccessCard.svelte
+#: src/lib/help/settings-meaning.svelte.ts
+#: src/lib/help/settings.svelte.ts
 msgid "Public access"
 msgstr ""
 
@@ -11369,6 +11382,7 @@ msgid "All other sessions signed out."
 msgstr ""
 
 #: src/lib/components/settings/ActiveSessions.svelte
+#: src/lib/help/settings-meaning.svelte.ts
 msgid "Sessions"
 msgstr ""
 
@@ -11810,6 +11824,7 @@ msgstr ""
 msgid "Single color"
 msgstr ""
 
+#: src/lib/help/settings-meaning.svelte.ts
 #: src/routes/(authenticated)/settings/appearance/+page.svelte
 msgid "Line color mode"
 msgstr ""
@@ -11822,6 +11837,7 @@ msgstr ""
 msgid "Point color mode"
 msgstr ""
 
+#: src/lib/help/settings-meaning.svelte.ts
 #: src/routes/(authenticated)/settings/appearance/+page.svelte
 msgid "Area fill"
 msgstr ""
@@ -13786,6 +13802,7 @@ msgstr ""
 #: ../portal/src/routes/docs/+page.svelte
 #: src/lib/components/settings/ApiReference.svelte
 #: src/lib/components/settings/ApiReference.svelte
+#: src/lib/help/settings.svelte.ts
 msgid "API reference"
 msgstr ""
 
@@ -14710,6 +14727,7 @@ msgstr ""
 msgid "The browsers signed in to this account, and where to find everything else that can reach your data."
 msgstr ""
 
+#: src/lib/help/settings.svelte.ts
 #: src/routes/(authenticated)/settings/access/+page.svelte
 msgid "What else can reach your data"
 msgstr ""
@@ -20329,6 +20347,7 @@ msgstr ""
 
 #: src/lib/components/reports/loop-analysis/SettingsEvidenceBody.svelte
 #: src/lib/components/schedule/ProfileSchedules.svelte
+#: src/lib/help/settings-meaning.svelte.ts
 msgid "Insulin sensitivity (ISF)"
 msgstr ""
 
@@ -22252,6 +22271,7 @@ msgid "Insulin and carbs"
 msgstr ""
 
 #: src/lib/help/reports.svelte.ts
+#: src/lib/help/settings.svelte.ts
 #: src/lib/navigation/app-navigation.svelte.ts
 #: src/lib/navigation/report-navigation.svelte.ts
 #: src/routes/(authenticated)/reports/comparison/ComparisonReport.svelte
@@ -24235,6 +24255,7 @@ msgstr ""
 #: src/lib/components/schedule/TargetRangeCard.svelte
 #: src/lib/components/schedule/TargetRangeCard.svelte
 #: src/lib/components/schedule/TargetRangeCard.svelte
+#: src/lib/help/settings-meaning.svelte.ts
 #: src/routes/(unauthenticated)/setup/(guided)/therapy/TherapyEntry.svelte
 msgid "Target range"
 msgstr ""
@@ -24365,6 +24386,8 @@ msgstr ""
 msgid "{0}% of {1}"
 msgstr ""
 
+#: src/lib/help/settings-meaning.svelte.ts
+#: src/lib/help/settings.svelte.ts
 #: src/routes/(authenticated)/settings/admin/tenants/+page.svelte
 msgid "Database capacity"
 msgstr ""
@@ -24439,6 +24462,7 @@ msgid "Manage sharing"
 msgstr ""
 
 #: src/lib/constants/scope-labels.svelte.ts
+#: src/lib/help/settings.svelte.ts
 msgid "Guest links"
 msgstr ""
 
@@ -24509,16 +24533,19 @@ msgid "Test endpoint compatibility"
 msgstr ""
 
 #: src/lib/components/rbac/permission-categories.svelte.ts
+#: src/lib/help/settings.svelte.ts
 #: src/lib/navigation/app-navigation.svelte.ts
 #: src/routes/(authenticated)/settings/patient/+page.svelte
 msgid "Patient record"
 msgstr ""
 
+#: src/lib/help/settings.svelte.ts
 #: src/lib/navigation/app-navigation.svelte.ts
 #: src/routes/(authenticated)/settings/trackers/+page.svelte
 msgid "Notifications & trackers"
 msgstr ""
 
+#: src/lib/help/settings.svelte.ts
 #: src/lib/navigation/app-navigation.svelte.ts
 #: src/routes/(authenticated)/settings/access/+page.svelte
 msgid "Active access"
@@ -24529,6 +24556,7 @@ msgstr ""
 msgid "Connectors & apps"
 msgstr ""
 
+#: src/lib/help/settings.svelte.ts
 #: src/lib/navigation/app-navigation.svelte.ts
 #: src/routes/(authenticated)/settings/members/+page.svelte
 msgid "Sharing & privacy"
@@ -24539,6 +24567,7 @@ msgstr ""
 msgid "Support & community"
 msgstr ""
 
+#: src/lib/help/settings.svelte.ts
 #: src/lib/navigation/app-navigation.svelte.ts
 #: src/routes/(authenticated)/settings/admin/tenants/+page.svelte
 msgid "Tenant management"
@@ -24643,6 +24672,7 @@ msgid "Loop analysis"
 msgstr ""
 
 #: src/lib/help/reports.svelte.ts
+#: src/lib/help/settings.svelte.ts
 #: src/lib/navigation/report-navigation.svelte.ts
 #: src/routes/(authenticated)/reports/data-quality/+page.svelte
 msgid "Compression lows"
@@ -24979,6 +25009,7 @@ msgid "Session expires"
 msgstr ""
 
 #: src/lib/components/account/UserProfileCard.svelte
+#: src/lib/help/settings-meaning.svelte.ts
 msgid "Account details"
 msgstr ""
 
@@ -24988,6 +25019,7 @@ msgstr ""
 
 #: src/lib/components/admin/IdentityProvidersTabContent.svelte
 #: src/lib/components/admin/OidcProvidersTabContent.svelte
+#: src/lib/help/settings-meaning.svelte.ts
 msgid "Identity providers"
 msgstr ""
 
@@ -25021,6 +25053,7 @@ msgid "Client secret"
 msgstr ""
 
 #: src/lib/components/admin/OidcProviderDialog.svelte
+#: src/lib/help/settings.svelte.ts
 msgid "Default roles"
 msgstr ""
 
@@ -25114,6 +25147,8 @@ msgid "<0/> Access data"
 msgstr ""
 
 #: src/lib/components/auth/RecoveryCodes.svelte
+#: src/lib/help/settings-meaning.svelte.ts
+#: src/lib/help/settings.svelte.ts
 #: src/routes/(unauthenticated)/auth/help/+page.svelte
 msgid "Recovery codes"
 msgstr ""
@@ -25334,6 +25369,7 @@ msgid "No runtime configuration available"
 msgstr ""
 
 #: src/lib/components/connectors/ConnectorSetup.svelte
+#: src/lib/help/settings-meaning.svelte.ts
 msgid "Sync capabilities"
 msgstr ""
 
@@ -25582,6 +25618,7 @@ msgid "Basal max changed"
 msgstr ""
 
 #: src/lib/components/entries/DeviceEventSection.svelte
+#: src/lib/help/settings.svelte.ts
 msgid "Profile switch"
 msgstr ""
 
@@ -26188,6 +26225,7 @@ msgid "<0/> Run deduplication"
 msgstr ""
 
 #: src/lib/components/settings/DataMaintenanceCard.svelte
+#: src/lib/help/settings-meaning.svelte.ts
 msgid "Deduplicate records"
 msgstr ""
 
@@ -26465,6 +26503,7 @@ msgid "Notification schedule (adjusted)"
 msgstr ""
 
 #: src/lib/components/trackers/tracker-notification-editor.svelte
+#: src/lib/help/settings.svelte.ts
 msgid "Notification thresholds"
 msgstr ""
 
@@ -26731,6 +26770,7 @@ msgstr ""
 msgid "Authorize a device"
 msgstr ""
 
+#: src/lib/help/settings.svelte.ts
 #: src/routes/(authenticated)/oauth/device/+page.svelte
 #: src/routes/(authenticated)/oauth/device/+page.svelte
 msgid "Link a device"
@@ -27276,10 +27316,12 @@ msgstr ""
 msgid "Access requests - Settings - Nocturne"
 msgstr ""
 
+#: src/lib/help/settings.svelte.ts
 #: src/routes/(authenticated)/settings/access-requests/+page.svelte
 msgid "Access requests"
 msgstr ""
 
+#: src/lib/help/settings-meaning.svelte.ts
 #: src/routes/(authenticated)/settings/account/+page.svelte
 msgid "Authenticator apps"
 msgstr ""
@@ -27317,6 +27359,7 @@ msgstr ""
 msgid "Invalid request"
 msgstr ""
 
+#: src/lib/help/settings-meaning.svelte.ts
 #: src/routes/(authenticated)/oauth/consent/+page.svelte
 msgid "Additional permissions"
 msgstr ""
@@ -27457,6 +27500,7 @@ msgstr ""
 msgid "Failed to revoke invite. Try again."
 msgstr ""
 
+#: src/lib/help/settings.svelte.ts
 #: src/routes/(authenticated)/settings/audit/+page.svelte
 #: src/routes/(authenticated)/settings/members/+page.svelte
 msgid "Audit log"
@@ -27474,6 +27518,7 @@ msgstr ""
 msgid "<0/> Compression low detection"
 msgstr ""
 
+#: src/lib/help/settings-meaning.svelte.ts
 #: src/routes/(authenticated)/settings/nightscout-transition/+page.svelte
 msgid "Safe to disconnect"
 msgstr ""
@@ -27526,6 +27571,7 @@ msgstr ""
 msgid "Data migration - Settings - Nocturne"
 msgstr ""
 
+#: src/lib/help/settings.svelte.ts
 #: src/routes/(authenticated)/settings/migration/+page.svelte
 msgid "Data migration"
 msgstr ""
@@ -27638,6 +27684,7 @@ msgstr ""
 msgid "Patient record - Settings - Nocturne"
 msgstr ""
 
+#: src/lib/help/settings-meaning.svelte.ts
 #: src/routes/(authenticated)/settings/patient/+page.svelte
 msgid "Clinical information"
 msgstr ""
@@ -27698,6 +27745,7 @@ msgstr ""
 msgid "API endpoint"
 msgstr ""
 
+#: src/lib/help/settings-meaning.svelte.ts
 #: src/routes/(authenticated)/settings/support/+page.svelte
 msgid "API compatibility"
 msgstr ""
@@ -29739,169 +29787,132 @@ msgstr "Meldingssimulator"
 msgid "Alert History"
 msgstr "Meldingsgeschiedenis"
 
-#: src/lib/help/settings.svelte.ts
-msgid "Choose the settings for your account, display, patient data, or connections."
-msgstr ""
+#~ msgid "Choose the settings for your account, display, patient data, or connections."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "Saved account, browser, tenant, and server configuration."
-msgstr ""
+#~ msgid "Saved account, browser, tenant, and server configuration."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "Open a settings category from this page or the navigation menu. Some controls require owner or administrator permission."
-msgstr ""
+#~ msgid "Open a settings category from this page or the navigation menu. Some controls require owner or administrator permission."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "These choices control the relevant display, import, sharing, or analysis features."
-msgstr ""
+#~ msgid "These choices control the relevant display, import, sharing, or analysis features."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "Account preferences and patient settings are different. Check the selected tenant before changing shared patient settings."
-msgstr ""
+#~ msgid "Account preferences and patient settings are different. Check the selected tenant before changing shared patient settings."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "Manage your sign-in identity and recovery methods."
-msgstr ""
+#~ msgid "Manage your sign-in identity and recovery methods."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "Your signed-in account and its registered authentication methods."
-msgstr ""
+#~ msgid "Your signed-in account and its registered authentication methods."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "Use the account fields, passkey, authenticator, and recovery-code controls here. Active browser sessions are in Settings → Active Access."
-msgstr ""
+#~ msgid "Use the account fields, passkey, authenticator, and recovery-code controls here. Active browser sessions are in Settings → Active Access."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "Your account is used to sign in and identify your membership across tenants."
-msgstr ""
+#~ msgid "Your account is used to sign in and identify your membership across tenants."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "Describe the person whose data this tenant contains."
-msgstr ""
+#~ msgid "Describe the person whose data this tenant contains."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "Clinical details, devices, and insulins entered here or imported where supported."
-msgstr ""
+#~ msgid "Clinical details, devices, and insulins entered here or imported where supported."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "Patient information provides context for other views and calculations that need it."
-msgstr ""
+#~ msgid "Patient information provides context for other views and calculations that need it."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "Choose how Nocturne and its documentation look."
-msgstr ""
+#~ msgid "Choose how Nocturne and its documentation look."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "Your saved display preferences and browser-local documentation preferences."
-msgstr ""
+#~ msgid "Your saved display preferences and browser-local documentation preferences."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "Set theme, language, glucose units, dates, and times here. Help visibility, layout, transparency, and blur are here and in help's Display options."
-msgstr ""
+#~ msgid "Set theme, language, glucose units, dates, and times here. Help visibility, layout, transparency, and blur are here and in help's Display options."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "Display settings format charts and values. They do not change the underlying stored glucose units or readings."
-msgstr ""
+#~ msgid "Display settings format charts and values. They do not change the underlying stored glucose units or readings."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "Inspect imported therapy profiles, personal targets, and schedules."
-msgstr ""
+#~ msgid "Inspect imported therapy profiles, personal targets, and schedules."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "Profiles uploaded by a device/app or received from a connector, with their effective times."
-msgstr ""
+#~ msgid "Profiles uploaded by a device/app or received from a connector, with their effective times."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "Schedules provide context for insulin calculations, scheduled basal, and personal target overlays."
-msgstr ""
+#~ msgid "Schedules provide context for insulin calculations, scheduled basal, and personal target overlays."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "A scheduled rate is not proof of actual delivery. Historical profile timing matters. Personal targets do not replace the report reference bands or automatically update alert thresholds."
-msgstr ""
+#~ msgid "A scheduled rate is not proof of actual delivery. Historical profile timing matters. Personal targets do not replace the report reference bands or automatically update alert thresholds."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "Data Quality settings"
-msgstr ""
+#~ msgid "Data Quality settings"
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "Configure detection and inspect maintenance tools."
-msgstr ""
+#~ msgid "Configure detection and inspect maintenance tools."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "Saved quality settings and analyses of stored readings."
-msgstr ""
+#~ msgid "Saved quality settings and analyses of stored readings."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "Set typical bedtime/wake time and automatic detection here. Use the links to quality reports and the maintenance card for the specific operation."
-msgstr ""
+#~ msgid "Set typical bedtime/wake time and automatic detection here. Use the links to quality reports and the maintenance card for the specific operation."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "Inspect the affected period and confirmation before cleanup. A suggestion is not proof a reading is incorrect, and changing detection settings is different from accepting a correction."
-msgstr ""
+#~ msgid "Inspect the affected period and confirmation before cleanup. A suggestion is not proof a reading is incorrect, and changing detection settings is different from accepting a correction."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "Track supplies, devices, and recurring events."
-msgstr ""
+#~ msgid "Track supplies, devices, and recurring events."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "Tracker definitions, presets, start events, completions, and notifications recorded in Nocturne."
-msgstr ""
+#~ msgid "Tracker definitions, presets, start events, completions, and notifications recorded in Nocturne."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "A reminder depends on its definition, start time, and enabled notification delivery. It does not confirm a physical device was changed. Completing and editing a definition are different actions."
-msgstr ""
+#~ msgid "A reminder depends on its definition, start time, and enabled notification delivery. It does not confirm a physical device was changed. Completing and editing a definition are different actions."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "Review browser sessions signed in to your account."
-msgstr ""
+#~ msgid "Review browser sessions signed in to your account."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "The server's active account sessions and available device information."
-msgstr ""
+#~ msgid "The server's active account sessions and available device information."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "Inspect and revoke sessions here. Manage passkeys and other sign-in methods under Account."
-msgstr ""
+#~ msgid "Inspect and revoke sessions here. Manage passkeys and other sign-in methods under Account."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "Revoking a session requires that browser to authenticate again."
-msgstr ""
+#~ msgid "Revoking a session requires that browser to authenticate again."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "This list is not the list of data-upload devices or API tokens. Those are under Connectors & Apps. Revoking a browser session does not delete patient records."
-msgstr ""
+#~ msgid "This list is not the list of data-upload devices or API tokens. Those are under Connectors & Apps. Revoking a browser session does not delete patient records."
+#~ msgstr ""
 
 #: src/lib/help/settings.svelte.ts
 msgid "Connectors bring information from device services into Nocturne."
-msgstr ""
+msgstr "Connectors halen informatie uit de diensten van apparaten naar Nocturne."
 
 #: src/lib/help/settings.svelte.ts
 msgid "Find your source under Server Connectors and open its setup/settings. Review connection status and latest sync. Apps, uploaders, and API tokens have separate controls here."
-msgstr ""
+msgstr "Zoek uw bron onder Server Connectors en open de instellingen ervan. Bekijk de verbindingsstatus en de laatste synchronisatie. Apps, uploaders en API-tokens hebben hier eigen knoppen."
 
 #: src/lib/help/settings.svelte.ts
 msgid "Imported records feed the dashboard, reports, and patient histories. Each connector supports its own data types."
-msgstr ""
+msgstr "Geïmporteerde gegevens voeden het dashboard, de rapporten en de patiëntgeschiedenis. Elke connector ondersteunt eigen gegevenstypen."
 
 #: src/lib/help/settings.svelte.ts
 msgid "A configured connector may still need sign-in or import selection. Connected does not prove a historical import is complete. Empty data may be a permission, date, or source-sync problem."
-msgstr ""
+msgstr "Een ingestelde connector kan nog een aanmelding of een importkeuze nodig hebben. Verbonden bewijst niet dat een historische import klaar is. Lege gegevens kunnen komen door rechten, datums of de synchronisatie van de bron."
 
-#: src/lib/help/settings.svelte.ts
-msgid "Control who can see or change this tenant's information."
-msgstr ""
+#~ msgid "Control who can see or change this tenant's information."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "Tenant memberships, roles, invitations, guest links, and public-sharing settings."
-msgstr ""
+#~ msgid "Tenant memberships, roles, invitations, guest links, and public-sharing settings."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "Use member permissions, invitations, requests, roles, and guest/public links here. Changes require the appropriate management permission."
-msgstr ""
+#~ msgid "Use member permissions, invitations, requests, roles, and guest/public links here. Changes require the appropriate management permission."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "Permissions control available pages and operations for members and shared viewers."
-msgstr ""
+#~ msgid "Permissions control available pages and operations for members and shared viewers."
+#~ msgstr ""
 
 #: src/lib/help/settings.svelte.ts
 msgid "Find support links and deployment information."
@@ -29923,161 +29934,135 @@ msgstr "Versie- en foutdetails helpen de beheerders een reproduceerbaar probleem
 msgid "Describe the page, expected result, and steps to reproduce. Keep credentials, tokens, and identifiable health records out of a public issue."
 msgstr "Beschrijf de pagina, het verwachte resultaat en de stappen om het probleem te herhalen. Zet geen wachtwoorden, tokens of herleidbare gezondheidsgegevens in een openbare melding."
 
-#: src/lib/help/settings.svelte.ts
-msgid "Inspect and contribute translated interface text."
-msgstr ""
+#~ msgid "Inspect and contribute translated interface text."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "Approved translations supply interface text, including these help pages."
-msgstr ""
+#~ msgid "Approved translations supply interface text, including these help pages."
+#~ msgstr ""
 
 #: src/lib/help/settings.svelte.ts
 msgid "Review and record dated body weights."
-msgstr ""
+msgstr "Bekijk en noteer gedateerde lichaamsgewichten."
 
-#: src/lib/help/settings.svelte.ts
-msgid "Manual entries and supported imports, including Google Health weights."
-msgstr ""
+#~ msgid "Manual entries and supported imports, including Google Health weights."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "Add the weight in kilograms and its recorded time here. Imported weight selection is in Google Health connector settings."
-msgstr ""
+#~ msgid "Add the weight in kilograms and its recorded time here. Imported weight selection is in Google Health connector settings."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "These entries form the patient's weight history and provide dated context for features that use weight."
-msgstr ""
+#~ msgid "These entries form the patient's weight history and provide dated context for features that use weight."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "Record when the patient moved to a different timezone."
-msgstr ""
+#~ msgid "Record when the patient moved to a different timezone."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "Dated timezone changes entered here and timezone information recorded during imports."
-msgstr ""
+#~ msgid "Dated timezone changes entered here and timezone information recorded during imports."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "Timezone history helps place events and daily patterns at the correct local time."
-msgstr ""
+#~ msgid "Timezone history helps place events and daily patterns at the correct local time."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "Bring historical records from Nightscout into Nocturne."
-msgstr ""
+#~ msgid "Bring historical records from Nightscout into Nocturne."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "The Nightscout API or MongoDB source you configure."
-msgstr ""
+#~ msgid "The Nightscout API or MongoDB source you configure."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "Choose the migration source, credentials, and optional date range here. Inspect active progress, skipped-record notes, and history."
-msgstr ""
+#~ msgid "Choose the migration source, credentials, and optional date range here. Inspect active progress, skipped-record notes, and history."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "Successfully imported records become available to the normal charts and reports."
-msgstr ""
+#~ msgid "Successfully imported records become available to the normal charts and reports."
+#~ msgstr ""
 
 #: src/lib/help/settings.svelte.ts
 msgid "Inspect the transition status between Nightscout and Nocturne."
-msgstr ""
+msgstr "Bekijk de status van de overgang tussen Nightscout en Nocturne."
 
 #: src/lib/help/settings.svelte.ts
 msgid "Server transition configuration and recorded transition status."
-msgstr ""
+msgstr "De overgangsinstellingen van de server en de vastgelegde overgangsstatus."
 
 #: src/lib/help/settings.svelte.ts
 msgid "The status helps the administrator see how the deployment is progressing."
-msgstr ""
+msgstr "De status helpt de beheerder te zien hoe de overgang vordert."
 
 #: src/lib/help/settings.svelte.ts
 msgid "Availability depends on the server's transition configuration. It is not a control for changing glucose values."
-msgstr ""
+msgstr "Beschikbaarheid hangt af van de overgangsinstellingen van de server. Het is geen knop om glucosewaarden te wijzigen."
 
-#: src/lib/help/settings.svelte.ts
-msgid "Manage patient workspaces and platform access."
-msgstr ""
+#~ msgid "Manage patient workspaces and platform access."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "Platform tenant records and administrator identities."
-msgstr ""
+#~ msgid "Platform tenant records and administrator identities."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "Platform administrators manage tenant display names, slugs, and active status here."
-msgstr ""
+#~ msgid "Platform administrators manage tenant display names, slugs, and active status here."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "Tenant selection separates each patient's records, configuration, and membership."
-msgstr ""
+#~ msgid "Tenant selection separates each patient's records, configuration, and membership."
+#~ msgstr ""
 
 #: src/lib/help/settings.svelte.ts
 msgid "Ask a connector to read a chosen historical period again."
-msgstr ""
+msgstr "Laat een connector een gekozen periode uit het verleden opnieuw lezen."
 
 #: src/lib/help/settings.svelte.ts
 msgid "Stored connector import watermarks and reset-job progress for the selected tenant."
-msgstr ""
+msgstr "Opgeslagen importmarkeringen van connectors en de voortgang van de resettaak voor de gekozen tenant."
 
 #: src/lib/help/settings.svelte.ts
 msgid "Platform administrators choose Tenant, connector, and optional Lower bound here, then monitor or cancel the job."
-msgstr ""
+msgstr "Platformbeheerders kiezen hier Tenant, connector en eventueel Lower bound, en volgen of annuleren daarna de taak."
 
 #: src/lib/help/settings.svelte.ts
 msgid "A successful re-read fills or updates the normal imported histories, using normal duplicate protection."
-msgstr ""
+msgstr "Een geslaagde herlezing vult of werkt de gewone geïmporteerde geschiedenis bij, met de gewone bescherming tegen dubbele gegevens."
 
 #: src/lib/help/settings.svelte.ts
 msgid "This does not delete source data. It may be useful when an already-completed month received data late. Refresh inventory only scans availability and is not a historical re-import."
-msgstr ""
+msgstr "Dit verwijdert geen brongegevens. Het helpt als een afgesloten maand later nog gegevens kreeg. Refresh inventory controleert alleen de beschikbaarheid en is geen historische herimport."
 
 #: src/lib/help/settings.svelte.ts
 msgid "Link a Discord identity and manage its use with Nocturne."
-msgstr ""
+msgstr "Koppel een Discord-identiteit en beheer het gebruik ervan met Nocturne."
 
 #: src/lib/help/settings.svelte.ts
 msgid "Your linked chat identities and server bot configuration."
-msgstr ""
+msgstr "Uw gekoppelde chatidentiteiten en de botinstellingen van de server."
 
 #: src/lib/help/settings.svelte.ts
 msgid "Bot availability depends on deployment configuration. Revoking a link does not delete patient data or messages already sent."
-msgstr ""
+msgstr "Of de bot beschikbaar is, hangt af van de installatie. Een koppeling intrekken verwijdert geen patiëntgegevens of berichten die al verstuurd zijn."
 
-#: src/lib/help/settings.svelte.ts
-msgid "Review people requesting access to the instance."
-msgstr ""
+#~ msgid "Review people requesting access to the instance."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "Pending access requests stored by the platform."
-msgstr ""
+#~ msgid "Pending access requests stored by the platform."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "Administrators review and approve or deny requests here. Tenant membership is managed in Sharing & Privacy."
-msgstr ""
+#~ msgid "Administrators review and approve or deny requests here. Tenant membership is managed in Sharing & Privacy."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "Decisions determine whether the requester can obtain the applicable access."
-msgstr ""
+#~ msgid "Decisions determine whether the requester can obtain the applicable access."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "Inspect the identity and requested access. Platform access and membership in an individual tenant are different."
-msgstr ""
+#~ msgid "Inspect the identity and requested access. Platform access and membership in an individual tenant are different."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "Audit history"
-msgstr ""
+#~ msgid "Audit history"
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "Inspect recorded administrative actions."
-msgstr ""
+#~ msgid "Inspect recorded administrative actions."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "Audit records retained by this server."
-msgstr ""
+#~ msgid "Audit records retained by this server."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "The history helps you understand who changed configuration or access."
-msgstr ""
+#~ msgid "The history helps you understand who changed configuration or access."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "Only events recorded by the server appear. Retention and visibility depend on deployment and permissions."
-msgstr ""
+#~ msgid "Only events recorded by the server appear. Retention and visibility depend on deployment and permissions."
+#~ msgstr ""
 
 #: src/lib/components/help/HelpBrowser.svelte
 msgid "Official instructions and sources"
@@ -30813,77 +30798,61 @@ msgstr ""
 msgid "Open a category"
 msgstr "Open een categorie"
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Use its controls and field descriptions for the particular feature."
-msgstr ""
+#~ msgid "Use its controls and field descriptions for the particular feature."
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Verify the result"
-msgstr ""
+#~ msgid "Verify the result"
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "A display change, a saved setting, and an imported record are different outcomes."
-msgstr ""
+#~ msgid "A display change, a saved setting, and an imported record are different outcomes."
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Check your identity"
-msgstr ""
+#~ msgid "Check your identity"
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "These details describe the signed-in person, not the monitored patient."
-msgstr ""
+#~ msgid "These details describe the signed-in person, not the monitored patient."
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Prepare recovery"
-msgstr ""
+#~ msgid "Prepare recovery"
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Register your chosen sign-in methods and save recovery codes privately."
-msgstr ""
+#~ msgid "Register your chosen sign-in methods and save recovery codes privately."
+#~ msgstr ""
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Review sessions"
 msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Active Access manages already-signed-in browsers separately from credentials."
-msgstr ""
+#~ msgid "Active Access manages already-signed-in browsers separately from credentials."
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Check the patient"
-msgstr ""
+#~ msgid "Check the patient"
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Verify the workspace before editing clinical information."
-msgstr ""
+#~ msgid "Verify the workspace before editing clinical information."
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Save changed details"
-msgstr ""
+#~ msgid "Save changed details"
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Manage related history"
-msgstr ""
+#~ msgid "Manage related history"
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Use Weight history and Timezone history for dated entries rather than overwriting a single current value."
-msgstr ""
+#~ msgid "Use Weight history and Timezone history for dated entries rather than overwriting a single current value."
+#~ msgstr ""
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Choose units and theme"
 msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "These format your display rather than changing stored measurements."
-msgstr ""
+#~ msgid "These format your display rather than changing stored measurements."
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Try help appearance"
-msgstr ""
+#~ msgid "Try help appearance"
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Open the book and adjust layout, transparency, and blur with Display options."
-msgstr ""
+#~ msgid "Open the book and adjust layout, transparency, and blur with Display options."
+#~ msgstr ""
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Know where it is saved"
@@ -30893,73 +30862,56 @@ msgstr ""
 msgid "Choose the profile"
 msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Check which imported profile is default and when the schedule applies."
-msgstr ""
+#~ msgid "Check which imported profile is default and when the schedule applies."
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Read time segments"
-msgstr ""
+#~ msgid "Read time segments"
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Correct the origin"
-msgstr ""
+#~ msgid "Correct the origin"
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "When schedules are read-only here, edit the profile in the source app/device and sync again."
-msgstr ""
+#~ msgid "When schedules are read-only here, edit the profile in the source app/device and sync again."
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Configure detection"
-msgstr ""
+#~ msgid "Configure detection"
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Set typical sleep times and automatic detection for review suggestions."
-msgstr ""
+#~ msgid "Set typical sleep times and automatic detection for review suggestions."
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Inspect the result"
-msgstr ""
+#~ msgid "Inspect the result"
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Open the quality reports to see what was flagged."
-msgstr ""
+#~ msgid "Open the quality reports to see what was flagged."
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Separate cleanup"
-msgstr ""
+#~ msgid "Separate cleanup"
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Define what is tracked"
-msgstr ""
+#~ msgid "Define what is tracked"
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Start an instance"
-msgstr ""
+#~ msgid "Start an instance"
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "An active tracker measures time from its recorded start."
-msgstr ""
+#~ msgid "An active tracker measures time from its recorded start."
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Complete the event"
-msgstr ""
+#~ msgid "Complete the event"
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Inspect sessions"
-msgstr ""
+#~ msgid "Inspect sessions"
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Find browsers signed in to your account."
-msgstr ""
+#~ msgid "Find browsers signed in to your account."
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Revoke unwanted access"
-msgstr ""
+#~ msgid "Revoke unwanted access"
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Use the right list"
-msgstr ""
+#~ msgid "Use the right list"
+#~ msgstr ""
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Choose the data source"
@@ -30985,21 +30937,18 @@ msgstr ""
 msgid "Choose who has access"
 msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Use memberships, invitations, and requests for named people."
-msgstr ""
+#~ msgid "Use memberships, invitations, and requests for named people."
+#~ msgstr ""
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Choose what they can do"
 msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Roles, scopes, and time limits determine the available data and actions."
-msgstr ""
+#~ msgid "Roles, scopes, and time limits determine the available data and actions."
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Review share links"
-msgstr ""
+#~ msgid "Review share links"
+#~ msgstr ""
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Identify the version"
@@ -31029,73 +30978,57 @@ msgstr ""
 msgid "Choose a language"
 msgstr "Kies een taal"
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Preserve placeholders"
-msgstr ""
+#~ msgid "Preserve placeholders"
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Keep interpolation and markup placeholders intact when editing a message."
-msgstr ""
+#~ msgid "Keep interpolation and markup placeholders intact when editing a message."
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Submit a contribution"
-msgstr ""
+#~ msgid "Submit a contribution"
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Inspect dated entries"
-msgstr ""
+#~ msgid "Inspect dated entries"
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Weight history contains manual records and supported imports."
-msgstr ""
+#~ msgid "Weight history contains manual records and supported imports."
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Add the right units"
-msgstr ""
+#~ msgid "Add the right units"
+#~ msgstr ""
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Manage imports separately"
 msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Choose the timezone and local arrival date/time."
-msgstr ""
+#~ msgid "Choose the timezone and local arrival date/time."
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Keep history meaningful"
-msgstr ""
+#~ msgid "Keep history meaningful"
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Dated locations explain local timing as the patient travels."
-msgstr ""
+#~ msgid "Dated locations explain local timing as the patient travels."
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Use correction deliberately"
-msgstr ""
+#~ msgid "Use correction deliberately"
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Choose the source"
-msgstr ""
+#~ msgid "Choose the source"
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Set Nightscout API or MongoDB credentials and an optional date range."
-msgstr ""
+#~ msgid "Set Nightscout API or MongoDB credentials and an optional date range."
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Watch collections"
-msgstr ""
+#~ msgid "Watch collections"
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Inspect active progress and skipped-record notes, not just the final status."
-msgstr ""
+#~ msgid "Inspect active progress and skipped-record notes, not just the final status."
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Verify imported records"
-msgstr ""
+#~ msgid "Verify imported records"
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Check representative dates in normal reports. Ongoing connector sync is configured separately."
-msgstr ""
+#~ msgid "Check representative dates in normal reports. Ongoing connector sync is configured separately."
+#~ msgstr ""
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Read transition status"
@@ -31121,29 +31054,23 @@ msgstr ""
 msgid "Connectors & Apps manages continuing data flow after migration."
 msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Choose the tenant"
-msgstr ""
+#~ msgid "Choose the tenant"
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Confirm its name and slug before an administrative edit."
-msgstr ""
+#~ msgid "Confirm its name and slug before an administrative edit."
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Check active status"
-msgstr ""
+#~ msgid "Check active status"
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Tenant activation affects availability of that workspace."
-msgstr ""
+#~ msgid "Tenant activation affects availability of that workspace."
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Separate permissions"
-msgstr ""
+#~ msgid "Separate permissions"
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Platform administrators and roles inside one tenant are different kinds of access."
-msgstr ""
+#~ msgid "Platform administrators and roles inside one tenant are different kinds of access."
+#~ msgstr ""
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Choose tenant and connector"
@@ -31189,49 +31116,40 @@ msgstr ""
 msgid "Inspect the requester"
 msgstr "Bekijk de aanvrager"
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Check the identity and requested access."
-msgstr ""
+#~ msgid "Check the identity and requested access."
+#~ msgstr ""
 
+#: src/lib/help/reading-guides.svelte.ts
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Approve or deny"
 msgstr "Goedkeuren of weigeren"
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Apply the intended platform decision to the request."
-msgstr ""
+#~ msgid "Apply the intended platform decision to the request."
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Manage tenant membership"
-msgstr ""
+#~ msgid "Manage tenant membership"
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Sharing & Privacy separately controls access to a patient's workspace."
-msgstr ""
+#~ msgid "Sharing & Privacy separately controls access to a patient's workspace."
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Filter the history"
-msgstr ""
+#~ msgid "Filter the history"
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Choose the relevant period or action using the available controls."
-msgstr ""
+#~ msgid "Choose the relevant period or action using the available controls."
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Inspect an event"
-msgstr ""
+#~ msgid "Inspect an event"
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Read the recorded actor, action, and affected configuration."
-msgstr ""
+#~ msgid "Read the recorded actor, action, and affected configuration."
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Understand retention"
-msgstr ""
+#~ msgid "Understand retention"
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Only actions recorded and retained by this server can appear."
-msgstr ""
+#~ msgid "Only actions recorded and retained by this server can appear."
+#~ msgstr ""
 
 #: src/lib/help/connectors.svelte.ts
 msgid "Check the source"
@@ -31337,9 +31255,8 @@ msgstr ""
 msgid "Dialog content"
 msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "The Fix already-imported data action is separate from changing display formats. Use it to correct existing timestamps."
-msgstr ""
+#~ msgid "The Fix already-imported data action is separate from changing display formats. Use it to correct existing timestamps."
+#~ msgstr ""
 
 #: src/lib/help/dashboard-examples.svelte.ts
 msgid "Documentation example"
@@ -32378,6 +32295,8 @@ msgid "Tools fill in estimates from your own recent records where possible."
 msgstr "Hulpmiddelen vullen schattingen in op basis van je eigen recente gegevens waar mogelijk."
 
 #: src/lib/help/reading-guides.svelte.ts
+#: src/lib/help/reading-guides.svelte.ts
+#: src/lib/help/reading-guides.svelte.ts
 msgid "Check the result"
 msgstr "Controleer de uitkomst"
 
@@ -32681,65 +32600,52 @@ msgstr "Later wijzigen"
 msgid "Every item leads to settings you can also find in the menu."
 msgstr "Elk onderdeel leidt naar instellingen die je ook in het menu vindt."
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Account belongs to you. Patient Record and connectors belong to the selected tenant."
-msgstr ""
+#~ msgid "Account belongs to you. Patient Record and connectors belong to the selected tenant."
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Weight is recorded into its history when changed. Timezone changes take effect from saving."
-msgstr ""
+#~ msgid "Weight is recorded into its history when changed. Timezone changes take effect from saving."
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Documentation preferences are browser-local. Account display preferences have their own persistence."
-msgstr ""
+#~ msgid "Documentation preferences are browser-local. Account display preferences have their own persistence."
+#~ msgstr ""
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Basal, sensitivity, carb ratio, and target can change by time of day."
 msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Maintenance and accepting suggestions can change records. Merely changing detection settings is a different action."
-msgstr ""
+#~ msgid "Maintenance and accepting suggestions can change records. Merely changing detection settings is a different action."
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Definitions set the duration/reminders. Presets reuse starting information."
-msgstr ""
+#~ msgid "Definitions set the duration/reminders. Presets reuse starting information."
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Completion creates history. Editing a definition is not the same as completing an instance."
-msgstr ""
+#~ msgid "Completion creates history. Editing a definition is not the same as completing an instance."
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "That session must authenticate again. Stored patient records remain."
-msgstr ""
+#~ msgid "That session must authenticate again. Stored patient records remain."
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Uploader devices, authorized apps, and API tokens are managed in Connectors & Apps."
-msgstr ""
+#~ msgid "Uploader devices, authorized apps, and API tokens are managed in Connectors & Apps."
+#~ msgstr ""
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "A server connector reads a provider. An uploader pushes records. Authorized apps and tokens grant API access."
 msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Anyone possessing a usable guest link receives its configured access. Revoke links you no longer intend to share."
-msgstr ""
+#~ msgid "Anyone possessing a usable guest link receives its configured access. Revoke links you no longer intend to share."
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Inspect the entries available for that catalog."
-msgstr ""
+#~ msgid "Inspect the entries available for that catalog."
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Contributor details and reviewer notes accompany your translation. Interface language is selected in Appearance."
-msgstr ""
+#~ msgid "Contributor details and reviewer notes accompany your translation. Interface language is selected in Appearance."
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Enter kilograms and the actual recording time, not today's date for an older measurement."
-msgstr ""
+#~ msgid "Enter kilograms and the actual recording time, not today's date for an older measurement."
+#~ msgstr ""
 
-#: src/lib/help/reading-guides.svelte.ts
-msgid "Selecting Weight in Google Health controls imports. Editing a history entry is a different operation."
-msgstr ""
+#~ msgid "Selecting Weight in Google Health controls imports. Editing a history entry is a different operation."
+#~ msgstr ""
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Use the earliest date to read again."
@@ -32749,93 +32655,75 @@ msgstr "Gebruik de vroegste datum die opnieuw gelezen moet worden."
 msgid "Removing a link stops that authorization. It does not remove messages already sent."
 msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "Recovery codes and authentication secrets grant account access. Save recovery information privately. It is not the patient's clinical record."
-msgstr ""
+#~ msgid "Recovery codes and authentication secrets grant account access. Save recovery information privately. It is not the patient's clinical record."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "Use Clinical Information, Devices, and Insulins here. Therapy schedules are in Settings → Therapy. Dated weights and locations have their own pages."
-msgstr ""
+#~ msgid "Use Clinical Information, Devices, and Insulins here. Therapy schedules are in Settings → Therapy. Dated weights and locations have their own pages."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "Changing a patient detail does not rewrite device measurements. Use the correct tenant and units. Optional missing details can limit dependent features."
-msgstr ""
+#~ msgid "Changing a patient detail does not rewrite device measurements. Use the correct tenant and units. Optional missing details can limit dependent features."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "Open and close help with the book next to Nocturne, the close button, or Escape. Your original page and inputs stay in place. Navigation drawer and Replace page use the existing menu for help. Right drawer uses a panel. Side by side keeps the page usable on wide screens. Hidden help can always be enabled here. Documentation appearance is saved in this browser."
-msgstr ""
+#~ msgid "Open and close help with the book next to Nocturne, the close button, or Escape. Your original page and inputs stay in place. Navigation drawer and Replace page use the existing menu for help. Right drawer uses a panel. Side by side keeps the page usable on wide screens. Hidden help can always be enabled here. Documentation appearance is saved in this browser."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "Choose the default profile here and inspect target, basal, carb-ratio, and sensitivity schedules. Correct the source profile in the originating app/device when this page only offers a read-only schedule."
-msgstr ""
+#~ msgid "Choose the default profile here and inspect target, basal, carb-ratio, and sensitivity schedules. Correct the source profile in the originating app/device when this page only offers a read-only schedule."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "Detection creates review suggestions. Maintenance can change records subsequently used by charts and reports."
-msgstr ""
+#~ msgid "Detection creates review suggestions. Maintenance can change records subsequently used by charts and reports."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "Use Active, History, Definitions, and Presets on this page. Start or complete a tracker using its controls. Edit the definition for duration and reminder behavior."
-msgstr ""
+#~ msgid "Use Active, History, Definitions, and Presets on this page. Start or complete a tracker using its controls. Edit the definition for duration and reminder behavior."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "Active trackers provide due/urgency information and reminders. Completed events form the history."
-msgstr ""
+#~ msgid "Active trackers provide due/urgency information and reminders. Completed events form the history."
+#~ msgstr ""
 
 #: src/lib/help/settings.svelte.ts
 msgid "Server connectors, uploaders, authorized apps, client devices, and tokens configured for this tenant."
-msgstr ""
+msgstr "Serverconnectors, uploaders, toegestane apps, clientapparaten en tokens die voor deze tenant zijn ingesteld."
 
-#: src/lib/help/settings.svelte.ts
-msgid "A guest link grants the access you configure to anyone who possesses it. Review scope and time limits. Revoking access does not remove copies someone already made."
-msgstr ""
+#~ msgid "A guest link grants the access you configure to anyone who possesses it. Review scope and time limits. Revoking access does not remove copies someone already made."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "Nocturne's translation catalogs and saved contributions."
-msgstr ""
+#~ msgid "Nocturne's translation catalogs and saved contributions."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "Choose a language here. Choose your interface language in Appearance. Open a language to edit entries and submit a contribution."
-msgstr ""
+#~ msgid "Choose a language here. Choose your interface language in Appearance. Open a language to edit entries and submit a contribution."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "English is the original help text. Untranslated entries fall back to English. Preserve placeholders when contributing a translation."
-msgstr ""
+#~ msgid "English is the original help text. Untranslated entries fall back to English. Preserve placeholders when contributing a translation."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "Check units and timestamps before saving. A missing entry does not mean zero weight. Repeated readings can come from different sources."
-msgstr ""
+#~ msgid "Check units and timestamps before saving. A missing entry does not mean zero weight. Repeated readings can come from different sources."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "Choose the location timezone and local arrival time. Fix already-imported data is a separate operation here. Inspect its affected period first."
-msgstr ""
+#~ msgid "Choose the location timezone and local arrival time. Fix already-imported data is a separate operation here. Inspect its affected period first."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "A timezone is not just a fixed UTC offset: daylight-saving changes matter. A correction can affect existing data interpretation. Ordinary display-format settings are in Appearance."
-msgstr ""
+#~ msgid "A timezone is not just a fixed UTC offset: daylight-saving changes matter. A correction can affect existing data interpretation. Ordinary display-format settings are in Appearance."
+#~ msgstr ""
 
-#: src/lib/help/settings.svelte.ts
-msgid "Keep source credentials private. Completion counts and skipped records matter. A finished job does not mean every source record was accepted. Migration is separate from ongoing connector sync."
-msgstr ""
+#~ msgid "Keep source credentials private. Completion counts and skipped records matter. A finished job does not mean every source record was accepted. Migration is separate from ongoing connector sync."
+#~ msgstr ""
 
 #: src/lib/help/settings.svelte.ts
 msgid "Review the status on this page. Migration history is under Data Migration. Ongoing data sources are under Connectors & Apps."
-msgstr ""
+msgstr "Bekijk de status op deze pagina. De migratiegeschiedenis staat onder Data Migration. Doorlopende gegevensbronnen staan onder Connectors & Apps."
 
-#: src/lib/help/settings.svelte.ts
-msgid "Check the tenant before changing its status. A slug affects its address. Platform permissions differ from a role inside one tenant."
-msgstr ""
+#~ msgid "Check the tenant before changing its status. A slug affects its address. Platform permissions differ from a role inside one tenant."
+#~ msgstr ""
 
 #: src/lib/help/settings.svelte.ts
 msgid "Link, label, select the default, or revoke an identity here. Follow the bot's server-install controls where available."
-msgstr ""
+msgstr "Koppel, benoem, kies de standaard of trek een identiteit hier in. Volg de knoppen voor het installeren van de bot op de server waar die er zijn."
 
 #: src/lib/help/settings.svelte.ts
 msgid "The linked identity supports bot interactions authorized for your account."
-msgstr ""
+msgstr "De gekoppelde identiteit ondersteunt botacties die voor uw account zijn toegestaan."
 
-#: src/lib/help/settings.svelte.ts
-msgid "Use the filters and detail controls here. Access requires the relevant permission."
-msgstr ""
+#~ msgid "Use the filters and detail controls here. Access requires the relevant permission."
+#~ msgstr ""
 
 #~ msgid "Indicators describe the selected data. They do not identify the cause of a change."
 #~ msgstr ""
@@ -44146,12 +44034,14 @@ msgstr ""
 #~ msgstr ""
 
 #: src/lib/help/meanings.svelte.ts
+#: src/lib/help/settings-meaning.svelte.ts
 msgid "Glucose ranges"
-msgstr ""
+msgstr "Glucosebereiken"
 
 #: src/lib/help/meanings.svelte.ts
+#: src/lib/help/settings-meaning.svelte.ts
 msgid "Very low is below 3.0 mmol/L (54 mg/dL). Low is 3.0 to 3.8 mmol/L (54 to 69 mg/dL). In range is 3.9 to 10.0 mmol/L (70 to 180 mg/dL). High is 10.1 to 13.9 mmol/L (181 to 250 mg/dL). Very high is above 13.9 mmol/L (250 mg/dL). Tight range, 3.9 to 7.8 mmol/L (70 to 140 mg/dL), is part of in range."
-msgstr ""
+msgstr "Zeer laag is onder 3,0 mmol/L (54 mg/dL). Laag is 3,0 tot 3,8 mmol/L (54 tot 69 mg/dL). In bereik is 3,9 tot 10,0 mmol/L (70 tot 180 mg/dL). Hoog is 10,1 tot 13,9 mmol/L (181 tot 250 mg/dL). Zeer hoog is boven 13,9 mmol/L (250 mg/dL). Het strakke bereik, 3,9 tot 7,8 mmol/L (70 tot 140 mg/dL), is een deel van in bereik."
 
 #: src/lib/help/meanings.svelte.ts
 msgid "Consensus targets"
@@ -44172,8 +44062,9 @@ msgid "Fitbit and Pixel Watch write to Google Health directly. Garmin, Samsung, 
 msgstr ""
 
 #: src/lib/help/meanings.svelte.ts
+#: src/lib/help/settings-meaning.svelte.ts
 msgid "The large number"
-msgstr ""
+msgstr "Het grote getal"
 
 #: src/lib/help/meanings.svelte.ts
 msgid "Your newest sensor reading. Its color shows its status against the low, high and urgent thresholds of your enabled alert rules. Without such rules, the server's default thresholds apply."
@@ -44591,3 +44482,1623 @@ msgstr ""
 #: src/lib/components/help/HelpBrowser.svelte
 msgid "What you see and what it means"
 msgstr ""
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Account belongs to you. Patient record, therapy, sharing, and connectors belong to the selected tenant."
+msgstr "Account hoort bij u. Patient record, Therapy, delen en connectors horen bij de geselecteerde tenant."
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Each category page explains its own controls in its help."
+msgstr "Elke categoriepagina legt in haar eigen help uit wat de knoppen doen."
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "A display choice, a saved setting, and an imported record are different outcomes."
+msgstr "Een weergavekeuze, een opgeslagen instelling en een geïmporteerd gegeven zijn verschillende uitkomsten."
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Add a second sign-in method"
+msgstr "Voeg een tweede aanmeldmethode toe"
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Register at least two passkeys or linked providers, so that one lost device does not lock you out."
+msgstr "Registreer ten minste twee passkeys of gekoppelde providers, zodat u met één verloren apparaat niet buitengesloten raakt."
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Save recovery codes"
+msgstr "Bewaar herstelcodes"
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Generate the codes and store them privately. Each code works once."
+msgstr "Maak de codes aan en bewaar ze op een privéplek. Elke code werkt één keer."
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Active access lists the browsers that are signed in to your account."
+msgstr "Active access toont de browsers die bij uw account zijn aangemeld."
+
+#: src/lib/help/reading-guides.svelte.ts
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Check the tenant"
+msgstr "Controleer de tenant"
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Make sure that you edit the record of the correct person."
+msgstr "Zorg dat u de gegevens van de juiste persoon wijzigt."
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Complete the details"
+msgstr "Vul de gegevens aan"
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Timezone, sex, and date of birth change alerts, schedules, and sleep ranges."
+msgstr "Tijdzone, geslacht en geboortedatum veranderen meldingen, schema's en slaapbereiken."
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Add devices and insulins"
+msgstr "Voeg apparaten en insulines toe"
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Use start and end dates, so that the history shows what was in use at each moment."
+msgstr "Gebruik begin- en einddatums, zodat de geschiedenis laat zien wat op elk moment in gebruik was."
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "These change how values look. Stored measurements stay the same."
+msgstr "Deze keuzes veranderen hoe waarden eruitzien. Opgeslagen metingen blijven gelijk."
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Arrange the dashboard"
+msgstr "Richt het dashboard in"
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Choose the widgets and status pills that you want to see first."
+msgstr "Kies de widgets en statuslabels die u als eerste wilt zien."
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Most choices follow your account. Help display choices stay in this browser."
+msgstr "De meeste keuzes volgen uw account. Keuzes voor de helpweergave blijven in deze browser."
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Check which profile is the default and whether a switch is active."
+msgstr "Controleer welk profiel de standaard is en of er een profielwissel actief is."
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Read the time segments"
+msgstr "Lees de tijdsblokken"
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Change it at the source"
+msgstr "Wijzig het bij de bron"
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "A read-only profile comes from your app or device. Edit it there and sync again."
+msgstr "Een alleen-lezen profiel komt uit uw app of apparaat. Wijzig het daar en synchroniseer opnieuw."
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Set your sleep times"
+msgstr "Stel uw slaaptijden in"
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Bedtime and wake time set the overnight window for analysis."
+msgstr "Bedtijd en opstaantijd bepalen het nachtvenster voor de analyse."
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Enable detection"
+msgstr "Zet detectie aan"
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Nocturne then notifies you about possible compression lows."
+msgstr "Nocturne meldt u dan mogelijke compressielows."
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Review the suggestions"
+msgstr "Bekijk de suggesties"
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Open the quality reports to confirm or dismiss what was found."
+msgstr "Open de kwaliteitsrapporten om bevindingen te bevestigen of af te wijzen."
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Create a definition"
+msgstr "Maak een definitie"
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Set the lifespan, the reminder thresholds, and the dashboard visibility."
+msgstr "Stel de levensduur, de herinneringsdrempels en de zichtbaarheid op het dashboard in."
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Start a tracker"
+msgstr "Start een tracker"
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Start it from Active or a preset, and adjust the start time if needed."
+msgstr "Start hem vanuit Active of met een preset, en pas zo nodig de starttijd aan."
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Complete or restart"
+msgstr "Afronden of opnieuw starten"
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Complete it when you change the item, or let a device event restart it."
+msgstr "Rond hem af wanneer u het onderdeel vervangt, of laat een apparaatgebeurtenis hem opnieuw starten."
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Inspect the sessions"
+msgstr "Bekijk de sessies"
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Find each browser that is signed in to your account."
+msgstr "Vind elke browser die bij uw account is aangemeld."
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Sign out unknown sessions"
+msgstr "Meld onbekende sessies af"
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "That browser must sign in again. Stored data stays."
+msgstr "Die browser moet zich opnieuw aanmelden. Opgeslagen gegevens blijven."
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Use the right page"
+msgstr "Gebruik de juiste pagina"
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Apps and tokens are in Connectors & apps. People and links are in Sharing & privacy."
+msgstr "Apps en tokens staan in Connectors & apps. Personen en links staan in Sharing & privacy."
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Invite named people, review requests, or create a temporary guest link."
+msgstr "Nodig personen bij naam uit, beoordeel verzoeken of maak een tijdelijke gastlink."
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Roles, direct permissions, and the 24-hour limit set the data and actions."
+msgstr "Rollen, losse rechten en de 24-uurslimiet bepalen de gegevens en handelingen."
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Review the links"
+msgstr "Controleer de links"
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Anyone with a guest link or the public link sees what it allows. Revoke links you do not need."
+msgstr "Iedereen met een gastlink of de openbare link ziet wat die link toestaat. Trek links in die u niet nodig hebt."
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Open the language and show the untranslated messages first."
+msgstr "Open de taal en toon eerst de onvertaalde teksten."
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Keep placeholders"
+msgstr "Laat plaatshouders staan"
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Copy placeholders and markup tags exactly as they are in the English text."
+msgstr "Neem plaatshouders en opmaaktags precies over zoals ze in de Engelse tekst staan."
+
+#: src/lib/help/reading-guides.svelte.ts
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Submit the drafts"
+msgstr "Verstuur de concepten"
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Your drafts are proposed to the Nocturne project as a pull request."
+msgstr "Uw concepten worden als pull request aan het Nocturne-project voorgesteld."
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Inspect the entries"
+msgstr "Bekijk de invoer"
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Weight history holds manual entries and supported imports."
+msgstr "Weight history bevat handmatige invoer en ondersteunde imports."
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Enter the real time"
+msgstr "Vul de echte tijd in"
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Use the time of the measurement, not the current time, for an older weight."
+msgstr "Gebruik voor een oudere weging de tijd van de meting, niet de huidige tijd."
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "The Google Health connector controls weight imports."
+msgstr "De Google Health-connector bepaalt de import van gewicht."
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Choose the timezone and the local date and time of arrival."
+msgstr "Kies de tijdzone en de lokale datum en tijd van aankomst."
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Know which data it changes"
+msgstr "Weet welke gegevens het verandert"
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "It corrects sources that record local clock time, such as Glooko."
+msgstr "Het corrigeert bronnen die lokale kloktijd vastleggen, zoals Glooko."
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Correct saved data"
+msgstr "Corrigeer opgeslagen gegevens"
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Re-import recent data to correct readings that were saved before the change."
+msgstr "Importeer recente gegevens opnieuw om metingen te corrigeren die vóór de wijziging zijn opgeslagen."
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Test the source"
+msgstr "Test de bron"
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Enter the Nightscout URL and API secret, or the MongoDB details, and test the connection."
+msgstr "Vul de Nightscout-URL en het API-secret in, of de MongoDB-gegevens, en test de verbinding."
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Start and follow"
+msgstr "Start en volg"
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Follow the progress for each collection, not only the final status."
+msgstr "Volg de voortgang van elke collectie, niet alleen de eindstatus."
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Read skipped and failed collections in History, then check dates in the reports."
+msgstr "Lees overgeslagen en mislukte collecties na in History en controleer daarna de datums in de rapporten."
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Confirm the name and slug before an edit."
+msgstr "Controleer de naam en de slug voordat u iets wijzigt."
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Choose a slug carefully"
+msgstr "Kies de slug zorgvuldig"
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "The slug is part of the tenant address and cannot change later."
+msgstr "De slug is deel van het adres van de tenant en kan later niet veranderen."
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Separate the permissions"
+msgstr "Houd de rechten gescheiden"
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Platform administrators manage every tenant. A role applies inside one tenant."
+msgstr "Platformbeheerders beheren elke tenant. Een rol geldt binnen één tenant."
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Read the name and message, and decide whether you know this person."
+msgstr "Lees de naam en het bericht, en bepaal of u deze persoon kent."
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Choose the access"
+msgstr "Kies de toegang"
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Select roles, optional permissions, and the 24-hour limit."
+msgstr "Kies rollen, optionele losse rechten en de 24-uurslimiet."
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Approval activates the account. Denial deactivates it."
+msgstr "Goedkeuren activeert het account. Weigeren deactiveert het."
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Choose the log"
+msgstr "Kies het logboek"
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Data changes shows edits. If read access logging is on, Data access shows reads."
+msgstr "Data changes toont wijzigingen. Als het loggen van leestoegang aan staat, toont Data access wie gegevens las."
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Narrow the dates"
+msgstr "Beperk de datums"
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "The list shows the most recent entries, so narrow the range for older events."
+msgstr "De lijst toont de nieuwste regels, dus beperk het bereik voor oudere gebeurtenissen."
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Check retention"
+msgstr "Controleer de bewaartermijn"
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Entries older than the retention are deleted."
+msgstr "Regels die ouder zijn dan de bewaartermijn worden verwijderd."
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Add a provider"
+msgstr "Voeg een provider toe"
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Register Nocturne at the provider, then enter the issuer, client ID, and secret."
+msgstr "Registreer Nocturne bij de provider en vul daarna de issuer, de client-ID en het secret in."
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Test before you save"
+msgstr "Test voordat u opslaat"
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Test connection shows whether Nocturne can reach the provider."
+msgstr "Test connection laat zien of Nocturne de provider kan bereiken."
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Watch for lockouts"
+msgstr "Let op buitensluiting"
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Members who sign in only through a provider need a recovery code if you disable it."
+msgstr "Leden die zich alleen via een provider aanmelden, hebben een herstelcode nodig als u die provider uitschakelt."
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Identify the app"
+msgstr "Herken de app"
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Check the app name, its address, and the directory warning."
+msgstr "Controleer de naam van de app, het adres en de waarschuwing over de appmap."
+
+#: src/lib/help/reading-guides.svelte.ts
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Read the permissions"
+msgstr "Lees de rechten"
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Approve only the access that the app needs. Full access includes deleting data."
+msgstr "Keur alleen de toegang goed die de app nodig heeft. Volledige toegang omvat ook het verwijderen van gegevens."
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Revoke later"
+msgstr "Later intrekken"
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Approved apps are listed in Connectors & apps."
+msgstr "Goedgekeurde apps staan in Connectors & apps."
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Compare the code"
+msgstr "Vergelijk de code"
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Enter only the code that your own device shows."
+msgstr "Vul alleen de code in die uw eigen apparaat toont."
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Check what the device can read and change."
+msgstr "Controleer wat het apparaat kan lezen en wijzigen."
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "After you approve, return to the device."
+msgstr "Ga na het goedkeuren terug naar het apparaat."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Yours or the tenant's"
+msgstr "Van u of van de tenant"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Account, Appearance, and Active access are yours. The other categories change the record of the selected tenant, so every member sees the change."
+msgstr "Account, Appearance en Active access zijn van u. De andere categorieën wijzigen het dossier van de geselecteerde tenant, dus elk lid ziet de wijziging."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "A missing category"
+msgstr "Een ontbrekende categorie"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Nocturne shows only the categories that your role permits. A missing category is not an error."
+msgstr "Nocturne toont alleen de categorieën die uw rol toestaat. Een ontbrekende categorie is geen fout."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Each row is a device or security key that can sign you in. Created and Last used show when it was added and last used. A passkey that you never use is a backup."
+msgstr "Elke regel is een apparaat of beveiligingssleutel waarmee u zich kunt aanmelden. Created en Last used tonen wanneer die is toegevoegd en voor het laatst is gebruikt. Een passkey die u nooit gebruikt, is een reserve."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Linked sign-in methods"
+msgstr "Gekoppelde aanmeldmethoden"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Each row is an account at Google, Microsoft, GitHub, or another provider that can sign you in. The email is the address of that provider account."
+msgstr "Elke regel is een account bij Google, Microsoft, GitHub of een andere provider waarmee u zich kunt aanmelden. Het e-mailadres is het adres van dat account bij de provider."
+
+#~ msgid "When at least one app is listed, every sign-in also asks for its 6-digit code. The code changes every 30 seconds."
+#~ msgstr ""
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "The badge shows the number of unused codes. A red badge means 2 or fewer codes are left. Generate new codes before you use the last one."
+msgstr "Het label toont het aantal ongebruikte codes. Een rood label betekent dat er 2 of minder codes over zijn. Maak nieuwe codes aan voordat u de laatste gebruikt."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Session expires is the time at which you must sign in again. Roles and Permissions show what you can do in the selected tenant, not in other tenants."
+msgstr "Session expires is het moment waarop u zich opnieuw moet aanmelden. Roles en Permissions tonen wat u in de geselecteerde tenant mag, niet in andere tenants."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "These details describe the person, not the account. The timezone sets the local hours for alerts and schedules. Sex and date of birth select the typical ranges in sleep reports."
+msgstr "Deze gegevens beschrijven de persoon, niet het account. De tijdzone bepaalt de lokale uren voor meldingen en schema's. Geslacht en geboortedatum kiezen de gebruikelijke bereiken in slaaprapporten."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Devices and the order"
+msgstr "Apparaten en de volgorde"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Current means that the device has no end date. If two CGMs send readings at the same time, the higher device in the list supplies the charts, statistics, and alerts. The readings of the other CGM stay stored."
+msgstr "Current betekent dat het apparaat geen einddatum heeft. Als twee CGM's tegelijk metingen sturen, levert het hoogste apparaat in de lijst de grafieken, statistieken en meldingen. De metingen van de andere CGM blijven bewaard."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Each row is a stream of readings that is not linked to a device. The count and Last seen show how active it is. When you register it, it gets priority over unregistered streams."
+msgstr "Elke regel is een stroom metingen die niet aan een apparaat gekoppeld is. Het aantal en Last seen tonen hoe actief die is. Als u hem registreert, krijgt hij voorrang op niet-geregistreerde stromen."
+
+#~ msgid "DIA is the duration of insulin action in hours. The rapid-acting insulin that is in use sets the action time for insulin on board and predictions, unless another app manages the profile."
+#~ msgstr ""
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Fixed bands and your target"
+msgstr "Vaste banden en uw doel"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "These color bands are the standard clinical bands and are the same for everyone. Your personal target from the therapy profile shows as a separate line on the chart."
+msgstr "Deze kleurbanden zijn de standaard klinische banden en zijn voor iedereen gelijk. Uw persoonlijke doel uit het therapieprofiel verschijnt als een aparte lijn in de grafiek."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Threshold bands colors each part of the line with the band color. Continuous gradient changes the color smoothly with the value. Single color uses one color for the full line."
+msgstr "Threshold bands kleurt elk deel van de lijn met de kleur van de band. Continuous gradient laat de kleur geleidelijk meegaan met de waarde. Single color gebruikt één kleur voor de hele lijn."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Outside target only fills the space between the glucose line and the target range when glucose is out of range. Then you can see quickly how far and how long glucose was out of range."
+msgstr "Outside target only kleurt alleen de ruimte tussen de glucoselijn en het doelbereik als glucose buiten bereik is. Zo ziet u snel hoe ver en hoe lang glucose buiten bereik was."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Smoothed and unsmoothed"
+msgstr "Afgevlakt en niet afgevlakt"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Smoothed values remove sensor noise but react later. Unsmoothed values react faster but jump more. This setting changes only the display, never the stored readings."
+msgstr "Afgevlakte waarden filteren sensorruis weg, maar reageren later. Niet-afgevlakte waarden reageren sneller, maar springen meer. Deze instelling verandert alleen de weergave, nooit de opgeslagen metingen."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Basal rates (U/hr)"
+msgstr "Basaalstanden (E/uur)"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "The insulin per hour that the pump is set to give in the background. Each row starts at its time and applies until the time of the next row."
+msgstr "De insuline per uur die de pomp op de achtergrond hoort te geven. Elke regel begint op zijn tijd en geldt tot de tijd van de volgende regel."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Carb ratios (g/U)"
+msgstr "Koolhydraatratio's (g/E)"
+
+#~ msgid "The grams of carbohydrate that one unit of insulin covers. A higher number means less insulin for the same meal."
+#~ msgstr ""
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "The expected drop in glucose from one unit of insulin, in your glucose unit per unit. A higher number means that one unit has a stronger effect."
+msgstr "De verwachte daling van glucose door één eenheid insuline, in uw glucose-eenheid per eenheid. Een hoger getal betekent dat één eenheid sterker werkt."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "The glucose range that the profile aims for. It shows as a reference line on the charts. It does not change the colors of the standard range bands."
+msgstr "Het glucosebereik waar het profiel naar streeft. Het verschijnt als referentielijn in de grafieken. Het verandert de kleuren van de standaard bereikbanden niet."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "DIA, Carbs/hr, and Delay"
+msgstr "DIA, Carbs/hr en Delay"
+
+#~ msgid "DIA is the hours that insulin stays active. Carbs/hr is the grams of carbohydrate absorbed per hour for carbs on board. Delay is a value from the source app."
+#~ msgstr ""
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Badges and the switch card"
+msgstr "Labels en de wisselkaart"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Default is the profile that applies without a switch. Read-only means that another app manages it. The switch card shows the percentage, the time shift, and when the switch started and ends."
+msgstr "Default is het profiel dat geldt zonder profielwissel. Read-only betekent dat een andere app het beheert. De wisselkaart toont het percentage, de tijdverschuiving en wanneer de wissel begon en eindigt."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Sleep schedule"
+msgstr "Slaapschema"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Bedtime and wake time mark the night in overnight analysis. They do not change alerts."
+msgstr "Bedtijd en opstaantijd markeren de nacht in de nachtanalyse. Ze veranderen geen meldingen."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Compression low"
+msgstr "Compressielow"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "A compression low is a short, sharp drop that recovers quickly, often while you lie on the sensor. The detection sends a suggestion that you confirm or dismiss in the data quality report."
+msgstr "Een compressielow is een korte, scherpe daling die snel herstelt, vaak terwijl u op de sensor ligt. De detectie stuurt een suggestie die u in het rapport over gegevenskwaliteit bevestigt of afwijst."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Two sources can upload the same event, such as a bolus from the pump and from the loop app. Deduplication links these copies, so that totals count each event once."
+msgstr "Twee bronnen kunnen dezelfde gebeurtenis uploaden, zoals een bolus van de pomp en van de loop-app. Ontdubbelen koppelt die kopieën, zodat totalen elke gebeurtenis één keer tellen."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "This is the time left until the expected end. Without a lifespan, it is the age of the tracker. Overdue in red means that the expected end has passed."
+msgstr "Dit is de tijd tot het verwachte einde. Zonder levensduur is het de leeftijd van de tracker. Overdue in rood betekent dat het verwachte einde voorbij is."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Border colors"
+msgstr "Randkleuren"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "The border shows the highest threshold that the tracker reached. Blue is Info, yellow is Warning, orange is Hazard, and red is Urgent."
+msgstr "De rand toont de hoogste drempel die de tracker bereikte. Blauw is Info, geel is Warning, oranje is Hazard en rood is Urgent."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Age and start"
+msgstr "Leeftijd en start"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Below the name, old shows the time since the start, and Started shows the date. Ages show as 45m, 6h, or 3d 4h."
+msgstr "Onder de naam toont old de tijd sinds de start, en Started de datum. Leeftijden verschijnen als 45m, 6h of 3d 4h."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Each completed tracker shows how long it ran and the reason, such as Completed, Failed, Fell off, or Replaced early. Use the reasons to see how often a sensor or site fails early."
+msgstr "Elke afgeronde tracker toont hoe lang hij liep en de reden, zoals Completed, Failed, Fell off of Replaced early. Gebruik de redenen om te zien hoe vaak een sensor of infuus te vroeg uitvalt."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Each row is a browser that is signed in to your account. This device marks the one that you use now. Last active and IP help you identify a session."
+msgstr "Elke regel is een browser die bij uw account is aangemeld. This device markeert de browser die u nu gebruikt. Last active en IP helpen u een sessie te herkennen."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "An unknown session"
+msgstr "Een onbekende sessie"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "If you do not recognize a session, sign it out. Then add a new passkey or recovery codes if you think that someone else has your sign-in method."
+msgstr "Als u een sessie niet herkent, meld die dan af. Voeg daarna een nieuwe passkey of herstelcodes toe als u denkt dat iemand anders uw aanmeldmethode heeft."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Owner has full control. Administrator manages data, members, and settings. Caretaker logs treatments and manages alerts. Clinician reads everything without changes. Viewer sees only glucose and reports."
+msgstr "Owner heeft volledige controle. Administrator beheert gegevens, leden en instellingen. Caretaker noteert behandelingen en beheert meldingen. Clinician leest alles zonder te wijzigen. Viewer ziet alleen glucose en rapporten."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Badges on a member"
+msgstr "Labels bij een lid"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Direct permissions are permissions in addition to the roles. 24-hour limit means that the member sees only the most recent 24 hours. Joined and Last active show the dates."
+msgstr "Losse rechten zijn rechten bovenop de rollen. 24-hour limit betekent dat het lid alleen de laatste 24 uur ziet. Joined en Last active tonen de datums."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Pending invites"
+msgstr "Openstaande uitnodigingen"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Each invite shows its role, its expiry date, and how many times it was used, such as 1/3 uses. Used by lists the people who joined with it."
+msgstr "Elke uitnodiging toont de rol, de vervaldatum en hoe vaak hij is gebruikt, zoals 1/3 uses. Used by toont wie ermee lid werd."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Guest link status"
+msgstr "Status van gastlinks"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Pending means that nobody used the code yet. Active means that a device is signed in for 48 hours. Expired and Revoked links no longer give access."
+msgstr "Pending betekent dat nog niemand de code gebruikte. Active betekent dat een apparaat 48 uur aangemeld is. Expired en Revoked links geven geen toegang meer."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "The summary sentence tells you exactly which categories and which time window anyone with the link can see. If no category is on, the link shows nothing."
+msgstr "De samenvattende zin vertelt precies welke categorieën en welke periode iedereen met de link kan zien. Als geen categorie aan staat, toont de link niets."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Data changes"
+msgstr "Gegevenswijzigingen"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Each row shows the time, who made the change, the action, and the type of record. System means that Nocturne made the change. Select a row to see the reason and the changed fields."
+msgstr "Elke regel toont de tijd, wie de wijziging deed, de actie en het soort gegeven. System betekent dat Nocturne de wijziging deed. Kies een regel om de reden en de gewijzigde velden te zien."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Actions"
+msgstr "Acties"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Create, Update, and Delete change one record. Bulk delete removed many records at once. Restore brought back a deleted record. Allow re-import let deleted records come back on the next import."
+msgstr "Create, Update en Delete wijzigen één gegeven. Bulk delete verwijderde veel gegevens tegelijk. Restore zette een verwijderd gegeven terug. Allow re-import liet verwijderde gegevens bij de volgende import terugkomen."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Data access"
+msgstr "Gegevenstoegang"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Each row shows who read data, the address that was used, the type of record, the number of records returned, and the result code. A code from 200 to 299 means success."
+msgstr "Elke regel toont wie gegevens las, het gebruikte adres, het soort gegeven, het aantal teruggegeven gegevens en de resultaatcode. Een code van 200 tot 299 betekent succes."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "The counters"
+msgstr "De tellers"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "The number on each tab is the total in the date range. The list shows only the most recent entries."
+msgstr "Het getal op elk tabblad is het totaal in het datumbereik. De lijst toont alleen de nieuwste regels."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Connection test"
+msgstr "Verbindingstest"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "A successful test shows the number of entries and treatments that Nocturne found. If the numbers are much lower than you expect, check the URL and the date range."
+msgstr "Een geslaagde test toont het aantal metingen en behandelingen dat Nocturne vond. Als de aantallen veel lager zijn dan u verwacht, controleer dan de URL en het datumbereik."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Each collection shows documents migrated against the total. The percentage is for the full job."
+msgstr "Elke collectie toont de gemigreerde documenten tegenover het totaal. Het percentage geldt voor de hele taak."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "History status"
+msgstr "Status in de geschiedenis"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Completed means that the job finished. Failed shows the reason. Interrupted means that the server stopped during the job. Canceled means that someone stopped it."
+msgstr "Completed betekent dat de taak klaar is. Failed toont de reden. Interrupted betekent dat de server tijdens de taak stopte. Canceled betekent dat iemand de taak stopte."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Running it again"
+msgstr "Opnieuw uitvoeren"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "A second migration of the same source updates the records that it already imported. It does not make duplicates, and records that you deleted do not come back."
+msgstr "Een tweede migratie van dezelfde bron werkt de gegevens bij die al geïmporteerd zijn. Er komen geen dubbele gegevens, en gegevens die u verwijderde, komen niet terug."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "The language list"
+msgstr "De lijst met talen"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Each language shows its name in English and in the language itself, with its code."
+msgstr "Elke taal toont haar naam in het Engels en in de taal zelf, met haar code."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Untranslated text"
+msgstr "Onvertaalde tekst"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "If a message has no translation, Nocturne shows the English text in its place."
+msgstr "Als een tekst geen vertaling heeft, toont Nocturne de Engelse tekst."
+
+#: src/lib/help/settings-meaning.svelte.ts
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Each entry"
+msgstr "Elk item"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "An entry shows the weight in kilograms and the time of the measurement. The newest entry is the current weight."
+msgstr "Een item toont het gewicht in kilogram en de tijd van de meting. Het nieuwste item is het huidige gewicht."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "How Nocturne uses it"
+msgstr "Hoe Nocturne het gebruikt"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Nocturne keeps weight as a record of the patient. It does not use weight in insulin or glucose calculations."
+msgstr "Nocturne bewaart gewicht als gegeven van de patiënt. Het gebruikt gewicht niet in berekeningen voor insuline of glucose."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "An entry shows a timezone and the local date and time of arrival. It applies until the next entry."
+msgstr "Een item toont een tijdzone en de lokale datum en tijd van aankomst. Het geldt tot het volgende item."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "When it matters"
+msgstr "Wanneer het ertoe doet"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "If readings from Glooko appear one or more hours early or late, the timezone history is probably wrong for that period."
+msgstr "Als metingen uit Glooko een of meer uren te vroeg of te laat verschijnen, klopt de tijdzonegeschiedenis waarschijnlijk niet voor die periode."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Migration status"
+msgstr "Migratiestatus"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "The counts show the records per type that Nocturne copied from Nightscout. Complete means that all old records were processed."
+msgstr "De aantallen tonen per type de gegevens die Nocturne uit Nightscout kopieerde. Complete betekent dat alle oude gegevens verwerkt zijn."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Write-back health"
+msgstr "Status van terugschrijven"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Nocturne also sends new data to Nightscout. Circuit open means that Nocturne paused these sends after failures. It tries again later."
+msgstr "Nocturne stuurt nieuwe gegevens ook naar Nightscout. Circuit open betekent dat Nocturne dit na fouten tijdelijk stopte. Het probeert het later opnieuw."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "The score is the percentage of compared fields that were the same in Nocturne and Nightscout. Below 95 percent, check the discrepancies before you disconnect."
+msgstr "De score is het percentage vergeleken velden dat in Nocturne en Nightscout gelijk was. Onder 95 procent controleert u de verschillen voordat u Nightscout loskoppelt."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Safe means that no blockers remain. Almost ready and Not ready list the blockers, such as a connector that is not configured or an unhealthy write-back."
+msgstr "Safe betekent dat er geen blokkades meer zijn. Almost ready en Not ready tonen de blokkades, zoals een connector die niet is ingesteld of een terugschrijfverbinding die niet werkt."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Each provider shows its name and whether it is enabled. An enabled provider appears as a button on the sign-in page."
+msgstr "Elke provider toont zijn naam en of hij is ingeschakeld. Een ingeschakelde provider verschijnt als knop op de aanmeldpagina."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Integrations"
+msgstr "Koppelingen"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Each chat platform shows whether its bot is enabled. A bot sends alerts and answers questions in that platform."
+msgstr "Elk chatplatform toont of de bot is ingeschakeld. Een bot stuurt meldingen en beantwoordt vragen op dat platform."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Active means that members can use the tenant. Inactive means that it is not available."
+msgstr "Active betekent dat leden de tenant kunnen gebruiken. Inactive betekent dat de tenant niet beschikbaar is."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Platform administrators"
+msgstr "Platformbeheerders"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "A switch that is on means that this member can manage every tenant on the instance. This is not a role inside the tenant."
+msgstr "Een schakelaar die aan staat, betekent dat dit lid elke tenant op de instantie kan beheren. Dit is geen rol binnen de tenant."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Used shows the database size as a percentage of the budget, 2048 MiB by default. The database size pill warns from 60 percent and is urgent from 75 percent. Nothing is blocked when it is full."
+msgstr "Used toont de grootte van de database als percentage van het budget, standaard 2048 MiB. Het label voor de databasegrootte waarschuwt vanaf 60 procent en is urgent vanaf 75 procent. Bij een vol budget wordt niets geblokkeerd."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Connector status"
+msgstr "Status van de connector"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Healthy means that the last sync worked. Unhealthy shows the last error. Last successful sync and Last attempt show the times."
+msgstr "Healthy betekent dat de laatste synchronisatie werkte. Unhealthy toont de laatste fout. Last successful sync en Last attempt tonen de tijden."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Reset progress"
+msgstr "Voortgang van de reset"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Each connector goes from Queued to Re-pulling to Reset, or to Failed. Records that come in again do not make duplicates."
+msgstr "Elke connector gaat van Queued naar Re-pulling naar Reset, of naar Failed. Gegevens die opnieuw binnenkomen, worden niet dubbel opgeslagen."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Each request"
+msgstr "Elk verzoek"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "A request shows the name and the message that the visitor typed, and how long ago they sent it. Nocturne does not check the name."
+msgstr "Een verzoek toont de naam en het bericht die de bezoeker typte, en hoe lang geleden het verzoek kwam. Nocturne controleert de naam niet."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "If the title says Additional permissions, the app already has access. New permissions requested lists only the new access. Previously approved lists what it already has."
+msgstr "Als de titel Additional permissions is, heeft de app al toegang. New permissions requested toont alleen de nieuwe toegang. Previously approved toont wat de app al heeft."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "The warnings"
+msgstr "De waarschuwingen"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Not in the known app directory means that Nocturne cannot identify the app. Full access means that the app can also delete data."
+msgstr "Not in the known app directory betekent dat Nocturne de app niet herkent. Volledige toegang betekent dat de app ook gegevens kan verwijderen."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "The result"
+msgstr "Het resultaat"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Device authorized means that the device now has access. Authorization denied means that it gets nothing. Code expired means that you must start again on the device."
+msgstr "Device authorized betekent dat het apparaat nu toegang heeft. Authorization denied betekent dat het niets krijgt. Code expired betekent dat u op het apparaat opnieuw moet beginnen."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "The counter"
+msgstr "De teller"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "The top line shows how many messages are translated or drafted, out of all messages. The draft count shows how many edits wait for Submit."
+msgstr "De bovenste regel toont hoeveel teksten vertaald of als concept ingevuld zijn, van alle teksten. Het aantal concepten toont hoeveel wijzigingen wachten op Submit."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Message status"
+msgstr "Status van een tekst"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Translated means that Nocturne has a translation. Untranslated means that users see English. Fuzzy means that the English text changed, so check the old translation. Draft means your unsent edit."
+msgstr "Translated betekent dat Nocturne een vertaling heeft. Untranslated betekent dat gebruikers Engels zien. Fuzzy betekent dat de Engelse tekst veranderde, dus controleer de oude vertaling. Draft is uw nog niet verstuurde wijziging."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Active or Inactive"
+msgstr "Actief of inactief"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "The badge shows whether the connector is enabled and syncs data. Inactive means that it does not import anything."
+msgstr "Het label toont of de connector is ingeschakeld en gegevens synchroniseert. Inactive betekent dat hij niets importeert."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Supported data types lists what the connector can import. Max historical days is how far back it can download. If historical sync is not supported, it cannot fill old gaps."
+msgstr "Supported data types toont wat de connector kan importeren. Max historical days is hoe ver terug hij kan downloaden. Als historische synchronisatie niet wordt ondersteund, kan hij oude gaten niet vullen."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Fill in missing history"
+msgstr "Ontbrekende geschiedenis aanvullen"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "A normal sync only looks for data newer than your newest reading. A history download fetches everything from the day you choose. Readings you already have are kept, not duplicated."
+msgstr "Een gewone synchronisatie zoekt alleen naar gegevens die nieuwer zijn dan uw nieuwste meting. Een geschiedenisdownload haalt alles op vanaf de dag die u kiest. Metingen die u al hebt, blijven staan zonder dubbels."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Active, Stale, and Inactive"
+msgstr "Active, Stale en Inactive"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Active means data arrived in the last 15 minutes. Stale means 15 to 60 minutes ago. Inactive means more than 60 minutes ago. Some connectors use longer times because they sync less often."
+msgstr "Active betekent dat er in de laatste 15 minuten gegevens binnenkwamen. Stale betekent 15 tot 60 minuten geleden. Inactive betekent meer dan 60 minuten geleden. Sommige connectors gebruiken langere tijden omdat ze minder vaak synchroniseren."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "The total is the number of records from that source. In 24h is the number from the last 24 hours. Hover over it to see the count per data type."
+msgstr "Het totaal is het aantal gegevens uit die bron. In 24h is het aantal uit de laatste 24 uur. Ga erop staan met de muis om het aantal per gegevenstype te zien."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Sync status"
+msgstr "Synchronisatiestatus"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Syncing and Sync complete show a running or finished sync. Backing off means that the source refused requests, so Nocturne waits before it tries again. Error shows the last message."
+msgstr "Syncing en Sync complete tonen een lopende of afgeronde synchronisatie. Backing off betekent dat de bron verzoeken weigerde, dus Nocturne wacht voordat het opnieuw probeert. Error toont het laatste bericht."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Connected apps and tokens"
+msgstr "Gekoppelde apps en tokens"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Each app or token shows its permissions and when it was last used. Revoke one that you do not recognize."
+msgstr "Elke app of token toont de rechten en wanneer die voor het laatst is gebruikt. Trek er een in die u niet herkent."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Choose the settings for your account, the patient, the display, and the connections."
+msgstr "Kies de instellingen voor uw account, de patiënt, de weergave en de koppelingen."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Account settings belong to you and follow you to every tenant. Patient record, therapy, sharing, and connectors belong to the selected tenant."
+msgstr "Accountinstellingen horen bij u en volgen u naar elke tenant. Patient record, Therapy, delen en connectors horen bij de geselecteerde tenant."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Open a category from this page or the Settings menu. Platform administrators also see Platform administration. Setup starts the guided onboarding checklist again."
+msgstr "Open een categorie vanaf deze pagina of vanuit het menu Settings. Platformbeheerders zien ook Platform administration. Setup start de begeleide checklist voor het instellen opnieuw."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Each category controls the matching part of Nocturne: sign-in, patient details, display, therapy context, reminders, data sources, or sharing."
+msgstr "Elke categorie bestuurt het bijbehorende deel van Nocturne: aanmelden, patiëntgegevens, weergave, therapiecontext, herinneringen, gegevensbronnen of delen."
+
+#: src/lib/help/settings.svelte.ts
+msgid "If a category or control is not visible, your role does not include the necessary permission. Ask an owner of the tenant. Settings always require sign-in, also on a public site."
+msgstr "Als een categorie of knop niet zichtbaar is, heeft uw rol niet het benodigde recht. Vraag het aan een eigenaar van de tenant. Voor instellingen moet u altijd aangemeld zijn, ook op een openbare site."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Manage how you sign in: profile picture, passkeys, linked sign-in methods, authenticator apps, and recovery codes."
+msgstr "Beheer hoe u zich aanmeldt: profielfoto, passkeys, gekoppelde aanmeldmethoden, authenticator-apps en herstelcodes."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Your signed-in account. Account details shows your subject ID, the expiry time of your session, and the roles and permissions you hold in the selected tenant."
+msgstr "Uw aangemelde account. Account details toont uw subject-ID, wanneer uw sessie verloopt en de rollen en rechten die u in de geselecteerde tenant hebt."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Add a passkey and give it a name. Link an external provider, such as Google, Microsoft, or GitHub. Add an authenticator app with the QR code and its 6-digit code. Generate recovery codes and keep them private."
+msgstr "Voeg een passkey toe en geef die een naam. Koppel een externe provider, zoals Google, Microsoft of GitHub. Voeg een authenticator-app toe met de QR-code en de 6-cijferige code. Maak herstelcodes aan en houd ze privé."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Passkeys and linked providers are primary sign-in methods. An authenticator app is a second step: after you add one, each sign-in also requires its code."
+msgstr "Passkeys en gekoppelde providers zijn primaire aanmeldmethoden. Een authenticator-app is een tweede stap: nadat u er een hebt toegevoegd, vraagt elke aanmelding ook om de code."
+
+#: src/lib/help/settings.svelte.ts
+msgid "You cannot remove your only primary sign-in method. Add another one first. An authenticator app alone cannot sign you in. The providers you can link are the ones an administrator configured."
+msgstr "U kunt uw enige primaire aanmeldmethode niet verwijderen. Voeg eerst een andere toe. Met alleen een authenticator-app kunt u zich niet aanmelden. U kunt alleen de providers koppelen die een beheerder heeft ingesteld."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Nocturne makes 8 recovery codes. Each code works once. When you generate new codes, all old codes stop working immediately. Use a code when you lost all passkeys and linked providers."
+msgstr "Nocturne maakt 8 herstelcodes. Elke code werkt één keer. Als u nieuwe codes aanmaakt, werken alle oude codes direct niet meer. Gebruik een code als u alle passkeys en gekoppelde providers kwijt bent."
+
+#: src/lib/help/settings.svelte.ts
+msgid "No sign-in method left"
+msgstr "Geen aanmeldmethode meer"
+
+#: src/lib/help/settings.svelte.ts
+msgid "If you have no passkey, provider, or recovery code, the server administrator can set NOCTURNE_RECOVERY_MODE. This temporary mode lets you register a new passkey. It requires access to the server environment."
+msgstr "Als u geen passkey, provider of herstelcode meer hebt, kan de serverbeheerder NOCTURNE_RECOVERY_MODE instellen. In deze tijdelijke modus kunt u een nieuwe passkey registreren. Daarvoor is toegang tot de serveromgeving nodig."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Limits per account"
+msgstr "Limieten per account"
+
+#: src/lib/help/settings.svelte.ts
+msgid "You can register up to 20 passkeys and up to 10 authenticator apps. Give each one a name, so that you can identify the device later."
+msgstr "U kunt tot 20 passkeys en tot 10 authenticator-apps registreren. Geef elk een naam, zodat u het apparaat later herkent."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Describe the person whose data this tenant holds: clinical details, devices, and insulins."
+msgstr "Beschrijf de persoon van wie deze tenant de gegevens bevat: klinische gegevens, apparaten en insulines."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Details that you or another member enter. Discovered sources lists device streams from recent readings that are not linked to a device yet."
+msgstr "Gegevens die u of een ander lid invult. Discovered sources toont apparaatstromen uit recente metingen die nog niet aan een apparaat gekoppeld zijn."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Clinical information holds diabetes type, diagnosis date, date of birth, sex, preferred name, pronouns, timezone, and weight. Use Devices and Insulins to add, edit, sort, or delete entries."
+msgstr "Clinical information bevat diabetestype, diagnosedatum, geboortedatum, geslacht, roepnaam, voornaamwoorden, tijdzone en gewicht. Gebruik Devices en Insulins om items toe te voegen, te wijzigen, te sorteren of te verwijderen."
+
+#: src/lib/help/settings.svelte.ts
+msgid "The timezone sets the local hours for alerts, schedules, and analytics. Sex and date of birth select the typical ranges in sleep reports. A rapid-acting insulin sets the insulin action time."
+msgstr "De tijdzone bepaalt de lokale uren voor meldingen, schema's en analyses. Geslacht en geboortedatum kiezen de gebruikelijke bereiken in slaaprapporten. Een snelwerkende insuline bepaalt de werkingsduur van insuline."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Changes here do not change readings or treatments. Delete removes an entry permanently. Set an end date when you stop using a device or insulin, so that the history stays correct."
+msgstr "Wijzigingen hier veranderen geen metingen of behandelingen. Delete verwijdert een item definitief. Vul een einddatum in als u stopt met een apparaat of insuline, zodat de geschiedenis klopt."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Timezone and weight"
+msgstr "Tijdzone en gewicht"
+
+#: src/lib/help/settings.svelte.ts
+msgid "A changed timezone applies from the moment you save. Past data keeps its times. A changed weight is added to Weight history, and the previous entry stays."
+msgstr "Een gewijzigde tijdzone geldt vanaf het moment dat u opslaat. Eerdere gegevens houden hun tijden. Een gewijzigd gewicht wordt aan Weight history toegevoegd, en het vorige item blijft staan."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Choose a model from the catalog, or enter a manufacturer and model. A catalog CGM also adds sensor trackers. A catalog pump adds pod, site, or reservoir trackers. Use the arrows to rank overlapping devices of one category."
+msgstr "Kies een model uit de catalogus, of vul een fabrikant en model in. Een CGM uit de catalogus voegt ook sensortrackers toe. Een pomp uit de catalogus voegt pod-, infuus- of reservoirtrackers toe. Gebruik de pijlen om overlappende apparaten van één categorie te rangschikken."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Nocturne lists sources that sent readings but have no device in the patient record. Select Register as device to link a source to a device entry."
+msgstr "Nocturne toont bronnen die metingen stuurden maar geen apparaat in het patiëntdossier hebben. Kies Register as device om een bron aan een apparaat te koppelen."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Insulins and action time"
+msgstr "Insulines en werkingsduur"
+
+#: src/lib/help/settings.svelte.ts
+msgid "Choose a category and formulation. The formulation fills in the duration of insulin action, peak, and concentration, and you can change them. Nocturne uses the action time of the rapid-acting insulin for insulin on board and predictions. If another app manages the profile, Nocturne uses the action time of that profile instead."
+msgstr "Kies een categorie en formulering. De formulering vult de werkingsduur, de piek en de concentratie in, en u kunt die aanpassen. Nocturne gebruikt de werkingsduur van de snelwerkende insuline voor actieve insuline en voorspellingen. Als een andere app het profiel beheert, gebruikt Nocturne de werkingsduur uit dat profiel."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Choose how Nocturne looks for you: theme, units, formats, charts, dashboard, and help."
+msgstr "Kies hoe Nocturne er voor u uitziet: thema, eenheden, notaties, grafieken, dashboard en help."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Most choices are saved to your account and follow you to other devices. Help display choices are saved in this browser. Default chart range, tracker pills, and glucose processing apply to the whole tenant."
+msgstr "De meeste keuzes worden in uw account opgeslagen en volgen u naar andere apparaten. Keuzes voor de helpweergave worden in deze browser opgeslagen. Default chart range, trackerlabels en glucoseverwerking gelden voor de hele tenant."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Choose a color theme, glucose range colors, light or dark mode, language, units, and formats. Configure the dashboard widgets, status pills, chart lines, and the browser tab here."
+msgstr "Kies een kleurthema, kleuren voor glucosebereiken, lichte of donkere modus, taal, eenheden en notaties. Stel hier ook de dashboardwidgets, statuslabels, grafieklijnen en het browsertabblad in."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Display choices change how values look. Stored readings and their units stay the same. Theme changes take effect immediately."
+msgstr "Weergavekeuzes veranderen hoe waarden eruitzien. Opgeslagen metingen en hun eenheden blijven gelijk. Een themawijziging werkt direct."
+
+#: src/lib/help/settings.svelte.ts
+msgid "A choice that applies to the whole tenant changes the display for every member. The language preference syncs to your account only when you are signed in."
+msgstr "Een keuze die voor de hele tenant geldt, verandert de weergave voor elk lid. De taalvoorkeur wordt alleen met uw account gesynchroniseerd als u bent aangemeld."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Units and formats"
+msgstr "Eenheden en notaties"
+
+#: src/lib/help/settings.svelte.ts
+msgid "Glucose shows in mg/dL or mmol/L. Food energy shows in kJ or kcal. The regional format sets the date order, month names, and the first day of the week. You can show HbA1c as HbA1c or A1c."
+msgstr "Glucose verschijnt in mg/dL of mmol/L. Voedingsenergie verschijnt in kJ of kcal. De regionale notatie bepaalt de volgorde van datums, de namen van maanden en de eerste dag van de week. U kunt HbA1c tonen als HbA1c of A1c."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Charts"
+msgstr "Grafieken"
+
+#: src/lib/help/settings.svelte.ts
+msgid "Default chart range sets the hours that the dashboard chart shows. Lines and points use one color, the threshold bands, or a continuous gradient. Chart patterns add textures, so that color-blind readers can tell the series apart."
+msgstr "Default chart range bepaalt hoeveel uur de dashboardgrafiek toont. Lijnen en punten gebruiken één kleur, de kleuren van de drempelbanden of een doorlopend verloop. Chart patterns voegt texturen toe, zodat kleurenblinde lezers de reeksen uit elkaar kunnen houden."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Choose and sort the widgets above the glucose chart and the status pills beside the glucose value. Tracker pills show the age of running trackers. Set the visibility of each tracker in Notifications & trackers."
+msgstr "Kies en sorteer de widgets boven de glucosegrafiek en de statuslabels naast de glucosewaarde. Trackerlabels tonen de leeftijd van lopende trackers. Stel de zichtbaarheid van elke tracker in bij Notifications & trackers."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Glucose processing"
+msgstr "Glucoseverwerking"
+
+#: src/lib/help/settings.svelte.ts
+msgid "Some sources send smoothed and unsmoothed values. Choose which value Nocturne shows, or Default for the value that the source reports. Source default rules choose per app or device, and the first matching rule wins."
+msgstr "Sommige bronnen sturen afgevlakte en niet-afgevlakte waarden. Kies welke waarde Nocturne toont, of Default voor de waarde die de bron opgeeft. Source default rules kiezen per app of apparaat, en de eerste regel die past, geldt."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Browser tab"
+msgstr "Browsertabblad"
+
+#: src/lib/help/settings.svelte.ts
+msgid "The browser tab can show the glucose value, direction, and change in its title and icon. Flash on alarms makes the title and icon flash during urgent glucose levels."
+msgstr "Het browsertabblad kan de glucosewaarde, de richting en de verandering in de titel en het pictogram tonen. Flash on alarms laat de titel en het pictogram knipperen bij urgente glucosewaarden."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Help display"
+msgstr "Helpweergave"
+
+#: src/lib/help/settings.svelte.ts
+msgid "Help visibility shows the full help bar, only the library icon, or no help. Layout opens help as a book, a right drawer, side by side, or in place of the page. Close help with the book, the close button, or Escape. Your page and its inputs stay in place."
+msgstr "Help visibility toont de volledige helpbalk, alleen het bibliotheekpictogram of geen help. Layout opent de help als boek, als lade rechts, naast de pagina of in plaats van de pagina. Sluit de help met het boek, de sluitknop of Escape. Uw pagina en wat u hebt ingevuld blijven staan."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Inspect therapy profiles: basal rates, carb ratios, insulin sensitivity, and target ranges."
+msgstr "Bekijk therapieprofielen: basaalstanden, koolhydraatratio's, insulinegevoeligheid en doelbereiken."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Profiles usually come from your diabetes app, such as AAPS, Loop, or xDrip+, through an uploader or connector. A profile synced from such a source is read-only here."
+msgstr "Profielen komen meestal uit uw diabetesapp, zoals AAPS, Loop of xDrip+, via een uploader of connector. Een profiel dat uit zo'n bron wordt gesynchroniseerd, is hier alleen-lezen."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Select a profile to see its schedules. Make default chooses the profile that applies when no switch is active. Switch records a profile switch. You can edit the target range of a profile that Nocturne manages."
+msgstr "Kies een profiel om de schema's te zien. Make default kiest het profiel dat geldt als er geen profielwissel actief is. Switch legt een profielwissel vast. U kunt het doelbereik wijzigen van een profiel dat Nocturne beheert."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Insulin on board, predictions, scheduled basal, and target overlays use the profile that applied at each moment."
+msgstr "Actieve insuline, voorspellingen, geplande basaal en de doelbereiken in grafieken gebruiken het profiel dat op elk moment gold."
+
+#: src/lib/help/settings.svelte.ts
+msgid "A scheduled basal rate does not prove that the pump delivered it. Change a read-only profile on the source device. Discuss therapy changes with your diabetes care team."
+msgstr "Een geplande basaalstand bewijst niet dat de pomp die ook gaf. Wijzig een alleen-lezen profiel op het bronapparaat. Bespreek therapiewijzigingen met uw diabetesteam."
+
+#: src/lib/help/settings.svelte.ts
+msgid "A switch starts now. It can scale the profile from 30 to 250 percent and shift the schedule by -23 to 23 hours. A temporary switch lasts 1 minute to 7 days. Without a duration, it runs until you end it or another switch replaces it."
+msgstr "Een profielwissel start direct. Hij kan het profiel schalen van 30 tot 250 procent en het schema verschuiven van -23 tot 23 uur. Een tijdelijke wissel duurt 1 minuut tot 7 dagen. Zonder duur loopt hij tot u hem beëindigt of een andere wissel hem vervangt."
+
+#: src/lib/help/settings.svelte.ts
+msgid "What a switch does not do"
+msgstr "Wat een profielwissel niet doet"
+
+#: src/lib/help/settings.svelte.ts
+msgid "Nocturne only records the switch. It is not sent to your pump, and AAPS and Nightscout followers do not see it. If your AID system reports the profile that the pump runs, Nocturne calculations follow that reported profile."
+msgstr "Nocturne legt de wissel alleen vast. Hij wordt niet naar uw pomp gestuurd, en volgers in AAPS en Nightscout zien hem niet. Als uw AID-systeem het profiel doorgeeft dat de pomp gebruikt, volgen de berekeningen van Nocturne dat doorgegeven profiel."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Delete a profile"
+msgstr "Een profiel verwijderen"
+
+#: src/lib/help/settings.svelte.ts
+msgid "You cannot delete the only profile or the default profile. Deleting removes its schedules and their history. Readings and treatments stay. A synced profile comes back on the next sync. To prevent that, stop profile sync at the source."
+msgstr "U kunt het enige profiel of het standaardprofiel niet verwijderen. Verwijderen wist de schema's en hun geschiedenis. Metingen en behandelingen blijven. Een gesynchroniseerd profiel komt bij de volgende synchronisatie terug. Zet de profielsynchronisatie bij de bron uit om dat te voorkomen."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Set the sleep times and the compression low detection that overnight analysis uses."
+msgstr "Stel de slaaptijden en de detectie van compressielows in die de nachtanalyse gebruikt."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Your saved settings and the readings stored in this tenant."
+msgstr "Uw opgeslagen instellingen en de metingen die in deze tenant zijn opgeslagen."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Choose a typical bedtime and wake time. Enable automatic detection of compression lows. Members with full access also see Data maintenance."
+msgstr "Kies een gebruikelijke bedtijd en opstaantijd. Zet de automatische detectie van compressielows aan. Leden met volledige toegang zien ook Data maintenance."
+
+#: src/lib/help/settings.svelte.ts
+msgid "The sleep schedule sets the overnight window for analysis. Detection notifies you about possible compression lows, so that you can review them."
+msgstr "Het slaapschema bepaalt het nachtvenster voor de analyse. De detectie meldt u mogelijke compressielows, zodat u ze kunt beoordelen."
+
+#: src/lib/help/settings.svelte.ts
+msgid "A detection is a suggestion, not proof that a reading is wrong. A change to these settings does not change existing readings."
+msgstr "Een detectie is een suggestie, geen bewijs dat een meting fout is. Een wijziging van deze instellingen verandert bestaande metingen niet."
+
+#: src/lib/help/settings.svelte.ts
+msgid "A compression low is a falsely low CGM reading, caused by lying on the sensor. When you confirm one, Nocturne keeps a record for you. The readings stay in your reports and statistics."
+msgstr "Een compressielow is een onterecht lage CGM-meting doordat iemand op de sensor ligt. Als u er een bevestigt, houdt Nocturne dat voor u bij. De metingen blijven in uw rapporten en statistieken."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Data maintenance"
+msgstr "Gegevensonderhoud"
+
+#: src/lib/help/settings.svelte.ts
+msgid "Deduplicate records links readings, treatments, and state spans that different sources uploaded for the same event. It matches records within 30 seconds by time and value. The original records stay, so you can run it again. Remove demo data deletes only the generated sample data."
+msgstr "Deduplicate records koppelt metingen, behandelingen en statusperiodes die verschillende bronnen voor dezelfde gebeurtenis uploadden. Het koppelt gegevens die binnen 30 seconden op tijd en waarde overeenkomen. De oorspronkelijke gegevens blijven, dus u kunt het opnieuw uitvoeren. Remove demo data verwijdert alleen de gegenereerde voorbeeldgegevens."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Track sensors, sites, reservoirs, batteries, appointments, and other recurring events, with reminders."
+msgstr "Houd sensoren, infuussets, reservoirs, batterijen, afspraken en andere terugkerende gebeurtenissen bij, met herinneringen."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Tracker definitions, presets, and running and completed trackers in this tenant. Your pump, loop, or a connector can also start and complete trackers."
+msgstr "Trackerdefinities, presets en lopende en afgeronde trackers in deze tenant. Ook uw pomp, loop of een connector kan trackers starten en afronden."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Active shows running trackers. Start, complete, or record a reservoir level there. History lists completed trackers. Definitions holds reusable templates. Presets start a tracker in one step."
+msgstr "Active toont lopende trackers. Start of rond er een af, of noteer daar een reservoirniveau. History toont afgeronde trackers. Definitions bevat herbruikbare sjablonen. Presets starten een tracker in één stap."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Tracker ages and urgency appear as pills on the dashboard. Notification thresholds send reminders through alert rules."
+msgstr "De leeftijd en urgentie van trackers verschijnen als labels op het dashboard. Herinneringsdrempels sturen herinneringen via meldingsregels."
+
+#: src/lib/help/settings.svelte.ts
+msgid "A reminder does not confirm that you changed the device. If you delete a definition, its running trackers stay, but you cannot start new ones. Completing a tracker and editing its definition are different actions."
+msgstr "Een herinnering bevestigt niet dat u het onderdeel hebt vervangen. Als u een definitie verwijdert, blijven de lopende trackers, maar kunt u geen nieuwe starten. Een tracker afronden en de definitie wijzigen zijn verschillende handelingen."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Duration and event trackers"
+msgstr "Duur- en gebeurtenistrackers"
+
+#: src/lib/help/settings.svelte.ts
+msgid "A duration tracker runs for its expected lifespan from the start, written as 10x24 or 10d. An event tracker is scheduled for one date and time, such as an appointment. A reservoir definition can also alert when the estimated level falls below a number of units."
+msgstr "Een duurtracker loopt vanaf de start zijn verwachte levensduur, geschreven als 10x24 of 10d. Een gebeurtenistracker is gepland op één datum en tijd, zoals een afspraak. Een reservoirdefinitie kan ook waarschuwen als het geschatte niveau onder een aantal eenheden zakt."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Add up to 4 thresholds with a level: Info, Warning, Hazard, or Urgent. For a duration tracker, positive hours count from the start and negative hours count back from expiry. For an event tracker, negative hours are before the event."
+msgstr "Voeg tot 4 drempels toe met een niveau: Info, Warning, Hazard of Urgent. Bij een duurtracker tellen positieve uren vanaf de start en negatieve uren terug vanaf het verlopen. Bij een gebeurtenistracker liggen negatieve uren vóór de gebeurtenis."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Reminder delivery"
+msgstr "Bezorging van herinneringen"
+
+#: src/lib/help/settings.svelte.ts
+msgid "Each threshold gets a managed alert rule after you save the tracker. Use Channels on a threshold to open that rule and choose where the reminder goes."
+msgstr "Elke drempel krijgt een beheerde meldingsregel nadat u de tracker opslaat. Gebruik Channels bij een drempel om die regel te openen en te kiezen waar de herinnering naartoe gaat."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Automatic restart"
+msgstr "Automatisch opnieuw starten"
+
+#: src/lib/help/settings.svelte.ts
+msgid "Choose events under Restart automatically on. When your pump, loop, or a connector reports one, the running tracker completes and a new one starts. Use the notes filter to keep two trackers apart, such as a left and a right site."
+msgstr "Kies gebeurtenissen onder Restart automatically on. Als uw pomp, loop of een connector er een doorgeeft, wordt de lopende tracker afgerond en start een nieuwe. Gebruik het notitiefilter om twee trackers uit elkaar te houden, zoals een infuus links en rechts."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Dashboard and Nightscout"
+msgstr "Dashboard en Nightscout"
+
+#: src/lib/help/settings.svelte.ts
+msgid "Dashboard visibility shows the pill always, never, or after a threshold level. Event integration can create a treatment event at start or completion, for the Nightscout CAGE and SAGE pills."
+msgstr "Dashboard visibility toont het label altijd, nooit of vanaf een drempelniveau. Event integration kan bij start of afronding een behandelgebeurtenis maken, voor de CAGE- en SAGE-labels van Nightscout."
+
+#: src/lib/help/settings.svelte.ts
+msgid "See the browsers that are signed in to your account, and sign them out."
+msgstr "Bekijk de browsers die bij uw account zijn aangemeld, en meld ze af."
+
+#: src/lib/help/settings.svelte.ts
+msgid "The list of your active sessions on the server, with device description, last activity, and IP address."
+msgstr "De lijst van uw actieve sessies op de server, met apparaatomschrijving, laatste activiteit en IP-adres."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Sign out one session, or select Sign out everywhere else to keep only this device. Members who can change tenant settings also see the API reference switch."
+msgstr "Meld één sessie af, of kies Sign out everywhere else om alleen dit apparaat te houden. Leden die tenantinstellingen mogen wijzigen, zien ook de schakelaar voor de API-referentie."
+
+#: src/lib/help/settings.svelte.ts
+msgid "A browser that you sign out must sign in again."
+msgstr "Een browser die u afmeldt, moet zich opnieuw aanmelden."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Signing out a session does not delete data. If you sign out the session you use now, you are signed out here."
+msgstr "Een sessie afmelden verwijdert geen gegevens. Als u de sessie afmeldt die u nu gebruikt, wordt u hier afgemeld."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Connected apps, uploaders, and API tokens are in Connectors & apps. Members, invites, guest links, and public access are in Sharing & privacy. Revoke each one on its own page."
+msgstr "Gekoppelde apps, uploaders en API-tokens staan in Connectors & apps. Leden, uitnodigingen, gastlinks en openbare toegang staan in Sharing & privacy. Trek elk ervan in op de eigen pagina."
+
+#: src/lib/help/settings.svelte.ts
+msgid "The switch publishes the interactive API reference and the OpenAPI specification on this address, for anyone, without sign-in. Your data stays behind sign-in. Keep it off unless you build against the API."
+msgstr "De schakelaar publiceert de interactieve API-referentie en de OpenAPI-specificatie op dit adres, voor iedereen en zonder aanmelden. Uw gegevens blijven achter de aanmelding. Laat hem uit, tenzij u software voor de API bouwt."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Choose who can see this tenant's data, and what they can do with it."
+msgstr "Kies wie de gegevens van deze tenant kan zien en wat die persoon ermee kan doen."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Members, invites, membership requests, roles, guest links, and the public link of this tenant."
+msgstr "Leden, uitnodigingen, lidmaatschapsverzoeken, rollen, gastlinks en de openbare link van deze tenant."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Invite people with a link, edit the roles of a member, review requests, create guest links, and configure public access. The sections you see depend on your own permissions."
+msgstr "Nodig personen uit met een link, wijzig de rollen van een lid, beoordeel verzoeken, maak gastlinks en stel openbare toegang in. Welke onderdelen u ziet, hangt af van uw eigen rechten."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Roles and direct permissions decide which pages, data, and actions each member gets."
+msgstr "Rollen en losse rechten bepalen welke pagina's, gegevens en handelingen elk lid krijgt."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Anyone with a guest link or the public link sees what it allows. Revoking stops new access, but it does not remove copies that someone already made."
+msgstr "Iedereen met een gastlink of de openbare link ziet wat die link toestaat. Intrekken stopt nieuwe toegang, maar verwijdert geen kopieën die iemand al heeft gemaakt."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Invite links"
+msgstr "Uitnodigingslinks"
+
+#: src/lib/help/settings.svelte.ts
+msgid "An invite link lets a person join after they sign in. Choose roles, optional direct permissions, and an expiry from 1 to 90 days. By default, a link works once. Select Allow multiple uses for more people. People who joined keep access after the link expires."
+msgstr "Met een uitnodigingslink kan iemand lid worden nadat die zich heeft aangemeld. Kies rollen, optionele losse rechten en een vervaltermijn van 1 tot 90 dagen. Standaard werkt een link één keer. Kies Allow multiple uses voor meer personen. Wie al lid is geworden, houdt toegang nadat de link verloopt."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Members and roles"
+msgstr "Leden en rollen"
+
+#: src/lib/help/settings.svelte.ts
+msgid "Edit opens the roles and direct permissions of a member. You cannot change your own roles. System roles are fixed. A custom role combines the permissions that you choose. Removing a member ends their access to all tenant data."
+msgstr "Edit opent de rollen en losse rechten van een lid. U kunt uw eigen rollen niet wijzigen. Systeemrollen liggen vast. Een eigen rol combineert de rechten die u kiest. Een lid verwijderen beëindigt diens toegang tot alle gegevens van de tenant."
+
+#: src/lib/help/settings.svelte.ts
+msgid "This option limits a member, invite, or request to the most recent 24 hours of data. Owners and members who manage tenant settings cannot be limited. A limited member cannot give anyone wider access."
+msgstr "Deze optie beperkt een lid, uitnodiging of verzoek tot de laatste 24 uur aan gegevens. Eigenaren en leden die tenantinstellingen beheren, kunnen niet worden beperkt. Een beperkt lid kan niemand ruimere toegang geven."
+
+#: src/lib/help/settings.svelte.ts
+msgid "A guest link gives read-only access to the categories you choose, for someone without an account. The code works once. The first device that uses it stays signed in for 48 hours. Select New code for another device."
+msgstr "Een gastlink geeft iemand zonder account alleen-lezen toegang tot de categorieën die u kiest. De code werkt één keer. Het eerste apparaat dat hem gebruikt, blijft 48 uur aangemeld. Kies New code voor een ander apparaat."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Public access gives anyone with your link read-only access to the categories you select, without an account. Choose All history or Last 24 hours. Regenerate stops the old link immediately."
+msgstr "Openbare toegang geeft iedereen met uw link alleen-lezen toegang tot de categorieën die u kiest, zonder account. Kies All history of Last 24 hours. Regenerate stopt de oude link direct."
+
+#: src/lib/help/settings.svelte.ts
+msgid "When membership requests are on, people who reach your profile can ask to join. Nothing is granted automatically. You choose the roles when you approve a request."
+msgstr "Als lidmaatschapsverzoeken aan staan, kunnen mensen die uw profiel bereiken vragen om lid te worden. Er wordt niets automatisch toegekend. U kiest de rollen wanneer u een verzoek goedkeurt."
+
+#: src/lib/help/settings.svelte.ts
+msgid "See which data changed. If read access logging is on, also see who read patient data."
+msgstr "Zie welke gegevens zijn gewijzigd. Als het loggen van leestoegang aan staat, ziet u ook wie patiëntgegevens las."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Audit records that the server keeps for this tenant. Data changes are always recorded. Data access is recorded only when read access logging is on."
+msgstr "Auditregels die de server voor deze tenant bewaart. Gegevenswijzigingen worden altijd vastgelegd. Gegevenstoegang wordt alleen vastgelegd als het loggen van leestoegang aan staat."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Data changes and Data access each have a date filter. The list shows the most recent entries in the range. Narrow the dates to see older entries. Members who manage audit settings can change logging and retention."
+msgstr "Data changes en Data access hebben elk een datumfilter. De lijst toont de nieuwste regels in het bereik. Beperk de datums om oudere regels te zien. Leden die de auditinstellingen beheren, kunnen het loggen en de bewaartermijn wijzigen."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Use the log to see who changed a record, a setting, or a permission, and when."
+msgstr "Gebruik het logboek om te zien wie een gegeven, een instelling of een recht heeft gewijzigd, en wanneer."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Only events that the server recorded appear. Reads from before read access logging was on are not in the log. Viewing the log requires the audit.read permission."
+msgstr "Alleen gebeurtenissen die de server heeft vastgelegd, verschijnen. Leesacties van vóór het aanzetten van het loggen van leestoegang staan niet in het logboek. Voor het bekijken van het logboek is het recht audit.read nodig."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Retention"
+msgstr "Bewaartermijn"
+
+#: src/lib/help/settings.svelte.ts
+msgid "Each log keeps entries for its retention in days. An empty field uses the platform default. Data change retention must be at least the retention of deleted records. Then a deletion stays attributed while the record can be restored."
+msgstr "Elk logboek bewaart regels gedurende de bewaartermijn in dagen. Een leeg veld gebruikt de standaard van het platform. De bewaartermijn voor gegevenswijzigingen moet ten minste gelijk zijn aan die van verwijderde gegevens. Dan blijft een verwijdering toe te schrijven zolang het gegeven hersteld kan worden."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Copy historical data from an existing Nightscout into Nocturne."
+msgstr "Kopieer historische gegevens van een bestaande Nightscout naar Nocturne."
+
+#: src/lib/help/settings.svelte.ts
+msgid "The Nightscout site, with its URL and API secret, or its MongoDB database, with connection string and database name."
+msgstr "De Nightscout-site, met de URL en het API-secret, of de MongoDB-database, met de verbindingsstring en de databasenaam."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Choose the source and enter its credentials. Test connection shows the number of entries and treatments it found. Optionally choose a date range. Then select Start migration and follow it under Progress."
+msgstr "Kies de bron en vul de inloggegevens in. Test connection toont hoeveel metingen en behandelingen er gevonden zijn. Kies eventueel een datumbereik. Kies daarna Start migration en volg de migratie onder Progress."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Imported entries, treatments, device status, profiles, food, and activity appear in the normal charts and reports."
+msgstr "Geïmporteerde metingen, behandelingen, apparaatstatus, profielen, voeding en activiteit verschijnen in de gewone grafieken en rapporten."
+
+#: src/lib/help/settings.svelte.ts
+msgid "One migration can run at a time per tenant. A migration is a one-time copy. Continuous data comes from connectors or uploaders. Migration requires full access to the tenant. Keep the API secret and connection string private."
+msgstr "Per tenant kan één migratie tegelijk lopen. Een migratie is een eenmalige kopie. Doorlopende gegevens komen van connectors of uploaders. Voor een migratie is volledige toegang tot de tenant nodig. Houd het API-secret en de verbindingsstring privé."
+
+#: src/lib/help/settings.svelte.ts
+msgid "What is imported"
+msgstr "Wat wordt geïmporteerd"
+
+#: src/lib/help/settings.svelte.ts
+msgid "The Nightscout API mode reads entries, treatments, device status, profiles, food, activity, and the people and devices that can sign in. That last part requires an admin API secret, otherwise Nocturne skips it. MongoDB mode imports entries, treatments, device status, profiles, and food."
+msgstr "De Nightscout-API-modus leest metingen, behandelingen, apparaatstatus, profielen, voeding, activiteit en de personen en apparaten die zich kunnen aanmelden. Dat laatste deel vereist een API-secret met beheerrechten, anders slaat Nocturne het over. De MongoDB-modus importeert metingen, behandelingen, apparaatstatus, profielen en voeding."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Read the result"
+msgstr "Lees het resultaat"
+
+#: src/lib/help/settings.svelte.ts
+msgid "History shows how many collections were imported, skipped, or failed, with the reason for each. A skipped collection does not stop the others. Known sources lists each source with the time of its last migration."
+msgstr "History toont hoeveel collecties zijn geïmporteerd, overgeslagen of mislukt, met de reden voor elke collectie. Een overgeslagen collectie houdt de andere niet tegen. Known sources toont elke bron met de tijd van de laatste migratie."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Prepared by the server"
+msgstr "Voorbereid door de server"
+
+#: src/lib/help/settings.svelte.ts
+msgid "If the server is configured for migration, Nocturne fills in the form for you. Review the values before you start."
+msgstr "Als de server voor migratie is ingesteld, vult Nocturne het formulier voor u in. Controleer de waarden voordat u start."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Translate Nocturne into your language, and propose the result to the Nocturne project."
+msgstr "Vertaal Nocturne in uw taal en stel het resultaat voor aan het Nocturne-project."
+
+#: src/lib/help/settings.svelte.ts
+msgid "The translation catalogs of this Nocturne version, and the drafts saved to your account."
+msgstr "De vertaalcatalogi van deze Nocturne-versie en de concepten die in uw account zijn opgeslagen."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Choose a language. Search the messages, or show only untranslated messages or drafts. Each edit is saved as a draft. Submit sends your drafts with your name. Clear drafts deletes them."
+msgstr "Kies een taal. Zoek in de teksten, of toon alleen onvertaalde teksten of concepten. Elke wijziging wordt als concept opgeslagen. Submit verstuurt uw concepten met uw naam. Clear drafts verwijdert ze."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Submitted translations are proposed to the Nocturne project as a pull request, with your name in the credit. After review, they appear in a later version."
+msgstr "Ingestuurde vertalingen worden als pull request aan het Nocturne-project voorgesteld, met uw naam in de vermelding. Na beoordeling verschijnen ze in een latere versie."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Choose your interface language in Appearance. Untranslated text shows in English. Keep placeholders and markup tags exactly as they are in the English text."
+msgstr "Kies de taal van de interface in Appearance. Onvertaalde tekst verschijnt in het Engels. Neem plaatshouders en opmaaktags precies over zoals ze in de Engelse tekst staan."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Translate a language"
+msgstr "Een taal vertalen"
+
+#: src/lib/help/settings.svelte.ts
+msgid "Translate the messages of Nocturne into one language, and submit your drafts."
+msgstr "Vertaal de teksten van Nocturne in één taal en verstuur uw concepten."
+
+#: src/lib/help/settings.svelte.ts
+msgid "The English messages of this version, the translations that Nocturne already has, and the drafts saved to your account for this language."
+msgstr "De Engelse teksten van deze versie, de vertalingen die Nocturne al heeft en de concepten die voor deze taal in uw account zijn opgeslagen."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Search the source text or the translations. The filter shows all messages, only untranslated messages, or only your drafts. Type in a field to make a draft. Discard draft removes one. Submit sends all drafts with your name."
+msgstr "Zoek in de brontekst of de vertalingen. Het filter toont alle teksten, alleen onvertaalde teksten of alleen uw concepten. Typ in een veld om een concept te maken. Discard draft verwijdert er een. Submit verstuurt alle concepten met uw naam."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Submitted drafts are proposed to the Nocturne project as a pull request. After review, they appear in a later version for every user of that language."
+msgstr "Verstuurde concepten worden als pull request aan het Nocturne-project voorgesteld. Na beoordeling verschijnen ze in een latere versie voor iedereen die die taal gebruikt."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Drafts are saved to your account only. Other users do not see them before a release. A message with plural forms has one field for each form, and you must fill in all of them."
+msgstr "Concepten worden alleen in uw account opgeslagen. Andere gebruikers zien ze niet vóór een release. Een tekst met meervoudsvormen heeft een veld per vorm, en u moet ze allemaal invullen."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Connector setup"
+msgstr "Een connector instellen"
+
+#: src/lib/help/settings.svelte.ts
+msgid "Configure one connector, see what it can import, and fill gaps in its history."
+msgstr "Stel één connector in, zie wat hij kan importeren en vul gaten in de geschiedenis aan."
+
+#: src/lib/help/settings.svelte.ts
+msgid "The settings of this connector stored on the server, and the sync capabilities that the connector reports."
+msgstr "De instellingen van deze connector die op de server zijn opgeslagen, en de synchronisatiemogelijkheden die de connector doorgeeft."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Enable connector starts or stops the sync. Enter the credentials and settings, then save. Fill in missing history downloads data again from a day that you choose."
+msgstr "Enable connector start of stopt de synchronisatie. Vul de inloggegevens en instellingen in en sla op. Fill in missing history downloadt opnieuw gegevens vanaf een dag die u kiest."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Imported records appear in the dashboard, the reports, and Connectors & apps as a data source."
+msgstr "Geïmporteerde gegevens verschijnen in het dashboard, de rapporten en in Connectors & apps als gegevensbron."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Only members who can manage the settings of the tenant can change a connector. Some connectors are configured only with environment variables on the server."
+msgstr "Alleen leden die de tenantinstellingen mogen beheren, kunnen een connector wijzigen. Sommige connectors zijn alleen in te stellen met omgevingsvariabelen op de server."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Entries that you add here, a changed weight in Patient record, and supported imports such as Google Health."
+msgstr "Invoer die u hier toevoegt, een gewijzigd gewicht in Patient record en ondersteunde imports zoals Google Health."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Add the weight in kilograms with the time it was recorded. Without a time, Nocturne uses the current time. Delete removes one entry."
+msgstr "Voeg het gewicht in kilogram toe met de tijd van de meting. Zonder tijd gebruikt Nocturne de huidige tijd. Delete verwijdert één item."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Each entry is a dated point in the weight history. A changed weight in Patient record adds a new entry, and the last entry stays."
+msgstr "Elk item is een gedateerd punt in de gewichtsgeschiedenis. Een gewijzigd gewicht in Patient record voegt een nieuw item toe, en het vorige item blijft staan."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Enter the real measurement time for an older weight. Two sources can record the same weighing twice. A missing entry does not mean zero weight."
+msgstr "Vul voor een oudere weging de echte meettijd in. Twee bronnen kunnen dezelfde weging twee keer vastleggen. Een ontbrekend item betekent geen gewicht van nul."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Tell Nocturne where the patient was over time, so that readings from local-clock sources land at the right moment."
+msgstr "Vertel Nocturne waar de patiënt zich door de tijd heen bevond, zodat metingen uit bronnen met lokale kloktijd op het juiste moment terechtkomen."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Some sources, such as Glooko, record times in local clock time. Nocturne fills in your home timezone automatically on the next sync."
+msgstr "Sommige bronnen, zoals Glooko, leggen tijden vast in lokale kloktijd. Nocturne vult bij de volgende synchronisatie automatisch uw thuistijdzone in."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Add a location change with the timezone and the local date and time of arrival. Fix already-imported data imports recent Glooko data again with corrected times."
+msgstr "Voeg een locatiewijziging toe met de tijdzone en de lokale datum en tijd van aankomst. Fix already-imported data importeert recente Glooko-gegevens opnieuw met gecorrigeerde tijden."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Nocturne converts local-clock times from those sources with the timezone that applied at that moment. Daylight saving is handled automatically."
+msgstr "Nocturne rekent de lokale kloktijden van die bronnen om met de tijdzone die op dat moment gold. Zomer- en wintertijd worden automatisch verwerkt."
+
+#: src/lib/help/settings.svelte.ts
+msgid "A new entry only changes data that arrives after it. Re-import recent data corrects saved readings in place, without duplicates. The timezone in Patient record is a different setting, for alerts and schedules."
+msgstr "Een nieuw item verandert alleen gegevens die daarna binnenkomen. Re-import recent data corrigeert opgeslagen metingen op hun plaats, zonder dubbele items. De tijdzone in Patient record is een andere instelling, voor meldingen en schema's."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Configure identity providers and chat integrations for the whole instance."
+msgstr "Stel identiteitsproviders en chatkoppelingen in voor de hele instantie."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Instance settings stored on this server. They apply to every tenant. Only platform administrators can open this page."
+msgstr "Instantie-instellingen die op deze server zijn opgeslagen. Ze gelden voor elke tenant. Alleen platformbeheerders kunnen deze pagina openen."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Identity providers adds, edits, enables, or deletes OpenID Connect and OAuth 2.0 providers for single sign-on. Integrations configures chat bots for Discord, Slack, Telegram, and WhatsApp."
+msgstr "Identity providers voegt OpenID Connect- en OAuth 2.0-providers voor eenmalige aanmelding toe, wijzigt, activeert of verwijdert ze. Integrations stelt chatbots in voor Discord, Slack, Telegram en WhatsApp."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Enabled providers appear on the sign-in page and under Account, as linked sign-in methods."
+msgstr "Ingeschakelde providers verschijnen op de aanmeldpagina en onder Account, als gekoppelde aanmeldmethoden."
+
+#: src/lib/help/settings.svelte.ts
+msgid "If some members sign in only through a provider, disabling or deleting it locks them out. Nocturne warns you first. Those members then need a recovery code."
+msgstr "Als sommige leden zich alleen via een provider aanmelden, sluit uitschakelen of verwijderen hen buiten. Nocturne waarschuwt u eerst. Die leden hebben dan een herstelcode nodig."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Add an identity provider"
+msgstr "Een identiteitsprovider toevoegen"
+
+#: src/lib/help/settings.svelte.ts
+msgid "Register an app at the provider with the callback URL of this instance, ending in /api/auth/oidc/callback. Enter the issuer URL, client ID, client secret, and scopes. Use Test connection before you save. GitHub has a preset."
+msgstr "Registreer bij de provider een app met de callback-URL van deze instantie, eindigend op /api/auth/oidc/callback. Vul de issuer-URL, de client-ID, het client-secret en de scopes in. Gebruik Test connection voordat u opslaat. Voor GitHub is er een voorinstelling."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Default roles are given to new users who sign in through this provider for the first time. Enter them separated by commas."
+msgstr "Standaardrollen worden gegeven aan nieuwe gebruikers die zich voor het eerst via deze provider aanmelden. Vul ze in, gescheiden door komma's."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Telegram webhook calls are refused until a webhook secret token is set. Save a random value here with the bot enabled. Then register the webhook again with the same value."
+msgstr "Telegram-webhookaanroepen worden geweigerd tot er een geheim token voor de webhook is ingesteld. Sla hier een willekeurige waarde op terwijl de bot aan staat. Registreer de webhook daarna opnieuw met dezelfde waarde."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Manage the current tenant, create tenants, and choose platform administrators."
+msgstr "Beheer de huidige tenant, maak tenants aan en kies platformbeheerders."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Tenant records and database capacity on this server. Only platform administrators can open this page."
+msgstr "Tenantgegevens en databasecapaciteit op deze server. Alleen platformbeheerders kunnen deze pagina openen."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Edit changes the display name and active status of the current tenant. Create tenant requires a free slug and a display name. The platform administrators list grants or revokes that role for members of this tenant."
+msgstr "Edit wijzigt de weergavenaam en de actieve status van de huidige tenant. Create tenant vraagt om een vrije slug en een weergavenaam. De lijst met platformbeheerders geeft leden van deze tenant die rol, of trekt die in."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Each tenant keeps its own patient data, settings, and members. Its slug is part of its address."
+msgstr "Elke tenant heeft eigen patiëntgegevens, instellingen en leden. De slug is deel van het adres."
+
+#: src/lib/help/settings.svelte.ts
+msgid "The slug cannot change after you create the tenant. An inactive tenant is not available. Platform administrators can manage every tenant, which is different from a role inside one tenant."
+msgstr "De slug kan niet veranderen nadat u de tenant hebt gemaakt. Een inactieve tenant is niet beschikbaar. Platformbeheerders kunnen elke tenant beheren, en dat is iets anders dan een rol binnen één tenant."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Multitenancy"
+msgstr "Multitenancy"
+
+#: src/lib/help/settings.svelte.ts
+msgid "With multitenancy, each tenant has its own address, made from its slug and the base domain. When multitenancy starts, all app sessions are signed out. Configure apps and uploaders again with the new address."
+msgstr "Met multitenancy heeft elke tenant een eigen adres, gemaakt van de slug en het basisdomein. Als multitenancy start, worden alle appsessies afgemeld. Stel apps en uploaders daarna opnieuw in met het nieuwe adres."
+
+#: src/lib/help/settings.svelte.ts
+msgid "This shows the database size, the number of tenants, the average and largest tenant, and the used part of the storage budget."
+msgstr "Dit toont de grootte van de database, het aantal tenants, de gemiddelde en de grootste tenant en het gebruikte deel van het opslagbudget."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Review people who requested an account on this instance."
+msgstr "Beoordeel personen die op deze instantie een account hebben aangevraagd."
+
+#: src/lib/help/settings.svelte.ts
+msgid "When access requests are allowed, a visitor can request access on the sign-in page with a name, a message, and a new passkey. The request waits here for a platform administrator."
+msgstr "Als toegangsverzoeken zijn toegestaan, kan een bezoeker op de aanmeldpagina toegang aanvragen met een naam, een bericht en een nieuwe passkey. Het verzoek wacht hier op een platformbeheerder."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Choose roles, optional direct permissions, and the 24-hour limit for each request. Then select Approve or Deny."
+msgstr "Kies per verzoek rollen, optionele losse rechten en de 24-uurslimiet. Kies daarna Approve of Deny."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Approve activates the account and adds the person as a member of the tenant, with the chosen roles. Deny deactivates the requested account."
+msgstr "Approve activeert het account en voegt de persoon als lid aan de tenant toe, met de gekozen rollen. Deny deactiveert het aangevraagde account."
+
+#: src/lib/help/settings.svelte.ts
+msgid "A request grants nothing until you approve it. Membership requests from people who already have an account are reviewed in Sharing & privacy."
+msgstr "Een verzoek geeft niets totdat u het goedkeurt. Lidmaatschapsverzoeken van mensen die al een account hebben, beoordeelt u in Sharing & privacy."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Authorize an app"
+msgstr "Een app toegang geven"
+
+#: src/lib/help/settings.svelte.ts
+msgid "An app wants to read or change your Nocturne data. Approve only an app that you trust."
+msgstr "Een app wil uw Nocturne-gegevens lezen of wijzigen. Keur alleen een app goed die u vertrouwt."
+
+#: src/lib/help/settings.svelte.ts
+msgid "The app supplies its name, address, and the permissions it requests. Nocturne warns you when the app is not in its known app directory."
+msgstr "De app geeft zijn naam, adres en de rechten die hij vraagt. Nocturne waarschuwt u als de app niet in de lijst met bekende apps staat."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Read each permission and check the address that receives access. Optionally share only the last 24 hours. Then select Approve or Deny."
+msgstr "Lees elk recht en controleer het adres dat toegang krijgt. Deel eventueel alleen de laatste 24 uur. Kies daarna Approve of Deny."
+
+#: src/lib/help/settings.svelte.ts
+msgid "An approved app gets access with these permissions. If the app later requests more, you see the new permissions separately from the ones you approved before."
+msgstr "Een goedgekeurde app krijgt toegang met deze rechten. Als de app later meer vraagt, ziet u de nieuwe rechten apart van de rechten die u eerder goedkeurde."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Full access includes deleting data. Deny gives the app nothing. Revoke an approved app later in Connectors & apps."
+msgstr "Volledige toegang omvat ook het verwijderen van gegevens. Deny geeft de app niets. Trek een goedgekeurde app later in via Connectors & apps."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Approve a device that shows a code, such as an app on a TV or a command-line tool."
+msgstr "Keur een apparaat goed dat een code toont, zoals een app op een tv of een opdrachtregelprogramma."
+
+#: src/lib/help/settings.svelte.ts
+msgid "The device shows a code in the form XXXX-YYYY when you start its sign-in."
+msgstr "Het apparaat toont een code in de vorm XXXX-YYYY als u de aanmelding daarop start."
+
+#: src/lib/help/settings.svelte.ts
+msgid "Enter the code and select Continue. Review the permissions, then select Approve or Deny."
+msgstr "Vul de code in en kies Continue. Bekijk de rechten en kies daarna Approve of Deny."
+
+#: src/lib/help/settings.svelte.ts
+msgid "After you approve, the device gets access and you can close this window."
+msgstr "Na het goedkeuren krijgt het apparaat toegang en kunt u dit venster sluiten."
+
+#: src/lib/help/settings.svelte.ts
+msgid "A code expires. If the code expired, start the sign-in again on the device for a new code. Enter only a code that your own device shows."
+msgstr "Een code verloopt. Als de code verlopen is, start u de aanmelding op het apparaat opnieuw voor een nieuwe code. Vul alleen een code in die uw eigen apparaat toont."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "When at least one app is listed, every sign-in also requires its 6-digit code. The code changes every 30 seconds."
+msgstr "Als er ten minste één app in de lijst staat, vraagt elke aanmelding ook om de 6-cijferige code. De code verandert elke 30 seconden."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "DIA is the duration of insulin action in hours. Unless another app manages the profile, the rapid-acting insulin in use sets the action time for insulin on board and predictions."
+msgstr "DIA is de werkingsduur van insuline in uren. Tenzij een andere app het profiel beheert, bepaalt de snelwerkende insuline die in gebruik is de werkingsduur voor actieve insuline en voorspellingen."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "The grams of carbs that one unit of insulin covers. A higher number means less insulin for the same meal."
+msgstr "Het aantal gram koolhydraten dat één eenheid insuline dekt. Een hoger getal betekent minder insuline voor dezelfde maaltijd."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "DIA is the hours that insulin stays active. Carbs/hr is the grams of carbs absorbed per hour for carbs on board. Delay is a value from the source app."
+msgstr "DIA is het aantal uren dat insuline actief blijft. Carbs/hr is het aantal gram koolhydraten dat per uur wordt opgenomen, voor actieve koolhydraten. Delay is een waarde uit de bron-app."
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Filter the messages"
+msgstr "Filter de teksten"
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Show the untranslated messages first, or search for a word on the page that you want to translate."
+msgstr "Toon eerst de onvertaalde teksten, of zoek een woord van de pagina die u wilt vertalen."
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Type the translation"
+msgstr "Typ de vertaling"
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Each edit is saved as a draft. Copy placeholders and markup tags exactly as they are in the English text."
+msgstr "Elke wijziging wordt als concept opgeslagen. Neem plaatshouders en opmaaktags precies over zoals ze in de Engelse tekst staan."
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Submit sends your drafts with your name. Other users see them after review, in a later version."
+msgstr "Submit verstuurt uw concepten met uw naam. Andere gebruikers zien ze na beoordeling, in een latere versie."
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Check the status"
+msgstr "Controleer de status"
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "The badge shows whether the connector is active. Sync capabilities show what it can import."
+msgstr "Het label toont of de connector actief is. Sync capabilities toont wat hij kan importeren."
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Save the settings"
+msgstr "Sla de instellingen op"
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Enter the credentials and settings, then save. Enable connector starts the sync."
+msgstr "Vul de inloggegevens en instellingen in en sla op. Enable connector start de synchronisatie."
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "Fill a gap"
+msgstr "Vul een gat aan"
+
+#: src/lib/help/reading-guides.svelte.ts
+msgid "If old data is missing, use Fill in missing history from the first day without data."
+msgstr "Als oude gegevens ontbreken, gebruik dan Fill in missing history vanaf de eerste dag zonder gegevens."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Commit and Built identify the exact version of the server. Give these values when you report a problem."
+msgstr "Commit en Built geven de precieze versie van de server aan. Vermeld deze waarden als u een probleem meldt."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Diagnostic logs"
+msgstr "Diagnostische logboeken"
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "The logs contain technical details only. They never contain glucose data, API tokens, or passwords."
+msgstr "De logboeken bevatten alleen technische details. Ze bevatten nooit glucosegegevens, API-tokens of wachtwoorden."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "Each row is a Discord account linked to your Nocturne account. The label is the name that you type after /bg in Discord."
+msgstr "Elke regel is een Discord-account dat aan uw Nocturne-account gekoppeld is. Het label is de naam die u in Discord na /bg typt."
+
+#: src/lib/help/settings-meaning.svelte.ts
+msgid "The default link answers /bg when you type no label."
+msgstr "De standaardkoppeling antwoordt op /bg als u geen label typt."

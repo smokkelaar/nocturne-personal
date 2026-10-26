@@ -244,7 +244,7 @@ msgstr ""
 
 #: src/lib/components/account/SecurityCredentialCard.svelte src/lib/components/alerts/AlertBanner.svelte src/lib/components/alerts/CriticalAlertTakeover.svelte src/lib/components/clock/ClockAlertBand.svelte src/lib/components/connectors/ConnectorSetup.svelte src/lib/components/connectors/DataSourceManageDialog.svelte src/lib/components/connectors/DataSourceSelectionView.svelte src/lib/components/connectors/ServerConnectorsCard.svelte src/lib/components/connectors/ServerConnectorsCard.svelte src/lib/components/dashboard/BGStatisticsCards.svelte src/lib/components/dashboard/BGStatisticsCards.svelte src/lib/components/dashboard/CurrentBGDisplay.svelte src/lib/components/dashboard/glucose-chart/dialogs/DeliveryInspectionDialog.svelte src/lib/components/dashboard/widgets/BgDeltaWidget.svelte src/lib/components/dashboard/widgets/LastUpdatedWidget.svelte src/lib/components/dashboard/widgets/LastUpdatedWidget.svelte src/lib/components/layout/MobileHeader.svelte src/lib/components/layout/MobileHeader.svelte src/lib/components/members/GuestLinksSection.svelte src/lib/components/members/MemberCard.svelte src/lib/components/members/MemberCard.svelte src/lib/components/members/PendingInvitesList.svelte src/lib/components/members/PendingRequestsList.svelte src/lib/components/members/PendingRequestsList.svelte src/lib/components/patient/PatientDeviceManager.svelte src/lib/components/profile/ProfileEditDialog.svelte src/lib/components/reports/loop-analysis/LoopHealthBody.svelte src/lib/components/reports/sleep/single-night/Hypnogram.svelte src/lib/components/settings/ClientDevices.svelte src/lib/components/status-pills/TrackerPill.svelte src/lib/help/report-meanings.svelte.ts src/routes/(authenticated)/compatibility/[id]/+page.svelte src/routes/(authenticated)/compatibility/[id]/+page.svelte src/routes/(authenticated)/reports/battery/+page.svelte src/routes/(authenticated)/reports/battery/+page.svelte src/routes/(authenticated)/reports/data-quality/compression-lows/+page.svelte src/routes/(authenticated)/reports/treatments/+page.svelte src/routes/(authenticated)/settings/access-requests/+page.svelte src/routes/(authenticated)/settings/access-requests/+page.svelte src/routes/(authenticated)/settings/appearance/+page.svelte src/routes/(authenticated)/settings/appearance/+page.svelte src/routes/(authenticated)/settings/connectors/+page.svelte src/routes/(authenticated)/settings/migration/+page.svelte src/routes/(authenticated)/settings/migration/+page.svelte src/routes/(authenticated)/settings/nightscout-transition/+page.svelte src/routes/(authenticated)/settings/nightscout-transition/+page.svelte
 msgid "Unknown"
-msgstr ""
+msgstr "Onbekend"
 
 #. 0: credential.createdAt ? formatMediumDateTime(credential.createdAt) \\: "Unknown"
 #. 0: formatMediumDateTime(grant.createdAt)
@@ -328,7 +328,7 @@ msgstr ""
 
 #: src/lib/components/actogram/Actogram.svelte src/lib/components/actogram/ActogramRow.svelte src/lib/components/alerts/factText.svelte.ts src/lib/components/dashboard/glucose-chart/ChartTooltip.svelte src/lib/components/dashboard/glucose-chart/engine/point-inspection.svelte.ts src/lib/components/entries/BGCheckSection.svelte src/lib/components/reports/RetrospectiveStats.svelte src/lib/components/reports/loop-analysis/DailyProfileBody.svelte src/lib/components/reports/loop-analysis/EventResponseBody.svelte src/lib/components/reports/loop-analysis/SlotDays.svelte src/lib/components/reports/sleep/single-night/Hypnogram.svelte src/lib/help/report-meanings.svelte.ts src/routes/(authenticated)/reports/year-overview/+page.svelte
 msgid "Glucose"
-msgstr ""
+msgstr "Glucose"
 
 #: src/lib/components/actogram/Actogram.svelte
 msgid "Actogram with keyboard navigation"
@@ -494,9 +494,9 @@ msgstr ""
 msgid "Additional information about this user"
 msgstr ""
 
-#: src/lib/components/admin/SubjectEditDialog.svelte src/lib/components/layout/UserMenu.svelte src/lib/components/members/CreateInviteCard.svelte src/lib/components/members/MemberCard.svelte src/routes/(authenticated)/settings/access-requests/+page.svelte
+#: src/lib/components/admin/SubjectEditDialog.svelte src/lib/components/layout/UserMenu.svelte src/lib/components/members/CreateInviteCard.svelte src/lib/components/members/MemberCard.svelte src/lib/help/settings-meaning.svelte.ts src/routes/(authenticated)/settings/access-requests/+page.svelte
 msgid "Roles"
-msgstr ""
+msgstr "Rollen"
 
 #: src/lib/components/admin/SubjectEditDialog.svelte
 msgid "No roles available"
@@ -588,9 +588,9 @@ msgstr "{0} minuten"
 msgid "{0} reading{1}"
 msgstr ""
 
-#: src/routes/(authenticated)/settings/appearance/+page.svelte src/routes/(authenticated)/settings/appearance/+page.svelte src/routes/(authenticated)/settings/integrations/discord/+page.svelte src/routes/(authenticated)/settings/profile/+page.svelte src/routes/(authenticated)/settings/profile/+page.svelte src/routes/(authenticated)/settings/profile/+page.svelte src/routes/(unauthenticated)/setup/(guided)/therapy/+page.svelte
+#: src/lib/help/settings-meaning.svelte.ts src/routes/(authenticated)/settings/appearance/+page.svelte src/routes/(authenticated)/settings/appearance/+page.svelte src/routes/(authenticated)/settings/integrations/discord/+page.svelte src/routes/(authenticated)/settings/profile/+page.svelte src/routes/(authenticated)/settings/profile/+page.svelte src/routes/(authenticated)/settings/profile/+page.svelte src/routes/(unauthenticated)/setup/(guided)/therapy/+page.svelte
 msgid "Default"
-msgstr ""
+msgstr "Standaard"
 
 #: src/lib/components/settings/alarm-profile/DayOfWeekPicker.svelte
 msgid "Sun"
@@ -740,9 +740,9 @@ msgstr ""
 msgid "Search types..."
 msgstr ""
 
-#: src/lib/components/audit/AuditReadsTable.svelte src/lib/components/connectors/ConnectorDetailsDialog.svelte src/lib/components/connectors/DataSourceManageDialog.svelte src/lib/components/dashboard/glucose-chart/dialogs/DeliveryInspectionDialog.svelte src/lib/components/meals/MealsTable.svelte src/lib/components/status-pills/COBPill.svelte src/routes/(authenticated)/compatibility/+page.svelte src/routes/(authenticated)/reports/data-quality/compression-lows/+page.svelte src/routes/(authenticated)/settings/admin/tenants/+page.svelte src/routes/(authenticated)/settings/connectors/google-health/GoogleHealthCategoryTable.svelte
+#: src/lib/components/audit/AuditReadsTable.svelte src/lib/components/connectors/ConnectorDetailsDialog.svelte src/lib/components/connectors/DataSourceManageDialog.svelte src/lib/components/dashboard/glucose-chart/dialogs/DeliveryInspectionDialog.svelte src/lib/components/meals/MealsTable.svelte src/lib/components/status-pills/COBPill.svelte src/lib/help/settings-meaning.svelte.ts src/routes/(authenticated)/compatibility/+page.svelte src/routes/(authenticated)/reports/data-quality/compression-lows/+page.svelte src/routes/(authenticated)/settings/admin/tenants/+page.svelte src/routes/(authenticated)/settings/connectors/google-health/GoogleHealthCategoryTable.svelte
 msgid "Status"
-msgstr ""
+msgstr "Status"
 
 #: src/lib/components/audit/AuditReadsTable.svelte src/lib/components/treatments/TreatmentsDataTable.svelte src/routes/(authenticated)/reports/treatments/+page.svelte
 msgid "Details"
@@ -1114,7 +1114,7 @@ msgstr ""
 
 #: src/lib/components/clock-builder/ElementInspector.svelte src/lib/help/report-meanings.svelte.ts
 msgid "Categories"
-msgstr ""
+msgstr "Categorieën"
 
 #: src/lib/components/clock-builder/ElementInspector.svelte
 msgid "All categories"
@@ -1662,9 +1662,9 @@ msgstr ""
 msgid "Initializing"
 msgstr ""
 
-#: src/lib/components/connectors/DeduplicationDialog.svelte src/routes/(authenticated)/settings/migration/+page.svelte
+#: src/lib/components/connectors/DeduplicationDialog.svelte src/lib/help/settings-meaning.svelte.ts src/routes/(authenticated)/settings/migration/+page.svelte
 msgid "Progress"
-msgstr ""
+msgstr "Voortgang"
 
 #. 0: formatNumber(deduplicationStatus.progress.processedRecords); 1: formatNumber(deduplicationStatus.progress.totalRecords)
 #: src/lib/components/connectors/DeduplicationDialog.svelte
@@ -1839,9 +1839,9 @@ msgstr ""
 msgid "Devices"
 msgstr ""
 
-#: src/routes/(authenticated)/settings/patient/+page.svelte
+#: src/lib/help/settings-meaning.svelte.ts src/routes/(authenticated)/settings/patient/+page.svelte
 msgid "Insulins"
-msgstr ""
+msgstr "Insulines"
 
 #: src/lib/components/alerts/factText.svelte.ts src/lib/components/help/DashboardExplanation.svelte src/lib/constants/scope-labels.svelte.ts src/lib/navigation/app-navigation.svelte.ts src/lib/setup-hub/items.svelte.ts src/routes/(authenticated)/alerts/+page.svelte
 msgid "Alerts"
@@ -2037,7 +2037,7 @@ msgstr "Sensor"
 
 #: ../portal/src/lib/components/docs/alert-simulator/ConditionEditor.svelte src/lib/components/entries/BGCheckSection.svelte src/lib/components/trackers/ReservoirReportDialog.svelte src/lib/components/treatments/edit-dialog/BGCheckFormFields.svelte src/lib/help/report-meanings.svelte.ts src/routes/(authenticated)/settings/profile/+page.svelte src/routes/(authenticated)/settings/profile/+page.svelte src/routes/(unauthenticated)/setup/SetupWizard.svelte src/routes/(unauthenticated)/setup/SetupWizard.svelte
 msgid "Units"
-msgstr ""
+msgstr "Eenheden"
 
 #: src/lib/components/entries/BolusSection.svelte
 msgid "<0/> Bolus"
@@ -4169,9 +4169,9 @@ msgstr ""
 msgid "<0/> Start"
 msgstr ""
 
-#: src/lib/components/trackers/TrackerHistoryTab.svelte src/lib/navigation/app-navigation.svelte.ts
+#: src/lib/components/trackers/TrackerHistoryTab.svelte src/lib/help/settings-meaning.svelte.ts src/lib/navigation/app-navigation.svelte.ts
 msgid "History"
-msgstr ""
+msgstr "Geschiedenis"
 
 #: src/lib/components/trackers/TrackerHistoryTab.svelte
 msgid "Completed tracker instances"
@@ -5608,9 +5608,9 @@ msgstr ""
 msgid "TDD"
 msgstr ""
 
-#: src/lib/components/reports/year-overview/YearHeatmap.svelte
+#: src/lib/components/reports/year-overview/YearHeatmap.svelte src/lib/help/settings-meaning.svelte.ts
 msgid "Counts"
-msgstr ""
+msgstr "Aantallen"
 
 #. 0: year
 #: src/lib/components/reports/year-overview/YearHeatmap.svelte
@@ -6033,7 +6033,7 @@ msgstr ""
 
 #: src/lib/help/report-meanings.svelte.ts src/routes/(authenticated)/compatibility/[id]/+page.svelte src/routes/(authenticated)/reports/data-quality/rejected-uploads/+page.svelte
 msgid "Reason"
-msgstr ""
+msgstr "Reden"
 
 #. 0: analysis.discrepancies.length
 #: src/routes/(authenticated)/compatibility/[id]/+page.svelte
@@ -6357,7 +6357,7 @@ msgstr ""
 
 #: src/lib/help/report-meanings.svelte.ts src/routes/(authenticated)/reports/glucose-distribution/+page.svelte
 msgid "Daily glucose changes"
-msgstr ""
+msgstr "Dagelijkse glucoseveranderingen"
 
 #: src/routes/(authenticated)/reports/insulin-delivery/+page.svelte
 msgid "Comprehensive analysis of your basal and bolus insulin patterns"
@@ -6643,9 +6643,9 @@ msgstr ""
 msgid "Manage your account and security settings"
 msgstr ""
 
-#: src/routes/(authenticated)/settings/account/+page.svelte src/routes/(unauthenticated)/auth/help/+page.svelte
+#: src/lib/help/settings-meaning.svelte.ts src/routes/(authenticated)/settings/account/+page.svelte src/routes/(unauthenticated)/auth/help/+page.svelte
 msgid "Passkeys"
-msgstr ""
+msgstr "Passkeys"
 
 #: src/routes/(authenticated)/settings/account/+page.svelte
 msgid "Passkeys provide secure, phishing-resistant authentication using your device's biometrics or security key."
@@ -7348,7 +7348,7 @@ msgstr ""
 msgid "Describe what you were doing when the issue occurred..."
 msgstr ""
 
-#: src/routes/(authenticated)/settings/support/+page.svelte
+#: src/lib/help/settings-meaning.svelte.ts src/routes/(authenticated)/settings/support/+page.svelte
 msgid "About Nocturne"
 msgstr "Over Nocturne"
 
@@ -7996,9 +7996,9 @@ msgstr ""
 msgid "Link your Discord account to query glucose and receive alerts through the Nocturne bot."
 msgstr ""
 
-#: src/routes/(authenticated)/settings/integrations/discord/+page.svelte
+#: src/lib/help/settings-meaning.svelte.ts src/routes/(authenticated)/settings/integrations/discord/+page.svelte
 msgid "Linked accounts"
-msgstr ""
+msgstr "Gekoppelde accounts"
 
 #: src/routes/(authenticated)/settings/integrations/discord/+page.svelte
 msgid "No Discord accounts linked yet. Use the button below to connect one."
@@ -8663,7 +8663,7 @@ msgstr ""
 msgid "FAQ"
 msgstr ""
 
-#: ../portal/src/lib/components/SiteFooter.svelte
+#: ../portal/src/lib/components/SiteFooter.svelte src/lib/help/workflows.svelte.ts
 msgid "Getting Started"
 msgstr "Snel starten"
 
@@ -9520,9 +9520,9 @@ msgstr ""
 msgid "Move device down in priority"
 msgstr ""
 
-#: src/lib/components/patient/PatientDeviceManager.svelte src/lib/help/settings.svelte.ts
+#: src/lib/components/patient/PatientDeviceManager.svelte src/lib/help/settings-meaning.svelte.ts src/lib/help/settings.svelte.ts
 msgid "Discovered sources"
-msgstr ""
+msgstr "Gevonden bronnen"
 
 #: src/lib/components/patient/PatientDeviceManager.svelte src/routes/(authenticated)/settings/migration/+page.svelte
 msgid "Unknown source"
@@ -9592,9 +9592,9 @@ msgstr ""
 msgid "Assign roles"
 msgstr ""
 
-#: src/lib/components/members/PublicAccessCard.svelte src/lib/components/members/PublicAccessCard.svelte src/lib/help/settings.svelte.ts
+#: src/lib/components/members/PublicAccessCard.svelte src/lib/components/members/PublicAccessCard.svelte src/lib/help/settings-meaning.svelte.ts src/lib/help/settings.svelte.ts
 msgid "Public access"
-msgstr ""
+msgstr "Openbare toegang"
 
 #: src/lib/components/members/PublicAccessCard.svelte src/lib/components/members/PublicAccessCard.svelte
 msgid "<0/> Regenerate"
@@ -9756,9 +9756,9 @@ msgstr ""
 msgid "All other sessions signed out."
 msgstr ""
 
-#: src/lib/components/settings/ActiveSessions.svelte
+#: src/lib/components/settings/ActiveSessions.svelte src/lib/help/settings-meaning.svelte.ts
 msgid "Sessions"
-msgstr ""
+msgstr "Sessies"
 
 #: src/lib/components/settings/ActiveSessions.svelte
 msgid "Devices currently signed in to your account"
@@ -10173,9 +10173,9 @@ msgstr ""
 msgid "Single color"
 msgstr ""
 
-#: src/routes/(authenticated)/settings/appearance/+page.svelte
+#: src/lib/help/settings-meaning.svelte.ts src/routes/(authenticated)/settings/appearance/+page.svelte
 msgid "Line color mode"
-msgstr ""
+msgstr "Kleurmodus van de lijn"
 
 #: src/routes/(authenticated)/settings/appearance/+page.svelte
 msgid "Show data points"
@@ -10185,9 +10185,9 @@ msgstr ""
 msgid "Point color mode"
 msgstr ""
 
-#: src/routes/(authenticated)/settings/appearance/+page.svelte
+#: src/lib/help/settings-meaning.svelte.ts src/routes/(authenticated)/settings/appearance/+page.svelte
 msgid "Area fill"
-msgstr ""
+msgstr "Vlakvulling"
 
 #. 0: Math.round(chartAreaOpacity.current * 100)
 #: src/routes/(authenticated)/settings/appearance/+page.svelte
@@ -10491,7 +10491,7 @@ msgstr ""
 
 #: src/lib/components/reports/sensor-integrity/ClusterTable.svelte src/lib/components/reports/sensor-integrity/HypoAfterNoiseLog.svelte src/lib/help/report-meanings.svelte.ts src/lib/help/reports.svelte.ts src/routes/(authenticated)/reports/data-quality/compression-lows/+page.svelte
 msgid "Confidence"
-msgstr ""
+msgstr "Betrouwbaarheid"
 
 #: src/lib/components/reports/sensor-integrity/ClusterTable.svelte
 msgid "Why flagged"
@@ -10688,7 +10688,7 @@ msgstr ""
 
 #: src/lib/help/report-meanings.svelte.ts src/routes/(authenticated)/reports/data-quality/sensor-integrity/+page.svelte
 msgid "Daily overview"
-msgstr ""
+msgstr "Dagoverzicht"
 
 #: src/routes/(authenticated)/reports/data-quality/sensor-integrity/+page.svelte
 msgid "Each row is one day. <0>Select a day to expand it.</0>"
@@ -10704,7 +10704,7 @@ msgstr ""
 
 #: src/lib/help/report-meanings.svelte.ts src/routes/(authenticated)/reports/data-quality/sensor-integrity/+page.svelte
 msgid "Flagged windows"
-msgstr ""
+msgstr "Gemarkeerde perioden"
 
 #: src/routes/(authenticated)/reports/data-quality/sensor-integrity/+page.svelte
 msgid "Select a row to expand its day above."
@@ -11645,7 +11645,7 @@ msgstr ""
 
 #: ../portal/src/lib/components/features/ReportsDemo.svelte ../portal/src/lib/components/features/ReportsDemo.svelte src/lib/components/dashboard/widgets/TirChartWidget.svelte src/lib/help/report-meanings.svelte.ts src/routes/(authenticated)/reports/+page.svelte src/routes/(authenticated)/reports/agp/+page.svelte src/routes/(authenticated)/reports/comparison/ComparisonReport.svelte src/routes/(authenticated)/reports/executive-summary/+page.svelte src/routes/(authenticated)/reports/idp/+page.svelte src/routes/(authenticated)/reports/year-overview/+page.svelte
 msgid "Time in range"
-msgstr ""
+msgstr "Tijd binnen bereik"
 
 #: ../portal/src/lib/components/features/ReportsDemo.svelte
 msgid "4% low · 72% in range · 24% high"
@@ -12661,7 +12661,7 @@ msgstr ""
 msgid "Agreement"
 msgstr ""
 
-#: src/routes/(authenticated)/reports/data-quality/cgm-comparison/+page.svelte src/routes/(authenticated)/reports/data-quality/cgm-comparison/+page.svelte
+#: src/lib/help/chart-lessons.svelte.ts src/routes/(authenticated)/reports/data-quality/cgm-comparison/+page.svelte src/routes/(authenticated)/reports/data-quality/cgm-comparison/+page.svelte
 msgid "Paired readings"
 msgstr "Gekoppelde metingen"
 
@@ -13767,11 +13767,11 @@ msgstr ""
 
 #: src/lib/help/report-meanings.svelte.ts src/routes/(authenticated)/reports/+page.svelte src/routes/(authenticated)/reports/agp/+page.svelte
 msgid "Time below range"
-msgstr ""
+msgstr "Tijd onder bereik"
 
 #: src/lib/help/report-meanings.svelte.ts src/routes/(authenticated)/reports/+page.svelte
 msgid "Typical day"
-msgstr ""
+msgstr "Gemiddelde dag"
 
 #: src/routes/(authenticated)/reports/+page.svelte
 msgid "Glucose over 24 hours, across the whole range"
@@ -13925,7 +13925,7 @@ msgstr ""
 
 #: src/lib/help/report-meanings.svelte.ts src/routes/(authenticated)/reports/site-change-impact/+page.svelte
 msgid "What to look for"
-msgstr ""
+msgstr "Waar je op let"
 
 #: src/routes/(authenticated)/reports/steps/+page.svelte
 msgid "Total steps"
@@ -14398,7 +14398,7 @@ msgstr ""
 
 #: src/lib/components/reports/hourly-patterns/HourlyGlance.svelte src/lib/help/report-meanings.svelte.ts
 msgid "At a glance"
-msgstr ""
+msgstr "In één oogopslag"
 
 #: src/lib/components/reports/hourly-patterns/HourlyRangeBars.svelte
 msgid "Stacked bar chart of the share of each hour's readings in each glucose range, one bar per hour from midnight. The table below gives the same figures."
@@ -14493,7 +14493,7 @@ msgstr ""
 
 #: src/lib/help/report-meanings.svelte.ts src/routes/(authenticated)/reports/hourly-stats/+page.svelte
 msgid "Which hours are compared"
-msgstr ""
+msgstr "Welke uren worden vergeleken"
 
 #: src/routes/(authenticated)/reports/hourly-stats/+page.svelte
 msgid "<0/> Not medical advice"
@@ -16420,7 +16420,7 @@ msgstr ""
 msgid "Total"
 msgstr ""
 
-#: src/lib/components/reports/InsulinDeliveryChart.svelte src/lib/components/reports/InsulinDeliveryChart.svelte src/routes/(authenticated)/reports/idp/+page.svelte
+#: src/lib/components/reports/InsulinDeliveryChart.svelte src/lib/components/reports/InsulinDeliveryChart.svelte src/lib/help/chart-lessons.svelte.ts src/routes/(authenticated)/reports/idp/+page.svelte
 msgid "Scheduled basal rate"
 msgstr "Geplande basaalsnelheid"
 
@@ -16561,7 +16561,7 @@ msgstr ""
 
 #: src/lib/coach-marks/copy.svelte.ts src/lib/components/reports/loop-analysis/DailyProfileBody.svelte src/lib/components/reports/loop-analysis/DailyProfileBody.svelte src/lib/components/reports/loop-analysis/DailyProfileBody.svelte src/lib/components/reports/loop-analysis/DailyProfileBody.svelte src/lib/components/reports/loop-analysis/EventResponseBody.svelte src/lib/components/reports/loop-analysis/SlotDays.svelte src/lib/help/report-meanings.svelte.ts src/lib/help/reports.svelte.ts
 msgid "Net loop correction"
-msgstr ""
+msgstr "Netto loopcorrectie"
 
 #: src/lib/coach-marks/copy.svelte.ts
 msgid "This chart shows the insulin that the loop added to your scheduled basal or removed from it. It includes temp basals and automatic boluses. Use the switches below the chart to show manual temp basals, suspends and inferred delivery."
@@ -16633,7 +16633,7 @@ msgstr ""
 
 #: src/lib/coach-marks/copy.svelte.ts src/lib/help/report-meanings.svelte.ts src/lib/help/reports.svelte.ts
 msgid "Gaps"
-msgstr ""
+msgstr "Gaten"
 
 #: src/lib/coach-marks/copy.svelte.ts src/lib/components/reports/loop-analysis/SettingsEvidenceBody.svelte
 msgid "Observations, not advice"
@@ -17084,7 +17084,7 @@ msgstr ""
 msgid "Mostly calculated from carbs"
 msgstr ""
 
-#: src/lib/components/reports/loop-analysis/DailyProfileBody.svelte
+#: src/lib/components/help/HelpChartExample.svelte src/lib/components/reports/loop-analysis/DailyProfileBody.svelte
 msgid "U per day"
 msgstr "E per dag"
 
@@ -17400,7 +17400,7 @@ msgstr ""
 
 #: src/lib/components/reports/loop-analysis/HorizonErrorChart.svelte src/lib/components/reports/loop-analysis/PredictionAccuracyBody.svelte src/lib/components/reports/loop-analysis/PredictionContextTable.svelte src/lib/help/report-meanings.svelte.ts src/lib/help/report-meanings.svelte.ts
 msgid "Bias"
-msgstr ""
+msgstr "Afwijking"
 
 #: src/lib/components/reports/loop-analysis/HorizonErrorChart.svelte src/lib/components/reports/loop-analysis/PredictionContextTable.svelte
 msgid "MAE"
@@ -18185,9 +18185,9 @@ msgstr ""
 msgid "A higher basal rate means more insulin every hour."
 msgstr ""
 
-#: src/lib/components/reports/loop-analysis/SettingsEvidenceBody.svelte src/lib/components/schedule/ProfileSchedules.svelte
+#: src/lib/components/reports/loop-analysis/SettingsEvidenceBody.svelte src/lib/components/schedule/ProfileSchedules.svelte src/lib/help/settings-meaning.svelte.ts
 msgid "Insulin sensitivity (ISF)"
-msgstr ""
+msgstr "Insulinegevoeligheid (ISF)"
 
 #. 0: (rules?.isfMinimumWindowMs ?? 0) / 3_600_000; 1: hoursText(rules?.isfWindowMs)
 #: src/lib/components/reports/loop-analysis/SettingsEvidenceBody.svelte
@@ -18264,7 +18264,7 @@ msgstr ""
 
 #: src/lib/components/reports/loop-analysis/SettingsEvidenceBody.svelte src/lib/help/report-meanings.svelte.ts
 msgid "Middle half"
-msgstr ""
+msgstr "Middelste helft"
 
 #. 0: section.format(compared.observed); 1: compared.n ?? 0; 2: confidenceLabel(compared.confidence)
 #: src/lib/components/reports/loop-analysis/SettingsEvidenceBody.svelte
@@ -22017,9 +22017,9 @@ msgstr ""
 msgid "How far one unit of insulin lowers glucose."
 msgstr ""
 
-#: src/lib/components/schedule/TargetRangeCard.svelte src/lib/components/schedule/TargetRangeCard.svelte src/lib/components/schedule/TargetRangeCard.svelte src/routes/(unauthenticated)/setup/(guided)/therapy/TherapyEntry.svelte
+#: src/lib/components/schedule/TargetRangeCard.svelte src/lib/components/schedule/TargetRangeCard.svelte src/lib/components/schedule/TargetRangeCard.svelte src/lib/help/settings-meaning.svelte.ts src/routes/(unauthenticated)/setup/(guided)/therapy/TherapyEntry.svelte
 msgid "Target range"
-msgstr ""
+msgstr "Doelbereik"
 
 #: src/routes/(unauthenticated)/setup/(guided)/therapy/TherapyEntry.svelte
 msgid "The glucose range the settings aim for."
@@ -22147,9 +22147,9 @@ msgstr ""
 msgid "{0}% of {1}"
 msgstr ""
 
-#: src/lib/help/settings.svelte.ts src/routes/(authenticated)/settings/admin/tenants/+page.svelte
+#: src/lib/help/settings-meaning.svelte.ts src/lib/help/settings.svelte.ts src/routes/(authenticated)/settings/admin/tenants/+page.svelte
 msgid "Database capacity"
-msgstr ""
+msgstr "Databasecapaciteit"
 
 #: ../cms/src/editor/ContentEditor.svelte
 msgid "Save draft"
@@ -22706,17 +22706,17 @@ msgstr ""
 msgid "Session expires"
 msgstr ""
 
-#: src/lib/components/account/UserProfileCard.svelte
+#: src/lib/components/account/UserProfileCard.svelte src/lib/help/settings-meaning.svelte.ts
 msgid "Account details"
-msgstr ""
+msgstr "Accountgegevens"
 
 #: src/lib/components/account/UserProfileCard.svelte
 msgid "<0/> Back to settings"
 msgstr ""
 
-#: src/lib/components/admin/IdentityProvidersTabContent.svelte src/lib/components/admin/OidcProvidersTabContent.svelte
+#: src/lib/components/admin/IdentityProvidersTabContent.svelte src/lib/components/admin/OidcProvidersTabContent.svelte src/lib/help/settings-meaning.svelte.ts
 msgid "Identity providers"
-msgstr ""
+msgstr "Identiteitsproviders"
 
 #: src/lib/components/admin/IdentityProvidersTabContent.svelte src/lib/components/admin/OidcProvidersTabContent.svelte
 msgid "<0/> Add provider"
@@ -22835,9 +22835,9 @@ msgstr ""
 msgid "<0/> Access data"
 msgstr ""
 
-#: src/lib/components/auth/RecoveryCodes.svelte src/lib/help/settings.svelte.ts src/routes/(unauthenticated)/auth/help/+page.svelte
+#: src/lib/components/auth/RecoveryCodes.svelte src/lib/help/settings-meaning.svelte.ts src/lib/help/settings.svelte.ts src/routes/(unauthenticated)/auth/help/+page.svelte
 msgid "Recovery codes"
-msgstr ""
+msgstr "Herstelcodes"
 
 #: src/lib/components/auth/login-dialog.svelte
 msgid "Sign in required"
@@ -23041,9 +23041,9 @@ msgstr ""
 msgid "No runtime configuration available"
 msgstr ""
 
-#: src/lib/components/connectors/ConnectorSetup.svelte
+#: src/lib/components/connectors/ConnectorSetup.svelte src/lib/help/settings-meaning.svelte.ts
 msgid "Sync capabilities"
-msgstr ""
+msgstr "Synchronisatiemogelijkheden"
 
 #: src/lib/components/connectors/DataSourceManageDialog.svelte
 msgid "Delete all data from this source"
@@ -23847,9 +23847,9 @@ msgstr ""
 msgid "<0/> Run deduplication"
 msgstr ""
 
-#: src/lib/components/settings/DataMaintenanceCard.svelte
+#: src/lib/components/settings/DataMaintenanceCard.svelte src/lib/help/settings-meaning.svelte.ts
 msgid "Deduplicate records"
-msgstr ""
+msgstr "Dubbele records opschonen"
 
 #: src/lib/components/settings/DataMaintenanceCard.svelte
 msgid "Remove demo data"
@@ -24482,7 +24482,7 @@ msgstr ""
 
 #: src/lib/help/report-meanings.svelte.ts src/routes/(authenticated)/reports/comparison/ComparisonReport.svelte src/routes/(authenticated)/reports/executive-summary/+page.svelte
 msgid "CGM active time"
-msgstr ""
+msgstr "Actieve CGM-tijd"
 
 #: src/routes/(authenticated)/reports/comparison/ComparisonReport.svelte
 msgid "Readings / day"
@@ -24506,7 +24506,7 @@ msgstr ""
 
 #: src/lib/help/report-meanings.svelte.ts src/routes/(authenticated)/reports/data-quality/+page.svelte
 msgid "Review now"
-msgstr ""
+msgstr "Nu bekijken"
 
 #: src/routes/(authenticated)/reports/data-quality/+page.svelte
 msgid "Run detection"
@@ -24614,7 +24614,7 @@ msgstr ""
 
 #: src/lib/help/report-meanings.svelte.ts src/routes/(authenticated)/reports/glucose-distribution/+page.svelte
 msgid "Hourly distribution"
-msgstr ""
+msgstr "Verdeling per uur"
 
 #: src/routes/(authenticated)/reports/glucose-distribution/+page.svelte
 msgid "Glycemic variability"
@@ -24836,7 +24836,7 @@ msgstr ""
 
 #: src/lib/help/report-meanings.svelte.ts src/routes/(authenticated)/reports/battery/+page.svelte
 msgid "Time distribution"
-msgstr ""
+msgstr "Tijdsverdeling"
 
 #: src/routes/(authenticated)/reports/battery/+page.svelte
 msgid "<0/> Recent charge cycles"
@@ -24899,9 +24899,9 @@ msgstr ""
 msgid "Access requests"
 msgstr ""
 
-#: src/routes/(authenticated)/settings/account/+page.svelte
+#: src/lib/help/settings-meaning.svelte.ts src/routes/(authenticated)/settings/account/+page.svelte
 msgid "Authenticator apps"
-msgstr ""
+msgstr "Authenticator-apps"
 
 #: src/routes/(authenticated)/settings/account/+page.svelte
 msgid "<0/> Recovery codes"
@@ -24935,9 +24935,9 @@ msgstr ""
 msgid "Invalid request"
 msgstr ""
 
-#: src/routes/(authenticated)/oauth/consent/+page.svelte
+#: src/lib/help/settings-meaning.svelte.ts src/routes/(authenticated)/oauth/consent/+page.svelte
 msgid "Additional permissions"
-msgstr ""
+msgstr "Extra rechten"
 
 #: src/routes/(authenticated)/reports/site-change-impact/+page.svelte
 msgid "Error loading site change data"
@@ -25091,9 +25091,9 @@ msgstr ""
 msgid "<0/> Compression low detection"
 msgstr ""
 
-#: src/routes/(authenticated)/settings/nightscout-transition/+page.svelte
+#: src/lib/help/settings-meaning.svelte.ts src/routes/(authenticated)/settings/nightscout-transition/+page.svelte
 msgid "Safe to disconnect"
-msgstr ""
+msgstr "Veilig loskoppelen"
 
 #: src/routes/(authenticated)/settings/nightscout-transition/+page.svelte
 msgid "Almost ready"
@@ -25255,9 +25255,9 @@ msgstr ""
 msgid "Patient record - Settings - Nocturne"
 msgstr ""
 
-#: src/routes/(authenticated)/settings/patient/+page.svelte
+#: src/lib/help/settings-meaning.svelte.ts src/routes/(authenticated)/settings/patient/+page.svelte
 msgid "Clinical information"
-msgstr ""
+msgstr "Klinische informatie"
 
 #: src/routes/(authenticated)/settings/support/+page.svelte
 msgid "GitHub repository"
@@ -25315,9 +25315,9 @@ msgstr ""
 msgid "API endpoint"
 msgstr ""
 
-#: src/routes/(authenticated)/settings/support/+page.svelte
+#: src/lib/help/settings-meaning.svelte.ts src/routes/(authenticated)/settings/support/+page.svelte
 msgid "API compatibility"
-msgstr ""
+msgstr "API-compatibiliteit"
 
 #: src/routes/(authenticated)/settings/trackers/+page.svelte
 msgid "Notifications & trackers - Settings - Nocturne"
@@ -27323,7 +27323,7 @@ msgstr "Kijk wanneer de laatste meting binnenkwam voordat je de waarde of richti
 msgid "Read the timeline"
 msgstr "Lees de tijdlijn"
 
-#: src/lib/help/reading-guides.svelte.ts
+#: src/lib/help/reading-guides.svelte.ts src/lib/help/workflows.svelte.ts
 msgid "Choose your display"
 msgstr "Kies je weergave"
 
@@ -27966,10 +27966,6 @@ msgstr "Open de bijbehorende instellingen in een nieuw tabblad. Je oorspronkelij
 #: src/lib/components/help/HelpReadingAid.svelte
 msgid "Page reading aid"
 msgstr "Leeshulp voor de pagina"
-
-#: src/lib/components/help/HelpReadingAid.svelte
-msgid "Schematic reading example, without personal data"
-msgstr "Schematisch leesvoorbeeld, zonder persoonlijke gegevens"
 
 #: src/lib/components/help/HelpReadingAid.svelte
 msgid "How to read this page"
@@ -29773,10 +29769,6 @@ msgstr "Alleen de achtergrondlaag verandert. De documentatietekst blijft volledi
 #: src/lib/components/help/HelpBar.svelte
 msgid ": Explanations, settings, and getting started"
 msgstr ": Uitleg, instellingen en aan de slag"
-
-#: src/lib/components/help/HelpReadingAid.svelte
-msgid "Reading diagram: illustrative, not your measurements. Colors follow your Nocturne theme."
-msgstr "Leesdiagram: ter illustratie, niet jouw metingen. Kleuren volgen je Nocturne-thema."
 
 #. 0: bg(facts.maximumPlausibleGlucose); 1: unit
 #: src/lib/components/help/HelpReference.svelte
@@ -32191,7 +32183,7 @@ msgstr "Laat plaatshouders staan"
 msgid "Copy placeholders and markup tags exactly as they are in the English text."
 msgstr "Neem plaatshouders en opmaaktags precies over zoals ze in de Engelse tekst staan."
 
-#: src/lib/help/reading-guides.svelte.ts
+#: src/lib/help/reading-guides.svelte.ts src/lib/help/reading-guides.svelte.ts
 msgid "Submit the drafts"
 msgstr "Verstuur de concepten"
 
@@ -33019,11 +33011,11 @@ msgstr "Na het goedkeuren krijgt het apparaat toegang en kunt u dit venster slui
 msgid "A code expires. If the code expired, start the sign-in again on the device for a new code. Enter only a code that your own device shows."
 msgstr "Een code verloopt. Als de code verlopen is, start u de aanmelding op het apparaat opnieuw voor een nieuwe code. Vul alleen een code in die uw eigen apparaat toont."
 
-#: src/lib/help/meanings.svelte.ts src/lib/help/report-meanings.svelte.ts
+#: src/lib/help/meanings.svelte.ts src/lib/help/report-meanings.svelte.ts src/lib/help/settings-meaning.svelte.ts
 msgid "Glucose ranges"
 msgstr "Glucosebereiken"
 
-#: src/lib/help/meanings.svelte.ts
+#: src/lib/help/meanings.svelte.ts src/lib/help/settings-meaning.svelte.ts
 msgid "Very low is below 3.0 mmol/L (54 mg/dL). Low is 3.0 to 3.8 mmol/L (54 to 69 mg/dL). In range is 3.9 to 10.0 mmol/L (70 to 180 mg/dL). High is 10.1 to 13.9 mmol/L (181 to 250 mg/dL). Very high is above 13.9 mmol/L (250 mg/dL). Tight range, 3.9 to 7.8 mmol/L (70 to 140 mg/dL), is part of in range."
 msgstr "Zeer laag is onder 3,0 mmol/L (54 mg/dL). Laag is 3,0 tot 3,8 mmol/L (54 tot 69 mg/dL). Binnen bereik is 3,9 tot 10,0 mmol/L (70 tot 180 mg/dL). Hoog is 10,1 tot 13,9 mmol/L (181 tot 250 mg/dL). Zeer hoog is boven 13,9 mmol/L (250 mg/dL). Het strakke bereik, 3,9 tot 7,8 mmol/L (70 tot 140 mg/dL), valt binnen het bereik."
 
@@ -33035,7 +33027,7 @@ msgstr "Consensusdoelen"
 msgid "At least 70% of the time in range, less than 4% below range, less than 1% very low, less than 25% above range, and less than 5% very high. These are general targets. Your care team can agree other targets with you."
 msgstr "Minstens 70% van de tijd binnen bereik, minder dan 4% onder bereik, minder dan 1% zeer laag, minder dan 25% boven bereik en minder dan 5% zeer hoog. Dit zijn algemene doelen. Je behandelteam kan andere doelen met je afspreken."
 
-#: src/lib/help/meanings.svelte.ts
+#: src/lib/help/meanings.svelte.ts src/lib/help/settings-meaning.svelte.ts
 msgid "The large number"
 msgstr "Het grote getal"
 
@@ -35069,6 +35061,12 @@ msgstr "Elke regel is een Discord-account dat aan uw Nocturne-account gekoppeld 
 #: src/lib/help/settings-meaning.svelte.ts
 msgid "The default link answers /bg when you type no label."
 msgstr "De standaardkoppeling antwoordt op /bg als u geen label typt."
+
+#~ msgid "Schematic reading example, without personal data"
+#~ msgstr "Schematisch leesvoorbeeld, zonder persoonlijke gegevens"
+
+#~ msgid "Reading diagram: illustrative, not your measurements. Colors follow your Nocturne theme."
+#~ msgstr "Leesdiagram: ter illustratie, niet jouw metingen. Kleuren volgen je Nocturne-thema."
 
 #~ msgid "Sharing & Privacy"
 #~ msgstr "Delen en privacy"

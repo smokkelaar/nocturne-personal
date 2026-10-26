@@ -536,11 +536,11 @@
           <Input
             id="lab-value"
             type="number"
-            step={a1cUnits.current === "percent" ? "0.1" : "1"}
+            step={a1cUnits.current === "percent" ? "0.01" : "0.1"}
             bind:value={newLabValue}
             placeholder={a1cUnits.current === "percent"
-              ? "e.g. 7.0"
-              : "e.g. 53"}
+              ? "e.g. 6.54"
+              : "e.g. 50.3"}
           />
         </div>
         <div class="space-y-1.5">

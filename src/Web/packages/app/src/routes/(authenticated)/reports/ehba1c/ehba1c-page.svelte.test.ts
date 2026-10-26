@@ -137,7 +137,7 @@ describe("eHbA1c chart tooltips", () => {
     await expect
       .element(page.getByLabelText("Result (mmol/mol)"))
       .toBeVisible();
-    await expect.element(page.getByTestId("lab-marker").first()).toHaveTextContent("49 mmol/mol");
+    await expect.element(page.getByTestId("lab-marker").first()).toHaveTextContent("48.6 mmol/mol");
     await expect.element(page.getByRole("group", { name: /A1c units/i })).not.toBeInTheDocument();
   });
 

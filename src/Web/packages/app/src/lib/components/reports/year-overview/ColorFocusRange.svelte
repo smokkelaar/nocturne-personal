@@ -47,7 +47,7 @@
     scale: MetricScale;
     /** The furthest the focus window may reach. */
     limits: ColorFocusRange;
-    /** Glucose values are canonical mg/dL and shown in `units`; its ramp keeps its own domain. */
+    /** Glucose values are canonical mg/dL and shown in `units`. */
     glucose?: boolean;
     units?: GlucoseUnits;
     unit?: string;

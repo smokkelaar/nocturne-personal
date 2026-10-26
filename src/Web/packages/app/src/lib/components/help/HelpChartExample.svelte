@@ -193,8 +193,8 @@
         {/snippet}
       </TimeOfDayPanel>
       <p class="mt-3 text-xs text-muted-foreground">
-        Point to a time slot, or focus the chart and use the arrow keys. Click
-        or press Enter to keep a selection.
+        Point to a time slot, or focus the chart and use the arrow keys. Select
+        a slot or press Enter to keep it selected.
       </p>
       {#if cursor.selected != null}<p class="mt-2 text-sm" role="status">
           {slotLabel(cursor.selected)}: {describe(cursor.selected)}

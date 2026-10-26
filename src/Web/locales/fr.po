@@ -43325,11 +43325,11 @@ msgid "Median and spread"
 msgstr ""
 
 #: src/lib/help/chart-lessons.svelte.ts
-msgid "The solid line is P50, the median. The inner band spans P25–P75; the outer band spans P10–P90."
+msgid "The solid line is P50, the median. The inner band spans P25–P75. The outer band spans P10–P90."
 msgstr ""
 
 #: src/lib/help/chart-lessons.svelte.ts
-msgid "Wider bands mean more spread among the recorded values at that time; they are not a forecast."
+msgid "Wider bands mean more spread among the recorded values at that time. They are not a forecast."
 msgstr ""
 
 #: src/lib/help/chart-lessons.svelte.ts
@@ -43389,7 +43389,7 @@ msgid "The chart compares uploaded predictions against later glucose measurement
 msgstr ""
 
 #: src/lib/help/chart-lessons.svelte.ts
-msgid "Bias is signed; MAE is an unsigned error magnitude. Check n: it counts matched predictions."
+msgid "Bias is signed. MAE is an unsigned error magnitude. Check n: it counts matched predictions."
 msgstr ""
 
 #: src/lib/help/chart-lessons.svelte.ts
@@ -43397,7 +43397,7 @@ msgid "Each step keeps the scheduled rate until the next entry. This is a schedu
 msgstr ""
 
 #: src/lib/help/chart-lessons.svelte.ts
-msgid "Read the time and U/h together; compare delivery records separately when checking what actually happened."
+msgid "Read the time and U/h together. Compare delivery records separately when checking what actually happened."
 msgstr ""
 
 #: src/lib/help/chart-lessons.svelte.ts
@@ -43433,7 +43433,7 @@ msgid "Open help with the book beside Nocturne. Close it with the close button o
 msgstr ""
 
 #: src/lib/help/workflows.svelte.ts
-msgid "After connecting a source, use Dashboard to check freshness and Reports to review the selected period. Therapy shows imported schedules; Sharing & Privacy manages access."
+msgid "After connecting a source, use Dashboard to check freshness and Reports to review the selected period. Therapy shows imported schedules. Sharing & Privacy manages access."
 msgstr ""
 
 #: src/lib/help/workflows.svelte.ts
@@ -43552,7 +43552,7 @@ msgid "P25–P75: {0}–{1} {2}"
 msgstr ""
 
 #: src/lib/components/help/HelpChartExample.svelte
-msgid "Point to a time slot, or focus the chart and use the arrow keys. Click or press Enter to keep a selection."
+msgid "Point to a time slot, or focus the chart and use the arrow keys. Select a slot or press Enter to keep it selected."
 msgstr ""
 
 #: src/lib/components/help/HelpChartExample.svelte

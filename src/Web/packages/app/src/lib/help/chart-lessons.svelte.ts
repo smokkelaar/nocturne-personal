@@ -3,9 +3,9 @@ export function chartLessons() {
     median: {
       title: "Median and spread",
       meaning:
-        "The solid line is P50, the median. The inner band spans P25–P75; the outer band spans P10–P90.",
+        "The solid line is P50, the median. The inner band spans P25–P75. The outer band spans P10–P90.",
       check:
-        "Wider bands mean more spread among the recorded values at that time; they are not a forecast.",
+        "Wider bands mean more spread among the recorded values at that time. They are not a forecast.",
     },
     gap: {
       title: "Missing data",
@@ -40,14 +40,14 @@ export function chartLessons() {
       meaning:
         "The chart compares uploaded predictions against later glucose measurements, grouped by prediction horizon.",
       check:
-        "Bias is signed; MAE is an unsigned error magnitude. Check n: it counts matched predictions.",
+        "Bias is signed. MAE is an unsigned error magnitude. Check n: it counts matched predictions.",
     },
     schedule: {
       title: "Scheduled basal rate",
       meaning:
         "Each step keeps the scheduled rate until the next entry. This is a schedule, not a delivery record.",
       check:
-        "Read the time and U/h together; compare delivery records separately when checking what actually happened.",
+        "Read the time and U/h together. Compare delivery records separately when checking what actually happened.",
     },
     scatter: {
       title: "Paired readings",

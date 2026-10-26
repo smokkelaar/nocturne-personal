@@ -10,7 +10,7 @@ export function workflowArticles(): HelpArticle[] {
         "Learn how to configure display settings, connect data sources, and verify that your imported data appears correctly in Nocturne.",
         "The selected tenant, saved display preferences and records received from your configured uploaders and connectors.",
         "Open help with the book beside Nocturne. Close it with the close button or Escape to return to your original page and inputs. Appearance controls units, theme, language and help display.",
-        "After connecting a source, use Dashboard to check freshness and Reports to review the selected period. Therapy shows imported schedules; Sharing & Privacy manages access.",
+        "After connecting a source, use Dashboard to check freshness and Reports to review the selected period. Therapy shows imported schedules. Sharing & Privacy manages access.",
         "Available settings depend on your permissions. A connected status or completed setup checklist does not prove that an import has finished. Check actual records and their timestamps.",
         [
           "/settings/appearance",

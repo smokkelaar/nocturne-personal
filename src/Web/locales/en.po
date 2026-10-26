@@ -43322,12 +43322,12 @@ msgid "Median and spread"
 msgstr "Median and spread"
 
 #: src/lib/help/chart-lessons.svelte.ts
-msgid "The solid line is P50, the median. The inner band spans P25–P75; the outer band spans P10–P90."
-msgstr "The solid line is P50, the median. The inner band spans P25–P75; the outer band spans P10–P90."
+msgid "The solid line is P50, the median. The inner band spans P25–P75. The outer band spans P10–P90."
+msgstr "The solid line is P50, the median. The inner band spans P25–P75. The outer band spans P10–P90."
 
 #: src/lib/help/chart-lessons.svelte.ts
-msgid "Wider bands mean more spread among the recorded values at that time; they are not a forecast."
-msgstr "Wider bands mean more spread among the recorded values at that time; they are not a forecast."
+msgid "Wider bands mean more spread among the recorded values at that time. They are not a forecast."
+msgstr "Wider bands mean more spread among the recorded values at that time. They are not a forecast."
 
 #: src/lib/help/chart-lessons.svelte.ts
 msgid "Missing data"
@@ -43386,16 +43386,16 @@ msgid "The chart compares uploaded predictions against later glucose measurement
 msgstr "The chart compares uploaded predictions against later glucose measurements, grouped by prediction horizon."
 
 #: src/lib/help/chart-lessons.svelte.ts
-msgid "Bias is signed; MAE is an unsigned error magnitude. Check n: it counts matched predictions."
-msgstr "Bias is signed; MAE is an unsigned error magnitude. Check n: it counts matched predictions."
+msgid "Bias is signed. MAE is an unsigned error magnitude. Check n: it counts matched predictions."
+msgstr "Bias is signed. MAE is an unsigned error magnitude. Check n: it counts matched predictions."
 
 #: src/lib/help/chart-lessons.svelte.ts
 msgid "Each step keeps the scheduled rate until the next entry. This is a schedule, not a delivery record."
 msgstr "Each step keeps the scheduled rate until the next entry. This is a schedule, not a delivery record."
 
 #: src/lib/help/chart-lessons.svelte.ts
-msgid "Read the time and U/h together; compare delivery records separately when checking what actually happened."
-msgstr "Read the time and U/h together; compare delivery records separately when checking what actually happened."
+msgid "Read the time and U/h together. Compare delivery records separately when checking what actually happened."
+msgstr "Read the time and U/h together. Compare delivery records separately when checking what actually happened."
 
 #: src/lib/help/chart-lessons.svelte.ts
 msgid "This chart plots device B values horizontally against device A values vertically, with each point representing one paired reading."
@@ -43430,8 +43430,8 @@ msgid "Open help with the book beside Nocturne. Close it with the close button o
 msgstr "Open help with the book beside Nocturne. Close it with the close button or Escape to return to your original page and inputs. Appearance controls units, theme, language and help display."
 
 #: src/lib/help/workflows.svelte.ts
-msgid "After connecting a source, use Dashboard to check freshness and Reports to review the selected period. Therapy shows imported schedules; Sharing & Privacy manages access."
-msgstr "After connecting a source, use Dashboard to check freshness and Reports to review the selected period. Therapy shows imported schedules; Sharing & Privacy manages access."
+msgid "After connecting a source, use Dashboard to check freshness and Reports to review the selected period. Therapy shows imported schedules. Sharing & Privacy manages access."
+msgstr "After connecting a source, use Dashboard to check freshness and Reports to review the selected period. Therapy shows imported schedules. Sharing & Privacy manages access."
 
 #: src/lib/help/workflows.svelte.ts
 msgid "Available settings depend on your permissions. A connected status or completed setup checklist does not prove that an import has finished. Check actual records and their timestamps."
@@ -43549,8 +43549,8 @@ msgid "P25–P75: {0}–{1} {2}"
 msgstr "P25–P75: {0}–{1} {2}"
 
 #: src/lib/components/help/HelpChartExample.svelte
-msgid "Point to a time slot, or focus the chart and use the arrow keys. Click or press Enter to keep a selection."
-msgstr "Point to a time slot, or focus the chart and use the arrow keys. Click or press Enter to keep a selection."
+msgid "Point to a time slot, or focus the chart and use the arrow keys. Select a slot or press Enter to keep it selected."
+msgstr "Point to a time slot, or focus the chart and use the arrow keys. Select a slot or press Enter to keep it selected."
 
 #: src/lib/components/help/HelpChartExample.svelte
 msgid "Point to a horizon or use the arrow keys to inspect bias, MAE and the number of matched predictions."

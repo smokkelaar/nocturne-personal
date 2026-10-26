@@ -43322,12 +43322,12 @@ msgid "Median and spread"
 msgstr "Mediaan en spreiding"
 
 #: src/lib/help/chart-lessons.svelte.ts
-msgid "The solid line is P50, the median. The inner band spans P25–P75; the outer band spans P10–P90."
-msgstr "De doorgetrokken lijn is P50, de mediaan. De binnenste band loopt van P25 tot P75; de buitenste van P10 tot P90."
+msgid "The solid line is P50, the median. The inner band spans P25–P75. The outer band spans P10–P90."
+msgstr "De doorgetrokken lijn is P50, de mediaan. De binnenste band loopt van P25 tot P75. De buitenste band loopt van P10 tot P90."
 
 #: src/lib/help/chart-lessons.svelte.ts
-msgid "Wider bands mean more spread among the recorded values at that time; they are not a forecast."
-msgstr "Bredere banden betekenen meer spreiding tussen de geregistreerde waarden op dat tijdstip; het zijn geen voorspellingen."
+msgid "Wider bands mean more spread among the recorded values at that time. They are not a forecast."
+msgstr "Bredere banden betekenen meer spreiding tussen de geregistreerde waarden op dat tijdstip. Het zijn geen voorspellingen."
 
 #: src/lib/help/chart-lessons.svelte.ts
 msgid "Missing data"
@@ -43386,16 +43386,16 @@ msgid "The chart compares uploaded predictions against later glucose measurement
 msgstr "De grafiek vergelijkt aangeleverde voorspellingen met latere glucosemetingen, gegroepeerd naar voorspelhorizon."
 
 #: src/lib/help/chart-lessons.svelte.ts
-msgid "Bias is signed; MAE is an unsigned error magnitude. Check n: it counts matched predictions."
-msgstr "Bias heeft een teken; MAE is de foutgrootte zonder teken. Controleer n: dit telt gekoppelde voorspellingen."
+msgid "Bias is signed. MAE is an unsigned error magnitude. Check n: it counts matched predictions."
+msgstr "Bias heeft een teken. MAE is de foutgrootte zonder teken. Controleer n: dit telt gekoppelde voorspellingen."
 
 #: src/lib/help/chart-lessons.svelte.ts
 msgid "Each step keeps the scheduled rate until the next entry. This is a schedule, not a delivery record."
 msgstr "Elke trede houdt de geplande snelheid aan tot de volgende invoer. Dit is een schema, geen afgifteregistratie."
 
 #: src/lib/help/chart-lessons.svelte.ts
-msgid "Read the time and U/h together; compare delivery records separately when checking what actually happened."
-msgstr "Lees de tijd en E/uur samen; bekijk afgifteregistraties apart om te controleren wat er werkelijk gebeurde."
+msgid "Read the time and U/h together. Compare delivery records separately when checking what actually happened."
+msgstr "Lees de tijd en E/uur samen. Bekijk afgifteregistraties apart om te controleren wat er werkelijk gebeurde."
 
 #: src/lib/help/chart-lessons.svelte.ts
 msgid "This chart plots device B values horizontally against device A values vertically, with each point representing one paired reading."
@@ -43430,8 +43430,8 @@ msgid "Open help with the book beside Nocturne. Close it with the close button o
 msgstr "Open de hulp met het boekje naast Nocturne. Gebruik de sluitknop of Escape om terug te keren naar je oorspronkelijke pagina en invoer. Onder Weergave stel je eenheden, thema, taal en de weergave van de hulp in."
 
 #: src/lib/help/workflows.svelte.ts
-msgid "After connecting a source, use Dashboard to check freshness and Reports to review the selected period. Therapy shows imported schedules; Sharing & Privacy manages access."
-msgstr "Controleer na het koppelen de actualiteit van de gegevens op het Dashboard. Bekijk de geselecteerde periode onder Rapporten. Therapie toont geïmporteerde schema’s; bij Delen en privacy beheer je de toegang."
+msgid "After connecting a source, use Dashboard to check freshness and Reports to review the selected period. Therapy shows imported schedules. Sharing & Privacy manages access."
+msgstr "Controleer na het koppelen de actualiteit van de gegevens op het Dashboard. Bekijk de geselecteerde periode onder Rapporten. Therapie toont geïmporteerde schema’s. Bij Delen en privacy beheer je de toegang."
 
 #: src/lib/help/workflows.svelte.ts
 msgid "Available settings depend on your permissions. A connected status or completed setup checklist does not prove that an import has finished. Check actual records and their timestamps."
@@ -43549,8 +43549,8 @@ msgid "P25–P75: {0}–{1} {2}"
 msgstr ""
 
 #: src/lib/components/help/HelpChartExample.svelte
-msgid "Point to a time slot, or focus the chart and use the arrow keys. Click or press Enter to keep a selection."
-msgstr "Wijs een tijdvak aan of geef de grafiek focus en gebruik de pijltjestoetsen. Klik of druk op Enter om een selectie vast te houden."
+msgid "Point to a time slot, or focus the chart and use the arrow keys. Select a slot or press Enter to keep it selected."
+msgstr "Wijs een tijdvak aan of geef de grafiek focus en gebruik de pijltjestoetsen. Selecteer een tijdvak of druk op Enter om het geselecteerd te houden."
 
 #: src/lib/components/help/HelpChartExample.svelte
 msgid "Point to a horizon or use the arrow keys to inspect bias, MAE and the number of matched predictions."

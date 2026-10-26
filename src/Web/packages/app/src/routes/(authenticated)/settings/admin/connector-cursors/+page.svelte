@@ -114,7 +114,9 @@
     try {
       // One-shot fetch via .run() — re-selecting a tenant re-executes, so health is never stale.
       connectors = await getTenantConnectors(value).run();
-      selectedConnectors = (connectors?.connectors ?? []).map((c) => c.connectorName);
+      selectedConnectors = (connectors?.connectors ?? []).flatMap((c) =>
+        c.connectorName ? [c.connectorName] : []
+      );
     } catch (err) {
       console.error("Failed to load connectors:", err);
       connectorsError = remoteErrorMessage(
@@ -402,9 +404,9 @@
                 <div class="flex items-center gap-2 font-medium">
                   <Checkbox
                     id="reset-{c.connectorName}"
-                    checked={selectedConnectors.includes(c.connectorName)}
+                    checked={selectedConnectors.includes(c.connectorName ?? "")}
                     onCheckedChange={(checked) =>
-                      toggleConnector(c.connectorName, checked === true)}
+                      toggleConnector(c.connectorName ?? "", checked === true)}
                     disabled={resetting || jobInFlight}
                   />
                   <Label for="reset-{c.connectorName}" class="cursor-pointer">

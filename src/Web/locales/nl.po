@@ -3089,7 +3089,7 @@ msgstr ""
 #: src/lib/components/connectors/google-health-labels.svelte.ts
 #: src/routes/(authenticated)/settings/connectors/google-health/google-health-copy.svelte.ts
 msgid "Weight"
-msgstr ""
+msgstr "Gewicht"
 
 #: ../cms/src/lib/components/edra/shadcn/components/toolbar/FontSize.svelte
 #: src/lib/components/clock-builder/TextStyleControls.svelte
@@ -4910,7 +4910,7 @@ msgstr ""
 #: src/routes/(authenticated)/reports/sleep/+page.svelte
 #: src/routes/(authenticated)/settings/connectors/google-health/google-health-copy.svelte.ts
 msgid "Sleep"
-msgstr ""
+msgstr "Slaap"
 
 #: src/lib/components/alerts/alert-labels.svelte.ts
 #: src/lib/components/alerts/alert-labels.svelte.ts
@@ -8762,7 +8762,7 @@ msgstr ""
 #: src/routes/(authenticated)/compatibility/test/+page.svelte
 #: src/routes/(legal)/terms/+page.svelte
 msgid "Nightscout"
-msgstr ""
+msgstr "Nightscout"
 
 #. 0: formatElapsedMs(analysis.nightscoutResponseTimeMs || 0)
 #: src/routes/(authenticated)/compatibility/+page.svelte
@@ -9760,22 +9760,22 @@ msgstr ""
 #: src/lib/help/connectors.svelte.ts
 #: src/routes/(legal)/terms/+page.svelte
 msgid "Dexcom"
-msgstr ""
+msgstr "Dexcom"
 
 #: ../portal/src/lib/components/AuroraPool.svelte
 #: src/routes/(legal)/terms/+page.svelte
 msgid "FreeStyle Libre"
-msgstr ""
+msgstr "FreeStyle Libre"
 
 #: src/lib/help/connectors.svelte.ts
 #: src/routes/(legal)/terms/+page.svelte
 msgid "Glooko"
-msgstr ""
+msgstr "Glooko"
 
 #: src/lib/help/connectors.svelte.ts
 #: src/routes/(legal)/terms/+page.svelte
 msgid "Tidepool"
-msgstr ""
+msgstr "Tidepool"
 
 #: src/routes/(legal)/terms/+page.svelte
 msgid "And others"
@@ -12343,7 +12343,7 @@ msgstr ""
 #: src/routes/(authenticated)/reports/steps/+page.svelte
 #: src/routes/(authenticated)/settings/connectors/google-health/google-health-copy.svelte.ts
 msgid "Steps"
-msgstr ""
+msgstr "Stappen"
 
 #~ msgid "Error Loading Week Comparison"
 #~ msgstr ""
@@ -13535,7 +13535,7 @@ msgstr ""
 #: src/lib/components/help/HelpPanel.svelte
 #: src/routes/(authenticated)/settings/support/+page.svelte
 msgid "Documentation"
-msgstr ""
+msgstr "Documentatie"
 
 #: src/routes/(authenticated)/settings/support/+page.svelte
 msgid "Guides, tutorials, and API reference"
@@ -14746,7 +14746,7 @@ msgstr ""
 
 #: src/routes/(authenticated)/settings/connectors/[connector]/+page.svelte
 msgid "Install the integration"
-msgstr ""
+msgstr "Installeer de integratie"
 
 #: src/routes/(authenticated)/settings/connectors/[connector]/+page.svelte
 msgid "Search for \"Nocturne\" in HACS and install it. Once installed, restart Home Assistant to load the integration."
@@ -18807,7 +18807,7 @@ msgstr ""
 
 #: src/lib/help/connectors.svelte.ts
 msgid "MyFitnessPal"
-msgstr ""
+msgstr "MyFitnessPal"
 
 #~ msgid "Sugarmate"
 #~ msgstr ""
@@ -18823,7 +18823,7 @@ msgstr ""
 
 #: src/lib/help/connectors.svelte.ts
 msgid "Home Assistant"
-msgstr ""
+msgstr "Home Assistant"
 
 #~ msgid "SourceGraphic"
 #~ msgstr ""
@@ -23228,7 +23228,7 @@ msgstr ""
 #: src/routes/(authenticated)/reports/heart-rate/+page.svelte
 #: src/routes/(authenticated)/settings/connectors/google-health/google-health-copy.svelte.ts
 msgid "Heart rate"
-msgstr ""
+msgstr "Hartslag"
 
 #. 0: avgBasal?.toFixed(1) ?? "--"; 1: basalPct.toFixed(0)
 #: src/routes/(authenticated)/reports/idp/+page.svelte
@@ -38139,33 +38139,33 @@ msgstr ""
 
 #: src/lib/components/help/HelpBrowser.svelte
 msgid "Search all documentation"
-msgstr ""
+msgstr "Zoek in alle documentatie"
 
 #: src/lib/components/help/HelpBrowser.svelte
 msgid "Search all documentation…"
-msgstr ""
+msgstr "Zoek in alle documentatie…"
 
 #: src/lib/components/help/HelpBrowser.svelte
 msgid "No documentation found. Try a page name, a setting, or a connector."
-msgstr ""
+msgstr "Geen documentatie gevonden. Probeer een paginanaam, een instelling of een connector."
 
 #: src/lib/components/help/HelpBrowser.svelte
 msgid "Search results"
-msgstr ""
+msgstr "Zoekresultaten"
 
 #. 0: results.length
 #: src/lib/components/help/HelpBrowser.svelte
 msgid "{0} results"
-msgstr ""
+msgstr "{0} resultaten"
 
 #: src/lib/components/help/HelpBrowser.svelte
 #: src/lib/help/documentation.svelte.ts
 msgid "Page guide"
-msgstr ""
+msgstr "Paginagids"
 
 #: src/lib/components/help/HelpBrowser.svelte
 msgid "Continue exploring"
-msgstr ""
+msgstr "Verder lezen"
 
 #: src/lib/components/help/HelpHarness.test.svelte
 msgid "Your activity report stays open while you explore documentation."
@@ -38218,11 +38218,11 @@ msgstr ""
 
 #: src/lib/components/help/HelpBrowser.svelte
 msgid "Open connector settings"
-msgstr ""
+msgstr "Open connectorinstellingen"
 
 #: src/lib/components/help/HelpBrowser.svelte
 msgid "Page documentation"
-msgstr ""
+msgstr "Paginadocumentatie"
 
 #~ msgid "Underlying report"
 #~ msgstr ""
@@ -38347,19 +38347,19 @@ msgstr ""
 
 #: src/lib/help/connectors.svelte.ts
 msgid "The phone/watch must first sync to Google. Local Health Connect records do not guarantee availability in Google's cloud API. Inventory availability, Google sign-in, and import completion are separate states. Unsupported types can be visible but cannot be selected for import."
-msgstr ""
+msgstr "De telefoon of het horloge moet eerst met Google synchroniseren. Records die alleen lokaal in Health Connect staan, zijn niet altijd beschikbaar in de cloud-API van Google. Beschikbaarheid in de inventaris, aanmelden bij Google en een afgeronde import zijn aparte toestanden. Niet-ondersteunde typen kunnen zichtbaar zijn, maar je kunt ze niet selecteren voor import."
 
 #: src/lib/help/connectors.svelte.ts
 msgid "Create the Web application client"
-msgstr ""
+msgstr "Maak de webapplicatie-client aan"
 
 #: src/lib/help/connectors.svelte.ts
 msgid "Review the inventory and start an import"
-msgstr ""
+msgstr "Bekijk de inventaris en start een import"
 
 #: src/lib/help/connectors.svelte.ts
 msgid "Ongoing sync and historical progress"
-msgstr ""
+msgstr "Doorlopende synchronisatie en historische voortgang"
 
 #: src/lib/help/connectors.svelte.ts
 msgid "Automatic sync uses the default interval shown below unless your server changes it. Managed imports resume recent data from a saved watermark with an overlap, then work backwards through older calendar months towards Import data from. Large or failing periods can be split into smaller windows. Progress describes stages and pages, not an exact remaining time. A restart resumes the saved cursor. Completed older months are not continually rescanned for data that Google uploads late."
@@ -38367,38 +38367,38 @@ msgstr ""
 
 #: src/lib/help/connectors.svelte.ts
 msgid "Data appeared in Google after an older month was completed"
-msgstr ""
+msgstr "Gegevens verschenen in Google nadat een oudere maand al klaar was"
 
 #: src/lib/help/connectors.svelte.ts
 msgid "First confirm that Google now contains the records. Refresh inventory checks availability but does not refill a completed month. Ask a platform administrator to use Import recovery → Open connector reset, select the correct tenant and earliest date to re-read, and monitor the job. The normal import path updates records with duplicate protection. Do not delete all data to solve an empty date range."
-msgstr ""
+msgstr "Controleer eerst of Google de records nu echt heeft. Ververs de inventaris controleert alleen de beschikbaarheid en vult een afgeronde maand niet opnieuw. Vraag een platformbeheerder om Herstel importeren → Open connectorreset te gebruiken, de juiste tenant en de vroegste datum om opnieuw te lezen te kiezen, en de taak te volgen. De normale import werkt records bij met bescherming tegen dubbele records. Verwijder niet alle gegevens om een lege periode op te lossen."
 
 #: src/lib/help/connectors.svelte.ts
 msgid "Common setup errors"
-msgstr ""
+msgstr "Veelvoorkomende fouten bij het instellen"
 
 #: src/lib/help/connectors.svelte.ts
 msgid "Pause, disconnect, and deletion"
-msgstr ""
+msgstr "Pauzeren, ontkoppelen en verwijderen"
 
 #~ msgid "Clear selected types and Save import settings to pause imports without deleting history. Disconnect removes the connection but keeps imported records. Delete imported Google data is a separate confirmed action available after disconnecting; it affects this tenant's imported records, not Google's originals. Credentials are stored in the server's encrypted connector configuration. Never paste the secret or token into support conversations."
 #~ msgstr ""
 
 #: src/lib/help/connectors.svelte.ts
 msgid "Google: API setup, access availability, and account linking"
-msgstr ""
+msgstr "Google: API instellen, toegang en accountkoppeling"
 
 #: src/lib/help/connectors.svelte.ts
 msgid "Google: connect Health Connect to Google Health"
-msgstr ""
+msgstr "Google: Health Connect koppelen aan Google Health"
 
 #: src/lib/help/connectors.svelte.ts
 msgid "Google: Web application OAuth and exact redirects"
-msgstr ""
+msgstr "Google: OAuth voor webapplicaties en exacte redirects"
 
 #: src/lib/help/connectors.svelte.ts
 msgid "Google: API data types and availability"
-msgstr ""
+msgstr "Google: gegevenstypen en beschikbaarheid in de API"
 
 #. 0: title
 #: src/lib/help/connectors.svelte.ts
@@ -38478,7 +38478,7 @@ msgstr ""
 
 #: src/lib/help/connectors.svelte.ts
 msgid "Gluroo"
-msgstr ""
+msgstr "Gluroo"
 
 #: src/lib/help/connectors.svelte.ts
 msgid "Glucose, treatment, and profile records made available through Gluroo Global Connect."
@@ -38490,7 +38490,7 @@ msgstr ""
 
 #: src/lib/help/connectors.svelte.ts
 msgid "Eversense"
-msgstr ""
+msgstr "Eversense"
 
 #: src/lib/help/connectors.svelte.ts
 msgid "Supported readings from the configured Eversense account."
@@ -38525,7 +38525,7 @@ msgstr ""
 
 #: src/lib/help/connectors.svelte.ts
 msgid "Nocturne Remote"
-msgstr ""
+msgstr "Nocturne Remote"
 
 #: src/lib/help/connectors.svelte.ts
 msgid "Records available from the remote Nocturne instance you configure."
@@ -39603,16 +39603,16 @@ msgstr ""
 
 #: src/lib/components/help/HelpBrowser.svelte
 msgid "Official instructions and sources"
-msgstr ""
+msgstr "Officiële instructies en bronnen"
 
 #: src/lib/components/help/HelpBrowser.svelte
 msgid "Provider screens and access rules can change. Check the original instructions alongside this Nocturne guide."
-msgstr ""
+msgstr "Schermen en toegangsregels van aanbieders kunnen veranderen. Bekijk de oorspronkelijke instructies naast deze Nocturne-handleiding."
 
 #: src/lib/components/help/HelpBrowser.svelte
 #: src/lib/components/help/HelpBrowser.svelte
 msgid "Step-by-step setup"
-msgstr ""
+msgstr "Stap voor stap instellen"
 
 #: src/lib/components/help/HelpReference.svelte
 msgid "Steps report"
@@ -39719,7 +39719,7 @@ msgstr ""
 
 #: src/lib/components/help/HelpBrowser.svelte
 msgid "Open settings in a new tab"
-msgstr ""
+msgstr "Open instellingen in een nieuw tabblad"
 
 #~ msgid "Unpaired readings are excluded. A wider tolerance allows paired readings farther apart in time; your chosen reference is not guaranteed ground truth."
 #~ msgstr ""
@@ -39733,60 +39733,60 @@ msgstr ""
 
 #: src/lib/help/connectors.svelte.ts
 msgid "Install Google Health and check your data"
-msgstr ""
+msgstr "Installeer Google Health en controleer je gegevens"
 
 #: src/lib/help/connectors.svelte.ts
 msgid "Install Google Health (formerly Fitbit) using the Play Store link below. Open it, sign in with the Google account you want to share, and complete its profile setup. Before continuing, make sure the steps, heart rate, sleep, or weight you want to share are visible in that app. Signing into Google alone is not enough."
-msgstr ""
+msgstr "Installeer Google Health (voorheen Fitbit) via de Play Store-link hieronder. Open de app, meld je aan met het Google-account dat je wilt delen en rond het profiel af. Controleer voordat je verdergaat of de stappen, hartslag, slaap of het gewicht die je wilt delen in die app zichtbaar zijn. Alleen aanmelden bij Google is niet genoeg."
 
 #: src/lib/help/connectors.svelte.ts
 msgid "Install Google Health from the Play Store"
-msgstr ""
+msgstr "Installeer Google Health uit de Play Store"
 
 #: src/lib/help/connectors.svelte.ts
 msgid "Bring data from other apps into Google Health (optional)"
-msgstr ""
+msgstr "Gegevens uit andere apps naar Google Health halen (optioneel)"
 
 #~ msgid "On Android use Health Connect, Google's on-device data-sharing service. Let your source app write the desired records and let Google Health read them. In Google Health open Connections → Partner apps → Sync your favorite health apps → Set up. Review the data, history, and background permissions, then check that records appear in Google Health. Garmin needs its watch to sync to Garmin Connect first; Google Health does not connect directly to the watch. Google also documents Samsung Galaxy, Xiaomi/Mi Fitness, Oura, Whoop, Strava, and MyFitnessPal connections. On iPhone the route is generally Apple Health. Available types differ by app: a direct Strava connection exports Google Health activities to Strava; importing Strava activities uses Health Connect or Apple Health instead. Google Health supports more types than this Nocturne connector, so check the importable-type table below."
 #~ msgstr ""
 
 #: src/lib/help/connectors.svelte.ts
 msgid "Install or open Health Connect"
-msgstr ""
+msgstr "Installeer of open Health Connect"
 
 #: src/lib/help/connectors.svelte.ts
 msgid "Google: set up Health Connect permissions and syncing"
-msgstr ""
+msgstr "Google: Health Connect-machtigingen en synchronisatie instellen"
 
 #: src/lib/help/connectors.svelte.ts
 msgid "Google: device and app connections, including Garmin"
-msgstr ""
+msgstr "Google: koppelingen met apparaten en apps, ook Garmin"
 
 #: src/lib/help/connectors.svelte.ts
 msgid "Open Google's setup wizard"
-msgstr ""
+msgstr "Open de installatiewizard van Google"
 
 #~ msgid "Open the Google Setup documentation linked below. Click its blue button labelled Enable the API and get an OAuth 2.0 Client ID. Use a Google account that can manage your Cloud project. If Google restricts access for your project, resolve that eligibility before continuing. Leave Nocturne open in another tab."
 #~ msgstr ""
 
 #: src/lib/help/connectors.svelte.ts
 msgid "Open the Google Setup documentation"
-msgstr ""
+msgstr "Open de Google Setup-documentatie"
 
 #: src/lib/help/connectors.svelte.ts
 msgid "Name your project and enable the API"
-msgstr ""
+msgstr "Geef je project een naam en zet de API aan"
 
 #~ msgid "Choose a new project and enter a project name, or select an existing project you manage. The name is a reminder for you later: any recognisable name is fine. Click Next. Confirm that you want to enable the Google Health API and continue. This enables access to Google's service; it does not create or import any health records."
 #~ msgstr ""
 
 #: src/lib/help/connectors.svelte.ts
 msgid "Choose a product name"
-msgstr ""
+msgstr "Kies een productnaam"
 
 #: src/lib/help/connectors.svelte.ts
 msgid "Enter the product/application name requested by the wizard. You are free to choose it: it may match the project name or be completely different. It is the name shown on Google's consent screen when you connect from Nocturne. Complete any required contact details. Neither name needs to match your Nocturne hostname."
-msgstr ""
+msgstr "Vul de product- of applicatienaam in waar de wizard om vraagt. Je kiest die zelf: hij mag gelijk zijn aan de projectnaam of heel anders. Het is de naam op het toestemmingsscherm van Google als je vanuit Nocturne verbindt. Vul de verplichte contactgegevens in. Geen van beide namen hoeft overeen te komen met de hostnaam van je Nocturne."
 
 #~ msgid "For Where are you calling from? select Web Server. In the manual Clients screen the equivalent type is Web application. Copy the complete Callback URL shown by this Nocturne instance under Settings → Connectors & Apps → Google Health into the wizard's redirect field (Authorized redirect URIs). Use your own instance's URL, including its scheme, hostname, port, and callback path exactly. Replace any sample redirect from Google's guide. Click Create. If the wizard's layout changes, the essential choices remain a web client and that exact redirect."
 #~ msgstr ""
@@ -39800,15 +39800,15 @@ msgstr ""
 
 #: src/lib/help/connectors.svelte.ts
 msgid "Add the Google account as a test user"
-msgstr ""
+msgstr "Voeg het Google-account toe als testgebruiker"
 
 #: src/lib/help/connectors.svelte.ts
 msgid "Return to the Google Setup documentation, find Add test users, and open its Audience page link. Select the project you just configured. For a personal test use External with publishing status Testing. Under Test users choose Add users, enter the exact email address used in the Google Health app on your phone, and Save. Add each account that will share data. The account managing the Cloud project can be different from the account sharing health data."
-msgstr ""
+msgstr "Ga terug naar de Google Setup-documentatie, zoek Add test users en open de link naar de Audience-pagina. Kies het project dat je net hebt ingesteld. Gebruik voor persoonlijk gebruik External met publicatiestatus Testing. Kies onder Test users voor Add users, vul precies het e-mailadres in dat je in de Google Health-app op je telefoon gebruikt, en kies Save. Voeg elk account toe dat gegevens gaat delen. Het account dat het Cloud-project beheert, mag een ander account zijn dan het account dat gezondheidsgegevens deelt."
 
 #: src/lib/help/connectors.svelte.ts
 msgid "Check the read permissions in Data Access"
-msgstr ""
+msgstr "Controleer de leesrechten in Data Access"
 
 #~ msgid "In Google's Data Access page choose Add or remove scopes, select the Google Health read scopes shown in Nocturne's reference table below, then Update and Save. Nocturne adds basic sign-in identification itself. These scopes govern which records it can read; they do not allow Nocturne to write to your Google Health account."
 #~ msgstr ""
@@ -39826,7 +39826,7 @@ msgstr ""
 
 #: src/lib/help/connectors.svelte.ts
 msgid "Confirm the result in your reports"
-msgstr ""
+msgstr "Controleer het resultaat in je rapporten"
 
 #~ msgid "Watch sync status and Historical import progress. Open Steps, Heart Rate, or Sleep and choose dates containing source records; use Weight history for weight. If empty, check the source account's visible records, granted permissions, import selection, dates, and last error. Google may still be syncing older phone records; wait for that to finish before retrying. Completed historical months that receive records later need the recovery procedure below."
 #~ msgstr ""
@@ -41260,11 +41260,11 @@ msgstr ""
 
 #: src/lib/help/connectors.svelte.ts
 msgid "Check the source"
-msgstr ""
+msgstr "Controleer de bron"
 
 #: src/lib/help/connectors.svelte.ts
 msgid "Complete this connector's form"
-msgstr ""
+msgstr "Vul het formulier van deze connector in"
 
 #: src/lib/help/connectors.svelte.ts
 msgid "Use its required fields, account/region options, and supported data-type list. Save and inspect the returned connection status."
@@ -41272,7 +41272,7 @@ msgstr ""
 
 #: src/lib/help/connectors.svelte.ts
 msgid "Verify the imported records"
-msgstr ""
+msgstr "Controleer de geïmporteerde records"
 
 #~ msgid "Stored glucose readings feed the overview's range summary and typical-day preview."
 #~ msgstr ""
@@ -41367,15 +41367,15 @@ msgstr ""
 
 #: src/lib/components/help/HelpBrowser.svelte
 msgid "Settings for this page"
-msgstr ""
+msgstr "Instellingen voor deze pagina"
 
 #: src/lib/components/help/HelpBrowser.svelte
 msgid "Change settings"
-msgstr ""
+msgstr "Instellingen wijzigen"
 
 #: src/lib/components/help/HelpBrowser.svelte
 msgid "Open the relevant controls in a new tab. Your original page stays in place."
-msgstr ""
+msgstr "Open de bijbehorende instellingen in een nieuw tabblad. Je oorspronkelijke pagina blijft staan."
 
 #: src/lib/components/help/HelpReadingAid.svelte
 msgid "Page reading aid"
@@ -42063,7 +42063,7 @@ msgstr ""
 
 #: src/lib/components/help/HelpBrowser.svelte
 msgid "Loading dashboard examples..."
-msgstr ""
+msgstr "Dashboardvoorbeelden laden..."
 
 #: src/lib/help/reading-guides.svelte.ts
 msgid "Check the available records"
@@ -42550,11 +42550,11 @@ msgstr ""
 
 #: src/lib/help/connectors.svelte.ts
 msgid "Your device or source app sends data to Google Health. Nocturne reads the selected account through Google's API and stores supported records in this tenant's existing histories. A Google Cloud project provides permission to use the API. It does not generate health data."
-msgstr ""
+msgstr "Je apparaat of bron-app stuurt gegevens naar Google Health. Nocturne leest het gekozen account via de API van Google en bewaart ondersteunde records in de bestaande historie van deze tenant. Een Google Cloud-project geeft toestemming om de API te gebruiken. Het maakt zelf geen gezondheidsgegevens aan."
 
 #: src/lib/help/connectors.svelte.ts
 msgid "Imported steps, heart rate, and sleep appear in their reports. Weight appears in Patient Record → Weight history. The supported-destinations table below follows the connector's actual capability catalog."
-msgstr ""
+msgstr "Geïmporteerde stappen, hartslag en slaap verschijnen in hun rapporten. Gewicht staat in Patient Record → Weight history. De tabel met bestemmingen hieronder volgt de echte mogelijkheden van de connector."
 
 #: src/lib/help/connectors.svelte.ts
 msgid "On Android use Health Connect, Google's on-device data-sharing service. Let your source app write the desired records and let Google Health read them. In Google Health open Connections → Partner apps → Sync your favorite health apps → Set up. Review the data, history, and background permissions, then check that records appear in Google Health. Garmin needs its watch to sync to Garmin Connect first. Google Health does not connect directly to the watch. Google also documents Samsung Galaxy, Xiaomi/Mi Fitness, Oura, Whoop, Strava, and MyFitnessPal connections. On iPhone the route is generally Apple Health. Available types differ by app: a direct Strava connection exports Google Health activities to Strava. Importing Strava activities uses Health Connect or Apple Health instead. Google Health supports more types than this Nocturne connector, so check the importable-type table below."
@@ -42562,11 +42562,11 @@ msgstr ""
 
 #: src/lib/help/connectors.svelte.ts
 msgid "Open the Google Setup documentation linked below. Select its blue button labeled Enable the API and get an OAuth 2.0 Client ID. Use a Google account that can manage your Cloud project. If Google restricts access for your project, resolve that eligibility before continuing. Leave Nocturne open in another tab."
-msgstr ""
+msgstr "Open de Google Setup-documentatie hieronder. Kies de blauwe knop Enable the API and get an OAuth 2.0 Client ID. Gebruik een Google-account dat je Cloud-project mag beheren. Als Google de toegang voor je project beperkt, los dat eerst op. Laat Nocturne open in een ander tabblad."
 
 #: src/lib/help/connectors.svelte.ts
 msgid "Choose a new project and enter a project name, or select an existing project you manage. The name is a reminder for you later: any recognisable name is fine. Select Next. Confirm that you want to enable the Google Health API and continue. This enables access to Google's service. It does not create or import any health records."
-msgstr ""
+msgstr "Kies een nieuw project en vul een projectnaam in, of kies een bestaand project dat je beheert. De naam is alleen een geheugensteun: elke herkenbare naam is goed. Kies Next. Bevestig dat je de Google Health API wilt aanzetten en ga verder. Dit geeft toegang tot de dienst van Google. Het maakt of importeert geen gezondheidsgegevens."
 
 #: src/lib/help/connectors.svelte.ts
 msgid "For Where are you calling from? select Web Server. In the manual Clients screen the equivalent type is Web application. Copy the complete Callback URL shown by this Nocturne instance under Settings → Connectors & Apps → Google Health into the wizard's redirect field (Authorized redirect URIs). Use your own instance's URL, including its scheme, hostname, port, and callback path exactly. Replace any sample redirect from Google's guide. Select Create. If the wizard's layout changes, the essential choices remain a web client and that exact redirect."
@@ -42578,7 +42578,7 @@ msgstr ""
 
 #: src/lib/help/connectors.svelte.ts
 msgid "In Google's Data Access page choose Add or remove scopes, select the Google Health read scopes shown in Nocturne's reference table below, then Update and Save. Nocturne adds basic sign-in identification itself. These scopes govern which records it can read. They do not allow Nocturne to write to your Google Health account."
-msgstr ""
+msgstr "Kies op de Data Access-pagina van Google voor Add or remove scopes, selecteer de leesrechten voor Google Health uit de referentietabel van Nocturne hieronder en kies Update en Save. Nocturne voegt de basisgegevens voor aanmelden zelf toe. Deze rechten bepalen welke records Nocturne kan lezen. Nocturne kan er niets mee naar je Google Health-account schrijven."
 
 #: src/lib/help/connectors.svelte.ts
 msgid "In the available-data table, Found means records exist at the source, not that Nocturne imported them. Select supported types and choose Save selection and import. Save import settings only saves. Refresh inventory only checks availability. Not scanned needs a refreshed inventory. No permission needs the relevant consent. No destination yet is unsupported. Leaving the page does not cancel the server import."
@@ -42586,19 +42586,19 @@ msgstr ""
 
 #: src/lib/help/connectors.svelte.ts
 msgid "Watch sync status and Historical import progress. Open Steps, Heart Rate, or Sleep and choose dates containing source records. Use Weight history for weight. If empty, check the source account's visible records, granted permissions, import selection, dates, and last error. Google may still be syncing older phone records. Wait for that to finish before retrying. Completed historical months that receive records later need the recovery procedure below."
-msgstr ""
+msgstr "Volg de synchronisatiestatus en Voortgang historische import. Open Stappen, Hartslag of Slaap en kies datums waarop de bron records heeft. Gebruik Weight history voor gewicht. Is het leeg, controleer dan de zichtbare records in het bronaccount, de verleende rechten, de importselectie, de datums en de laatste fout. Google kan nog bezig zijn met oudere telefoongegevens. Wacht tot dat klaar is voordat je het opnieuw probeert. Afgeronde historische maanden die later nog records krijgen, hebben de herstelprocedure hieronder nodig."
 
 #: src/lib/help/connectors.svelte.ts
 msgid "Personalize branding (optional)"
-msgstr ""
+msgstr "Uiterlijk aanpassen (optioneel)"
 
 #: src/lib/help/connectors.svelte.ts
 msgid "After the connection works, open Branding in Google Auth Platform to adjust the app's display name, logo, and available contact or policy details. This changes how Google presents the app. It does not change your health data or Nocturne's import settings. Follow Google's validation requirements for any fields you add."
-msgstr ""
+msgstr "Open na een werkende koppeling Branding in Google Auth Platform om de weergavenaam, het logo en de contact- of beleidsgegevens van de app aan te passen. Dit verandert alleen hoe Google de app toont. Je gezondheidsgegevens en de importinstellingen van Nocturne blijven hetzelfde. Volg de validatie-eisen van Google voor velden die je toevoegt."
 
 #: src/lib/help/connectors.svelte.ts
 msgid "redirect_uri_mismatch: copy the complete Nocturne Callback URL into the same OAuth client's redirect list. Access blocked or test-user errors: check Audience, exact email, enabled API, and current Google access eligibility. ACCOUNT_NOT_LINKED: complete the Google Health app profile with this account. Missing permission: sign in again and grant the required read access. An expired test grant: reconnect. Production verification and quota rules belong to Google and can change."
-msgstr ""
+msgstr "redirect_uri_mismatch: kopieer de volledige Callback URL van Nocturne naar de redirectlijst van dezelfde OAuth-client. Toegang geblokkeerd of fouten met testgebruikers: controleer Audience, het exacte e-mailadres, of de API aan staat en of Google je project toegang geeft. ACCOUNT_NOT_LINKED: rond het profiel in de Google Health-app af met dit account. Ontbrekende toestemming: meld opnieuw aan en geef de benodigde leesrechten. Een verlopen testtoestemming: verbind opnieuw. Verificatie voor productie en quotaregels zijn van Google en kunnen veranderen."
 
 #: src/lib/help/connectors.svelte.ts
 msgid "Clear selected types and Save import settings to pause imports without deleting history. Disconnect removes the connection but keeps imported records. Delete imported Google data is a separate confirmed action available after disconnecting. It affects this tenant's imported records, not Google's originals. Credentials are stored in the server's encrypted connector configuration. Never paste the secret or token into support conversations."

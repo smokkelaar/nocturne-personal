@@ -7,7 +7,8 @@ import { settingsArticles } from "./settings.svelte";
 import { connectorArticles } from "./connectors.svelte";
 import { readingGuides } from "./reading-guides.svelte";
 import { glucoseReferenceArticle } from "./glucose-reference.svelte";
-import { GLUCOSE_REFERENCE_PATH } from "./reference-path";
+import { dataRoutesArticle } from "./data-routes.svelte";
+import { DATA_ROUTES_PATH, GLUCOSE_REFERENCE_PATH } from "./reference-path";
 
 // Per-call factories let translated titles follow the current locale.
 export function articles(): HelpArticle[] {
@@ -18,12 +19,25 @@ export function articles(): HelpArticle[] {
     ...settingsArticles(),
     ...connectorArticles(),
     glucoseReferenceArticle(),
+    dataRoutesArticle(),
   ];
   return entries.map((article) => {
     const reading = readings[article.href];
     const related = [...article.related];
     if (["/", "/settings/profile", "/alerts"].includes(article.href))
       related.push(GLUCOSE_REFERENCE_PATH);
+    if (
+      article.href === "/settings/connectors" ||
+      article.href.startsWith("/settings/connectors/") ||
+      [
+        "/setup",
+        "/reports/steps",
+        "/reports/heart-rate",
+        "/reports/sleep",
+        "/settings/weight",
+      ].includes(article.href)
+    )
+      related.push(DATA_ROUTES_PATH);
     const sections =
       article.href === "/"
         ? [
@@ -40,7 +54,8 @@ export function articles(): HelpArticle[] {
 
 function parentFor(href: string): string | undefined {
   // The report overview is not permission to visit every report.
-  if (href.startsWith("/reports/loop-analysis/")) return "/reports/loop-analysis";
+  if (href.startsWith("/reports/loop-analysis/"))
+    return "/reports/loop-analysis";
   if (href.startsWith("/reports/"))
     return href.startsWith("/reports/data-quality/")
       ? "/reports/data-quality"
@@ -150,7 +165,14 @@ export function searchDocumentation(query: string, links: NavLink[]) {
         article.introduction,
         ...(article.reading ?? []).flatMap((step) => [step.title, step.text]),
 
-        ...article.sections.flatMap((section) => [section.title, section.text]),
+        ...article.sections.flatMap((section) => [
+          section.title,
+          section.text,
+          ...(section.routes ?? []).flatMap((route) => [
+            route.title,
+            route.text,
+          ]),
+        ]),
         ...(article.steps ?? []).flatMap((step) => [step.title, step.text]),
       ]
         .join(" ")

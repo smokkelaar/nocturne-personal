@@ -107,6 +107,69 @@ describe("contextual documentation", () => {
     expect(searchDocumentation("   ", links)).toEqual([]);
     expect(searchDocumentation("unfindable", links)).toEqual([]);
   });
+  it("opens a distinct guide for each Loop Analysis page and rejected uploads", () => {
+    const visible = documentationLinks(buildAppNavigation(viewer));
+    for (const [path, title] of [
+      ["/reports/loop-analysis/daily-profile", "Loop analysis: Daily profile"],
+      [
+        "/reports/loop-analysis/meals-and-events",
+        "Loop analysis: Meals and events",
+      ],
+      [
+        "/reports/loop-analysis/prediction-accuracy",
+        "Loop analysis: Prediction accuracy",
+      ],
+      ["/reports/loop-analysis/loop-health", "Loop analysis: Loop health"],
+      [
+        "/reports/loop-analysis/settings-evidence",
+        "Loop analysis: Settings evidence",
+      ],
+      ["/reports/data-quality/rejected-uploads", "Rejected uploads"],
+    ]) {
+      expect(
+        visible.some((link) => link.href === path),
+        path
+      ).toBe(true);
+      const article = articleFor(`${path}/`, visible);
+      expect(article.title).toBe(title);
+      expect(article.reading).toHaveLength(3);
+    }
+  });
+  it("finds setup and diagnostic guides from dashboard help without navigating away", () => {
+    const dashboard: NavItem[] = [
+      { id: "dashboard", title: "Dashboard", href: "/", icon: null },
+    ];
+    const visible = documentationLinks(dashboard);
+    expect(articleFor("/", visible).related).toContain("/help/getting-started");
+    expect(
+      searchDocumentation("missing data", visible).map(
+        (article) => article.href
+      )
+    ).toContain("/help/troubleshooting");
+    expect(articleFor("/help/getting-started", visible).steps).toHaveLength(3);
+    expect(dashboard).toHaveLength(1);
+    expect(visible.some((link) => link.href.startsWith("/settings/"))).toBe(
+      false
+    );
+  });
+  it("keeps detailed Loop Analysis guides out of restricted report search", () => {
+    const visible = documentationLinks(
+      buildAppNavigation({
+        ...viewer,
+        isPlatformAdmin: false,
+        grantedScopes: ["glucose.read", "reports.read"],
+      })
+    );
+    expect(
+      visible.some((link) => link.href.startsWith("/reports/loop-analysis/"))
+    ).toBe(false);
+    expect(
+      searchDocumentation("prediction accuracy", visible).some(
+        (article) =>
+          article.href === "/reports/loop-analysis/prediction-accuracy"
+      )
+    ).toBe(false);
+  });
   it("offers connector guides only when navigation offers their parent, without mutating it", () => {
     expect(
       links.some((link) => link.href === "/settings/connectors/google-health")

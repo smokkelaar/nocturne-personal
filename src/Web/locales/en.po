@@ -15702,6 +15702,7 @@ msgid "FAQ"
 msgstr "FAQ"
 
 #: ../portal/src/lib/components/SiteFooter.svelte
+#: src/lib/help/workflows.svelte.ts
 msgid "Getting Started"
 msgstr "Getting Started"
 
@@ -22022,6 +22023,7 @@ msgstr "Agreement"
 #~ msgid "{0} against {1}, readings matched within {2} minutes."
 #~ msgstr "{0} against {1}, readings matched within {2} minutes."
 
+#: src/lib/help/chart-lessons.svelte.ts
 #: src/routes/(authenticated)/reports/data-quality/cgm-comparison/+page.svelte
 #: src/routes/(authenticated)/reports/data-quality/cgm-comparison/+page.svelte
 msgid "Paired readings"
@@ -26962,6 +26964,7 @@ msgstr "Total"
 
 #: src/lib/components/reports/InsulinDeliveryChart.svelte
 #: src/lib/components/reports/InsulinDeliveryChart.svelte
+#: src/lib/help/chart-lessons.svelte.ts
 #: src/routes/(authenticated)/reports/idp/+page.svelte
 msgid "Scheduled basal rate"
 msgstr "Scheduled basal rate"
@@ -27870,6 +27873,7 @@ msgstr "No COB in this range"
 msgid "Mostly calculated from carbs"
 msgstr "Mostly calculated from carbs"
 
+#: src/lib/components/help/HelpChartExample.svelte
 #: src/lib/components/reports/loop-analysis/DailyProfileBody.svelte
 msgid "U per day"
 msgstr "U per day"
@@ -39880,6 +39884,7 @@ msgstr "Read the timeline"
 #~ msgstr "Line points are glucose samples; recorded treatments provide timing context."
 
 #: src/lib/help/reading-guides.svelte.ts
+#: src/lib/help/workflows.svelte.ts
 msgid "Choose your display"
 msgstr "Choose your display"
 
@@ -41381,9 +41386,8 @@ msgstr "Open the relevant controls in a new tab. Your original page stays in pla
 msgid "Page reading aid"
 msgstr "Page reading aid"
 
-#: src/lib/components/help/HelpReadingAid.svelte
-msgid "Schematic reading example, without personal data"
-msgstr "Schematic reading example, without personal data"
+#~ msgid "Schematic reading example, without personal data"
+#~ msgstr "Schematic reading example, without personal data"
 
 #~ msgid "Reading diagram — illustrative, not your measurements. Colours follow your Nocturne theme."
 #~ msgstr "Reading diagram — illustrative, not your measurements. Colours follow your Nocturne theme."
@@ -43246,9 +43250,8 @@ msgstr "The last measurement is older than the shared freshness limit. Its tile 
 msgid "Auto is absent because this example has no algorithm bolus insulin. The total is 38 U."
 msgstr "Auto is absent because this example has no algorithm bolus insulin. The total is 38 U."
 
-#: src/lib/components/help/HelpReadingAid.svelte
-msgid "Reading diagram: illustrative, not your measurements. Colors follow your Nocturne theme."
-msgstr "Reading diagram: illustrative, not your measurements. Colors follow your Nocturne theme."
+#~ msgid "Reading diagram: illustrative, not your measurements. Colors follow your Nocturne theme."
+#~ msgstr "Reading diagram: illustrative, not your measurements. Colors follow your Nocturne theme."
 
 #. 0: bg(facts.maximumPlausibleGlucose); 1: unit
 #: src/lib/components/help/HelpReference.svelte
@@ -43313,3 +43316,250 @@ msgstr "Mirror {0} colors"
 #: src/lib/components/reports/year-overview/ColorPalettePicker.svelte
 msgid "<0/> Mirror"
 msgstr "<0/> Mirror"
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "Median and spread"
+msgstr "Median and spread"
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "The solid line is P50, the median. The inner band spans P25–P75. The outer band spans P10–P90."
+msgstr "The solid line is P50, the median. The inner band spans P25–P75. The outer band spans P10–P90."
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "Wider bands mean more spread among the recorded values at that time. They are not a forecast."
+msgstr "Wider bands mean more spread among the recorded values at that time. They are not a forecast."
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "Missing data"
+msgstr "Missing data"
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "Blank sections indicate missing aggregate data for that period, not a value of zero."
+msgstr "Blank sections indicate missing aggregate data for that period, not a value of zero."
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "Move across the blank section and compare it with the neighboring time slots."
+msgstr "Move across the blank section and compare it with the neighboring time slots."
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "Comparison period"
+msgstr "Comparison period"
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "Dashed lines represent the median and band edges of a second selected period, not forecasts."
+msgstr "Dashed lines represent the median and band edges of a second selected period, not forecasts."
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "Compare the same time slot in both periods, and check the dates and available records."
+msgstr "Compare the same time slot in both periods, and check the dates and available records."
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "Compare amounts"
+msgstr "Compare amounts"
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "Dashed outlines show the amount in the second period, over the same time intervals as the filled bars."
+msgstr "Dashed outlines show the amount in the second period, over the same time intervals as the filled bars."
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "Check both date ranges and their units before comparing bar heights."
+msgstr "Check both date ranges and their units before comparing bar heights."
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "Amounts and intervals"
+msgstr "Amounts and intervals"
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "Bars show values over time from the zero axis, with dashed outlines for comparisons."
+msgstr "Bars show values over time from the zero axis, with dashed outlines for comparisons."
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "Check the units to identify the quantity, as taller bars do not mean better outcomes."
+msgstr "Check the units to identify the quantity, as taller bars do not mean better outcomes."
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "Prediction error"
+msgstr "Prediction error"
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "The chart compares uploaded predictions against later glucose measurements, grouped by prediction horizon."
+msgstr "The chart compares uploaded predictions against later glucose measurements, grouped by prediction horizon."
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "Bias is signed. MAE is an unsigned error magnitude. Check n: it counts matched predictions."
+msgstr "Bias is signed. MAE is an unsigned error magnitude. Check n: it counts matched predictions."
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "Each step keeps the scheduled rate until the next entry. This is a schedule, not a delivery record."
+msgstr "Each step keeps the scheduled rate until the next entry. This is a schedule, not a delivery record."
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "Read the time and U/h together. Compare delivery records separately when checking what actually happened."
+msgstr "Read the time and U/h together. Compare delivery records separately when checking what actually happened."
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "This chart plots device B values horizontally against device A values vertically, with each point representing one paired reading."
+msgstr "This chart plots device B values horizontally against device A values vertically, with each point representing one paired reading."
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "Remember that the diagonal line indicates equal values, but this comparison does not establish which device is correct."
+msgstr "Remember that the diagonal line indicates equal values, but this comparison does not establish which device is correct."
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "Recorded sleep stages"
+msgstr "Recorded sleep stages"
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "This chart stacks recorded sleep-stage minutes for each calendar day, showing gaps for days without a recorded night."
+msgstr "This chart stacks recorded sleep-stage minutes for each calendar day, showing gaps for days without a recorded night."
+
+#: src/lib/help/chart-lessons.svelte.ts
+msgid "Note that sleep stages originate from the device source and this graph does not diagnose sleep quality."
+msgstr "Note that sleep stages originate from the device source and this graph does not diagnose sleep quality."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Learn how to configure display settings, connect data sources, and verify that your imported data appears correctly in Nocturne."
+msgstr "Learn how to configure display settings, connect data sources, and verify that your imported data appears correctly in Nocturne."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "The selected tenant, saved display preferences and records received from your configured uploaders and connectors."
+msgstr "The selected tenant, saved display preferences and records received from your configured uploaders and connectors."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Open help with the book beside Nocturne. Close it with the close button or Escape to return to your original page and inputs. Appearance controls units, theme, language and help display."
+msgstr "Open help with the book beside Nocturne. Close it with the close button or Escape to return to your original page and inputs. Appearance controls units, theme, language and help display."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "After connecting a source, use Dashboard to check freshness and Reports to review the selected period. Therapy shows imported schedules. Sharing & Privacy manages access."
+msgstr "After connecting a source, use Dashboard to check freshness and Reports to review the selected period. Therapy shows imported schedules. Sharing & Privacy manages access."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Available settings depend on your permissions. A connected status or completed setup checklist does not prove that an import has finished. Check actual records and their timestamps."
+msgstr "Available settings depend on your permissions. A connected status or completed setup checklist does not prove that an import has finished. Check actual records and their timestamps."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Open Appearance to set units, theme, language and help display. Display preferences do not change the stored readings."
+msgstr "Open Appearance to set units, theme, language and help display. Display preferences do not change the stored readings."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Connect your data source"
+msgstr "Connect your data source"
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Open Connectors & Apps and follow the guide for your source. Complete any required sign-in and import selection."
+msgstr "Open Connectors & Apps and follow the guide for your source. Complete any required sign-in and import selection."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Verify incoming data"
+msgstr "Verify incoming data"
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Check the latest reading timestamp on Dashboard, then confirm dates and data coverage in Reports. If records are missing, open Missing Data and Troubleshooting."
+msgstr "Check the latest reading timestamp on Dashboard, then confirm dates and data coverage in Reports. If records are missing, open Missing Data and Troubleshooting."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Missing Data and Troubleshooting"
+msgstr "Missing Data and Troubleshooting"
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Diagnose missing data by checking scope, source records, and import status. Prepare evidence for support without including sensitive credentials."
+msgstr "Diagnose missing data by checking scope, source records, and import status. Prepare evidence for support without including sensitive credentials."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Dashboard timestamps, the selected report period, connector status, source-app records and rejected-upload diagnostics."
+msgstr "Dashboard timestamps, the selected report period, connector status, source-app records and rejected-upload diagnostics."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Check the selected tenant, report dates and applied filters first. In Connectors & Apps, inspect the source configuration and latest sync. Use Support & Community for version and issue-report details."
+msgstr "Check the selected tenant, report dates and applied filters first. In Connectors & Apps, inspect the source configuration and latest sync. Use Support & Community for version and issue-report details."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Distinguish a date or access mismatch from missing source records, an incomplete import or a rejected upload before changing configuration."
+msgstr "Distinguish a date or access mismatch from missing source records, an incomplete import or a rejected upload before changing configuration."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Reports require different combinations of glucose, treatments and device status. An empty page is not proof that no event occurred. Clearing diagnostics does not repair or retry an import."
+msgstr "Reports require different combinations of glucose, treatments and device status. An empty page is not proof that no event occurred. Clearing diagnostics does not repair or retry an import."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Check the workspace and period"
+msgstr "Check the workspace and period"
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Confirm the tenant, latest reading timestamp, selected dates and filters. Check whether your access includes the data the report needs."
+msgstr "Confirm the tenant, latest reading timestamp, selected dates and filters. Check whether your access includes the data the report needs."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Compare source and imported records"
+msgstr "Compare source and imported records"
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Check that the record exists in the source app, then review the connector latest sync and supported data types. Inspect Rejected Uploads when an uploader reports success but a record is missing."
+msgstr "Check that the record exists in the source app, then review the connector latest sync and supported data types. Inspect Rejected Uploads when an uploader reports success but a record is missing."
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Prepare a useful support report"
+msgstr "Prepare a useful support report"
+
+#: src/lib/help/workflows.svelte.ts
+msgid "Include the page, selected dates, expected result, version and steps to reproduce. Review any exported diagnostics and remove passwords, tokens and identifiable health records before sharing."
+msgstr "Include the page, selected dates, expected result, version and steps to reproduce. Review any exported diagnostics and remove passwords, tokens and identifiable health records before sharing."
+
+#: src/lib/components/help/HelpChartExample.svelte
+msgid "No data in this example slot"
+msgstr "No data in this example slot"
+
+#. 0: bars[slot]?.value ?? 0
+#: src/lib/components/help/HelpChartExample.svelte
+msgid "{0} U per day"
+msgstr "{0} U per day"
+
+#. 0: bg(a.p50 ?? 0); 1: bgLabel(); 2: a.n
+#: src/lib/components/help/HelpChartExample.svelte
+msgid "{0} {1}, n={2}"
+msgstr "{0} {1}, n={2}"
+
+#: src/lib/components/help/HelpChartExample.svelte
+msgid "Interactive chart example"
+msgstr "Interactive chart example"
+
+#: src/lib/components/help/HelpChartExample.svelte
+msgid "Explore the chart"
+msgstr "Explore the chart"
+
+#: src/lib/components/help/HelpChartExample.svelte
+msgid "Fictional example data. The chart uses the same components, theme colors and display units as the report."
+msgstr "Fictional example data. The chart uses the same components, theme colors and display units as the report."
+
+#: src/lib/components/help/HelpChartExample.svelte
+msgid "Chart explanations"
+msgstr "Chart explanations"
+
+#: src/lib/components/help/HelpChartExample.svelte
+msgid "Complete example"
+msgstr "Complete example"
+
+#: src/lib/components/help/HelpChartExample.svelte
+msgid "Missing records"
+msgstr "Missing records"
+
+#. 0: bg(slots[slot].value?.p25 ?? 0); 1: bg( slots[slot].value?.p75 ?? 0 ); 2: bgLabel()
+#: src/lib/components/help/HelpChartExample.svelte
+msgid "P25–P75: {0}–{1} {2}"
+msgstr "P25–P75: {0}–{1} {2}"
+
+#: src/lib/components/help/HelpChartExample.svelte
+msgid "Point to a time slot, or focus the chart and use the arrow keys. Select a slot or press Enter to keep it selected."
+msgstr "Point to a time slot, or focus the chart and use the arrow keys. Select a slot or press Enter to keep it selected."
+
+#: src/lib/components/help/HelpChartExample.svelte
+msgid "Point to a horizon or use the arrow keys to inspect bias, MAE and the number of matched predictions."
+msgstr "Point to a horizon or use the arrow keys to inspect bias, MAE and the number of matched predictions."
+
+#: src/lib/components/help/HelpChartExample.svelte
+msgid "Scheduled rate (U/h), 00:00–23:00"
+msgstr "Scheduled rate (U/h), 00:00–23:00"
+
+#: src/lib/components/help/HelpChartExample.svelte
+msgid "These controls only change the example. Your records and saved settings stay the same."
+msgstr "These controls only change the example. Your records and saved settings stay the same."

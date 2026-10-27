@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { SvelteMap } from "svelte/reactivity";
+  import { MediaQuery, SvelteMap } from "svelte/reactivity";
   import { LineChart, Tooltip } from "layerchart";
   import Loader2 from "@lucide/svelte/icons/loader-circle";
   import Activity from "@lucide/svelte/icons/activity";
@@ -246,8 +246,13 @@
     }))
   );
 
-  /** Pixels around a lab marker within which the tooltip shows that lab draw. */
-  const LAB_SNAP_PX = 12;
+  /**
+   * CSS pixels either side of a lab marker within which the tooltip shows that lab draw: a 48 px
+   * target for a mouse and 64 px for touch, above the 44 px of WCAG 2.5.5. CSS pixels already
+   * scale with the screen's pixel density.
+   */
+  const LAB_SNAP_PX = { fine: 24, coarse: 32 };
+  const coarsePointer = new MediaQuery("pointer: coarse");
 
   /**
    * Personal: a lab draw is one day wide on a year of daily estimates, so the tooltip snaps to the
@@ -256,7 +261,7 @@
   function snapToLabDate(hovered: Date, xScale: (value: Date) => number): Date {
     const hoveredX = xScale(hovered);
     let nearest = hovered;
-    let nearestDistance = LAB_SNAP_PX;
+    let nearestDistance = coarsePointer.current ? LAB_SNAP_PX.coarse : LAB_SNAP_PX.fine;
     for (const labPoint of labChartPoints) {
       const distance = Math.abs(xScale(labPoint.date) - hoveredX);
       if (distance <= nearestDistance) {

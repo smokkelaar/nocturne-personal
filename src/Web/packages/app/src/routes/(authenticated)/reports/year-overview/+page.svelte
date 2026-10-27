@@ -112,6 +112,7 @@
     high: `${HeatmapMetric}HighColor`;
     palette: `${HeatmapMetric}Palette`;
     mirror: `${HeatmapMetric}Mirror`;
+    range: `${HeatmapMetric}ColorRange`;
   };
   const scaleKeys = $derived<ScaleKeys>({
     band: `${selectedMetric}Band`,
@@ -120,6 +121,7 @@
     high: `${selectedMetric}HighColor`,
     palette: `${selectedMetric}Palette`,
     mirror: `${selectedMetric}Mirror`,
+    range: `${selectedMetric}ColorRange`,
   });
   /**
    * The retired shape applied its bands and dimming only in advanced mode. A blob saved with
@@ -196,7 +198,8 @@
           colorPreferences.avgGlucoseBoundaries,
           dim,
           scaleEnds,
-          scaleLook
+          scaleLook,
+          colorPreferences.avgGlucoseColorRange
         )
       : intensityScale(
           METRIC_CSS_VARS[selectedMetric],
@@ -206,7 +209,8 @@
           colorPreferences[scaleKeys.boundaries],
           dim,
           scaleEnds,
-          scaleLook
+          scaleLook,
+          colorPreferences[scaleKeys.range]
         )
   );
   const themeColors = $derived(
@@ -235,6 +239,8 @@
       const palette = resolvePalette(colorPreferences[`${value}Palette`]);
       if (palette) next[`${value}Palette`] = palette;
       if (colorPreferences[`${value}Mirror`] === true) next[`${value}Mirror`] = true;
+      const range = colorPreferences[`${value}ColorRange`];
+      if (range) next[`${value}ColorRange`] = range;
     }
     change(next);
     yearOverviewColors.current = next;
@@ -244,6 +250,13 @@
     saveColorPreferences((next) => {
       if (focusWindow) next[scaleKeys.band] = [...focusWindow];
       else delete next[scaleKeys.band];
+    });
+  }
+
+  function setScaleRange(range: ColorFocusRange | null) {
+    saveColorPreferences((next) => {
+      if (range) next[scaleKeys.range] = [...range];
+      else delete next[scaleKeys.range];
     });
   }
 
@@ -290,6 +303,7 @@
   function resetScale() {
     saveColorPreferences((next) => {
       delete next[scaleKeys.band];
+      delete next[scaleKeys.range];
       delete next[scaleKeys.boundaries];
       delete next[scaleKeys.low];
       delete next[scaleKeys.high];
@@ -708,6 +722,7 @@
       {scale}
       limits={scaleLimits}
       onWindowChange={setScaleWindow}
+      onRangeChange={setScaleRange}
       onBoundariesChange={setScaleBoundaries}
       onEndsChange={setScaleEnds}
       onDimChange={setDim}

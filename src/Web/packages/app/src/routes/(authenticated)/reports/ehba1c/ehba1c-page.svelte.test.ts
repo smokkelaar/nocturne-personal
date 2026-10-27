@@ -212,7 +212,7 @@ describe("eHbA1c lab tooltip on a dense timeline", () => {
     expect(dayWidth).toBeLessThan(9);
 
     await userEvent.hover(chart, {
-      position: { x: markerX(markers[1]) + dayWidth * 1.3, y: chartBounds.height / 2 },
+      position: { x: markerX(markers[1]) + 20, y: chartBounds.height / 2 },
     });
     const tooltip = page.getByTestId("ehba1c-tooltip");
     await expect.element(tooltip).toBeVisible();

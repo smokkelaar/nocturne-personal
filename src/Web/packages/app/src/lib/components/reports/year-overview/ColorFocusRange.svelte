@@ -36,6 +36,7 @@
     units = "mg/dl",
     unit = "",
     onWindowChange,
+    onRangeChange,
     onBoundariesChange,
     onEndsChange,
     onDimChange,
@@ -52,6 +53,8 @@
     units?: GlucoseUnits;
     unit?: string;
     onWindowChange: (window: ColorFocusRange | null) => void;
+    /** Personal: moves the ramp's ends, apart from the dimming window. */
+    onRangeChange: (range: ColorFocusRange | null) => void;
     onBoundariesChange: (boundaries: ColorBoundary[] | null) => void;
     onEndsChange: (ends: ColorEnds) => void;
     onDimChange: (dim: number) => void;
@@ -70,7 +73,8 @@
   const snap = (value: number) =>
     step ? fromDisplay(Math.round(display(value) / step) * step) : Number(value.toPrecision(3));
 
-  const sliderValues = $derived([...scale.window, ...scale.boundaries.map((b) => b.value)]);
+  const windowValues = $derived([...scale.window]);
+  const colorValues = $derived([...scale.domain, ...scale.boundaries.map((b) => b.value)]);
   const percent = (value: number) =>
     Math.max(0, Math.min(100, ((value - scale.axis[0]) / (scale.axis[1] - scale.axis[0] || 1)) * 100));
   const gradient = $derived(scaleGradient(scale));
@@ -94,9 +98,9 @@
     return Array.from({ length: count + 1 }, (_, i) => Number((i * increment).toPrecision(12)));
   });
   // Bits UI snaps even untouched values; insert exact selections into the cached steps.
-  const sliderSteps = $derived(insertSliderSteps(baseSteps, [...sliderValues, ...scale.axis]));
+  const sliderSteps = $derived(insertSliderSteps(baseSteps, [...windowValues, ...colorValues, ...scale.axis]));
 
-  let invalid = $state<"window" | "boundary" | "dim" | null>(null);
+  let invalid = $state<"window" | "range" | "boundary" | "dim" | null>(null);
 
   $effect(() => {
     void scale;
@@ -110,6 +114,13 @@
     return true;
   }
 
+  function changeRange(candidate: number[]): boolean {
+    const next = resolveColorFocusRange(candidate, limits);
+    if (!next) return false;
+    onRangeChange(next);
+    return true;
+  }
+
   function changeBoundary(index: number, value: number): boolean {
     const next = resolveColorBoundaries(
       scale.boundaries.map((b, i) => (i === index ? { ...b, value } : b)),
@@ -120,10 +131,14 @@
     return true;
   }
 
-  function moveThumbs(next: number[]) {
-    const index = next.findIndex((value, i) => value !== sliderValues[i]);
+  function moveWindow(next: number[]) {
+    if (next[0] !== windowValues[0] || next[1] !== windowValues[1]) changeWindow([next[0], next[1]]);
+  }
+
+  function moveColors(next: number[]) {
+    const index = next.findIndex((value, i) => value !== colorValues[i]);
     if (index < 0) return;
-    if (index < 2) changeWindow([next[0], next[1]]);
+    if (index < 2) changeRange([next[0], next[1]]);
     else changeBoundary(index - 2, next[index]);
   }
 
@@ -138,6 +153,14 @@
     const candidate = [...scale.window];
     if (value !== null) candidate[index] = fromDisplay(value);
     invalid = value !== null && changeWindow(candidate) ? null : "window";
+  }
+
+  function typeRange(index: 0 | 1, event: Event & { currentTarget: HTMLInputElement }) {
+    const value = typed(event);
+    if (value === display(scale.domain[index])) return void (invalid = null);
+    const candidate = [...scale.domain];
+    if (value !== null) candidate[index] = fromDisplay(value);
+    invalid = value !== null && changeRange(candidate) ? null : "range";
   }
 
   function typeBoundary(index: number, event: Event & { currentTarget: HTMLInputElement }) {
@@ -174,6 +197,22 @@
     onBoundariesChange(next.length ? next : null);
   }
 </script>
+
+{#snippet rangeInput(index: 0 | 1)}
+  <Input
+    type="number"
+    inputmode="decimal"
+    min={display(limits[0])}
+    max={Number.isFinite(limits[1]) ? display(limits[1]) : undefined}
+    step={step ?? "any"}
+    value={display(scale.domain[index])}
+    oninput={(event: Event & { currentTarget: HTMLInputElement }) => typeRange(index, event)}
+    aria-label={index === 0 ? `${metricLabel} low color position` : `${metricLabel} high color position`}
+    aria-invalid={invalid === "range"}
+    size="xs"
+    class="w-20 tabular-nums"
+  />
+{/snippet}
 
 <div
   class="@container w-full min-w-0 text-xs text-muted-foreground print:hidden"
@@ -233,6 +272,7 @@
         {/each}
       </div>
 
+      <!-- Personal: the dimming window has its own slider, so it never moves the colors. -->
       <Slider.Root
         type="multiple"
         min={scale.axis[0]}
@@ -240,7 +280,38 @@
         step={sliderSteps}
         autoSort={false}
         thumbPositioning="exact"
-        bind:value={() => [...sliderValues], moveThumbs}
+        bind:value={() => [...windowValues], moveWindow}
+        class="relative flex h-6 w-full touch-none select-none items-center"
+        aria-label={`${metricLabel} focus window`}
+        data-testid={glucose ? "glucose-focus-slider" : "focus-slider"}
+      >
+        {#snippet children({ thumbItems })}
+          <span class="relative h-1 w-full rounded-full bg-muted">
+            <span
+              class="absolute inset-y-0 left-(--from) right-(--to) rounded-full bg-muted-foreground/60"
+              style:--from="{percent(scale.window[0])}%"
+              style:--to="{100 - percent(scale.window[1])}%"
+            ></span>
+          </span>
+          {#each thumbItems as thumb (thumb.index)}
+            <Slider.Thumb
+              index={thumb.index}
+              aria-label={`${metricLabel} focus ${thumb.index === 0 ? "minimum" : "maximum"}`}
+              aria-valuetext={`${formatted(thumb.value)} ${unitLabel}`}
+              class="relative z-10 block h-5 w-2.5 cursor-ew-resize rounded-sm border-2 border-foreground bg-background shadow-md before:absolute before:-inset-3 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring/50"
+            />
+          {/each}
+        {/snippet}
+      </Slider.Root>
+
+      <Slider.Root
+        type="multiple"
+        min={scale.axis[0]}
+        max={scale.axis[1]}
+        step={sliderSteps}
+        autoSort={false}
+        thumbPositioning="exact"
+        bind:value={() => [...colorValues], moveColors}
         class="relative flex h-9 w-full touch-none select-none items-center"
         aria-label={`${metricLabel} color scale`}
       >
@@ -269,11 +340,15 @@
           </span>
           {#each thumbItems as thumb (thumb.index)}
             {#if thumb.index < 2}
+              <!-- Personal: the outer dots hold the end colors and set where the ramp starts and ends. -->
+              {@const end = thumb.index === 0 ? "low" : "high"}
               <Slider.Thumb
                 index={thumb.index}
-                aria-label={`${metricLabel} focus ${thumb.index === 0 ? "minimum" : "maximum"}`}
+                aria-label={end === "low" ? `${metricLabel} low color position` : `${metricLabel} high color position`}
                 aria-valuetext={`${formatted(thumb.value)} ${unitLabel}`}
-                class="relative z-10 block h-7 w-2.5 cursor-ew-resize rounded-sm border-2 border-foreground bg-background shadow-md before:absolute before:-inset-3 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring/50"
+                class="relative z-10 block size-5 cursor-ew-resize rounded-full border-2 border-foreground bg-(--pin) shadow-md before:absolute before:-inset-3 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring/50"
+                style="--pin: {end === 'low' ? lowColor : highColor}"
+                data-testid={`color-range-${end}-handle`}
               />
             {:else}
               {@const boundary = scale.boundaries[thumb.index - 2]}
@@ -296,7 +371,7 @@
             label={`${metricLabel} low end color`}
             onChange={(low) => onEndsChange({ ...scale.ends, low })}
           />
-          <span aria-hidden="true">{formatted(scale.axis[0])} {unitLabel}</span>
+          {@render rangeInput(0)}
         </span>
         {#if !glucose}
           <Button
@@ -310,7 +385,7 @@
           </Button>
         {/if}
         <span class="flex items-center gap-1.5">
-          <span aria-hidden="true">{formatted(scale.axis[1])} {unitLabel}</span>
+          {@render rangeInput(1)}
           <ColorSwatchInput
             color={highColor}
             label={`${metricLabel} high end color`}
@@ -367,6 +442,10 @@
     <p class="pt-2 text-destructive" role="alert">
       {#if invalid === "dim"}
         Enter a dim percentage between 0 and 100.
+      {:else if invalid === "range"}
+        Enter a color range with its low end below its high end{Number.isFinite(limits[1])
+          ? `, between ${formatted(limits[0])} and ${formatted(limits[1])} ${unitLabel}`
+          : ""}.
       {:else if invalid === "window"}
         Enter a focus window with its minimum below its maximum{Number.isFinite(limits[1])
           ? `, between ${formatted(limits[0])} and ${formatted(limits[1])} ${unitLabel}`

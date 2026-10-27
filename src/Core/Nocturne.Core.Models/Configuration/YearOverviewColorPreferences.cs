@@ -9,6 +9,8 @@ namespace Nocturne.Core.Models.Configuration;
 /// <c>#rrggbb</c>; an unset one keeps the theme color. A palette replaces the theme ramp
 /// with its colors spread evenly from low to high, and mirroring reverses the ramp before
 /// the end and boundary colors are painted over it.
+/// Personal: the color range places the ramp's low and high ends, apart from the focus window,
+/// so dimming and coloring are set independently.
 /// </summary>
 public partial class YearOverviewColorPreferences
 {
@@ -25,36 +27,42 @@ public partial class YearOverviewColorPreferences
     public string? AvgGlucoseHighColor { get; set; }
     public string[]? AvgGlucosePalette { get; set; }
     public bool? AvgGlucoseMirror { get; set; }
+    public double[]? AvgGlucoseColorRange { get; set; }
     public double[]? TirBand { get; set; }
     public YearOverviewColorBoundary[]? TirBoundaries { get; set; }
     public string? TirLowColor { get; set; }
     public string? TirHighColor { get; set; }
     public string[]? TirPalette { get; set; }
     public bool? TirMirror { get; set; }
+    public double[]? TirColorRange { get; set; }
     public double[]? BolusBand { get; set; }
     public YearOverviewColorBoundary[]? BolusBoundaries { get; set; }
     public string? BolusLowColor { get; set; }
     public string? BolusHighColor { get; set; }
     public string[]? BolusPalette { get; set; }
     public bool? BolusMirror { get; set; }
+    public double[]? BolusColorRange { get; set; }
     public double[]? BasalBand { get; set; }
     public YearOverviewColorBoundary[]? BasalBoundaries { get; set; }
     public string? BasalLowColor { get; set; }
     public string? BasalHighColor { get; set; }
     public string[]? BasalPalette { get; set; }
     public bool? BasalMirror { get; set; }
+    public double[]? BasalColorRange { get; set; }
     public double[]? TddBand { get; set; }
     public YearOverviewColorBoundary[]? TddBoundaries { get; set; }
     public string? TddLowColor { get; set; }
     public string? TddHighColor { get; set; }
     public string[]? TddPalette { get; set; }
     public bool? TddMirror { get; set; }
+    public double[]? TddColorRange { get; set; }
     public double[]? CarbsBand { get; set; }
     public YearOverviewColorBoundary[]? CarbsBoundaries { get; set; }
     public string? CarbsLowColor { get; set; }
     public string? CarbsHighColor { get; set; }
     public string[]? CarbsPalette { get; set; }
     public bool? CarbsMirror { get; set; }
+    public double[]? CarbsColorRange { get; set; }
 
     public string? Validate()
     {
@@ -63,14 +71,14 @@ public partial class YearOverviewColorPreferences
             return "yearOverviewColors.outOfBandTransparency: invalid_transparency_value";
         }
 
-        foreach (var (metric, band, boundaries, low, high, palette, min, max) in new[]
+        foreach (var (metric, band, range, boundaries, low, high, palette, min, max) in new[]
         {
-            ("avgGlucose", AvgGlucoseBand, AvgGlucoseBoundaries, AvgGlucoseLowColor, AvgGlucoseHighColor, AvgGlucosePalette, GlucoseMin, GlucoseMax),
-            ("tir", TirBand, TirBoundaries, TirLowColor, TirHighColor, TirPalette, 0d, 100d),
-            ("bolus", BolusBand, BolusBoundaries, BolusLowColor, BolusHighColor, BolusPalette, 0d, double.PositiveInfinity),
-            ("basal", BasalBand, BasalBoundaries, BasalLowColor, BasalHighColor, BasalPalette, 0d, double.PositiveInfinity),
-            ("tdd", TddBand, TddBoundaries, TddLowColor, TddHighColor, TddPalette, 0d, double.PositiveInfinity),
-            ("carbs", CarbsBand, CarbsBoundaries, CarbsLowColor, CarbsHighColor, CarbsPalette, 0d, double.PositiveInfinity),
+            ("avgGlucose", AvgGlucoseBand, AvgGlucoseColorRange, AvgGlucoseBoundaries, AvgGlucoseLowColor, AvgGlucoseHighColor, AvgGlucosePalette, GlucoseMin, GlucoseMax),
+            ("tir", TirBand, TirColorRange, TirBoundaries, TirLowColor, TirHighColor, TirPalette, 0d, 100d),
+            ("bolus", BolusBand, BolusColorRange, BolusBoundaries, BolusLowColor, BolusHighColor, BolusPalette, 0d, double.PositiveInfinity),
+            ("basal", BasalBand, BasalColorRange, BasalBoundaries, BasalLowColor, BasalHighColor, BasalPalette, 0d, double.PositiveInfinity),
+            ("tdd", TddBand, TddColorRange, TddBoundaries, TddLowColor, TddHighColor, TddPalette, 0d, double.PositiveInfinity),
+            ("carbs", CarbsBand, CarbsColorRange, CarbsBoundaries, CarbsLowColor, CarbsHighColor, CarbsPalette, 0d, double.PositiveInfinity),
         })
         {
             if (!IsColorOrUnset(low) || !IsColorOrUnset(high))
@@ -86,14 +94,14 @@ public partial class YearOverviewColorPreferences
                 return $"yearOverviewColors.{metric}Palette: invalid_palette";
             }
 
-            if (band is not null
-                && (band.Length != 2
-                    || !band.All(double.IsFinite)
-                    || band[0] >= band[1]
-                    || band[0] < min
-                    || band[1] > max))
+            if (!IsRangeOrUnset(band, min, max))
             {
                 return $"yearOverviewColors.{metric}Band: invalid_color_range";
+            }
+
+            if (!IsRangeOrUnset(range, min, max))
+            {
+                return $"yearOverviewColors.{metric}ColorRange: invalid_color_range";
             }
 
             if (boundaries is not null
@@ -110,6 +118,10 @@ public partial class YearOverviewColorPreferences
         }
         return null;
     }
+
+    private static bool IsRangeOrUnset(double[]? range, double min, double max) =>
+        range is null
+        || (range.Length == 2 && range.All(double.IsFinite) && range[0] < range[1] && range[0] >= min && range[1] <= max);
 
     private static bool IsColorOrUnset(string? color) => color is null || HexColor().IsMatch(color);
 

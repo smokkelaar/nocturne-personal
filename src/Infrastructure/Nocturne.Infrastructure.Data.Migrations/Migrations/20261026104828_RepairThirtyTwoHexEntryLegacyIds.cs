@@ -25,6 +25,8 @@ namespace Nocturne.Infrastructure.Data.Migrations
             // soft-deleted without auth context, which leaves its id re-importable
             // (SoftDeleteDedupExtensions.GetBlockingLegacyIdsAsync).
             // FORCE ROW LEVEL SECURITY binds the migrator too, hence the per-tenant GUC.
+            // The losers are collected and analyzed first: as one `id IN (ranked)` statement the
+            // planner can misjudge the ranked set and spend hours comparing rows on a large tenant.
             foreach (var table in EntryTables)
             {
                 migrationBuilder.Sql($"""
@@ -35,20 +37,26 @@ namespace Nocturne.Infrastructure.Data.Migrations
                         FOR t IN SELECT id FROM tenants LOOP
                             PERFORM set_config('app.current_tenant_id', t.id::text, true);
 
-                            UPDATE {table}
+                            CREATE TEMP TABLE repair_losers ON COMMIT DROP AS
+                            SELECT id
+                            FROM (
+                                SELECT id,
+                                       row_number() OVER (
+                                           PARTITION BY tenant_id, left(legacy_id, 24)
+                                           ORDER BY legacy_id ~ '{AssignedUuid}', sys_created_at DESC, id DESC) AS rn
+                                FROM {table}
+                                WHERE deleted_at IS NULL
+                                  AND (legacy_id ~ '{AssignedUuid}' OR legacy_id ~ '{ObjectId}')
+                            ) ranked
+                            WHERE ranked.rn > 1;
+                            ANALYZE repair_losers;
+
+                            UPDATE {table} e
                             SET deleted_at = now()
-                            WHERE id IN (
-                                SELECT id
-                                FROM (
-                                    SELECT id,
-                                           row_number() OVER (
-                                               PARTITION BY tenant_id, left(legacy_id, 24)
-                                               ORDER BY legacy_id ~ '{AssignedUuid}', sys_created_at DESC, id DESC) AS rn
-                                    FROM {table}
-                                    WHERE deleted_at IS NULL
-                                      AND (legacy_id ~ '{AssignedUuid}' OR legacy_id ~ '{ObjectId}')
-                                ) ranked
-                                WHERE ranked.rn > 1);
+                            FROM repair_losers l
+                            WHERE e.id = l.id;
+
+                            DROP TABLE repair_losers;
 
                             UPDATE {table}
                             SET legacy_id = left(legacy_id, 24)

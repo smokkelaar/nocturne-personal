@@ -495,21 +495,110 @@ public class PropertiesServiceTests
         // after a site change, so they must be projected as dictionaries to reach clients.
         _mockDeviceAgeService
             .Setup(x => x.GetCannulaAgeAsync(It.IsAny<DeviceAgePreferences>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new DeviceAgeInfo { Found = false, Age = 0, Days = 0, Hours = 0, Level = 0 });
+            .ReturnsAsync(new DeviceAgeInfo { Found = true, Age = 0, Days = 0, Hours = 0, TreatmentDate = 1000 });
         _mockDDataService
             .Setup(x => x.GetDDataAsync(It.IsAny<long>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(CreateTestDData());
 
         var result = await _service.GetAllPropertiesAsync(CancellationToken.None);
 
-        var json = JsonSerializer.Serialize(result, NightscoutJsonOptions.Create());
-        using var doc = JsonDocument.Parse(json);
-        var cage = doc.RootElement.GetProperty("cage");
+        var cage = SerializeProperty(result, "cage");
 
-        Assert.False(cage.GetProperty("found").GetBoolean());
+        Assert.True(cage.GetProperty("found").GetBoolean());
         Assert.Equal(0, cage.GetProperty("age").GetInt32());
         Assert.Equal(0, cage.GetProperty("days").GetInt32());
-        Assert.Equal(0, cage.GetProperty("level").GetInt32());
+        Assert.Equal(DeviceAgeLevel.None, cage.GetProperty("level").GetInt32());
+    }
+
+    [Fact]
+    public async Task GetAllPropertiesAsync_CageWithNoSiteChange_HasNightscoutShape()
+    {
+        _mockDeviceAgeService
+            .Setup(x => x.GetCannulaAgeAsync(It.IsAny<DeviceAgePreferences>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new DeviceAgeInfo());
+        _mockDDataService
+            .Setup(x => x.GetDDataAsync(It.IsAny<long>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(CreateTestDData());
+
+        var result = await _service.GetAllPropertiesAsync(CancellationToken.None);
+
+        var cage = SerializeProperty(result, "cage");
+
+        Assert.False(cage.GetProperty("found").GetBoolean());
+        Assert.Equal(-3, cage.GetProperty("level").GetInt32());
+        Assert.Equal("n/a ", cage.GetProperty("display").GetString());
+        Assert.Equal(JsonValueKind.Null, cage.GetProperty("treatmentDate").ValueKind);
+        Assert.False(cage.TryGetProperty("days", out _));
+    }
+
+    [Fact]
+    public async Task GetAllPropertiesAsync_SageWithNoSensorEvents_HasNightscoutShape()
+    {
+        _mockDeviceAgeService
+            .Setup(x => x.GetSensorAgeAsync(It.IsAny<DeviceAgePreferences>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new SensorAgeInfo());
+        _mockDDataService
+            .Setup(x => x.GetDDataAsync(It.IsAny<long>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(CreateTestDData());
+
+        var result = await _service.GetAllPropertiesAsync(CancellationToken.None);
+
+        var sage = SerializeProperty(result, "sage");
+        var start = sage.GetProperty("Sensor Start");
+        var change = sage.GetProperty("Sensor Change");
+
+        Assert.Equal("Sensor Start", sage.GetProperty("min").GetString());
+        Assert.False(start.GetProperty("found").GetBoolean());
+        Assert.Equal(-3, start.GetProperty("level").GetInt32());
+        Assert.False(change.GetProperty("found").GetBoolean());
+        Assert.False(change.TryGetProperty("level", out _));
+    }
+
+    [Fact]
+    public async Task GetAllPropertiesAsync_SageWithSensorStart_SetsLevelOnlyOnMin()
+    {
+        _mockDeviceAgeService
+            .Setup(x => x.GetSensorAgeAsync(It.IsAny<DeviceAgePreferences>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new SensorAgeInfo
+            {
+                SensorStart = new DeviceAgeInfo { Found = true, Age = 120, Days = 5, Hours = 0, TreatmentDate = 1000, Display = "5d0h" },
+            });
+        _mockDDataService
+            .Setup(x => x.GetDDataAsync(It.IsAny<long>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(CreateTestDData());
+
+        var result = await _service.GetAllPropertiesAsync(CancellationToken.None);
+
+        var sage = SerializeProperty(result, "sage");
+        var start = sage.GetProperty("Sensor Start");
+
+        Assert.True(start.GetProperty("found").GetBoolean());
+        Assert.Equal(-3, start.GetProperty("level").GetInt32());
+        Assert.Equal("5 days 0 hours", start.GetProperty("displayLong").GetString());
+        Assert.False(sage.GetProperty("Sensor Change").TryGetProperty("level", out _));
+    }
+
+    [Fact]
+    public async Task GetAllPropertiesAsync_AsksForSageWithDaysDisplay()
+    {
+        _mockDDataService
+            .Setup(x => x.GetDDataAsync(It.IsAny<long>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(CreateTestDData());
+
+        await _service.GetAllPropertiesAsync(CancellationToken.None);
+
+        _mockDeviceAgeService.Verify(
+            x => x.GetSensorAgeAsync(
+                It.Is<DeviceAgePreferences>(p => p.Display == "days"),
+                It.IsAny<Guid?>(),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    private static JsonElement SerializeProperty(Dictionary<string, object> properties, string name)
+    {
+        var json = JsonSerializer.Serialize(properties, NightscoutJsonOptions.Create());
+        return JsonDocument.Parse(json).RootElement.GetProperty(name).Clone();
     }
 
     [Fact]
@@ -613,11 +702,236 @@ public class PropertiesServiceTests
         var result = await _service.GetAllPropertiesAsync(CancellationToken.None);
 
         var upbat = Assert.IsType<Dictionary<string, object>>(result["upbat"]);
-        Assert.Equal(72, upbat["level"]);
+        Assert.Equal(75, upbat["level"]);
+        Assert.Equal("72%", upbat["display"]);
 
         var devices = Assert.IsType<List<Dictionary<string, object?>>>(upbat["devices"]);
         Assert.Single(devices);
         Assert.Equal("phone-a", devices[0]["device"]);
+    }
+
+    [Theory]
+    [InlineData(95, 100)]
+    [InlineData(94, 75)]
+    [InlineData(80, 75)]
+    [InlineData(55, 75)]
+    [InlineData(54, 50)]
+    [InlineData(30, 50)]
+    [InlineData(29, 25)]
+    public async Task GetAllPropertiesAsync_UpbatLevel_IsBucketedLikeNightscout(int battery, int expectedLevel)
+    {
+        var now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        var ddata = CreateTestDData();
+        ddata.DeviceStatus = new List<DeviceStatus>
+        {
+            new DeviceStatus
+            {
+                Device = "phone-a",
+                Mills = now - 60_000,
+                Uploader = new UploaderStatus { Battery = battery },
+            },
+        };
+
+        _mockDDataService
+            .Setup(x => x.GetDDataAsync(It.IsAny<long>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(ddata);
+
+        var result = await _service.GetAllPropertiesAsync(CancellationToken.None);
+
+        var upbat = Assert.IsType<Dictionary<string, object>>(result["upbat"]);
+        Assert.Equal(expectedLevel, upbat["level"]);
+        Assert.Equal($"{battery}%", upbat["display"]);
+    }
+
+    [Fact]
+    public async Task GetAllPropertiesAsync_UpbatLevel_IsWeakestRecentUploaderNotNewest()
+    {
+        var now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        var ddata = CreateTestDData();
+        ddata.DeviceStatus = new List<DeviceStatus>
+        {
+            new DeviceStatus
+            {
+                Device = "openaps://TestPump",
+                Mills = now - 5 * 60_000,
+                Uploader = new UploaderStatus { Battery = 80 },
+            },
+            new DeviceStatus
+            {
+                Device = "loop://TestLoop",
+                Mills = now - 10 * 60_000,
+                Uploader = new UploaderStatus { Battery = 40 },
+            },
+        };
+
+        _mockDDataService
+            .Setup(x => x.GetDDataAsync(It.IsAny<long>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(ddata);
+
+        var result = await _service.GetAllPropertiesAsync(CancellationToken.None);
+
+        var upbat = Assert.IsType<Dictionary<string, object>>(result["upbat"]);
+        Assert.Equal(50, upbat["level"]);
+        Assert.Equal("40%", upbat["display"]);
+    }
+
+    [Fact]
+    public async Task GetAllPropertiesAsync_UpbatLevel_IgnoresDeviceReadingsOlderThanTenMinutesBeforeItsNewest()
+    {
+        var now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        var ddata = CreateTestDData();
+        ddata.DeviceStatus = new List<DeviceStatus>
+        {
+            new DeviceStatus
+            {
+                Device = "phone-a",
+                Mills = now - 25 * 60_000,
+                Uploader = new UploaderStatus { Battery = 20 },
+            },
+            new DeviceStatus
+            {
+                Device = "phone-a",
+                Mills = now - 60_000,
+                Uploader = new UploaderStatus { Battery = 90 },
+            },
+        };
+
+        _mockDDataService
+            .Setup(x => x.GetDDataAsync(It.IsAny<long>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(ddata);
+
+        var result = await _service.GetAllPropertiesAsync(CancellationToken.None);
+
+        var upbat = Assert.IsType<Dictionary<string, object>>(result["upbat"]);
+        Assert.Equal(75, upbat["level"]);
+        Assert.Equal("90%", upbat["display"]);
+    }
+
+    [Fact]
+    public async Task GetAllPropertiesAsync_UpbatLevel_IsWeakestOfEachDevicesRecentLowest()
+    {
+        var now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        var ddata = CreateTestDData();
+        ddata.DeviceStatus = new List<DeviceStatus>
+        {
+            // phone-a recovered: its 10% reading is stale relative to its own newest.
+            new DeviceStatus
+            {
+                Device = "phone-a",
+                Mills = now - 20 * 60_000,
+                Uploader = new UploaderStatus { Battery = 10 },
+            },
+            new DeviceStatus
+            {
+                Device = "phone-a",
+                Mills = now - 60_000,
+                Uploader = new UploaderStatus { Battery = 85 },
+            },
+            new DeviceStatus
+            {
+                Device = "phone-b",
+                Mills = now - 2 * 60_000,
+                Uploader = new UploaderStatus { Battery = 60 },
+            },
+            new DeviceStatus
+            {
+                Device = "phone-b",
+                Mills = now - 4 * 60_000,
+                Uploader = new UploaderStatus { Battery = 45 },
+            },
+        };
+
+        _mockDDataService
+            .Setup(x => x.GetDDataAsync(It.IsAny<long>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(ddata);
+
+        var result = await _service.GetAllPropertiesAsync(CancellationToken.None);
+
+        var upbat = Assert.IsType<Dictionary<string, object>>(result["upbat"]);
+        Assert.Equal(50, upbat["level"]);
+        Assert.Equal("45%", upbat["display"]);
+    }
+
+    [Fact]
+    public async Task GetAllPropertiesAsync_UpbatOmitsLevel_ForZeroPercentWithNoVoltage()
+    {
+        var now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        var ddata = CreateTestDData();
+        ddata.DeviceStatus = new List<DeviceStatus>
+        {
+            new DeviceStatus
+            {
+                Device = "phone-a",
+                Mills = now - 60_000,
+                Uploader = new UploaderStatus { Battery = 0 },
+            },
+        };
+
+        _mockDDataService
+            .Setup(x => x.GetDDataAsync(It.IsAny<long>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(ddata);
+
+        var result = await _service.GetAllPropertiesAsync(CancellationToken.None);
+
+        var upbat = Assert.IsType<Dictionary<string, object>>(result["upbat"]);
+        Assert.False(upbat.ContainsKey("level"));
+        Assert.False(upbat.ContainsKey("display"));
+        Assert.False(upbat.ContainsKey("displayLine"));
+    }
+
+    [Theory]
+    [InlineData(3.7, 25)]
+    [InlineData(3700.0, 25)]
+    [InlineData(0.0, null)]
+    public async Task GetAllPropertiesAsync_UpbatLevel_ForZeroPercentFollowsVoltage(double voltage, int? expectedLevel)
+    {
+        var now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        var ddata = CreateTestDData();
+        ddata.DeviceStatus = new List<DeviceStatus>
+        {
+            new DeviceStatus
+            {
+                Device = "phone-a",
+                Mills = now - 60_000,
+                Uploader = new UploaderStatus { Battery = 0, BatteryVoltage = voltage },
+            },
+        };
+
+        _mockDDataService
+            .Setup(x => x.GetDDataAsync(It.IsAny<long>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(ddata);
+
+        var result = await _service.GetAllPropertiesAsync(CancellationToken.None);
+
+        var upbat = Assert.IsType<Dictionary<string, object>>(result["upbat"]);
+        if (expectedLevel is { } level)
+            Assert.Equal(level, upbat["level"]);
+        else
+            Assert.False(upbat.ContainsKey("level"));
+    }
+
+    [Fact]
+    public async Task GetAllPropertiesAsync_OmitsUpbat_WhenNoUploaderStatusWithinThirtyMinutes()
+    {
+        var now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        var ddata = CreateTestDData();
+        ddata.DeviceStatus = new List<DeviceStatus>
+        {
+            new DeviceStatus
+            {
+                Device = "phone-a",
+                Mills = now - 31 * 60_000,
+                Uploader = new UploaderStatus { Battery = 80 },
+            },
+        };
+
+        _mockDDataService
+            .Setup(x => x.GetDDataAsync(It.IsAny<long>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(ddata);
+
+        var result = await _service.GetAllPropertiesAsync(CancellationToken.None);
+
+        Assert.False(result.ContainsKey("upbat"));
     }
 
     [Fact]

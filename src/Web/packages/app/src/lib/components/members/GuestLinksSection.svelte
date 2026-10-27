@@ -1,4 +1,5 @@
 <script lang="ts">
+  import SuccessBanner from "$lib/forms/SuccessBanner.svelte";
   import { formatDayTime, relativeTime } from "$lib/utils/formatting";
   import { page } from "$app/state";
   import type { RemoteCommand } from "@sveltejs/kit";
@@ -11,12 +12,13 @@
   import { Switch } from "$lib/components/ui/switch";
   import { toggled } from "$lib/utils/collections";
   import { categoriesIn, formatList } from "./data-categories";
+  import { EmptyState } from "$lib/components/shared";
+  import UserAvatar from "$lib/components/account/UserAvatar.svelte";
   import { slide } from "svelte/transition";
   import { flip } from "svelte/animate";
-  import { createCopyFeedback } from "$lib/hooks/copy-feedback.svelte";
+  import CopyButton from "$lib/components/members/CopyButton.svelte";
+  import { Artwork } from "water-ui";
   import Clock from "@lucide/svelte/icons/clock";
-  import Copy from "@lucide/svelte/icons/copy";
-  import Check from "@lucide/svelte/icons/check";
   import X from "@lucide/svelte/icons/x";
   import Loader2 from "@lucide/svelte/icons/loader-circle";
   import Link from "@lucide/svelte/icons/link";
@@ -71,7 +73,6 @@
   let createError = $state<string | null>(null);
   let createdCode = $state<string | null>(null);
   let createdUrl = $state<string | null>(null);
-  const copy = createCopyFeedback();
 
   function statusLabel(status: GuestLinkStatus | undefined): string {
     switch (status) {
@@ -171,10 +172,6 @@
     } finally {
       isCreating = false;
     }
-  }
-
-  async function copyText(text: string, type: "code" | "url") {
-    await copy.copy(text, type);
   }
 
   async function mutateLink(id: string, run: RemoteCommand<string, unknown>) {
@@ -277,16 +274,14 @@
         <Card.Content>
           {#if createdCode || createdUrl}
             <div class="space-y-4">
-              <div
-                class="flex items-start gap-3 rounded-md border border-success/30 bg-success/10 p-3"
-              >
-                <Check
-                  class="mt-0.5 h-4 w-4 shrink-0 text-success"
-                />
-                <p class="text-sm text-success">
-                  Guest link created successfully.
-                </p>
-              </div>
+              <Artwork
+                artwork="key"
+                palette="ember"
+                motion="auto"
+                autoplay="once"
+                class="mx-auto size-32"
+              />
+              <SuccessBanner>Guest link created successfully.</SuccessBanner>
 
               {#if createdCode}
                 <div class="space-y-1.5">
@@ -297,18 +292,11 @@
                     >
                       {createdCode}
                     </div>
-                    <Button
-                      variant="outline"
-                      size="icon"
+                    <CopyButton
+                      text={createdCode}
+                      label="Copy code"
                       class="shrink-0 self-center"
-                      onclick={() => copyText(createdCode!, "code")}
-                    >
-                      {#if copy.isCopied("code")}
-                        <Check class="h-4 w-4 text-success" />
-                      {:else}
-                        <Copy class="h-4 w-4" />
-                      {/if}
-                    </Button>
+                    />
                   </div>
                 </div>
               {/if}
@@ -323,18 +311,11 @@
                       readonly
                       class="font-mono"
                     />
-                    <Button
-                      variant="outline"
-                      size="icon"
+                    <CopyButton
+                      text={createdUrl}
+                      label="Copy link"
                       class="shrink-0"
-                      onclick={() => copyText(createdUrl!, "url")}
-                    >
-                      {#if copy.isCopied("url")}
-                        <Check class="h-4 w-4 text-success" />
-                      {:else}
-                        <Copy class="h-4 w-4" />
-                      {/if}
-                    </Button>
+                    />
                   </div>
                 </div>
               {/if}
@@ -437,20 +418,12 @@
 
     <!-- Guest Links List -->
     {#if allLinks.length === 0 && !showCreateForm}
-      <Card.Root>
-        <Card.Content
-          class="flex flex-col items-center justify-center py-12 text-center"
-        >
-          <div
-            class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted"
-          >
-            <Clock class="h-6 w-6 text-muted-foreground" />
-          </div>
-          <p class="text-sm text-muted-foreground max-w-sm">
-            No guest links yet. Create one to share temporary read-only access.
-          </p>
-        </Card.Content>
-      </Card.Root>
+      <EmptyState
+        art="key"
+        variant="dashed"
+        title="No guest links yet"
+        body="Create one to share temporary read-only access."
+      />
     {:else if allLinks.length > 0}
       <div class="space-y-2">
         {#each guestLinks as link (link.id)}
@@ -461,6 +434,7 @@
           >
             <Card.Root>
               <Card.Content class="flex items-center gap-4 py-3">
+                <UserAvatar name={link.label || "Untitled"} />
                 <div class="flex-1 min-w-0">
                   <div class="flex items-center gap-2">
                     <span class="font-medium text-sm truncate">

@@ -84,6 +84,7 @@ public class DemoGenerationTests
         var detector = new CompressionLowDetectionService(
             Mock.Of<IServiceProvider>(),
             ActiveTenantSnapshotTestDoubles.Unread(),
+            TimeProvider.System,
             NullLogger<CompressionLowDetectionService>.Instance);
         detector.DetectVShapeCandidates(readings.OrderBy(entry => entry.Mills).ToList())
             .Should().ContainSingle(candidate => candidate.LowestGlucose == DemoCoverageSeeds.CompressionNadirMgdl
@@ -112,6 +113,7 @@ public class DemoGenerationTests
         var detector = new CompressionLowDetectionService(
             Mock.Of<IServiceProvider>(),
             ActiveTenantSnapshotTestDoubles.Unread(),
+            TimeProvider.System,
             NullLogger<CompressionLowDetectionService>.Instance);
         var nights = Enumerable.Range(1, 10)
             .Select(daysAgo => DateOnly.FromDateTime(end).AddDays(-daysAgo))

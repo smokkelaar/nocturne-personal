@@ -19,8 +19,8 @@ namespace Nocturne.Infrastructure.Data.Migrations
             //
             // A tenant's move runs in its own block, so a document Postgres cannot convert never
             // aborts the migration and with it API startup. Postgres refuses a \u0000 escape that
-            // System.Text.Json reads, so each becomes � first: the same length, so the JSON
-            // stays valid even where the six characters follow an escaped backslash. An aggregate
+            // System.Text.Json reads, so each unescaped occurrence becomes � first. The regular
+            // expression preserves JSON strings containing a literal "\u0000" sequence. An aggregate
             // that is not JSON fails every read today and is dropped; one still unconvertible (a
             // non-ASCII escape on a database not encoded in UTF8) is left in place with a warning.
             // FORCE ROW LEVEL SECURITY binds the migrator too, hence the per-tenant GUC.
@@ -45,7 +45,11 @@ namespace Nocturne.Infrastructure.Data.Migrations
                         WHERE tenant_id = t.id AND key = 'ui:settings:complete' AND is_active;
 
                         BEGIN
-                            doc := replace(raw, '\u0000', '�')::jsonb;
+                            doc := regexp_replace(
+                                raw,
+                                $nul$(?<!\\)((?:\\\\)*)\\u0000$nul$,
+                                $replacement$\1�$replacement$,
+                                'g')::jsonb;
 
                             IF jsonb_typeof(doc) = 'object' THEN
                                 FOREACH section IN ARRAY ARRAY['devices', 'algorithm', 'features', 'notifications', 'services', 'dataQuality'] LOOP

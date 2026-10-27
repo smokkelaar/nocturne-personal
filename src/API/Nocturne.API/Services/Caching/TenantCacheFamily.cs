@@ -23,4 +23,7 @@ public static class TenantCacheFamily
 
     /// <summary>The profile activations the profile resolvers read.</summary>
     public const string ProfileActivations = "profile-activations";
+
+    /// <summary>The span and data sources of everything the tenant holds, for the data overview.</summary>
+    public const string DataOverview = "data-overview";
 }

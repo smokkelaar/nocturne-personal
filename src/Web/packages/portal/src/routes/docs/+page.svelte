@@ -1,6 +1,6 @@
 <script lang="ts">
     import { resolve } from "$app/paths";
-    import { ArtworkHero, ConfirmationBackground } from "@nocturne/watercolour";
+    import { ArtworkHero, ConfirmationBackground } from "water-ui";
     import Content from "../../content/docs/index.svx";
     import SupportNocturne from "$lib/components/docs/SupportNocturne.svelte";
     import ArrowRight from "@lucide/svelte/icons/arrow-right";

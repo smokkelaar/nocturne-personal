@@ -167,6 +167,7 @@ public class ReadEndpointScopeEnforcementTests
             ["PlatformController.GetTransitionStatus"] = V4Reason.StaticReference,
             ["SystemController.GetChannelStatuses"] = V4Reason.StaticReference,
             ["TrackersController.GetTriggerEventTypes"] = V4Reason.StaticReference,
+            ["TrackersController.GetEndEventTypes"] = V4Reason.StaticReference,
             ["ServicesController.GetUploaderApps"] = V4Reason.StaticReference,
             ["ServicesController.GetUploaderSetup"] = V4Reason.StaticReference,
             ["ServicesController.GetConnectorCapabilities"] = V4Reason.StaticReference,

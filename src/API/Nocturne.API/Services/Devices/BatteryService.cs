@@ -82,34 +82,20 @@ public class BatteryService : IBatteryService
                 result.Devices[deviceUri].Statuses.Add(reading);
             }
 
-            // For each device, find the minimum battery in the last 10 minutes
             var recentLowests = new List<BatteryReading>();
 
             foreach (var device in result.Devices.Values)
             {
-                // Sort by time descending
                 device.Statuses = device.Statuses.OrderByDescending(s => s.Mills).ToList();
+                device.Min = UploaderBatterySelection.RecentLowest(device.Statuses);
 
-                if (device.Statuses.Any())
+                if (device.Min != null)
                 {
-                    var first = device.Statuses.First();
-                    var tenMinutesAgo = first.Mills - (10 * 60 * 1000);
-
-                    var recentStatuses = device
-                        .Statuses.Where(s => s.Mills > tenMinutesAgo)
-                        .ToList();
-
-                    device.Min = recentStatuses.OrderBy(s => s.Battery ?? 100).FirstOrDefault();
-
-                    if (device.Min != null)
-                    {
-                        recentLowests.Add(device.Min);
-                    }
+                    recentLowests.Add(device.Min);
                 }
             }
 
-            // Find overall minimum
-            var overallMin = recentLowests.OrderBy(r => r.Battery ?? 100).FirstOrDefault();
+            var overallMin = UploaderBatterySelection.Weakest(recentLowests);
 
             if (overallMin != null)
             {

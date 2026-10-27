@@ -129,6 +129,17 @@ public static class TreatmentTypes
     public const string PodChange = "Pod Change";
 
     /// <summary>
+    /// Pod activated: a new pod is primed and delivering. MyLife and Glooko report a pod change as
+    /// this pair rather than as one Pod Change.
+    /// </summary>
+    public const string PodActivated = "Pod Activated";
+
+    /// <summary>
+    /// Pod deactivated: the pod has stopped delivering and is to come off.
+    /// </summary>
+    public const string PodDeactivated = "Pod Deactivated";
+
+    /// <summary>
     /// Reservoir/cartridge change event.
     /// </summary>
     public const string ReservoirChangeEvent = "Reservoir Change";
@@ -176,6 +187,8 @@ public static class TreatmentTypes
         [InsulinChange] = DeviceEventType.InsulinChange,
         [PumpBatteryChange] = DeviceEventType.PumpBatteryChange,
         [PodChange] = DeviceEventType.PodChange,
+        [PodActivated] = DeviceEventType.PodActivated,
+        [PodDeactivated] = DeviceEventType.PodDeactivated,
         [ReservoirChangeEvent] = DeviceEventType.ReservoirChange,
         [CannulaChange] = DeviceEventType.CannulaChange,
         [TransmitterSensorInsert] = DeviceEventType.TransmitterSensorInsert,

@@ -5535,6 +5535,11 @@ namespace Nocturne.Infrastructure.Data.Migrations
                         .HasColumnType("character varying(100)")
                         .HasColumnName("completion_event_type");
 
+                    b.Property<string>("Covers")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("covers");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
@@ -5553,6 +5558,16 @@ namespace Nocturne.Infrastructure.Data.Migrations
                         .HasMaxLength(1000)
                         .HasColumnType("character varying(1000)")
                         .HasColumnName("description");
+
+                    b.Property<string>("DeviceComponent")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("device_component");
+
+                    b.Property<string>("EndEventTypes")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("end_event_types");
 
                     b.Property<string>("Icon")
                         .IsRequired()

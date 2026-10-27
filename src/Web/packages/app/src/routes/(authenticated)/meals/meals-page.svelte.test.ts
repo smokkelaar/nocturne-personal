@@ -19,15 +19,7 @@ const fixture = (): MealEvent[] => [
   } as MealEvent,
 ];
 
-const server = { meals: fixture() };
-const shown = $state({ meals: fixture() });
-const mealsResource = remoteQuery(() => shown.meals);
-mealsResource.refresh = () => {
-  shown.meals = server.meals;
-  return Promise.resolve();
-};
-
-const suggestions: SuggestedMealMatch[] = [
+const suggestionsFixture = (): SuggestedMealMatch[] => [
   {
     foodEntryId: "food-1",
     foodName: "Porridge",
@@ -36,6 +28,21 @@ const suggestions: SuggestedMealMatch[] = [
     matchScore: 0.9,
   },
 ];
+
+const server = {
+  meals: fixture(),
+  dismissAnswer: (): Promise<unknown> => Promise.resolve(),
+};
+const shown = $state({ meals: fixture(), suggestions: suggestionsFixture() });
+const mealsResource = remoteQuery(() => shown.meals);
+mealsResource.refresh = () => {
+  shown.meals = server.meals;
+  return Promise.resolve();
+};
+/** What the meals list holds once an accept has landed on the server. */
+let mealsAfterAccept: MealEvent[];
+
+const { toastSuccess } = vi.hoisted(() => ({ toastSuccess: vi.fn() }));
 
 vi.mock("$api/generated/nutritions.generated.remote", () => ({
   getMeals: () => mealsResource,
@@ -63,11 +70,17 @@ vi.mock("$api/generated/patientRecords.generated.remote", () => ({
   getInsulins: () => remoteQuery(() => []),
 }));
 
+// The stub's `updates()` refreshes nothing, so the accept lands the refreshed lists itself.
 vi.mock("$api/generated/mealMatchings.generated.remote", () => ({
-  getSuggestions: () => remoteQuery(() => suggestions),
+  getSuggestions: () => remoteQuery(() => shown.suggestions),
   getFoodEntry: () => remoteQuery(() => undefined),
-  acceptMatch: remoteCommand(() => Promise.resolve()),
-  dismissMatch: remoteCommand(() => Promise.resolve()),
+  acceptMatch: remoteCommand(() => {
+    server.meals = mealsAfterAccept;
+    shown.meals = server.meals;
+    shown.suggestions = [];
+    return Promise.resolve();
+  }),
+  dismissMatch: remoteCommand(() => server.dismissAnswer()),
 }));
 
 vi.mock("sveltekit-search-params", async () => {
@@ -75,44 +88,65 @@ vi.mock("sveltekit-search-params", async () => {
   return { queryParam: () => writable(null) };
 });
 
-vi.mock("svelte-sonner", () => ({
-  toast: { success: vi.fn(), error: vi.fn() },
+vi.mock("svelte-sonner", async (original) => ({
+  ...(await original<typeof import("svelte-sonner")>()),
+  toast: { success: toastSuccess, error: vi.fn() },
 }));
+vi.mock("@nocturne/coach", () => ({ coachmark: () => () => {} }));
 
 import { getMeals } from "$api/generated/nutritions.generated.remote";
 import {
   getSuggestions,
   acceptMatch,
-  dismissMatch,
 } from "$api/generated/mealMatchings.generated.remote";
 import MealsPage from "./+page.svelte";
 
-describe("meals page", () => {
-  beforeEach(() => {
-    server.meals = fixture();
-    shown.meals = server.meals;
-    updatedBy(acceptMatch).length = 0;
-    updatedBy(dismissMatch).length = 0;
-  });
+beforeEach(() => {
+  toastSuccess.mockReset();
+  server.meals = fixture();
+  shown.meals = server.meals;
+  shown.suggestions = suggestionsFixture();
+  mealsAfterAccept = fixture();
+  updatedBy(acceptMatch).length = 0;
+  server.dismissAnswer = () => Promise.resolve();
+});
 
+const accept = () => page.getByRole("button", { name: "Accept" }).click();
+
+describe("meals page", () => {
   it("refreshes the suggestions and the meals the page reads when a match is accepted", async () => {
     render(MealsPage, {});
 
-    await page.getByRole("button", { name: "Accept" }).click();
+    await accept();
 
     await vi.waitFor(() =>
       expect(updatedBy(acceptMatch)).toEqual([[getSuggestions, getMeals]])
     );
   });
 
-  it("refreshes the suggestions the page reads when a match is dismissed", async () => {
+  it("takes a dismissed suggestion off the page before the server answers", async () => {
+    server.dismissAnswer = () => new Promise(() => {});
     render(MealsPage, {});
 
-    await page.getByRole("button", { name: "Dismiss" }).click();
+    const dismiss = page.getByRole("button", { name: "Dismiss" });
+    await expect.element(dismiss).toBeVisible();
+    await dismiss.click();
 
-    await vi.waitFor(() =>
-      expect(updatedBy(dismissMatch)).toEqual([[getSuggestions]])
-    );
+    await vi.waitFor(() => expect(dismiss.elements()).toHaveLength(0));
+  });
+
+  it("puts a dismissed suggestion back when the server refuses", async () => {
+    let refuse!: (err: unknown) => void;
+    server.dismissAnswer = () => new Promise((_, reject) => (refuse = reject));
+    render(MealsPage, {});
+
+    const dismiss = page.getByRole("button", { name: "Dismiss" });
+    await dismiss.click();
+    await vi.waitFor(() => expect(dismiss.elements()).toHaveLength(0));
+
+    refuse(new Error("offline"));
+
+    await expect.element(dismiss).toBeVisible();
   });
 
   it("drops a deleted bolus from the open insulin dialog", async () => {
@@ -128,5 +162,30 @@ describe("meals page", () => {
     await expect
       .element(page.getByText("No insulin records for this meal"))
       .toBeVisible();
+  });
+});
+
+describe("meals page, accepting a match", () => {
+  it("marks the matched meal's row and announces the accept", async () => {
+    mealsAfterAccept = fixture().map((meal) => ({ ...meal, isAttributed: true }));
+    render(MealsPage, {});
+
+    await accept();
+
+    await expect.element(page.getByRole("status")).toHaveTextContent("Meal match accepted");
+    await expect.element(page.getByText("Attributed", { exact: true })).toBeVisible();
+    expect(toastSuccess).not.toHaveBeenCalled();
+  });
+
+  it("confirms with a toast under the unattributed filter, where the row leaves the list", async () => {
+    mealsAfterAccept = [];
+    render(MealsPage, {});
+    await page.getByRole("button", { name: "Unattributed only" }).click();
+
+    await accept();
+
+    await expect.poll(() => toastSuccess.mock.calls.length).toBe(1);
+    expect(toastSuccess).toHaveBeenCalledWith("Meal match accepted");
+    await expect.element(page.getByText("No meals found in this range.")).toBeVisible();
   });
 });

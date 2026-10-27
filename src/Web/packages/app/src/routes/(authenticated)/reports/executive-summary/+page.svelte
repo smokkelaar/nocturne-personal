@@ -55,7 +55,7 @@
     { errorTitle: "Error loading executive summary", dateParams: reportsParams }
   );
 
-  const entries = $derived(reportsResource.current?.entries ?? []);
+  const readingCount = $derived(reportsResource.current?.readingCount ?? 0);
   const analysis = $derived(reportsResource.current?.analysis);
   const lastUpdated = $derived(reportsResource.current?.dateRange?.lastUpdated);
   const dayCount = $derived(reportsResource.date.dayCount);
@@ -426,7 +426,7 @@
 
             <div class="grid grid-cols-2 gap-4 text-sm pt-2 border-t">
               <div>
-                <div class="font-medium">{formatNumber(entries.length)}</div>
+                <div class="font-medium">{formatNumber(readingCount)}</div>
                 <div class="text-xs text-muted-foreground">Total readings</div>
               </div>
               <div>

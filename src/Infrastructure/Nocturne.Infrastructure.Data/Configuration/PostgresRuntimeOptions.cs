@@ -1,3 +1,4 @@
+using System.Data.Common;
 using Npgsql;
 
 namespace Nocturne.Infrastructure.Data.Configuration;
@@ -10,7 +11,7 @@ internal static class PostgresRuntimeOptions
 {
     /// <summary>
     /// Builds the runtime app <see cref="NpgsqlDataSource"/> — the singleton that owns the
-    /// connection pool — with the pool cap and statement timeout from
+    /// connection pool — with the pool cap, statement preparation and statement timeout from
     /// <paramref name="config"/> applied.
     /// </summary>
     /// <param name="config">Runtime PostgreSQL configuration.</param>
@@ -19,9 +20,22 @@ internal static class PostgresRuntimeOptions
     {
         var builder = new NpgsqlDataSourceBuilder(config.ConnectionString);
         builder.ConnectionStringBuilder.MaxPoolSize = config.MaxPoolSize;
+        if (!NamesMaxAutoPrepare(config.ConnectionString))
+            builder.ConnectionStringBuilder.MaxAutoPrepare = Math.Max(0, config.MaxAutoPrepare);
         ApplyStatementTimeout(builder.ConnectionStringBuilder, config.StatementTimeoutSeconds);
         ApplyIdleInTransactionTimeout(builder.ConnectionStringBuilder, config.IdleInTransactionTimeoutSeconds);
         return builder.Build();
+    }
+
+    /// <summary>
+    /// Whether the operator's connection string sets <c>Max Auto Prepare</c> itself, zero included,
+    /// which then wins over <see cref="PostgreSqlConfiguration.MaxAutoPrepare"/>. Npgsql's own
+    /// builder reports every keyword it knows as present, so only a plain parse can tell.
+    /// </summary>
+    private static bool NamesMaxAutoPrepare(string? connectionString)
+    {
+        var parsed = new DbConnectionStringBuilder { ConnectionString = connectionString ?? "" };
+        return parsed.ContainsKey("Max Auto Prepare") || parsed.ContainsKey("MaxAutoPrepare");
     }
 
     /// <summary>

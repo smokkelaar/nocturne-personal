@@ -6,7 +6,7 @@
   import Fingerprint from "@lucide/svelte/icons/fingerprint-pattern";
   import Loader2 from "@lucide/svelte/icons/loader-circle";
   import Check from "@lucide/svelte/icons/check";
-  import { Artwork } from "@nocturne/watercolour";
+  import { Artwork } from "water-ui";
   import { fingerprintArtwork } from "$lib/watercolour-icons";
   import {
     startRegistration,

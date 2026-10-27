@@ -3,6 +3,7 @@ import type { RequestEvent } from "@sveltejs/kit";
 // @ts-expect-error SvelteKit publishes no types for this entry point.
 import * as kitInternal from "@sveltejs/kit/internal/server";
 import { AUTH_COOKIE_NAMES } from "$lib/config/auth-cookies";
+import { clearSessionCache } from "$lib/server/session-cache";
 
 // The real loaders read catalogs that only a wuchale build compiles.
 vi.mock("wuchale/load-utils/server", () => ({
@@ -105,6 +106,7 @@ function freshHost() {
 }
 
 beforeEach(() => {
+  clearSessionCache();
   getSession.mockReset();
   getStatus.mockReset();
   getSession.mockResolvedValue({ isAuthenticated: true, subjectId: "s1", name: "Sam" });

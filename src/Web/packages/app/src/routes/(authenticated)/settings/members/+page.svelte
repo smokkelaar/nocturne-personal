@@ -1,4 +1,5 @@
 <script lang="ts">
+  import SuccessBanner from "$lib/forms/SuccessBanner.svelte";
   import { page } from "$app/state";
   import { satisfiesScope } from "$lib/authorization/scopes";
   import { describeSubmitError } from "$lib/forms";
@@ -7,14 +8,13 @@
   import * as Card from "$lib/components/ui/card";
   import { Button } from "$lib/components/ui/button";
   import Users from "@lucide/svelte/icons/users";
-  import Check from "@lucide/svelte/icons/check";
   import AlertTriangle from "@lucide/svelte/icons/triangle-alert";
   import Link from "@lucide/svelte/icons/link";
   import ShieldAlert from "@lucide/svelte/icons/shield-alert";
   import Globe from "@lucide/svelte/icons/globe";
   import Lock from "@lucide/svelte/icons/lock";
   import ScrollText from "@lucide/svelte/icons/scroll-text";
-  import { Artwork } from "@nocturne/watercolour";
+  import { EmptyState } from "$lib/components/shared";
   import { getRoles } from "$lib/api/generated/roles.generated.remote";
   import { getShareLink } from "$api/generated/shareLinks.generated.remote";
   import {
@@ -102,7 +102,7 @@
   // --- UI state ---
   let showCreateInvite = $state(false);
   let errorMessage = $state<string | null>(null);
-  let successMessage = $state<string | null>(null);
+  let successMessage = $state<{ text: string; wash: boolean } | null>(null);
 
   // --- Member edit state ---
   let expandedMember = $state<string | null>(null);
@@ -151,7 +151,7 @@
           ? [setMemberLimitTo24Hours({ id: memberId, request: { limitTo24Hours } })]
           : []),
       ]);
-      successMessage = "Member updated successfully.";
+      successMessage = { text: "Member updated successfully.", wash: true };
       expandedMember = null;
       clearMessages();
     } catch (e) {
@@ -168,7 +168,7 @@
       // The approved requester becomes a member; GetMembers is on another
       // controller so ApproveRequest's Invalidates cannot name it.
       await membersQuery?.refresh();
-      successMessage = "Membership request approved.";
+      successMessage = { text: "Membership request approved.", wash: true };
       clearMessages();
     } catch (err) {
       errorMessage = describeSubmitError(err, "Failed to approve request. Try again.");
@@ -180,7 +180,7 @@
     errorMessage = null;
     try {
       await denyRequest(requestId);
-      successMessage = "Membership request denied.";
+      successMessage = { text: "Membership request denied.", wash: false };
       clearMessages();
     } catch (err) {
       errorMessage = describeSubmitError(err, "Failed to deny request. Try again.");
@@ -235,10 +235,7 @@
   {/if}
 
   {#if successMessage}
-    <div class="flex items-start gap-3 rounded-md border border-success/30 bg-success/10 p-3">
-      <Check class="mt-0.5 h-4 w-4 shrink-0 text-success" />
-      <p class="text-sm text-success">{successMessage}</p>
-    </div>
+    <SuccessBanner wash={successMessage.wash}>{successMessage.text}</SuccessBanner>
   {/if}
 
   <!-- Public access -->
@@ -267,20 +264,12 @@
       {/if}
 
       {#if visibleMembers.length === 0}
-        <Card.Root>
-          <Card.Content class="flex flex-col items-center justify-center py-12 text-center">
-            <Artwork
-              artwork="people-group"
-              palette="dusk"
-              motion="auto"
-              autoplay="once"
-              class="mx-auto mb-4 size-48"
-            />
-            <p class="max-w-sm text-sm text-muted-foreground">
-              No members. Invite someone to share your data.
-            </p>
-          </Card.Content>
-        </Card.Root>
+        <EmptyState
+          art="people-group"
+          variant="card"
+          title="No members"
+          body="Invite someone to share your data."
+        />
       {:else}
         {#each visibleMembers as member (member.subjectId)}
           <div transition:slide={{ duration: 300 }} animate:flip={{ duration: 300 }}>
@@ -300,7 +289,7 @@
                 errorMessage = null;
                 try {
                   await removeMember(member.subjectId);
-                  successMessage = "Member removed successfully.";
+                  successMessage = { text: "Member removed successfully.", wash: false };
                   clearMessages();
                 } catch (e) {
                   errorMessage = describeSubmitError(e, "Failed to remove member. Try again.");
@@ -318,10 +307,6 @@
         {#if showCreateInvite}
           <CreateInviteCard
             roles={allRoles}
-            onCreated={() => {
-              successMessage = "Invite link created. Share it with the new member.";
-              clearMessages();
-            }}
             onCancel={() => (showCreateInvite = false)}
           />
         {:else}
@@ -347,7 +332,7 @@
             errorMessage = null;
             try {
               await revokeInvite(inviteId);
-              successMessage = "Invite revoked successfully.";
+              successMessage = { text: "Invite revoked successfully.", wash: false };
               clearMessages();
             } catch (err) {
               errorMessage = describeSubmitError(

@@ -82,6 +82,12 @@ public enum TrackerOfferKind
     Pod,
     InfusionSet,
     Reservoir,
+
+    /// <summary>A reusable pump base with a service life (<see cref="PumpComponentKind.Base"/>).</summary>
+    Base,
+
+    /// <summary>A reusable pump controller with a service life (<see cref="PumpComponentKind.Controller"/>).</summary>
+    Controller,
 }
 
 [JsonConverter(typeof(JsonStringEnumConverter<TrackerOfferState>))]
@@ -108,6 +114,10 @@ public enum TrackerOfferState
 /// The catalogue rates no wear time for the device, so the lifespan is the kind's typical one.
 /// </param>
 /// <param name="DefinitionId">The tracker behind <paramref name="State"/>, when it is not off.</param>
+/// <param name="StartsByHand">
+/// No device event reports the part being replaced, so the tracker does not start on its own: it is
+/// started in tracker settings.
+/// </param>
 public record TrackerOffer(
     TrackerOfferKind Kind,
     string DeviceName,
@@ -115,7 +125,8 @@ public record TrackerOffer(
     int WearHours,
     bool WearTimeIsTypical,
     TrackerOfferState State,
-    Guid? DefinitionId);
+    Guid? DefinitionId,
+    bool StartsByHand = false);
 
 /// <summary>Everything the Devices setup item shows.</summary>
 /// <param name="Devices">The CGM slot, then the pump slot.</param>

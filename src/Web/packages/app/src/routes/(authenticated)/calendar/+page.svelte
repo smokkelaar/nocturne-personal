@@ -2,6 +2,7 @@
   import { goto } from "$app/navigation";
   import { resolve } from "$app/paths";
   import { page } from "$app/state";
+  import { startQueries } from "$lib/utils/start-queries";
   import * as Card from "$lib/components/ui/card";
   import { getPunchCardData } from "$api/generated/statistics.generated.remote";
   import { remoteErrorMessage } from "$lib/api/remote-error";
@@ -85,6 +86,9 @@
   const trackersQuery = getActiveInstances();
   const historyQuery = getInstanceHistory({ limit: 100 });
   const definitionsQuery = getDefinitions({});
+  // Only the first month's query needs starting with the others; the template reads every later one.
+  // svelte-ignore state_referenced_locally
+  startQueries(punchCardQuery, trackersQuery, historyQuery, definitionsQuery);
 
   // Tracker event types
   type TrackerEventType = "start" | "due" | "completed";

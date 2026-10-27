@@ -3,7 +3,12 @@ import { describe, it, expect, vi, afterEach } from 'vitest';
 import { createServer } from 'http';
 import type { AddressInfo } from 'node:net';
 import { io as connectClient, type Socket as ClientSocket } from 'socket.io-client';
-import SocketIOServer, { pickHandshakeHost, resolveTenantSlug } from './socketio-server.js';
+import SocketIOServer, {
+  isShareHost,
+  pickHandshakeHost,
+  resolveTenantSlug,
+  SHARE_REALTIME_UNSUPPORTED,
+} from './socketio-server.js';
 import { signHandshakeTicket, type RealtimeGrant } from './handshake-ticket.js';
 import MessageTranslator from './message-translator.js';
 
@@ -13,6 +18,7 @@ const TENANT_ID = '0198a3c4-7e21-7b10-9d2f-5c6e7f809a1b';
 /** The server, with `TENANT_ID` as the tenant every slug names. */
 function servingTenant(server: SocketIOServer): SocketIOServer {
   server.isCurrentTenant = async (_slug, id) => id === TENANT_ID;
+  server.holdsTenantNow = (_slug, id) => id === TENANT_ID;
   return server;
 }
 
@@ -44,6 +50,26 @@ describe('resolveTenantSlug', () => {
   });
 });
 
+describe('isShareHost', () => {
+  const base = 'nocturne.run';
+
+  it('names a {token}.share.{baseDomain} host a share host', () => {
+    expect(isShareHost('abc123.share.nocturne.run', base)).toBe(true);
+    expect(isShareHost('ABC123.SHARE.nocturne.run:443', base)).toBe(true);
+  });
+
+  it.each(['share.nocturne.run', 'rhys.nocturne.run', 'nocturne.run', 'abc.share.evil.com', 'a.b.share.nocturne.run'])(
+    'does not name %s a share host',
+    (host) => {
+      expect(isShareHost(host, base)).toBe(false);
+    },
+  );
+
+  it('does not name a missing host a share host', () => {
+    expect(isShareHost(undefined, base)).toBe(false);
+  });
+});
+
 describe('pickHandshakeHost', () => {
   it('prefers X-Forwarded-Host over Host', () => {
     expect(pickHandshakeHost({ 'x-forwarded-host': 'rhys.nocturne.run', host: 'web:5173' })).toBe(
@@ -72,10 +98,10 @@ function makeServer(apexTenantSlug: string | null = null): SocketIOServer {
   return servingTenant(new SocketIOServer(createServer(), {}, 'nocturne.run', apexTenantSlug, SECRET));
 }
 
-function fakeSocket(headers: HandshakeHeaders, auth: { token?: string } = {}) {
+function fakeSocket(headers: HandshakeHeaders, auth: { token?: string } = {}, query: { token?: string } = {}) {
   return {
     id: 'sock1',
-    handshake: { headers, auth },
+    handshake: { headers, auth, query },
     data: {} as Record<string, unknown>,
     join: vi.fn(),
     on: vi.fn(),
@@ -208,6 +234,30 @@ describe('SocketIOServer.authorizeHandshake', () => {
     expect(isCurrentTenant).toHaveBeenCalledWith('rhys', replaced);
     expect(next).toHaveBeenCalledWith(expect.objectContaining({ message: 'unauthorized' }));
     expect(socket.data.tenantSlug).toBeUndefined();
+  });
+
+  it('refuses a ticket whose tenant list changed between the check and the grant', async () => {
+    const server = makeServer();
+    const recreated = '0198a3c4-0000-7000-8000-000000000001';
+    let current = TENANT_ID;
+    server.holdsTenantNow = (_slug, id) => id === current;
+    server.isCurrentTenant = async (_slug, id) => {
+      const held = id === current;
+      current = recreated;
+      return held;
+    };
+    const next = vi.fn();
+    const socket = fakeSocket(
+      { 'x-forwarded-host': 'rhys.nocturne.run' },
+      { token: signHandshakeTicket(SECRET, 'rhys.nocturne.run', TENANT_ID, grant(true)) },
+    );
+
+    await server.authorizeHandshake(socket as never, next);
+
+    expect(next).toHaveBeenCalledTimes(1);
+    expect(next).toHaveBeenCalledWith(expect.objectContaining({ message: 'unauthorized' }));
+    expect(socket.data.tenantSlug).toBeUndefined();
+    expect(socket.data.tenantRelay).toBeUndefined();
   });
 
   it('rejects every ticket until it is told which tenant a slug names', async () => {
@@ -353,6 +403,123 @@ describe('SocketIOServer.authorizeHandshake', () => {
     expect(next).toHaveBeenCalledWith();
     expect(socket.data.tenantSlug).toBe('rhys');
     expect(socket.join).not.toHaveBeenCalled();
+  });
+
+  it('admits a legacy access token in the query unauthorized, keeping it for authorize', async () => {
+    const server = makeServer();
+    const next = vi.fn();
+    const socket = fakeSocket({ 'x-forwarded-host': 'rhys.nocturne.run' }, {}, { token: 'loopfollow-a1b2c3d4e5f60718' });
+
+    await server.authorizeHandshake(socket as never, next);
+
+    expect(next).toHaveBeenCalledWith();
+    expect(socket.data.tenantSlug).toBeUndefined();
+    expect(socket.data.pendingTenantSlug).toBe('rhys');
+    expect(socket.data.handshakeToken).toBe('loopfollow-a1b2c3d4e5f60718');
+  });
+
+  it('still rejects a tampered ticket in the query', async () => {
+    const server = makeServer();
+    const next = vi.fn();
+    const ticket = signHandshakeTicket(SECRET, 'rhys.nocturne.run', TENANT_ID, grant(true));
+    const socket = fakeSocket(
+      { 'x-forwarded-host': 'rhys.nocturne.run' },
+      {},
+      { token: ticket.slice(0, -1) + (ticket.endsWith('a') ? 'b' : 'a') },
+    );
+
+    await server.authorizeHandshake(socket as never, next);
+
+    expect(next.mock.calls[0][0].message).toBe('unauthorized');
+    expect(socket.data.pendingTenantSlug).toBeUndefined();
+    expect(socket.data.handshakeToken).toBeUndefined();
+  });
+
+  it('admits a valid ticket in the query as a ticket', async () => {
+    const server = makeServer();
+    const next = vi.fn();
+    const socket = fakeSocket(
+      { 'x-forwarded-host': 'rhys.nocturne.run' },
+      {},
+      { token: signHandshakeTicket(SECRET, 'rhys.nocturne.run', TENANT_ID, grant(true)) },
+    );
+
+    await server.authorizeHandshake(socket as never, next);
+
+    expect(next).toHaveBeenCalledWith();
+    expect(socket.data.tenantSlug).toBe('rhys');
+    expect(socket.data.handshakeToken).toBeUndefined();
+  });
+});
+
+describe('SocketIOServer legacy LoopFollow connection', () => {
+  const clients: ClientSocket[] = [];
+  const TOKEN = 'loopfollow-a1b2c3d4e5f60718';
+
+  afterEach(() => {
+    for (const client of clients.splice(0)) client.disconnect();
+    vi.unstubAllGlobals();
+  });
+
+  async function listening() {
+    const http = createServer();
+    const server = servingTenant(new SocketIOServer(http, {}, 'nocturne.run', null, SECRET, 'http://api.internal'));
+    await server.start();
+    await new Promise<void>((resolve) => http.listen(0, '127.0.0.1', resolve));
+    return { server, port: (http.address() as AddressInfo).port };
+  }
+
+  /** Connects the way LoopFollow does: its token in the query, then an `authorize` carrying no credential. */
+  async function loopFollow(port: number, token: string) {
+    const client = connectClient(`http://127.0.0.1:${port}`, {
+      transports: ['websocket'],
+      reconnection: false,
+      extraHeaders: { 'X-Forwarded-Host': 'rhys.nocturne.run' },
+      query: { token },
+    });
+    clients.push(client);
+    const updates: unknown[] = [];
+    client.on('dataUpdate', (payload: unknown) => updates.push(payload));
+    const disconnected = new Promise<void>((resolve) => client.once('disconnect', () => resolve()));
+    await new Promise<void>((resolve) => client.once('connect_ack', () => resolve()));
+    const authorized: unknown = await client.emitWithAck('authorize', { client: 'LoopFollow', history: 1 });
+    return { client, updates, authorized, disconnected };
+  }
+
+  const settle = () => new Promise((resolve) => setTimeout(resolve, 50));
+
+  it('authorizes on its query token and receives dataUpdate', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve({ tenantRelay: true, categories: ['entries'], historyClamped: false }),
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    const { server, port } = await listening();
+
+    const { updates, authorized } = await loopFollow(port, TOKEN);
+    server.broadcastDataUpdate({ sgvs: [{ mgdl: 120 }] }, 'rhys');
+    await settle();
+
+    expect(authorized).toEqual(expect.objectContaining({ read: true }));
+    expect(new URL(String(fetchMock.mock.calls[0][0])).searchParams.get('token')).toBe(TOKEN);
+    expect(updates).toEqual([{ sgvs: [{ mgdl: 120 }] }]);
+    await server.stop();
+  });
+
+  it('refuses a query token the API refuses and delivers nothing', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, status: 401 }));
+    const { server, port } = await listening();
+
+    const { client, updates, authorized, disconnected } = await loopFollow(port, 'loopfollow-ffffffffffffffff');
+    await disconnected;
+    server.broadcastDataUpdate({ sgvs: [{ mgdl: 120 }] }, 'rhys');
+    await settle();
+
+    expect(authorized).toEqual(expect.objectContaining({ read: false }));
+    expect(client.connected).toBe(false);
+    expect(updates).toEqual([]);
+    await server.stop();
   });
 });
 
@@ -532,18 +699,116 @@ describe('SocketIOServer.handleAuthorize', () => {
     );
   });
 
-  it('refuses to authorize when no credentials are supplied', async () => {
-    const fetchMock = vi.fn();
+  it('refuses an anonymous authorize the API admission refuses, as it does on a private tenant', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: false, status: 401 });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const server = makeApiServer();
+    const socket = pendingSocket('rhys');
+    const callback = vi.fn();
+
+    await server.handleAuthorize(socket as never, { client: 'LoopFollow', history: 1 }, callback);
+
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(new URL(String(url)).searchParams.has('token')).toBe(false);
+    expect(init.headers['api-secret']).toBeUndefined();
+    expect(init.headers['Authorization']).toBeUndefined();
+    expect(socket.join).not.toHaveBeenCalled();
+    expect(socket.data.tenantSlug).toBeUndefined();
+    expect(socket.disconnect).toHaveBeenCalled();
+    expect(callback).toHaveBeenCalledWith(expect.objectContaining({ read: false }));
+  });
+
+  it('grants an anonymous authorize the read the API admission gives it, and no room it does not', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(admission({ tenantRelay: false, categories: ['entries'] })));
+
+    const server = makeApiServer();
+    const socket = pendingSocket('rhys');
+    const callback = vi.fn();
+
+    await server.handleAuthorize(socket as never, {}, callback);
+
+    expect(socket.data.tenantSlug).toBe('rhys');
+    expect(socket.join).not.toHaveBeenCalled();
+    expect(socket.disconnect).not.toHaveBeenCalled();
+    expect(callback).toHaveBeenCalledWith(expect.objectContaining({ read: true }));
+  });
+
+  it('presents the handshake query token when the authorize payload carries no credential', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(admission({ tenantRelay: true }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const server = makeApiServer();
+    const socket = pendingSocket('rhys');
+    socket.data.handshakeToken = 'loopfollow-a1b2c3d4e5f60718';
+
+    await server.handleAuthorize(socket as never, { client: 'LoopFollow', history: 1 });
+
+    expect(new URL(String(fetchMock.mock.calls[0][0])).searchParams.get('token')).toBe('loopfollow-a1b2c3d4e5f60718');
+    expect(socket.join).toHaveBeenCalledWith('tenant:rhys');
+    expect(socket.data.readmission).toEqual({ kind: 'credential', token: 'loopfollow-a1b2c3d4e5f60718' });
+  });
+
+  it('presents a secret the API refuses as an api-secret again as an access token', async () => {
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce({ ok: false, status: 401 })
+      .mockResolvedValueOnce(admission({ tenantRelay: true }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const server = makeApiServer();
+    const socket = pendingSocket('rhys');
+    const callback = vi.fn();
+
+    await server.handleAuthorize(socket as never, { secret: 'loopfollow-a1b2c3d4e5f60718' }, callback);
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    const [url, init] = fetchMock.mock.calls[1];
+    expect(new URL(String(url)).searchParams.get('token')).toBe('loopfollow-a1b2c3d4e5f60718');
+    expect(init.headers['api-secret']).toBeUndefined();
+    expect(socket.join).toHaveBeenCalledWith('tenant:rhys');
+    expect(socket.data.readmission).toEqual({ kind: 'credential', token: 'loopfollow-a1b2c3d4e5f60718' });
+    expect(callback).toHaveBeenCalledWith(expect.objectContaining({ read: true }));
+  });
+
+  it('presents a secret the API accepts as an api-secret only once', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(admission({ tenantRelay: true }));
     vi.stubGlobal('fetch', fetchMock);
 
     const server = makeApiServer();
     const socket = pendingSocket('rhys');
 
-    await server.handleAuthorize(socket as never, {});
+    await server.handleAuthorize(socket as never, { secret: 'sha1hash' });
 
-    expect(fetchMock).not.toHaveBeenCalled();
-    expect(socket.join).not.toHaveBeenCalled();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(new URL(String(fetchMock.mock.calls[0][0])).searchParams.has('token')).toBe(false);
+  });
+
+  it('does not present a secret again while the API gives no answer', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: false, status: 503 });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const server = makeApiServer();
+    const socket = pendingSocket('rhys');
+
+    await server.handleAuthorize(socket as never, { secret: 'loopfollow-a1b2c3d4e5f60718' });
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(socket.disconnect).toHaveBeenCalled();
+  });
+
+  it('refuses a token the API refuses in both forms', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, status: 401 }));
+
+    const server = makeApiServer();
+    const socket = pendingSocket('rhys');
+    const callback = vi.fn();
+
+    await server.handleAuthorize(socket as never, { secret: 'not-a-token' }, callback);
+
+    expect(socket.join).not.toHaveBeenCalled();
+    expect(socket.data.tenantSlug).toBeUndefined();
+    expect(socket.disconnect).toHaveBeenCalled();
+    expect(callback).toHaveBeenCalledWith(expect.objectContaining({ read: false }));
   });
 
   it('refuses to authorize a socket whose host resolved to no tenant', async () => {
@@ -1497,4 +1762,55 @@ describe('SocketIOServer v3 /alarm broadcast fan-out', () => {
     expectRooms();
     server.getIO()!.close();
   });
+});
+
+describe('a share host handshake', () => {
+  const clients: ClientSocket[] = [];
+  const host = 'abc123.share.nocturne.run';
+
+  afterEach(() => {
+    for (const client of clients.splice(0)) client.disconnect();
+    vi.unstubAllGlobals();
+  });
+
+  it.each(['/', '/storage', '/alarm'])(
+    'is refused on %s before any tenant list read or API probe',
+    async (namespace) => {
+      const fetchMock = vi.fn();
+      vi.stubGlobal('fetch', fetchMock);
+      const http = createServer();
+      const server = new SocketIOServer(http, {}, 'nocturne.run', null, SECRET, 'http://api.internal');
+      const isCurrentTenant = vi.fn(async () => true);
+      const holdsTenantNow = vi.fn(() => true);
+      const onApexUnresolved = vi.fn(async () => {});
+      const onTenantAdmitted = vi.fn();
+      server.isCurrentTenant = isCurrentTenant;
+      server.holdsTenantNow = holdsTenantNow;
+      server.onApexUnresolved = onApexUnresolved;
+      server.onTenantAdmitted = onTenantAdmitted;
+      await server.start();
+      await new Promise<void>((resolve) => http.listen(0, '127.0.0.1', resolve));
+      const port = (http.address() as AddressInfo).port;
+
+      for (const auth of [{}, { token: signHandshakeTicket(SECRET, host, TENANT_ID, grant(true)) }]) {
+        const client = connectClient(`http://127.0.0.1:${port}${namespace}`, {
+          transports: ['websocket'],
+          reconnection: false,
+          extraHeaders: { 'X-Forwarded-Host': host },
+          auth,
+        });
+        clients.push(client);
+
+        const error = await new Promise<Error>((resolve) => client.once('connect_error', resolve));
+
+        expect(error.message).toBe(SHARE_REALTIME_UNSUPPORTED);
+      }
+      expect(isCurrentTenant).not.toHaveBeenCalled();
+      expect(holdsTenantNow).not.toHaveBeenCalled();
+      expect(onApexUnresolved).not.toHaveBeenCalled();
+      expect(onTenantAdmitted).not.toHaveBeenCalled();
+      expect(fetchMock).not.toHaveBeenCalled();
+      await server.stop();
+    },
+  );
 });

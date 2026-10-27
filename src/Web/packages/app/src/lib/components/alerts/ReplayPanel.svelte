@@ -214,6 +214,15 @@
     try {
       const range = computeRange();
       const date = !range && selectedDate ? selectedDate.toString() : undefined;
+      // Fetched alongside the replay rather than after it; falls back to the seeded
+      // availableRules prop on error. A microtask later, because the effect below calls this
+      // synchronously and `.run()` refuses to run inside an effect.
+      const rulesList = Promise.resolve()
+        .then(() => getRules().run())
+        .then(
+          (fresh) => (fresh && fresh.length > 0 ? fresh : availableRules),
+          () => availableRules
+        );
       const replayResult = rule
         ? await replayDryRun({
             date,
@@ -229,15 +238,7 @@
             to: range?.to.toISOString(),
           });
 
-      // Falls back to the seeded availableRules prop on error.
-      let rulesList: AlertRuleResponse[] = availableRules;
-      try {
-        const fresh = await getRules().run();
-        if (fresh && fresh.length > 0) rulesList = fresh;
-      } catch {
-        // Fall through to the seed list.
-      }
-      allRules = rulesList;
+      allRules = await rulesList;
       result = replayResult ?? null;
     } catch (err) {
       runError = describeSubmitError(err, "Failed to run replay. Try again.");

@@ -1,6 +1,7 @@
 <script lang="ts">
   import BellRing from "@lucide/svelte/icons/bell-ring";
   import { isoNow } from "$lib/utils/now";
+  import { startQueries } from "$lib/utils/start-queries";
   import { formatClock } from "$lib/utils/formatting";
   import { goto } from "$app/navigation";
   import { page } from "$app/state";
@@ -42,7 +43,7 @@
   import Check from "@lucide/svelte/icons/check";
   import ChevronRight from "@lucide/svelte/icons/chevron-right";
   import Loader2 from "@lucide/svelte/icons/loader-circle";
-  import { Artwork } from "@nocturne/watercolour";
+  import { EmptyState } from "$lib/components/shared";
   import AppLogo from "$lib/components/ui/AppLogo.svelte";
   import { resolve } from "$app/paths";
 
@@ -69,6 +70,7 @@
   const activeAlertsQuery = getActiveAlerts();
   const historyQuery = getAlertHistory({ page: 1, pageSize: 50 });
   const dndQuery = getTenantAlertSettings();
+  startQueries(rulesQuery, activeAlertsQuery, historyQuery, dndQuery);
   refreshOnReturn(() => void dndQuery.refresh());
 
   // ---- Mutation state ----
@@ -350,22 +352,18 @@
       </CardHeader>
       <CardContent>
         {#if rules.length === 0}
-          <div class="rounded-md border border-dashed py-10 text-center text-muted-foreground">
-            <Artwork
-              artwork="alarm-bell"
-              palette="moonlight"
-              motion="auto"
-              autoplay="once"
-              class="mx-auto size-48"
-            />
-            <p class="mt-2 text-sm font-medium">No alert rules yet</p>
-            <p class="mt-1 text-xs">Add a rule so Nocturne can notify you when glucose goes out of range.</p>
-            {#if canManageAlerts}
-              <Button class="mt-3" size="sm" onclick={newRule}>
-                <Plus class="h-4 w-4 mr-2" /> New rule
-              </Button>
-            {/if}
-          </div>
+          <EmptyState
+            art="alarm-bell"
+            variant="outline"
+            title="No alert rules yet"
+            body="Add a rule so Nocturne can notify you when glucose goes out of range."
+            action={canManageAlerts ? newRuleAction : undefined}
+          />
+          {#snippet newRuleAction()}
+            <Button size="sm" onclick={newRule}>
+              <Plus class="h-4 w-4 mr-2" /> New rule
+            </Button>
+          {/snippet}
         {:else}
           <div class="space-y-2">
             {#each rules as rule (rule.id)}

@@ -12,7 +12,6 @@
   } from "$lib/components/ui/card";
   import ArrowLeft from "@lucide/svelte/icons/arrow-left";
   import PlayCircle from "@lucide/svelte/icons/circle-play";
-  import Loader2 from "@lucide/svelte/icons/loader-circle";
   import ReplayPanel from "$lib/components/alerts/ReplayPanel.svelte";
 
   const rulesQuery = getRules();
@@ -51,18 +50,8 @@
       </CardDescription>
     </CardHeader>
     <CardContent>
-      <svelte:boundary>
-        {#snippet pending()}
-          <div class="flex items-center justify-center py-6 text-muted-foreground">
-            <Loader2 class="h-5 w-5 animate-spin" />
-          </div>
-        {/snippet}
-        {#snippet failed()}
-          <ReplayPanel availableRules={[]} />
-        {/snippet}
-        {@const rules = (await rulesQuery) ?? []}
-        <ReplayPanel availableRules={rules} />
-      </svelte:boundary>
+      <!-- The rules only back the panel's fallback list, so its first replay does not wait on them. -->
+      <ReplayPanel availableRules={rulesQuery.current ?? []} />
     </CardContent>
   </Card>
 </div>

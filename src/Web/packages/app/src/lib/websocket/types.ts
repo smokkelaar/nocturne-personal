@@ -30,6 +30,8 @@ export type WebSocketConnectionStatus =
 // WebSocket client configuration
 export interface WebSocketConfig {
   url: string;
+  /** The host has no realtime feed, so the client never asks for a ticket or opens a socket. */
+  disabled?: boolean;
   reconnectAttempts: number;
   reconnectDelay: number;
   maxReconnectDelay: number;

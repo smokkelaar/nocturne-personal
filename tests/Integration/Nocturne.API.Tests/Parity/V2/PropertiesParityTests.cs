@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using System.Text.Json.Nodes;
 using Nocturne.API.Tests.Integration.Infrastructure;
 using Xunit;
 using Xunit.Abstractions;
@@ -15,6 +16,12 @@ public class PropertiesParityTests : ParityTestBase
 {
     public PropertiesParityTests(ParityTestFixture fixture, ITestOutputHelper output)
         : base(fixture, output) { }
+
+    public override async Task InitializeAsync()
+    {
+        await base.InitializeAsync();
+        await WaitForNightscoutEmptyAsync();
+    }
 
     protected override ComparisonOptions GetComparisonOptions()
     {
@@ -69,6 +76,7 @@ public class PropertiesParityTests : ParityTestBase
         };
         await SeedTreatmentsAsync(treatments);
 
+        await WaitForNightscoutReloadAsync("/api/v2/summary", sgvs: 5, treatments: 1);
         await AssertGetParityAsync("/api/v2/properties");
     }
 
@@ -77,6 +85,7 @@ public class PropertiesParityTests : ParityTestBase
     {
         await SeedEntrySequenceAsync(count: 3);
 
+        await WaitForNightscoutReloadAsync("/api/v2/summary", sgvs: 3);
         await AssertGetParityAsync("/api/v2/properties?pretty=true");
     }
 
@@ -101,6 +110,7 @@ public class PropertiesParityTests : ParityTestBase
         };
         await SeedTreatmentsAsync(treatments);
 
+        await WaitForNightscoutReloadAsync("/api/v2/summary", sgvs: 0, treatments: 2);
         await AssertGetParityAsync("/api/v2/properties/iob");
     }
 
@@ -121,6 +131,7 @@ public class PropertiesParityTests : ParityTestBase
         };
         await SeedTreatmentsAsync(treatments);
 
+        await WaitForNightscoutReloadAsync("/api/v2/summary", sgvs: 0, treatments: 2);
         await AssertGetParityAsync("/api/v2/properties/cob");
     }
 
@@ -129,6 +140,7 @@ public class PropertiesParityTests : ParityTestBase
     {
         await SeedProfileForTestAsync();
 
+        await WaitForNightscoutBodyAsync("/api/v2/summary", body => body?["profile"] is JsonObject);
         await AssertGetParityAsync("/api/v2/properties/basal");
     }
 
@@ -139,6 +151,7 @@ public class PropertiesParityTests : ParityTestBase
         await SeedEntrySequenceAsync(count: 5);
         await SeedProfileForTestAsync();
 
+        await WaitForNightscoutReloadAsync("/api/v2/summary", sgvs: 5);
         await AssertGetParityAsync("/api/v2/properties/bwp");
     }
 
@@ -153,6 +166,9 @@ public class PropertiesParityTests : ParityTestBase
                 timestamp: TestTimeProvider.GetTestTime().AddDays(-2))
         };
         await SeedTreatmentsAsync(treatments);
+        await WaitForNightscoutBodyAsync(
+            "/api/v2/properties/cage",
+            body => body?["cage"]?["found"]?.GetValue<bool>() == true);
 
         await AssertGetParityAsync("/api/v2/properties/cage");
     }
@@ -168,6 +184,9 @@ public class PropertiesParityTests : ParityTestBase
                 timestamp: TestTimeProvider.GetTestTime().AddDays(-5))
         };
         await SeedTreatmentsAsync(treatments);
+        await WaitForNightscoutBodyAsync(
+            "/api/v2/properties/sage",
+            body => body?["sage"]?["Sensor Start"]?["found"]?.GetValue<bool>() == true);
 
         await AssertGetParityAsync("/api/v2/properties/sage");
     }
@@ -186,6 +205,7 @@ public class PropertiesParityTests : ParityTestBase
         await SeedTreatmentsAsync(treatments);
         await SeedProfileForTestAsync();
 
+        await WaitForNightscoutReloadAsync("/api/v2/summary", sgvs: 5, treatments: 1);
         await AssertGetParityAsync("/api/v2/properties/iob,cob,basal");
     }
 
@@ -194,6 +214,7 @@ public class PropertiesParityTests : ParityTestBase
     {
         await SeedEntrySequenceAsync(count: 3);
 
+        await WaitForNightscoutReloadAsync("/api/v2/summary", sgvs: 3);
         await AssertGetParityAsync("/api/v2/properties/iob?pretty=true");
     }
 
@@ -218,6 +239,7 @@ public class PropertiesParityTests : ParityTestBase
     {
         await SeedEntrySequenceAsync(count: 3);
 
+        await WaitForNightscoutReloadAsync("/api/v2/summary", sgvs: 3);
         await AssertGetParityAsync("/api/v2/properties/iob,invalidprop,cob");
     }
 

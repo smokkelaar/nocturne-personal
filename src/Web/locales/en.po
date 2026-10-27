@@ -435,7 +435,7 @@ msgstr "Unnamed {0}"
 #: src/lib/components/dashboard/BGStatisticsCards.svelte
 #: src/lib/components/dashboard/CurrentBGDisplay.svelte
 #: src/lib/components/dashboard/glucose-chart/dialogs/DeliveryInspectionDialog.svelte
-#: src/lib/components/dashboard/widgets/BgDeltaWidget.svelte
+#: src/lib/components/dashboard/widgets/CurrentGlucoseWidget.svelte
 #: src/lib/components/dashboard/widgets/LastUpdatedWidget.svelte
 #: src/lib/components/dashboard/widgets/LastUpdatedWidget.svelte
 #: src/lib/components/layout/MobileHeader.svelte
@@ -695,10 +695,8 @@ msgstr "Configure OpenID Connect providers for single sign-on."
 #~ msgid "<0/> Add Provider"
 #~ msgstr "<0/> Add Provider"
 
-#: src/lib/components/admin/IdentityProvidersTabContent.svelte
-#: src/lib/components/admin/OidcProvidersTabContent.svelte
-msgid "No identity providers configured."
-msgstr "No identity providers configured."
+#~ msgid "No identity providers configured."
+#~ msgstr "No identity providers configured."
 
 #: src/lib/components/admin/IdentityProvidersTabContent.svelte
 #: src/lib/components/admin/IntegrationsTabContent.svelte
@@ -861,6 +859,7 @@ msgstr "Create"
 #: src/lib/components/admin/IntegrationsTabContent.svelte
 #: src/lib/components/admin/RoleDialog.svelte
 #: src/lib/components/admin/SubjectEditDialog.svelte
+#: src/lib/components/clock-builder/ClockBuilderHeader.svelte
 #: src/lib/components/clock-builder/ClockBuilderHeader.svelte
 #: src/lib/components/meals/MealBolusDialog.svelte
 #: src/lib/components/schedule/TargetRangeCard.svelte
@@ -2153,6 +2152,7 @@ msgstr "On"
 #: src/lib/components/dashboard/PredictionSettings.svelte
 #: src/routes/(authenticated)/settings/appearance/+page.svelte
 #: src/routes/(authenticated)/settings/appearance/+page.svelte
+#: src/routes/(authenticated)/settings/appearance/+page.svelte
 msgid "Off"
 msgstr "Off"
 
@@ -2657,13 +2657,11 @@ msgstr "When enabled, the connector will actively sync data"
 #~ msgid "No Runtime Configuration Available"
 #~ msgstr "No Runtime Configuration Available"
 
-#: src/lib/components/connectors/ConnectorSetup.svelte
-msgid "Configure via environment variables on the server."
-msgstr "Configure via environment variables on the server."
+#~ msgid "Configure via environment variables on the server."
+#~ msgstr "Configure via environment variables on the server."
 
-#: src/lib/components/connectors/ConnectorSetup.svelte
-msgid "This connector does not support runtime configuration. <0/>"
-msgstr "This connector does not support runtime configuration. <0/>"
+#~ msgid "This connector does not support runtime configuration. <0/>"
+#~ msgstr "This connector does not support runtime configuration. <0/>"
 
 #~ msgid "Sync Capabilities"
 #~ msgstr "Sync Capabilities"
@@ -3146,15 +3144,11 @@ msgstr "<0/> wants to access your Nocturne data."
 msgid "This application is requesting permission to:"
 msgstr "This application is requesting permission to:"
 
-#: src/lib/components/connectors/UploaderSetupView.svelte
-#: src/routes/(authenticated)/oauth/consent/+page.svelte
-#: src/routes/(authenticated)/oauth/device/+page.svelte
+#: src/lib/components/auth/DeletionDisclosure.svelte
 msgid "This app is requesting full access, including the ability to delete data."
 msgstr "This app is requesting full access, including the ability to delete data."
 
-#: src/lib/components/connectors/UploaderSetupView.svelte
-#: src/routes/(authenticated)/oauth/consent/+page.svelte
-#: src/routes/(authenticated)/oauth/device/+page.svelte
+#: src/lib/components/auth/DeletionDisclosure.svelte
 msgid "This app cannot delete your data."
 msgstr "This app cannot delete your data."
 
@@ -3246,6 +3240,7 @@ msgstr "Alerts"
 #: src/lib/components/layout/BackupSignInPrompt.svelte
 #: src/lib/components/meal-matching/MealMatchReviewDialog.svelte
 #: src/lib/components/meals/MealSuggestionRow.svelte
+#: src/lib/components/members/JoinWelcome.svelte
 #: src/routes/(authenticated)/settings/admin/tenants/+page.svelte
 msgid "Dismiss"
 msgstr "Dismiss"
@@ -4395,6 +4390,7 @@ msgstr "No meals match the current filters."
 #: src/lib/components/alerts/factText.svelte.ts
 #: src/lib/components/meals/MealsTable.svelte
 #: src/lib/components/reports/year-overview/YearHeatmap.svelte
+#: src/lib/components/trackers/TrackerEditorDialog.svelte
 #: src/lib/components/treatments/edit-dialog/BolusFormFields.svelte
 #: src/routes/(authenticated)/reports/day-in-review/+page.svelte
 #: src/routes/(authenticated)/settings/appearance/+page.svelte
@@ -4444,7 +4440,6 @@ msgstr "Unspecified: {0}g"
 #~ msgstr "Create Invite Link"
 
 #: src/lib/components/members/CreateInviteCard.svelte
-#: src/routes/(authenticated)/settings/members/+page.svelte
 msgid "Invite link created. Share it with the new member."
 msgstr "Invite link created. Share it with the new member."
 
@@ -4522,12 +4517,12 @@ msgstr "Link"
 msgid "Who is this for?"
 msgstr "Who is this for?"
 
-#: src/lib/components/members/GuestLinksSection.svelte
-msgid "No guest links yet. Create one to share temporary read-only access."
-msgstr "No guest links yet. Create one to share temporary read-only access."
+#~ msgid "No guest links yet. Create one to share temporary read-only access."
+#~ msgstr "No guest links yet. Create one to share temporary read-only access."
 
 #: ../cms/src/editor/ContentSidebar.svelte
 #: ../portal/src/routes/studio/+page.svelte
+#: src/lib/components/members/GuestLinksSection.svelte
 #: src/lib/components/members/GuestLinksSection.svelte
 #: src/lib/components/members/GuestLinksSection.svelte
 #: src/routes/(authenticated)/clock/+page.svelte
@@ -4748,9 +4743,8 @@ msgstr "Adding..."
 #~ msgid "<0/> Add Device"
 #~ msgstr "<0/> Add Device"
 
-#: src/lib/components/patient/PatientDeviceManager.svelte
-msgid "No devices added yet. Add your first device to get started."
-msgstr "No devices added yet. Add your first device to get started."
+#~ msgid "No devices added yet. Add your first device to get started."
+#~ msgstr "No devices added yet. Add your first device to get started."
 
 #: src/lib/components/patient/PatientDeviceManager.svelte
 #: src/lib/components/patient/PatientInsulinManager.svelte
@@ -4834,9 +4828,8 @@ msgstr "· Primary"
 #~ msgid "<0/> Add Insulin"
 #~ msgstr "<0/> Add Insulin"
 
-#: src/lib/components/patient/PatientInsulinManager.svelte
-msgid "No insulins added yet. Add your first insulin to get started."
-msgstr "No insulins added yet. Add your first insulin to get started."
+#~ msgid "No insulins added yet. Add your first insulin to get started."
+#~ msgstr "No insulins added yet. Add your first insulin to get started."
 
 #: src/lib/components/members/RolesSection.svelte
 #: src/lib/components/patient/PatientInsulinManager.svelte
@@ -5064,6 +5057,7 @@ msgstr "<0/> Add"
 #: src/lib/components/profile/ProfileEditDialog.svelte
 #: src/lib/components/profile/ProfileEditDialog.svelte
 #: src/lib/components/treatments/TreatmentsDataTable.svelte
+#: src/lib/components/ui/tooltip-background/TooltipHarness.test.svelte
 msgid "Value"
 msgstr "Value"
 
@@ -6419,9 +6413,8 @@ msgstr "Link a sign-in method"
 msgid "Choose an identity provider to link to your Nocturne account."
 msgstr "Choose an identity provider to link to your Nocturne account."
 
-#: src/lib/components/settings/LinkedOidcIdentities.svelte
-msgid "No providers available to link."
-msgstr "No providers available to link."
+#~ msgid "No providers available to link."
+#~ msgstr "No providers available to link."
 
 #: src/lib/components/settings/GlucoseSourceDefaultsDialog.svelte
 #: src/routes/(authenticated)/settings/appearance/+page.svelte
@@ -6435,9 +6428,8 @@ msgstr "Smoothed"
 #~ msgid "Configure glucose processing defaults per uploading client. Rules are evaluated top-to-bottom; first match wins."
 #~ msgstr "Configure glucose processing defaults per uploading client. Rules are evaluated top-to-bottom; first match wins."
 
-#: src/lib/components/settings/GlucoseSourceDefaultsDialog.svelte
-msgid "No rules configured."
-msgstr "No rules configured."
+#~ msgid "No rules configured."
+#~ msgstr "No rules configured."
 
 #: src/lib/components/settings/GlucoseSourceDefaultsDialog.svelte
 msgid "Add a rule to set processing defaults based on the uploading client."
@@ -7559,6 +7551,7 @@ msgstr "Create and manage your custom clock displays"
 #~ msgstr "<0/> New Clock"
 
 #: src/routes/(authenticated)/clock/+page.svelte
+#: src/routes/(authenticated)/clock/+page.svelte
 msgid "No clock faces yet"
 msgstr "No clock faces yet"
 
@@ -7967,10 +7960,11 @@ msgstr "Failed to load food database"
 msgid "Failed to update favorite"
 msgstr "Failed to update favorite"
 
-#: src/routes/(authenticated)/food/food-state.svelte.ts
+#: src/routes/(authenticated)/food/Composer.svelte
 msgid "Food created"
 msgstr "Food created"
 
+#: src/routes/(authenticated)/food/food-state.svelte.ts
 #: src/routes/(authenticated)/food/food-state.svelte.ts
 msgid "Failed to create food"
 msgstr "Failed to create food"
@@ -9225,9 +9219,9 @@ msgstr "<0/> {0} ({1}% CV)"
 
 #. 0: basic.count
 #. 0: formatNumber(totalReadings)
-#. 0: formatNumber(entries.length)
+#. 0: formatNumber(readingCount)
 #. 0: readings.length
-#. 0: formatNumber(entries.length)
+#. 0: formatNumber(readingCount)
 #: src/lib/components/dashboard/widgets/DailySummaryWidget.svelte
 #: src/lib/components/dashboard/widgets/TirChartWidget.svelte
 #: src/routes/(authenticated)/reports/agp/+page.svelte
@@ -10011,6 +10005,7 @@ msgstr "Only share data from the last 24 hours"
 #~ msgid "Status Code"
 #~ msgstr "Status Code"
 
+#: src/lib/components/ui/tooltip-background/TooltipHarness.test.svelte
 #: src/routes/(authenticated)/compatibility/[id]/+page.svelte
 msgid "Header"
 msgstr "Header"
@@ -11347,7 +11342,11 @@ msgstr "Search"
 msgid "Report generated from {0} records between {1} and {2}"
 msgstr "Report generated from {0} records between {1} and {2}"
 
+#. 0: def.name
+#. 0: preset.name
 #. 0: getRowLabel(rowToDelete)
+#: src/lib/components/trackers/TrackerDefinitionsTab.svelte
+#: src/lib/components/trackers/TrackerPresetsTab.svelte
 #: src/routes/(authenticated)/reports/treatments/+page.svelte
 msgid "Delete {0}"
 msgstr "Delete {0}"
@@ -12094,9 +12093,8 @@ msgstr "Invite revoked successfully."
 #~ msgid "Failed to revoke invite. Please try again."
 #~ msgstr "Failed to revoke invite. Please try again."
 
-#: src/routes/(authenticated)/settings/members/+page.svelte
-msgid "No members. Invite someone to share your data."
-msgstr "No members. Invite someone to share your data."
+#~ msgid "No members. Invite someone to share your data."
+#~ msgstr "No members. Invite someone to share your data."
 
 #: src/routes/(authenticated)/settings/members/+page.svelte
 msgid "Member removed successfully."
@@ -12148,9 +12146,8 @@ msgstr "Failed to load transition status"
 msgid "Record counts by data type from your Nightscout instance"
 msgstr "Record counts by data type from your Nightscout instance"
 
-#: src/routes/(authenticated)/settings/nightscout-transition/+page.svelte
-msgid "No migration data available yet."
-msgstr "No migration data available yet."
+#~ msgid "No migration data available yet."
+#~ msgstr "No migration data available yet."
 
 #. 0: connector.stateMessage
 #. 0: formatTimestamp(status.migration?.lastSyncTime)
@@ -12409,9 +12406,8 @@ msgstr "{0} permission{1}"
 msgid "<0/> {0} member{1}"
 msgstr "<0/> {0} member{1}"
 
-#: src/lib/components/members/RolesSection.svelte
-msgid "No roles configured. Create a role to get started."
-msgstr "No roles configured. Create a role to get started."
+#~ msgid "No roles configured. Create a role to get started."
+#~ msgstr "No roles configured. Create a role to get started."
 
 #~ msgid "Create Role"
 #~ msgstr "Create Role"
@@ -12753,10 +12749,8 @@ msgstr "Desired blood glucose range"
 msgid "Delay"
 msgstr "Delay"
 
-#. 0: selectedProfileName
-#: src/routes/(authenticated)/settings/profile/+page.svelte
-msgid "No therapy settings found for profile \"{0}\"."
-msgstr "No therapy settings found for profile \"{0}\"."
+#~ msgid "No therapy settings found for profile \"{0}\"."
+#~ msgstr "No therapy settings found for profile \"{0}\"."
 
 #: src/routes/(authenticated)/settings/profile/+page.svelte
 msgid "Loading profiles..."
@@ -13749,9 +13743,8 @@ msgstr "Link your Discord account to query glucose and receive alerts through th
 msgid "Linked accounts"
 msgstr "Linked accounts"
 
-#: src/routes/(authenticated)/settings/integrations/discord/+page.svelte
-msgid "No Discord accounts linked yet. Use the button below to connect one."
-msgstr "No Discord accounts linked yet. Use the button below to connect one."
+#~ msgid "No Discord accounts linked yet. Use the button below to connect one."
+#~ msgstr "No Discord accounts linked yet. Use the button below to connect one."
 
 #: src/routes/(authenticated)/settings/integrations/discord/+page.svelte
 msgid "Label (used in <0/>)"
@@ -13799,9 +13792,8 @@ msgstr "<0/> Back to calculator"
 msgid "{0}/{1} packed"
 msgstr "{0}/{1} packed"
 
-#: src/routes/(authenticated)/tools/packing/list/+page.svelte
-msgid "No items in this list."
-msgstr "No items in this list."
+#~ msgid "No items in this list."
+#~ msgstr "No items in this list."
 
 #: src/routes/(authenticated)/tools/packing/list/+page.svelte
 msgid "Go to calculator"
@@ -14133,9 +14125,8 @@ msgstr "({0} total)"
 msgid "Recent fires <0/>"
 msgstr "Recent fires <0/>"
 
-#: src/routes/(authenticated)/alerts/history/+page.svelte
-msgid "No alert history yet."
-msgstr "No alert history yet."
+#~ msgid "No alert history yet."
+#~ msgstr "No alert history yet."
 
 #: src/routes/(authenticated)/alerts/[id]/+page.svelte
 #: src/routes/(authenticated)/alerts/[id]/+page.svelte
@@ -14285,9 +14276,8 @@ msgstr "+ Group (OR)"
 msgid "Any sub-condition is enough"
 msgstr "Any sub-condition is enough"
 
-#: src/lib/components/alerts/ChannelsSection.svelte
-msgid "No channels configured. Add at least one to receive this alert."
-msgstr "No channels configured. Add at least one to receive this alert."
+#~ msgid "No channels configured. Add at least one to receive this alert."
+#~ msgstr "No channels configured. Add at least one to receive this alert."
 
 #: src/lib/components/alerts/ChannelsSection.svelte
 msgid "Remove channel"
@@ -14373,9 +14363,8 @@ msgstr "<0/> Historic firings"
 #~ msgid "Real fires for this rule. Click any to replay the day in the simulator."
 #~ msgstr "Real fires for this rule. Click any to replay the day in the simulator."
 
-#: src/routes/(authenticated)/alerts/[id]/+page.svelte
-msgid "No firings yet."
-msgstr "No firings yet."
+#~ msgid "No firings yet."
+#~ msgstr "No firings yet."
 
 #: src/routes/(authenticated)/alerts/[id]/+page.svelte
 msgid "ack"
@@ -14819,9 +14808,8 @@ msgstr "Visit GitHub"
 #~ msgid "Click on a connector to configure credentials and settings. Changes take effect immediately."
 #~ msgstr "Click on a connector to configure credentials and settings. Changes take effect immediately."
 
-#: src/lib/components/connectors/ConnectorSetup.svelte
-msgid "Check the documentation for environment variable configuration."
-msgstr "Check the documentation for environment variable configuration."
+#~ msgid "Check the documentation for environment variable configuration."
+#~ msgstr "Check the documentation for environment variable configuration."
 
 #: src/routes/(authenticated)/settings/admin/connector-cursors/+page.svelte
 msgid "Healthy"
@@ -16257,9 +16245,8 @@ msgstr "Sign out everywhere else"
 msgid "Sign out"
 msgstr "Sign out"
 
-#: src/lib/components/settings/ActiveSessions.svelte
-msgid "No active sessions found."
-msgstr "No active sessions found."
+#~ msgid "No active sessions found."
+#~ msgstr "No active sessions found."
 
 #: src/lib/components/patient/PatientDeviceManager.svelte
 #: src/lib/components/settings/ActiveSessions.svelte
@@ -16313,9 +16300,8 @@ msgstr "Configure all aspects of this alarm including sounds, visuals, and smart
 msgid "Tokens use the <0/> prefix and grant programmatic access to your data. Each token is shown only once at creation."
 msgstr "Tokens use the <0/> prefix and grant programmatic access to your data. Each token is shown only once at creation."
 
-#: src/lib/components/settings/ApiTokens.svelte
-msgid "No API tokens. Create a token to enable programmatic access to your data."
-msgstr "No API tokens. Create a token to enable programmatic access to your data."
+#~ msgid "No API tokens. Create a token to enable programmatic access to your data."
+#~ msgstr "No API tokens. Create a token to enable programmatic access to your data."
 
 #. 0: revokeTarget?.label
 #: src/lib/components/settings/ApiTokens.svelte
@@ -16340,9 +16326,8 @@ msgstr "Device revoked."
 msgid "Apps registered to receive alerts and actuations, such as the desktop Companion"
 msgstr "Apps registered to receive alerts and actuations, such as the desktop Companion"
 
-#: src/lib/components/settings/ClientDevices.svelte
-msgid "No registered devices. When you pair an app such as the Companion, it will appear here."
-msgstr "No registered devices. When you pair an app such as the Companion, it will appear here."
+#~ msgid "No registered devices. When you pair an app such as the Companion, it will appear here."
+#~ msgstr "No registered devices. When you pair an app such as the Companion, it will appear here."
 
 #: src/lib/components/settings/ClientDevices.svelte
 #: src/lib/components/settings/ClientDevices.svelte
@@ -16366,9 +16351,8 @@ msgstr "<0/> Rename"
 msgid "<0/> Last seen {0}"
 msgstr "<0/> Last seen {0}"
 
-#: src/lib/components/settings/ConnectedApps.svelte
-msgid "No connected applications. When you authorize apps to access your data, they will appear here."
-msgstr "No connected applications. When you authorize apps to access your data, they will appear here."
+#~ msgid "No connected applications. When you authorize apps to access your data, they will appear here."
+#~ msgstr "No connected applications. When you authorize apps to access your data, they will appear here."
 
 #~ msgid "Revoke {0}'s access to your data? The app will need to be re-authorized to regain access."
 #~ msgstr "Revoke {0}'s access to your data? The app will need to be re-authorized to regain access."
@@ -16429,9 +16413,8 @@ msgstr "Sensitive credentials are stored encrypted and never displayed after sav
 msgid "Sign in to Nocturne with an external identity provider such as Google, Microsoft, or GitHub."
 msgstr "Sign in to Nocturne with an external identity provider such as Google, Microsoft, or GitHub."
 
-#: src/lib/components/settings/LinkedOidcIdentities.svelte
-msgid "No linked sign-in methods. Add one to sign in with an external provider."
-msgstr "No linked sign-in methods. Add one to sign in with an external provider."
+#~ msgid "No linked sign-in methods. Add one to sign in with an external provider."
+#~ msgstr "No linked sign-in methods. Add one to sign in with an external provider."
 
 #~ msgid "Health Data"
 #~ msgstr "Health Data"
@@ -16814,9 +16797,8 @@ msgstr "{0}U basal"
 msgid "Are you sure you want to delete this {0}? This action cannot be undone."
 msgstr "Are you sure you want to delete this {0}? This action cannot be undone."
 
-#: src/routes/(authenticated)/settings/access-requests/+page.svelte
-msgid "No pending access requests. When someone requests access to your data, they will appear here."
-msgstr "No pending access requests. When someone requests access to your data, they will appear here."
+#~ msgid "No pending access requests. When someone requests access to your data, they will appear here."
+#~ msgstr "No pending access requests. When someone requests access to your data, they will appear here."
 
 #. 0: request.name ?? "this user"
 #: src/routes/(authenticated)/settings/access-requests/+page.svelte
@@ -17112,9 +17094,8 @@ msgstr "Timezone history"
 #~ msgid "Where you've been"
 #~ msgstr "Where you've been"
 
-#: src/routes/(authenticated)/settings/timezone/+page.svelte
-msgid "No entries yet. Your home timezone is filled in automatically on the next sync."
-msgstr "No entries yet. Your home timezone is filled in automatically on the next sync."
+#~ msgid "No entries yet. Your home timezone is filled in automatically on the next sync."
+#~ msgstr "No entries yet. Your home timezone is filled in automatically on the next sync."
 
 #: src/routes/(authenticated)/settings/timezone/+page.svelte
 #: src/routes/(authenticated)/settings/weight/+page.svelte
@@ -17220,9 +17201,8 @@ msgstr "Weight history"
 msgid "Recorded weights"
 msgstr "Recorded weights"
 
-#: src/routes/(authenticated)/settings/weight/+page.svelte
-msgid "No entries yet."
-msgstr "No entries yet."
+#~ msgid "No entries yet."
+#~ msgstr "No entries yet."
 
 #. 0: entry.weightKg
 #: src/routes/(authenticated)/settings/weight/+page.svelte
@@ -19698,6 +19678,7 @@ msgstr "standardised summary for your care team"
 
 #: ../portal/src/lib/components/features/ReportsDemo.svelte
 #: src/lib/components/alerts/factText.svelte.ts
+#: src/lib/components/trackers/TrackerEditorDialog.svelte
 #: src/lib/components/trackers/legacy-kind-label.svelte.ts
 msgid "Pump battery"
 msgstr "Pump battery"
@@ -19929,6 +19910,7 @@ msgid "Failed to load preview"
 msgstr "Failed to load preview"
 
 #: src/lib/components/clock-builder/ClockBuilderHeader.svelte
+#: src/lib/components/members/GuestLinksSection.svelte
 msgid "Copy link"
 msgstr "Copy link"
 
@@ -20086,9 +20068,8 @@ msgstr "Failed to save target range"
 #~ msgid "Set Target Range"
 #~ msgstr "Set Target Range"
 
-#: src/lib/components/schedule/TargetRangeCard.svelte
-msgid "No target range configured."
-msgstr "No target range configured."
+#~ msgid "No target range configured."
+#~ msgstr "No target range configured."
 
 #: src/lib/components/reports/InsulinDeliveryChart.svelte
 msgid "No basal delivery data"
@@ -21339,9 +21320,8 @@ msgstr "Lab results"
 #~ msgid "Enter a lab HbA1c result here — shown as a triangle marker on the chart above, so you can see how closely the eHbA1c estimate tracks an actual lab draw. Lab results are not included in the eHbA1c calculation itself. The date below is the date the blood was drawn, not the date you enter it here."
 #~ msgstr "Enter a lab HbA1c result here — shown as a triangle marker on the chart above, so you can see how closely the eHbA1c estimate tracks an actual lab draw. Lab results are not included in the eHbA1c calculation itself. The date below is the date the blood was drawn, not the date you enter it here."
 
-#: src/routes/(authenticated)/reports/ehba1c/+page.svelte
-msgid "No lab results added yet."
-msgstr "No lab results added yet."
+#~ msgid "No lab results added yet."
+#~ msgstr "No lab results added yet."
 
 #: src/routes/(authenticated)/reports/ehba1c/+page.svelte
 msgid "Delete lab result"
@@ -22042,7 +22022,7 @@ msgstr "When the user snoozes, extend the snooze automatically while these condi
 msgid "With no conditions, only high and low glucose alerts are extended, and only while glucose is clearly moving back toward range. Every other alert fires again when its snooze ends."
 msgstr "With no conditions, only high and low glucose alerts are extended, and only while glucose is clearly moving back toward range. Every other alert fires again when its snooze ends."
 
-#: src/routes/(authenticated)/reports/+layout.svelte
+#: src/lib/components/reports/print/PrintReportButton.svelte
 msgid "Print"
 msgstr "Print"
 
@@ -22480,7 +22460,7 @@ msgstr "TIR after"
 #~ msgid "{0} meals · {1}g/day · {2}g avg/meal"
 #~ msgstr "{0} meals · {1}g/day · {2}g avg/meal"
 
-#. 0: formatNumber(entries.length)
+#. 0: formatNumber(readingCount)
 #: src/routes/(authenticated)/reports/+page.svelte
 msgid "· {0} readings"
 msgstr "· {0} readings"
@@ -22824,7 +22804,7 @@ msgstr "These are averages across {0} site changes in this window, not a per-cha
 #~ msgid "This is a retrospective analysis of recorded readings. A flagged window indicates a pattern that is statistically unlikely to be physiologic; it does not by itself identify the cause. Boundaries are determined after the fact from surrounding readings."
 #~ msgstr "This is a retrospective analysis of recorded readings. A flagged window indicates a pattern that is statistically unlikely to be physiologic; it does not by itself identify the cause. Boundaries are determined after the fact from surrounding readings."
 
-#: src/routes/(authenticated)/reports/+layout.svelte
+#: src/lib/components/reports/print/PrintReportButton.svelte
 msgid "Print report"
 msgstr "Print report"
 
@@ -27967,7 +27947,6 @@ msgstr "Correction boluses given when glucose was high and steady, with no carbs
 msgid "A higher ISF means that each unit decreases glucose more, so less insulin is necessary for the same correction."
 msgstr "A higher ISF means that each unit decreases glucose more, so less insulin is necessary for the same correction."
 
-#: src/lib/components/dashboard/glucose-chart/dialogs/TreatmentInspectionDialog.svelte
 #: src/lib/components/reports/ScheduleFooter.svelte
 #: src/lib/components/reports/loop-analysis/SettingsEvidenceBody.svelte
 msgid "Carb ratio"
@@ -28928,9 +28907,8 @@ msgstr "Showing {0} of {1}. Scroll or refine the search to see more."
 msgid "Canceled"
 msgstr "Canceled"
 
-#: src/routes/(authenticated)/notifications/+page.svelte
-msgid "No active tracker alerts."
-msgstr "No active tracker alerts."
+#~ msgid "No active tracker alerts."
+#~ msgstr "No active tracker alerts."
 
 #: src/routes/(authenticated)/reports/+layout.svelte
 msgid "Could not load the complete report. Try again before printing."
@@ -29536,9 +29514,8 @@ msgstr "Every real fire from this tenant. Test fires are not shown."
 msgid "Pick a window. Rules are evaluated tick-by-tick over the data you actually had."
 msgstr "Pick a window. Rules are evaluated tick-by-tick over the data you actually had."
 
-#: src/routes/(authenticated)/compatibility/[id]/+page.svelte
-msgid "No discrepancies found. The responses match."
-msgstr "No discrepancies found. The responses match."
+#~ msgid "No discrepancies found. The responses match."
+#~ msgstr "No discrepancies found. The responses match."
 
 #: src/routes/(authenticated)/reports/agp/+page.svelte
 msgid "Your typical daily glucose pattern: a standardized clinical report"
@@ -29554,9 +29531,8 @@ msgstr "<0>The dark line</0> is your median (middle) glucose at each hour. It sh
 #~ msgid "{0} estimates what a lab {1} test would read on a given day. For each day, it takes the average glucose from every reading in the trailing 90 days and weights each day's contribution by recency. The most recent ~30 days count for roughly half the estimate, tapering off exponentially for older days, similar to how glycated hemoglobin reflects glucose exposure over a red blood cell's ~90–120 day lifespan. That weighted average glucose is then converted to NGSP percent with the ADAG formula: {2} (%) = (average glucose in mg/dL + 46.7) / 28.7."
 #~ msgstr "{0} estimates what a lab {1} test would read on a given day. For each day, it takes the average glucose from every reading in the trailing 90 days and weights each day's contribution by recency. The most recent ~30 days count for roughly half the estimate, tapering off exponentially for older days, similar to how glycated hemoglobin reflects glucose exposure over a red blood cell's ~90–120 day lifespan. That weighted average glucose is then converted to NGSP percent with the ADAG formula: {2} (%) = (average glucose in mg/dL + 46.7) / 28.7."
 
-#: src/routes/(authenticated)/reports/ehba1c/+page.svelte
-msgid "Not enough glucose history yet. Each point needs at least a month of readings within the trailing 90 days."
-msgstr "Not enough glucose history yet. Each point needs at least a month of readings within the trailing 90 days."
+#~ msgid "Not enough glucose history yet. Each point needs at least a month of readings within the trailing 90 days."
+#~ msgstr "Not enough glucose history yet. Each point needs at least a month of readings within the trailing 90 days."
 
 #. 0: a1cLabel(); 1: a1cLabel(true); 2: a1cLabel(true)
 #: src/routes/(authenticated)/reports/ehba1c/+page.svelte
@@ -33101,7 +33077,6 @@ msgid "Chart lookback: {0}h"
 msgstr "Chart lookback: {0}h"
 
 #: src/lib/components/dashboard/BGStatisticsCards.svelte
-#: src/lib/components/dashboard/widgets/BgDeltaWidget.svelte
 msgid "BG delta"
 msgstr "BG delta"
 
@@ -36414,9 +36389,8 @@ msgstr "We could not save that. Try again."
 msgid "We could only tell the brand, so check the model."
 msgstr "We could only tell the brand, so check the model."
 
-#: src/routes/(unauthenticated)/setup/(guided)/devices/DeviceSetupItem.svelte
-msgid "A tracker counts how long a sensor, pod, infusion set or reservoir is in use, so it is easy to see when the next change is due. It restarts when a change is logged. These are optional, and the wear time can be changed in <0>tracker settings</0>."
-msgstr "A tracker counts how long a sensor, pod, infusion set or reservoir is in use, so it is easy to see when the next change is due. It restarts when a change is logged. These are optional, and the wear time can be changed in <0>tracker settings</0>."
+#~ msgid "A tracker counts how long a sensor, pod, infusion set or reservoir is in use, so it is easy to see when the next change is due. It restarts when a change is logged. These are optional, and the wear time can be changed in <0>tracker settings</0>."
+#~ msgstr "A tracker counts how long a sensor, pod, infusion set or reservoir is in use, so it is easy to see when the next change is due. It restarts when a change is logged. These are optional, and the wear time can be changed in <0>tracker settings</0>."
 
 #: src/lib/components/dashboard/glucose-chart/dialogs/DeliveryInspectionDialog.svelte
 msgid "Suggested only"
@@ -36549,9 +36523,8 @@ msgstr "Managed instances"
 msgid "Platform notes"
 msgstr "Platform notes"
 
-#: src/routes/(authenticated)/compatibility/+page.svelte
-msgid "<0/> No analyses found. Make sure the compatibility proxy service is running and receiving traffic."
-msgstr "<0/> No analyses found. Make sure the compatibility proxy service is running and receiving traffic."
+#~ msgid "<0/> No analyses found. Make sure the compatibility proxy service is running and receiving traffic."
+#~ msgstr "<0/> No analyses found. Make sure the compatibility proxy service is running and receiving traffic."
 
 #: src/lib/components/settings/DashboardRailConfigurator.svelte
 msgid "Carbs on board (COB)"
@@ -36920,6 +36893,7 @@ msgstr "Lifespan: {0}. Starts from the last change: {1}."
 msgid "<0/> Create trackers"
 msgstr "<0/> Create trackers"
 
+#: src/lib/components/trackers/TrackerEditorDialog.svelte
 #: src/lib/components/trackers/legacy-kind-label.svelte.ts
 msgid "Infusion site"
 msgstr "Infusion site"
@@ -37402,3 +37376,372 @@ msgstr "Motion active"
 #: src/lib/components/alerts/summarizeCondition.svelte.ts
 msgid "Motion not active"
 msgstr "Motion not active"
+
+#: src/routes/(authenticated)/compatibility/+page.svelte
+msgid "No analyses found"
+msgstr "No analyses found"
+
+#: src/routes/(authenticated)/compatibility/+page.svelte
+msgid "Make sure the compatibility proxy service is running and receiving traffic."
+msgstr "Make sure the compatibility proxy service is running and receiving traffic."
+
+#: src/routes/(authenticated)/food/Composer.svelte
+msgid "Added"
+msgstr "Added"
+
+#: src/routes/(authenticated)/notifications/+page.svelte
+msgid "No active tracker alerts"
+msgstr "No active tracker alerts"
+
+#: src/lib/components/admin/IdentityProvidersTabContent.svelte
+#: src/lib/components/admin/OidcProvidersTabContent.svelte
+msgid "No identity providers configured"
+msgstr "No identity providers configured"
+
+#: src/lib/components/alerts/ChannelsSection.svelte
+msgid "No channels configured"
+msgstr "No channels configured"
+
+#: src/lib/components/alerts/ChannelsSection.svelte
+msgid "Add at least one to receive this alert."
+msgstr "Add at least one to receive this alert."
+
+#: src/lib/components/connectors/ConnectorSetup.svelte
+msgid "This connector does not support runtime configuration. Check the documentation for environment variable configuration."
+msgstr "This connector does not support runtime configuration. Check the documentation for environment variable configuration."
+
+#: src/lib/components/connectors/ConnectorSetup.svelte
+msgid "This connector does not support runtime configuration. Configure via environment variables on the server."
+msgstr "This connector does not support runtime configuration. Configure via environment variables on the server."
+
+#: src/lib/components/members/CreateInviteCard.svelte
+msgid "Copy invite link"
+msgstr "Copy invite link"
+
+#: src/lib/components/members/GuestLinksSection.svelte
+msgid "Copy code"
+msgstr "Copy code"
+
+#: src/lib/components/members/GuestLinksSection.svelte
+msgid "No guest links yet"
+msgstr "No guest links yet"
+
+#: src/lib/components/members/GuestLinksSection.svelte
+msgid "Create one to share temporary read-only access."
+msgstr "Create one to share temporary read-only access."
+
+#. 0: name
+#: src/lib/components/members/JoinWelcome.svelte
+msgid "You are now viewing {0}'s data."
+msgstr "You are now viewing {0}'s data."
+
+#: src/lib/components/members/JoinWelcome.svelte
+msgid "You are now viewing the data shared with you."
+msgstr "You are now viewing the data shared with you."
+
+#: src/lib/components/members/JoinWelcome.svelte
+msgid "Welcome"
+msgstr "Welcome"
+
+#: src/lib/components/members/RolesSection.svelte
+msgid "No roles configured"
+msgstr "No roles configured"
+
+#: src/lib/components/members/RolesSection.svelte
+msgid "Create a role to get started."
+msgstr "Create a role to get started."
+
+#: src/lib/components/patient/PatientDeviceManager.svelte
+msgid "No devices added yet"
+msgstr "No devices added yet"
+
+#: src/lib/components/patient/PatientDeviceManager.svelte
+msgid "Add your first device to get started."
+msgstr "Add your first device to get started."
+
+#: src/lib/components/patient/PatientInsulinManager.svelte
+msgid "No insulins added yet"
+msgstr "No insulins added yet"
+
+#: src/lib/components/patient/PatientInsulinManager.svelte
+msgid "Add your first insulin to get started."
+msgstr "Add your first insulin to get started."
+
+#: src/lib/components/schedule/TargetRangeCard.svelte
+msgid "No target range configured"
+msgstr "No target range configured"
+
+#: src/lib/components/settings/ActiveSessions.svelte
+msgid "No active sessions found"
+msgstr "No active sessions found"
+
+#: src/lib/components/settings/ApiTokens.svelte
+msgid "No API tokens"
+msgstr "No API tokens"
+
+#: src/lib/components/settings/ApiTokens.svelte
+msgid "Create a token to enable programmatic access to your data."
+msgstr "Create a token to enable programmatic access to your data."
+
+#: src/lib/components/settings/ClientDevices.svelte
+msgid "No registered devices"
+msgstr "No registered devices"
+
+#: src/lib/components/settings/ClientDevices.svelte
+msgid "When you pair an app such as the Companion, it will appear here."
+msgstr "When you pair an app such as the Companion, it will appear here."
+
+#: src/lib/components/settings/ConnectedApps.svelte
+msgid "No connected applications"
+msgstr "No connected applications"
+
+#: src/lib/components/settings/ConnectedApps.svelte
+msgid "When you authorize apps to access your data, they will appear here."
+msgstr "When you authorize apps to access your data, they will appear here."
+
+#: src/lib/components/settings/GlucoseSourceDefaultsDialog.svelte
+msgid "No rules configured"
+msgstr "No rules configured"
+
+#: src/lib/components/settings/LinkedOidcIdentities.svelte
+msgid "No linked sign-in methods"
+msgstr "No linked sign-in methods"
+
+#: src/lib/components/settings/LinkedOidcIdentities.svelte
+msgid "Add one to sign in with an external provider."
+msgstr "Add one to sign in with an external provider."
+
+#: src/lib/components/settings/LinkedOidcIdentities.svelte
+msgid "No providers available to link"
+msgstr "No providers available to link"
+
+#: src/routes/(authenticated)/alerts/[id]/+page.svelte
+msgid "No firings yet"
+msgstr "No firings yet"
+
+#: src/routes/(authenticated)/alerts/history/+page.svelte
+msgid "No alert history yet"
+msgstr "No alert history yet"
+
+#: src/routes/(authenticated)/compatibility/[id]/+page.svelte
+msgid "No discrepancies found"
+msgstr "No discrepancies found"
+
+#: src/routes/(authenticated)/compatibility/[id]/+page.svelte
+msgid "The responses match."
+msgstr "The responses match."
+
+#: src/routes/(authenticated)/reports/ehba1c/+page.svelte
+msgid "Not enough glucose history yet"
+msgstr "Not enough glucose history yet"
+
+#: src/routes/(authenticated)/reports/ehba1c/+page.svelte
+msgid "Each point needs at least a month of readings within the trailing 90 days."
+msgstr "Each point needs at least a month of readings within the trailing 90 days."
+
+#: src/routes/(authenticated)/reports/ehba1c/+page.svelte
+msgid "No lab results added yet"
+msgstr "No lab results added yet"
+
+#: src/routes/(authenticated)/settings/access-requests/+page.svelte
+msgid "No pending access requests"
+msgstr "No pending access requests"
+
+#: src/routes/(authenticated)/settings/access-requests/+page.svelte
+msgid "When someone requests access to your data, they will appear here."
+msgstr "When someone requests access to your data, they will appear here."
+
+#: src/routes/(authenticated)/settings/appearance/+page.svelte
+msgid "<0/> Illustrations"
+msgstr "<0/> Illustrations"
+
+#: src/routes/(authenticated)/settings/appearance/+page.svelte
+msgid "How the watercolour paintings are shown. This applies to this device only."
+msgstr "How the watercolour paintings are shown. This applies to this device only."
+
+#: src/routes/(authenticated)/settings/appearance/+page.svelte
+msgid "Illustrations"
+msgstr "Illustrations"
+
+#: src/routes/(authenticated)/settings/appearance/+page.svelte
+msgid "Animated"
+msgstr "Animated"
+
+#: src/routes/(authenticated)/settings/appearance/+page.svelte
+msgid "Paint each illustration in as it appears. Follows your device's reduced-motion setting."
+msgstr "Paint each illustration in as it appears. Follows your device's reduced-motion setting."
+
+#: src/routes/(authenticated)/settings/appearance/+page.svelte
+msgid "Still"
+msgstr "Still"
+
+#: src/routes/(authenticated)/settings/appearance/+page.svelte
+msgid "Show finished paintings without animation."
+msgstr "Show finished paintings without animation."
+
+#: src/routes/(authenticated)/settings/appearance/+page.svelte
+msgid "Hide decorative paintings."
+msgstr "Hide decorative paintings."
+
+#: src/routes/(authenticated)/settings/members/+page.svelte
+msgid "No members"
+msgstr "No members"
+
+#: src/routes/(authenticated)/settings/members/+page.svelte
+msgid "Invite someone to share your data."
+msgstr "Invite someone to share your data."
+
+#: src/routes/(authenticated)/settings/migration/MigrationCompleteMoment.svelte
+msgid "Migration complete"
+msgstr "Migration complete"
+
+#: src/routes/(authenticated)/settings/migration/MigrationCompleteMoment.svelte
+msgid "Your data is now in Nocturne. The History tab lists what came across."
+msgstr "Your data is now in Nocturne. The History tab lists what came across."
+
+#: src/routes/(authenticated)/settings/nightscout-transition/+page.svelte
+msgid "No migration data available yet"
+msgstr "No migration data available yet"
+
+#. 0: selectedProfileName
+#: src/routes/(authenticated)/settings/profile/+page.svelte
+msgid "No therapy settings found for profile \"{0}\""
+msgstr "No therapy settings found for profile \"{0}\""
+
+#: src/routes/(authenticated)/settings/timezone/+page.svelte
+#: src/routes/(authenticated)/settings/weight/+page.svelte
+msgid "No entries yet"
+msgstr "No entries yet"
+
+#: src/routes/(authenticated)/settings/timezone/+page.svelte
+msgid "Your home timezone is filled in automatically on the next sync."
+msgstr "Your home timezone is filled in automatically on the next sync."
+
+#: src/lib/components/dashboard/widgets/CurrentGlucoseWidget.svelte
+msgid "<0/> Connection Error"
+msgstr "<0/> Connection Error"
+
+#: src/lib/components/dashboard/widgets/CurrentGlucoseWidget.svelte
+msgid "Stale reading"
+msgstr "Stale reading"
+
+#: src/lib/components/dashboard/widgets/CurrentGlucoseWidget.svelte
+msgid "Uploader battery"
+msgstr "Uploader battery"
+
+#: src/lib/components/dashboard/widgets/CurrentGlucoseWidget.svelte
+msgid "Current glucose"
+msgstr "Current glucose"
+
+#: src/lib/components/reports/print/PrintReportButton.svelte
+msgid "Sent to print"
+msgstr "Sent to print"
+
+#: src/lib/components/ui/tabs/TabsHarness.test.svelte
+msgid "First"
+msgstr "First"
+
+#: src/lib/components/ui/tabs/TabsHarness.test.svelte
+msgid "Second"
+msgstr "Second"
+
+#: src/lib/components/ui/tabs/TabsHarness.test.svelte
+msgid "First panel"
+msgstr "First panel"
+
+#: src/lib/components/ui/tabs/TabsHarness.test.svelte
+msgid "Second panel"
+msgstr "Second panel"
+
+#: src/routes/(authenticated)/settings/integrations/discord/+page.svelte
+msgid "No Discord accounts linked yet"
+msgstr "No Discord accounts linked yet"
+
+#: src/routes/(authenticated)/settings/integrations/discord/+page.svelte
+msgid "Use the button below to connect one."
+msgstr "Use the button below to connect one."
+
+#: src/routes/(authenticated)/tools/packing/list/+page.svelte
+msgid "All packed"
+msgstr "All packed"
+
+#: src/routes/(authenticated)/tools/packing/list/+page.svelte
+msgid "No items in this list"
+msgstr "No items in this list"
+
+#. 0: item.l
+#: src/routes/(authenticated)/tools/packing/list/+page.svelte
+msgid "Packed: {0}"
+msgstr "Packed: {0}"
+
+#: src/lib/components/auth/DeletionDisclosure.svelte
+msgid "This app can change and delete the data in the categories above."
+msgstr "This app can change and delete the data in the categories above."
+
+#: src/routes/(authenticated)/oauth/consent/+page.svelte
+msgid "Could not load the details of this app."
+msgstr "Could not load the details of this app."
+
+#: src/lib/components/settings/CarbRatioFormatSelect.svelte
+msgid "Insulin-to-carb ratio (ICR)"
+msgstr "Insulin-to-carb ratio (ICR)"
+
+#: src/lib/components/settings/CarbRatioFormatSelect.svelte
+msgid "How carb ratios are written in reports and bolus details. Each option shows the same ratio: 10 g of carbs per unit of insulin."
+msgstr "How carb ratios are written in reports and bolus details. Each option shows the same ratio: 10 g of carbs per unit of insulin."
+
+#. 0: formatInsulinToCarbRatio(insulinStats.icRatio); 1: unitsPerTenGrams(insulinStats.icRatio).toFixed(2)
+#: src/routes/(authenticated)/reports/insulin-delivery/+page.svelte
+msgid "<0>ICR check:</0> Your insulin-to-carb ratio of {0} means you use about {1} units of insulin for every 10 grams of carbs."
+msgstr "<0>ICR check:</0> Your insulin-to-carb ratio of {0} means you use about {1} units of insulin for every 10 grams of carbs."
+
+#: src/lib/components/dashboard/glucose-chart/dialogs/TreatmentInspectionDialog.svelte
+msgid "ICR"
+msgstr "ICR"
+
+#: src/lib/components/trackers/TrackerEditorDialog.svelte
+#: src/routes/(authenticated)/settings/trackers/+page.svelte
+msgid "Pod"
+msgstr "Pod"
+
+#: src/lib/components/trackers/TrackerEditorDialog.svelte
+msgid "Replaced with this part"
+msgstr "Replaced with this part"
+
+#: src/lib/components/trackers/TrackerEditorDialog.svelte
+msgid "Select what is new each time this tracker restarts. For a pod, select all three."
+msgstr "Select what is new each time this tracker restarts. For a pod, select all three."
+
+#: src/lib/components/trackers/TrackerEditorDialog.svelte
+msgid "Stop automatically on"
+msgstr "Stop automatically on"
+
+#: src/lib/components/trackers/TrackerEditorDialog.svelte
+msgid "When your pump, loop or a connector reports one of these, the running tracker is completed. A new one does not start until a restart event."
+msgstr "When your pump, loop or a connector reports one of these, the running tracker is completed. A new one does not start until a restart event."
+
+#: src/routes/(unauthenticated)/setup/(guided)/devices/DeviceSetupItem.svelte
+msgid "Pump base replacement"
+msgstr "Pump base replacement"
+
+#: src/routes/(unauthenticated)/setup/(guided)/devices/DeviceSetupItem.svelte
+msgid "Controller replacement"
+msgstr "Controller replacement"
+
+#. 0: offer.deviceName
+#: src/routes/(unauthenticated)/setup/(guided)/devices/DeviceSetupItem.svelte
+msgid "{0} pump base"
+msgstr "{0} pump base"
+
+#. 0: offer.deviceName
+#: src/routes/(unauthenticated)/setup/(guided)/devices/DeviceSetupItem.svelte
+msgid "{0} controller"
+msgstr "{0} controller"
+
+#: src/routes/(unauthenticated)/setup/(guided)/devices/DeviceSetupItem.svelte
+msgid "A tracker counts how long a sensor, pod, infusion set, reservoir or pump part is in use. It shows when the next change is due. It restarts when a change is logged. These are optional, and the wear time can be changed in <0>tracker settings</0>."
+msgstr "A tracker counts how long a sensor, pod, infusion set, reservoir or pump part is in use. It shows when the next change is due. It restarts when a change is logged. These are optional, and the wear time can be changed in <0>tracker settings</0>."
+
+#: src/routes/(unauthenticated)/setup/(guided)/devices/DeviceSetupItem.svelte
+msgid "Your devices do not report this change. Start the tracker in tracker settings when you replace the part."
+msgstr "Your devices do not report this change. Start the tracker in tracker settings when you replace the part."

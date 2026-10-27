@@ -67,6 +67,7 @@ that opens when you tap its pill on the home screen.
   | Category | Reasons offered |
   |----------|-----------------|
   | Sensor, Cannula, Consumable | Fell Off, Replaced Early, plus the general ones |
+  | Pod | Fell Off, Replaced Early, Empty, plus the general ones |
   | Reservoir | Empty, Refilled, plus the general ones |
   | Appointment | Attended, Rescheduled, Cancelled, Missed, plus the general ones |
   | Battery, Reminder, Custom | The general ones: Completed, Failed, Expired, Other |
@@ -109,7 +110,13 @@ Choose the events in the tracker editor, under
 [Restart automatically on](/docs/trackers/setting-up#restarting-automatically).
 The choices are `Sensor Start`, `Sensor Change`, `Sensor Stop`,
 `Transmitter Sensor Insert`, `Site Change`, `Cannula Change`, `Pod Change`,
-`Insulin Change`, `Reservoir Change` and `Pump Battery Change`.
+`Pod Activated`, `Insulin Change`, `Reservoir Change` and `Pump Battery Change`.
+
+A tracker can also
+[stop automatically](/docs/trackers/setting-up#stopping-automatically) on
+`Sensor Stop` or `Pod Deactivated`. Nocturne then completes the running tracker
+and starts nothing. If you delete that event later, the tracker runs again,
+unless a newer run has started since.
 
 If two trackers listen for the same event, such as two infusion sites that are
 both logged as `Site Change`, give each one a notes filter. The tracker then

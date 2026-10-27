@@ -13,7 +13,7 @@ public class LegacyFallbackRulesTests
 {
     private static readonly DateTime Now = new(2026, 10, 25, 12, 0, 0, DateTimeKind.Utc);
 
-    private static TrackerDefinitionEntity Definition(
+    internal static TrackerDefinitionEntity Definition(
         TrackerMode mode = TrackerMode.Duration,
         TrackerCategory category = TrackerCategory.Custom,
         DashboardVisibility visibility = DashboardVisibility.Always,
@@ -193,7 +193,7 @@ public class ConsumableTrackerSpecsTests
         var spec = ConsumableTrackerSpecs.For(LegacyConsumableKind.Site, [Device("omnipod-dash")])!;
 
         spec.Name.Should().Be("Omnipod DASH pod");
-        spec.Category.Should().Be(TrackerCategory.Cannula);
+        spec.Category.Should().Be(TrackerCategory.Pod);
     }
 
     [Fact]
@@ -259,5 +259,112 @@ public class ConsumableTrackerSpecsTests
             .Should().Equal(
                 (NotificationUrgency.Warn, (spec.LifespanHours - 24) * 60),
                 (NotificationUrgency.Hazard, spec.LifespanHours * 60));
+    }
+
+    [Fact]
+    public void APodTracker_CoversTheSiteTheInsulinAndTheBattery()
+    {
+        var definitions = new[] { LegacyFallbackRulesTests.Definition(category: TrackerCategory.Pod) };
+
+        LegacyFallbackRules.IsCovered(LegacyConsumableKind.Site, definitions).Should().BeTrue();
+        LegacyFallbackRules.IsCovered(LegacyConsumableKind.Reservoir, definitions).Should().BeTrue();
+        LegacyFallbackRules.IsCovered(LegacyConsumableKind.PumpBattery, definitions).Should().BeTrue();
+        LegacyFallbackRules.IsCovered(LegacyConsumableKind.Sensor, definitions).Should().BeFalse();
+    }
+
+    [Fact]
+    public void StatedCoverage_OverridesTheTriggers()
+    {
+        var definition = LegacyFallbackRulesTests.Definition(category: TrackerCategory.Cannula, triggers: ["Pod Change", "Pump Battery Change"]);
+        definition.Covers = """["Site"]""";
+
+        LegacyFallbackRules.Covers(LegacyConsumableKind.Site, definition).Should().BeTrue();
+        LegacyFallbackRules.Covers(LegacyConsumableKind.PumpBattery, definition).Should().BeFalse();
+        LegacyFallbackRules.Covers(LegacyConsumableKind.Reservoir, definition).Should().BeFalse();
+    }
+
+    [Theory]
+    [InlineData("omnipod-dash")]
+    [InlineData("medtrum-nano")]
+    [InlineData("beta-bionics-mint")]
+    [InlineData("accu-chek-solo")]
+    public void APumpPoweredByItsDisposable_OffersNoPumpBattery(string catalogId)
+    {
+        ConsumableTrackerSpecs.For(LegacyConsumableKind.PumpBattery, [Device(catalogId)]).Should().BeNull();
+    }
+
+    [Fact]
+    public void WithAPodPumpAndATubedPump_EachKindTakesItsOwnSpec()
+    {
+        var devices = new[] { Device("omnipod-5", rank: 1), Device("dana-i", rank: 2) };
+
+        ConsumableTrackerSpecs.For(LegacyConsumableKind.Site, devices)!.Name.Should().Be("Omnipod 5 pod");
+        ConsumableTrackerSpecs.For(LegacyConsumableKind.Reservoir, devices)!.Name.Should().Be("Dana-i reservoir");
+        ConsumableTrackerSpecs.For(LegacyConsumableKind.PumpBattery, devices).Should().BeNull();
+    }
+
+    [Fact]
+    public void ATubedPump_OffersTheGenericPumpBattery()
+    {
+        ConsumableTrackerSpecs.For(LegacyConsumableKind.PumpBattery, [Device("dana-i")])
+            .Should().BeEquivalentTo(ConsumableTrackerSpecs.Generic(LegacyConsumableKind.PumpBattery));
+    }
+
+    [Fact]
+    public void Equil_IsASiteAndAReservoir_NotAPod()
+    {
+        var site = ConsumableTrackerSpecs.For(LegacyConsumableKind.Site, [Device("equil")])!;
+        var reservoir = ConsumableTrackerSpecs.For(LegacyConsumableKind.Reservoir, [Device("equil")])!;
+
+        site.Name.Should().Be("Equil infusion site");
+        site.Category.Should().Be(TrackerCategory.Cannula);
+        reservoir.Name.Should().Be("Equil reservoir");
+    }
+
+    [Fact]
+    public void AccuChekSolo_HasAFourDayReservoirAndNoBaseTrackerByDefault()
+    {
+        var specs = ConsumableTrackerSpecs.SpecsFor(DeviceCatalog.GetById("accu-chek-solo")!);
+
+        specs.Select(s => (s.Name, s.LifespanHours)).Should().BeEquivalentTo(
+            [("Accu-Chek Solo infusion site", 72), ("Accu-Chek Solo reservoir", 96)]);
+    }
+
+    [Fact]
+    public void Mint_TracksItsCartridgeAsAPodWithItsLongerGrace()
+    {
+        var spec = ConsumableTrackerSpecs.SpecsFor(DeviceCatalog.GetById("beta-bionics-mint")!).Single();
+
+        spec.Category.Should().Be(TrackerCategory.Pod);
+        spec.Component.Should().Be("beta-bionics-mint/pod");
+        spec.Ends.Should().Equal("Pod Deactivated");
+        ConsumableTrackerSpecs.Thresholds(spec)
+            .Should().ContainSingle(t => t.Urgency == NotificationUrgency.Urgent)
+            .Which.Hours.Should().Be(72 + 12 - ConsumableTrackerSpecs.UrgentHoursBeforeStop);
+    }
+
+    [Fact]
+    public void APodTrackerOfAnotherPodPump_FollowsThePodSpec()
+    {
+        var medtrum = ConsumableTrackerSpecs.ToDefinition(
+            ConsumableTrackerSpecs.SpecsFor(DeviceCatalog.GetById("medtrum-nano")!).Single(), "member");
+        var omnipod = ConsumableTrackerSpecs.SpecsFor(DeviceCatalog.GetById("omnipod-5")!).Single();
+        var equilSite = ConsumableTrackerSpecs.SpecsFor(DeviceCatalog.GetById("equil")!)
+            .Single(s => s.Category == TrackerCategory.Cannula);
+
+        LegacyFallbackRules.Follows(medtrum, omnipod).Should().BeTrue();
+        LegacyFallbackRules.Follows(medtrum, equilSite).Should().BeFalse();
+    }
+
+    [Fact]
+    public void ATrackerOfTheSamePart_FollowsItsSpec_WhateverItCovers()
+    {
+        var entry = DeviceCatalog.GetById("beta-bionics-mint")!;
+        var controller = ConsumableTrackerSpecs.SpecFor(entry, entry.Pump!.Components.Single(c => c.Key == "controller"))!;
+        var definition = LegacyFallbackRulesTests.Definition(category: TrackerCategory.Custom);
+        definition.DeviceComponent = "beta-bionics-mint/controller";
+
+        LegacyFallbackRules.Follows(definition, controller).Should().BeTrue();
+        LegacyFallbackRules.Follows(LegacyFallbackRulesTests.Definition(category: TrackerCategory.Custom), controller).Should().BeFalse();
     }
 }

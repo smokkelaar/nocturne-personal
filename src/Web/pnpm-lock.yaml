@@ -69,9 +69,6 @@ importers:
       '@nocturne/ui':
         specifier: workspace:*
         version: link:../ui
-      '@nocturne/watercolour':
-        specifier: workspace:*
-        version: link:../watercolour
       '@opentelemetry/api':
         specifier: ^1.9.1
         version: 1.9.1
@@ -144,6 +141,9 @@ importers:
       typescript:
         specifier: ^6.0.3
         version: 6.0.3
+      water-ui:
+        specifier: workspace:*
+        version: link:../../vendor/water-ui/packages/water-ui
       zod:
         specifier: ^4.4.3
         version: 4.4.3
@@ -711,9 +711,6 @@ importers:
       '@nocturne/ui':
         specifier: workspace:*
         version: link:../ui
-      '@nocturne/watercolour':
-        specifier: workspace:*
-        version: link:../watercolour
       lucide:
         specifier: ^1.47.0
         version: 1.61.0
@@ -723,6 +720,9 @@ importers:
       runed:
         specifier: ^0.37.1
         version: 0.37.1(@sveltejs/kit@2.59.1(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.1.2(svelte@5.55.5(@typescript-eslint/types@8.59.3))(vite@8.0.12(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.7.0)(tsx@4.20.6)(yaml@2.9.0)))(svelte@5.55.5(@typescript-eslint/types@8.59.3))(typescript@5.9.3)(vite@8.0.12(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.7.0)(tsx@4.20.6)(yaml@2.9.0)))(svelte@5.55.5(@typescript-eslint/types@8.59.3))(zod@4.1.13)
+      water-ui:
+        specifier: workspace:*
+        version: link:../../vendor/water-ui/packages/water-ui
       zod:
         specifier: ^4.1.13
         version: 4.1.13
@@ -941,7 +941,7 @@ importers:
         specifier: ^8.0.12
         version: 8.0.12(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.7.0)(tsx@4.20.6)(yaml@2.9.0)
 
-  packages/watercolour:
+  vendor/water-ui/packages/water-ui:
     dependencies:
       '@chenglou/pretext':
         specifier: ^0.0.9

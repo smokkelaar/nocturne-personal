@@ -1,6 +1,6 @@
 <script lang="ts">
   import { resolve } from "$app/paths";
-  import { ArtworkHero } from "@nocturne/watercolour";
+  import { ArtworkHero } from "water-ui";
   import { DOCS_HERO } from "$lib/data/docs-artwork";
   import { Button } from "@nocturne/ui/ui/button";
   import ArrowRight from "@lucide/svelte/icons/arrow-right";

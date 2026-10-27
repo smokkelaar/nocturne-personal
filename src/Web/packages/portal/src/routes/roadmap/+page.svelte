@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { Artwork } from "@nocturne/watercolour";
+    import { Artwork } from "water-ui";
     import { getRoadmapData, type RoadmapMilestone } from "$lib/data/portal";
     import { Button } from "@nocturne/ui/ui/button";
     import MilestoneCard from "$lib/components/MilestoneCard.svelte";

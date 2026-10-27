@@ -12,9 +12,8 @@ using Xunit;
 namespace Nocturne.API.Tests.Integration.Migration;
 
 /// <summary>
-/// Runs <c>RetireUiSettingsAggregate</c> over three tenants on a real PostgreSQL: one whose settings
-/// live only in <c>ui:settings:complete</c>, one that already owns some section rows, and one whose
-/// aggregate is not JSON.
+/// Runs <c>RetireUiSettingsAggregate</c> over representative stored aggregate shapes on a real
+/// PostgreSQL.
 /// </summary>
 public sealed class RetireUiSettingsAggregateFixture : IAsyncLifetime
 {
@@ -24,6 +23,7 @@ public sealed class RetireUiSettingsAggregateFixture : IAsyncLifetime
     internal static readonly Guid PartlyOwned = Guid.Parse("b2222222-2222-7222-8222-222222222605");
     internal static readonly Guid Corrupt = Guid.Parse("c3333333-3333-7333-8333-333333332605");
     internal static readonly Guid NulEscape = Guid.Parse("d4444444-4444-7444-8444-444444442605");
+    internal static readonly Guid EscapedNulSequence = Guid.Parse("e5555555-5555-7555-8555-555555552605");
 
     private const string Aggregate = """
         {"devices": {"autoConnect": false},
@@ -70,7 +70,8 @@ public sealed class RetireUiSettingsAggregateFixture : IAsyncLifetime
               ('{AggregateOnly}', 'aggregate-only', 'Aggregate only', true, now(), now()),
               ('{PartlyOwned}', 'partly-owned', 'Partly owned', true, now(), now()),
               ('{Corrupt}', 'corrupt', 'Corrupt', true, now(), now()),
-              ('{NulEscape}', 'nul-escape', 'Nul escape', true, now(), now());
+              ('{NulEscape}', 'nul-escape', 'Nul escape', true, now(), now()),
+              ('{EscapedNulSequence}', 'escaped-nul-sequence', 'Escaped NUL sequence', true, now(), now());
             """);
 
         await Seed(conn, AggregateOnly, ("ui:settings:complete", Aggregate, true));
@@ -84,6 +85,8 @@ public sealed class RetireUiSettingsAggregateFixture : IAsyncLifetime
         await Seed(conn, Corrupt, ("ui:settings:complete", "not json", true));
         await Seed(conn, NulEscape,
             ("ui:settings:complete", """{"devices": {"autoConnect": false, "name": "a\u0000b"}}""", true));
+        await Seed(conn, EscapedNulSequence,
+            ("ui:settings:complete", """{"devices": {"autoConnect": false, "name": "a\\u0000b"}}""", true));
     }
 
     private static async Task Seed(
@@ -110,7 +113,7 @@ public sealed class RetireUiSettingsAggregateFixture : IAsyncLifetime
     {
         await using var conn = new NpgsqlConnection(_migrator);
         await conn.OpenAsync();
-        foreach (var tenant in new[] { AggregateOnly, PartlyOwned, Corrupt, NulEscape })
+        foreach (var tenant in new[] { AggregateOnly, PartlyOwned, Corrupt, NulEscape, EscapedNulSequence })
         {
             await Execute(conn, $"SELECT set_config('app.current_tenant_id', '{tenant}', false);");
             await using var cmd = conn.CreateCommand();
@@ -211,6 +214,14 @@ public class RetireUiSettingsAggregateTests : IClassFixture<RetireUiSettingsAggr
         var devices = Row(RetireUiSettingsAggregateFixture.NulEscape, "ui:settings:devices");
         devices["autoConnect"]!.GetValue<bool>().Should().BeFalse();
         devices["name"]!.GetValue<string>().Should().Be("a�b");
+    }
+
+    [Fact]
+    public void An_escaped_nul_sequence_does_not_drop_the_aggregate()
+    {
+        var devices = Row(RetireUiSettingsAggregateFixture.EscapedNulSequence, "ui:settings:devices");
+        devices["autoConnect"]!.GetValue<bool>().Should().BeFalse();
+        devices["name"]!.GetValue<string>().Should().Be(@"a\u0000b");
     }
 
     [Fact]

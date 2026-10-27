@@ -7,11 +7,16 @@ using Npgsql;
 namespace Nocturne.Infrastructure.Data.Tests.Rls;
 
 /// <summary>
-/// Proves that Npgsql's DISCARD ALL on pool return is on its own enough to clear every RLS GUC
+/// Proves that Npgsql's reset on pool return is on its own enough to clear every RLS GUC
 /// <c>TenantConnectionInterceptor</c> sets, so the interceptor does not have to RESET them on
 /// close. The pool is capped at one physical connection, so every lease below is the same
 /// backend: a GUC that survived the return would be read back by the next lessee.
 /// </summary>
+/// <remarks>
+/// Npgsql resets with DISCARD ALL only while the connection holds no prepared statement; once the
+/// runtime pool's auto-preparation has prepared one, it resets with RESET ALL instead, so as to
+/// keep them. Both resets are covered.
+/// </remarks>
 [Trait("Category", "Integration")]
 [Collection("RLS completeness")]
 public class PoolReturnDiscardsRlsGucsIntegrationTests
@@ -30,13 +35,17 @@ public class PoolReturnDiscardsRlsGucsIntegrationTests
 
     public PoolReturnDiscardsRlsGucsIntegrationTests(RlsCompletenessFixture fx) => _fx = fx;
 
-    [Fact]
-    public async Task PoolReturn_ClearsEveryRlsGuc_WithoutAResetOnClose()
+    [Theory]
+    [InlineData(0)]
+    [InlineData(10)]
+    public async Task PoolReturn_ClearsEveryRlsGuc_WithoutAResetOnClose(int maxAutoPrepare)
     {
         var connectionString = new NpgsqlConnectionStringBuilder(_fx.AppConnectionString)
         {
             MinPoolSize = 0,
             MaxPoolSize = 1,
+            MaxAutoPrepare = maxAutoPrepare,
+            AutoPrepareMinUsages = 2,
         }.ConnectionString;
 
         await using var dataSource = new NpgsqlDataSourceBuilder(connectionString).Build();
@@ -72,15 +81,28 @@ public class PoolReturnDiscardsRlsGucsIntegrationTests
             await AssertSettingAsync(connection, "app.share_full_history", "true");
             await AssertSettingAsync(connection, "app.history_clamped", "true");
 
+            if (maxAutoPrepare > 0)
+            {
+                for (var i = 0; i < 3; i++) await ScalarAsync(connection, "SELECT 1");
+                Convert.ToInt64(await ScalarAsync(connection, "SELECT count(*) FROM pg_prepared_statements"))
+                    .Should().BePositive("the return below has to take the reset that keeps prepared statements");
+            }
+
             await share.Database.CloseConnectionAsync();
         }
 
-        // Nothing but the pool's DISCARD ALL has run against this backend since. Read the GUCs
-        // off a raw lease, so no interceptor gets the chance to overwrite them first.
+        // Nothing but the pool's reset has run against this backend since. Read the GUCs off a
+        // raw lease, so no interceptor gets the chance to overwrite them first.
         await using (var probe = await dataSource.OpenConnectionAsync())
         {
             Convert.ToInt32(await ScalarAsync(probe, "SELECT pg_backend_pid()")).Should().Be(backendPid,
                 "the pool must hand back the same physical connection for this to prove anything");
+
+            if (maxAutoPrepare > 0)
+            {
+                Convert.ToInt64(await ScalarAsync(probe, "SELECT count(*) FROM pg_prepared_statements"))
+                    .Should().BePositive("a surviving prepared statement shows the reset was RESET ALL, not DISCARD ALL");
+            }
 
             foreach (var guc in RlsGucs)
             {

@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Nocturne.API.Configuration;
 using Nocturne.API.Services.Alerts.Conditions;
 using Nocturne.API.Services.Glucose;
+using Nocturne.API.Services.Monitoring;
 using Nocturne.Core.Constants;
 using Nocturne.Core.Contracts.Alerts;
 using Nocturne.Core.Contracts.Glucose;
@@ -143,7 +144,8 @@ internal sealed class SensorContextEnricher : ISensorContextEnricher
 
         if (needs.NeedsSiteAge)
         {
-            var lastSiteChange = await FetchLatestEventAsync(DeviceEventType.SiteChange, isReplay ? now : null, ct);
+            var lastSiteChange = (await _deps.DeviceEvents.GetLatestOfAnyTypeAsync(
+                ConsumableTrackerSpecs.EventTypes(LegacyConsumableKind.Site), isReplay ? now : null, ct))?.Timestamp;
             enriched = enriched with { LastSiteChangeAt = lastSiteChange };
         }
 

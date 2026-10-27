@@ -24,7 +24,7 @@
   import Loader2 from "@lucide/svelte/icons/loader-circle";
   import Settings2 from "@lucide/svelte/icons/settings-2";
   import ChevronDown from "@lucide/svelte/icons/chevron-down";
-  import { Artwork } from "@nocturne/watercolour";
+  import { EmptyState } from "$lib/components/shared";
   import { cn } from "$lib/utils";
   import { getRealtimeStore } from "$lib/stores/realtime-store.svelte";
   import * as trackersRemote from "$api/generated/trackers.generated.remote";
@@ -232,16 +232,7 @@
         </CardHeader>
         <CardContent>
           {#if trackerNotifications.length === 0}
-            <div class="text-center py-8 text-muted-foreground">
-              <Artwork
-                artwork="confirmation-mark"
-                palette="moss"
-                motion="auto"
-                autoplay="once"
-                class="mx-auto mb-3 size-48"
-              />
-              <p>No active tracker alerts.</p>
-            </div>
+            <EmptyState art="confirmation-mark" title="No active tracker alerts" />
           {:else}
             <div class="space-y-3">
               {#each trackerNotifications as notification (notification.id)}
@@ -312,11 +303,11 @@
             {@const groupedHistory = ensureGroupsInitialized(groupHistoryByDate(historyInstances))}
 
             {#if historyInstances.length === 0}
-              <div class="text-center py-8 text-muted-foreground">
-                <History class="h-12 w-12 mx-auto mb-3 opacity-50" />
-                <p>No history yet</p>
-                <p class="text-sm">Completed trackers will appear here</p>
-              </div>
+              <EmptyState
+                art="clock"
+                title="No history yet"
+                body="Completed trackers will appear here"
+              />
             {:else}
               <div class="space-y-4">
                 {#each Object.entries(groupedHistory) as [date, instances] (date)}

@@ -81,7 +81,7 @@ public class DeviceAgeServiceTests
         result.Days.Should().Be(0);
         result.Hours.Should().Be(0);
         result.Display.Should().Be("n/a");
-        result.Level.Should().Be(0);
+        result.Level.Should().Be(DeviceAgeLevel.None);
     }
 
     [Fact]
@@ -166,7 +166,7 @@ public class DeviceAgeServiceTests
         result.Days.Should().Be(0);
         result.Hours.Should().Be(12);
         result.Notes.Should().Be("New reservoir");
-        result.Level.Should().Be(0); // 12h is below default info threshold of 44h
+        result.Level.Should().Be(DeviceAgeLevel.None); // 12h is below default info threshold of 44h
     }
 
     [Fact]
@@ -200,7 +200,73 @@ public class DeviceAgeServiceTests
         result.Age.Should().Be(340);
         result.Days.Should().Be(14);
         result.Hours.Should().Be(4);
-        result.Level.Should().Be(1); // 340h is above warn (336) but below urgent (360)
+        result.Level.Should().Be(DeviceAgeLevel.Warn); // 340h is above warn (336) but below urgent (360)
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    public async Task GetCannulaAgeAsync_AtInfoThreshold_ReturnsInfoLevel()
+    {
+        var deviceEvent = new DeviceEvent
+        {
+            Id = Guid.NewGuid(),
+            Timestamp = DateTime.UtcNow.AddHours(-45),
+            EventType = DeviceEventType.SiteChange
+        };
+        _repositoryMock
+            .Setup(r => r.GetLatestByEventTypesAsync(
+                It.IsAny<DeviceEventType[]>(),
+                It.IsAny<Guid?>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(deviceEvent);
+
+        var result = await _service.GetCannulaAgeAsync(new DeviceAgePreferences());
+
+        result.Level.Should().Be(DeviceAgeLevel.Info);
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    public async Task GetSensorAgeAsync_NoEvents_ReturnsNoneLevelAndStartAsMin()
+    {
+        _repositoryMock
+            .Setup(r => r.GetLatestByEventTypesAsync(
+                It.IsAny<DeviceEventType[]>(),
+                It.IsAny<Guid?>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync((DeviceEvent?)null);
+
+        var result = await _service.GetSensorAgeAsync(new DeviceAgePreferences());
+
+        result.Min.Should().Be("Sensor Start");
+        result.SensorStart.Found.Should().BeFalse();
+        result.SensorStart.Level.Should().Be(DeviceAgeLevel.None);
+        result.SensorChange.Found.Should().BeFalse();
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    public async Task GetSensorAgeAsync_StartAndChangeAtSameInstant_HidesStart()
+    {
+        var instant = DateTime.UtcNow.AddHours(-10);
+        _repositoryMock
+            .Setup(r => r.GetLatestByEventTypesAsync(
+                It.Is<DeviceEventType[]>(types => types.Contains(DeviceEventType.SensorStart)),
+                It.IsAny<Guid?>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new DeviceEvent { Id = Guid.NewGuid(), Timestamp = instant, EventType = DeviceEventType.SensorStart });
+        _repositoryMock
+            .Setup(r => r.GetLatestByEventTypesAsync(
+                It.Is<DeviceEventType[]>(types => types.Contains(DeviceEventType.SensorChange)),
+                It.IsAny<Guid?>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new DeviceEvent { Id = Guid.NewGuid(), Timestamp = instant, EventType = DeviceEventType.SensorChange });
+
+        var result = await _service.GetSensorAgeAsync(new DeviceAgePreferences());
+
+        result.Min.Should().Be("Sensor Change");
+        result.SensorStart.Found.Should().BeFalse();
+        result.SensorChange.Found.Should().BeTrue();
     }
 
     [Fact]

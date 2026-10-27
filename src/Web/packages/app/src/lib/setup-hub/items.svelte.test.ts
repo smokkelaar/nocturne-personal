@@ -1,6 +1,39 @@
 import { describe, expect, it } from "vitest";
 import { SetupHubItemKey } from "$api";
-import { setupHubItems, setupHubItemBySlug } from "./items.svelte";
+import {
+  HUB_PAINTING_STOPS,
+  setupHubItems,
+  hubPaintingStop,
+  setupHubItemBySlug,
+} from "./items.svelte";
+
+describe("hubPaintingStop", () => {
+  it.each([
+    [0, 6],
+    [1, 5],
+    [2, 4],
+    [3, 3],
+    [4, 2],
+    [5, 1],
+    [6, 0.5],
+  ])("paints one stage per resolved item: %i open shows stop %i", (open, stop) => {
+    expect(hubPaintingStop(open)).toBe(stop);
+  });
+
+  it("finishes the painting only when nothing is open", () => {
+    expect(hubPaintingStop(0)).toBe(HUB_PAINTING_STOPS);
+    expect(hubPaintingStop(1)).toBeLessThan(HUB_PAINTING_STOPS);
+  });
+
+  it("shows half the first stage rather than blank paper with every item open", () => {
+    expect(hubPaintingStop(6)).toBe(0.5);
+  });
+
+  it("advances a whole stop for the first item a six-item hub resolves", () => {
+    expect(hubPaintingStop(5) - hubPaintingStop(6)).toBeGreaterThan(0);
+    expect(Number.isInteger(hubPaintingStop(5))).toBe(true);
+  });
+});
 
 describe("setup hub item registry", () => {
   it("presents every item the server can list, each at its own page", () => {

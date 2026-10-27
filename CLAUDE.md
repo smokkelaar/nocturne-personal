@@ -21,6 +21,12 @@ aspire describe
 aspire logs nocturne-api
 aspire resource nocturne-api restart
 
+# The watercolour library is the ryceg/water-ui submodule (src/Web/vendor/water-ui); pnpm
+# install fails without it. Its wasm is not committed: build it for live paint, otherwise the
+# artwork falls back to baked stills.
+git submodule update --init
+cd src/Web && pnpm --filter water-ui build:wasm
+
 # Build solution
 dotnet build
 

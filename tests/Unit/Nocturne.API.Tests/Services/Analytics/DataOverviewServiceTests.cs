@@ -290,6 +290,42 @@ public class DataOverviewServiceTests : IDisposable
 
     [Fact]
     [Trait("Category", "Unit")]
+    public async Task GetAvailableYearsAsync_ServesTheCachedExtent_WithoutRereadingTheTables()
+    {
+        var service = new DataOverviewService(
+            _factory.Object,
+            new TenantClockResolver(_therapySettings.Object, _readContext, NullLogger<TenantClockResolver>.Instance),
+            Mock.Of<IStatisticsService>(),
+            TestTenantCache.Create(tenantId: TenantId),
+            _logger
+        );
+
+        _dbContext.SensorGlucose.Add(new SensorGlucoseEntity
+        {
+            Id = Guid.NewGuid(),
+            Timestamp = DateTimeOffset.FromUnixTimeMilliseconds(June15_2024_Noon).UtcDateTime,
+            Mgdl = 120.0,
+            DataSource = "dexcom"
+        });
+        await _dbContext.SaveChangesAsync();
+        await service.GetAvailableYearsAsync();
+
+        _dbContext.Boluses.Add(new BolusEntity
+        {
+            Id = Guid.NewGuid(),
+            Timestamp = DateTimeOffset.FromUnixTimeMilliseconds(Jan1_2025_01h).UtcDateTime,
+            Insulin = 5.0,
+            DataSource = "glooko"
+        });
+        await _dbContext.SaveChangesAsync();
+        var result = await service.GetAvailableYearsAsync();
+
+        result.Years.Should().ContainSingle().Which.Should().Be(2024);
+        result.AvailableDataSources.Should().ContainSingle().Which.Should().Be("dexcom");
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
     public async Task GetAvailableYearsAsync_MultipleTablesSpanningYears_ReturnsFullRange()
     {
         _dbContext.SensorGlucose.Add(new SensorGlucoseEntity

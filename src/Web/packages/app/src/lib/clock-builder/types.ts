@@ -270,6 +270,7 @@ export const TRACKER_SHOW_OPTIONS: SelectOption[] = [
 export const TRACKER_CATEGORIES = [
   "Sensor",
   "Cannula",
+  "Pod",
   "Reservoir",
   "Battery",
   "Consumable",

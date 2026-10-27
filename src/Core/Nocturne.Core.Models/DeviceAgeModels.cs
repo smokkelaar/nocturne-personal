@@ -40,6 +40,18 @@ public class DeviceAgePreferences
 }
 
 /// <summary>
+/// The Nightscout alarm level scale. A device age below its info threshold, or with no change
+/// event found, is <see cref="None"/>.
+/// </summary>
+public static class DeviceAgeLevel
+{
+    public const int None = -3;
+    public const int Info = 0;
+    public const int Warn = 1;
+    public const int Urgent = 2;
+}
+
+/// <summary>
 /// Device age information with 1:1 legacy JavaScript compatibility
 /// </summary>
 public class DeviceAgeInfo
@@ -84,10 +96,10 @@ public class DeviceAgeInfo
     public int MinFractions { get; set; }
 
     /// <summary>
-    /// Notification level based on age thresholds
+    /// Alarm level for the age, on the <see cref="DeviceAgeLevel"/> scale
     /// </summary>
     [JsonPropertyName("level")]
-    public int Level { get; set; }
+    public int Level { get; set; } = DeviceAgeLevel.None;
 
     [JsonPropertyName("display")]
     public string Display { get; set; } = "n/a";
@@ -128,8 +140,11 @@ public class DeviceAgeNotification
     [JsonPropertyName("pushoverSound")]
     public string PushoverSound { get; set; } = "incoming";
 
+    /// <summary>
+    /// The <see cref="DeviceAgeLevel"/> of the age that raised the notification
+    /// </summary>
     [JsonPropertyName("level")]
-    public int Level { get; set; }
+    public int Level { get; set; } = DeviceAgeLevel.None;
 
     [JsonPropertyName("group")]
     public string Group { get; set; } = string.Empty;

@@ -30,7 +30,7 @@
   import Database from "@lucide/svelte/icons/database";
   import CreditCard from "@lucide/svelte/icons/credit-card";
   import GraduationCap from "@lucide/svelte/icons/graduation-cap";
-  import { DropGroup, DropSurface } from "@nocturne/watercolour";
+  import { DropGroup, DropSurface } from "water-ui";
   import { getServicesOverview } from "$api/generated/services.generated.remote";
   import { getStatus } from "$api/generated/status.generated.remote";
   import { getSupportConfig } from "$lib/api/support.remote";

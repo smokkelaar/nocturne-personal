@@ -39,7 +39,7 @@
     { errorTitle: "Error loading AGP report", dateParams: reportsParams }
   );
 
-  const entries = $derived(reportsResource.current?.entries ?? []);
+  const readingCount = $derived(reportsResource.current?.readingCount ?? 0);
   const analysis = $derived(reportsResource.current?.analysis);
   const averagedStats = $derived(reportsResource.current?.averagedStats);
   const edges = $derived(analysis?.timeInRange?.thresholds);
@@ -80,7 +80,7 @@
       <span class="text-muted-foreground/50 print:hidden">•</span>
       <span class="print:hidden">{dayCount} days</span>
       <span class="text-muted-foreground/50 print:hidden">•</span>
-      <span>{formatNumber(entries.length)} readings</span>
+      <span>{formatNumber(readingCount)} readings</span>
     </div>
   </div>
 

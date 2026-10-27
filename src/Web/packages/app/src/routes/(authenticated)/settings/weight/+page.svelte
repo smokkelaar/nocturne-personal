@@ -9,8 +9,9 @@
   import Plus from "@lucide/svelte/icons/plus";
   import Trash2 from "@lucide/svelte/icons/trash-2";
   import Loader2 from "@lucide/svelte/icons/loader-circle";
-  import { Artwork } from "@nocturne/watercolour";
+  import { Artwork } from "water-ui";
   import { weightScaleArtwork } from "$lib/watercolour-icons";
+  import { EmptyState } from "$lib/components/shared";
   import * as bw from "$api/generated/bodyWeights.generated.remote";
   import { describeSubmitError } from "$lib/forms/submit-error";
   import type { BodyWeight } from "$api";
@@ -56,7 +57,9 @@
     pendingDelete = null;
     if (!entry?._id) return;
     try {
-      await bw.deleteBodyWeight(entry._id).updates(bw.getBodyWeights);
+      await bw.deleteBodyWeight(entry._id).updates(
+        weightsQuery.withOverride((current) => current.filter((e) => e._id !== entry._id))
+      );
     } catch (e) {
       errorMessage = describeSubmitError(e, "Failed to delete entry");
     }
@@ -91,16 +94,7 @@
     </Card.Header>
     <Card.Content class="space-y-4">
       {#if entries.length === 0}
-        <div class="flex flex-col items-center gap-3 py-8 text-center">
-          <Artwork
-            icon={weightScaleArtwork}
-            palette="moss"
-            motion="auto"
-            autoplay="once"
-            class="size-48"
-          />
-          <p class="text-muted-foreground text-sm">No entries yet.</p>
-        </div>
+        <EmptyState art={weightScaleArtwork} title="No entries yet" />
       {:else}
         <ul class="divide-border divide-y">
           {#each entries as entry (entry._id)}

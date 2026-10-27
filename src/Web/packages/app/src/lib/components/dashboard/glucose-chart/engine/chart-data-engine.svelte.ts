@@ -240,8 +240,12 @@ export function createChartDataEngine(
       serverChartData?.glucoseData?.[
         serverChartData.glucoseData.length - 1
       ]?.time?.getTime() ?? 0;
+    // Fetched while the service status is still unknown rather than after it: the status read and
+    // this one leave together, and an answer from an unavailable service is never drawn
+    // (effectiveShowPredictions gates the track and its error).
     if (
-      !effectiveShowPredictions ||
+      !(options.enablePredictions ?? true) ||
+      predictionServiceStatus === "unavailable" ||
       !enabled ||
       !serverChartData?.glucoseData?.length ||
       latestEntryMills === 0

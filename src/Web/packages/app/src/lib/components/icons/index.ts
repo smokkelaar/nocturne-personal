@@ -35,6 +35,7 @@ export { default as SiteChangeIcon } from './SiteChangeIcon.svelte';
 export { default as ReservoirIcon } from './ReservoirIcon.svelte';
 export { default as BatteryIcon } from './BatteryIcon.svelte';
 export { default as CannulaIcon } from './CannulaIcon.svelte';
+export { default as PodIcon } from './PodIcon.svelte';
 export { default as SiteRotationIcon } from './SiteRotationIcon.svelte';
 
 // Therapy Event Icons (AAPS SVG icons)

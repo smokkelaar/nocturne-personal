@@ -14,6 +14,7 @@ const TENANT_ID = '0198a3c4-7e21-7b10-9d2f-5c6e7f809a1b';
 /** The server, with `TENANT_ID` as the tenant every slug names. */
 function servingTenant(server: SocketIOServer): SocketIOServer {
   server.isCurrentTenant = async (_slug, id) => id === TENANT_ID;
+  server.holdsTenantNow = (_slug, id) => id === TENANT_ID;
   return server;
 }
 const HOST = 'rhys.nocturne.run';
@@ -308,6 +309,29 @@ describe('SocketIOServer re-admission of a browser socket admitted on a ticket',
 
     expect(await disconnected).toBe('transport close');
     expect(socket.connected).toBe(false);
+    await server.stop();
+  });
+
+  it('closes the transport of a socket whose slug names another tenant by the time its fresh ticket is applied', async () => {
+    const { server, port } = await listening();
+    const client = await browser(port, grant({ categories: ['entries'] }), () => ({
+      token: signHandshakeTicket(SECRET, HOST, TENANT_ID, grant({ categories: ['entries'] })),
+      denied: false,
+    }));
+    const socket = serverSocket(server, client);
+    const disconnected = new Promise<string>((resolve) => client.once('disconnect', resolve));
+    let current = TENANT_ID;
+    server.holdsTenantNow = (_slug, id) => id === current;
+    server.isCurrentTenant = async (_slug, id) => {
+      const held = id === current;
+      current = '0198a3c4-0000-7000-8000-000000000001';
+      return held;
+    };
+
+    await server.readmit(socket);
+
+    expect(await disconnected).toBe('transport close');
+    expect([...socket.rooms].filter((room) => room.startsWith('tenant:'))).toEqual([]);
     await server.stop();
   });
 

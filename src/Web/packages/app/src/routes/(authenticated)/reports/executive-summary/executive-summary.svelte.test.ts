@@ -20,7 +20,7 @@ vi.mock("$lib/hooks/resource-context.svelte", () => ({
   contextResource: () => ({
     date: { dayCount: 14 },
     current: {
-      entries: [],
+      readingCount: 0,
       timeZoneUnavailableReason: report.reason,
       analysis: {
         reliability: { meetsReliabilityCriteria: false, daysOfData: 3, recommendedMinimumDays: 14 },

@@ -32,7 +32,7 @@ import { error } from "@sveltejs/kit";
 import { flushSync } from "svelte";
 import type { RealtimeStore } from "$lib/stores/realtime-store.svelte";
 import { getChartData } from "$api/chart-data.remote";
-import { getPredictionStatus } from "$api/predictions.remote";
+import { getPredictions, getPredictionStatus } from "$api/predictions.remote";
 import { transformChartData } from "$lib/utils/chart-data-transform";
 import type { Entry } from "$lib/websocket/types";
 import Harness from "./chart-data-engine-harness.test.svelte";
@@ -247,6 +247,30 @@ describe("chart data engine — realtime glucose source", () => {
     mountSidebar({ focusHours: 3, enablePredictions: false });
 
     await vi.waitFor(() => expect(getChartData).toHaveBeenCalledTimes(1));
+  });
+});
+
+describe("chart data engine — predictions", () => {
+  afterEach(() => {
+    vi.mocked(getPredictionStatus).mockImplementation((async () => ({ available: false })) as never);
+  });
+
+  it("asks for predictions while the service status is still unknown", async () => {
+    vi.mocked(getPredictionStatus).mockImplementation((() => new Promise(() => {})) as never);
+    vi.mocked(getPredictions).mockClear();
+
+    render(Harness, {
+      props: {
+        entries: [],
+        options: {
+          focusHours: 3,
+          initialChartData: transformChartData({ glucoseData: [{ time: Date.now() - MINUTE, sgv: 120 }] } as never),
+        },
+        onengine: () => {},
+      },
+    });
+
+    await vi.waitFor(() => expect(getPredictions).toHaveBeenCalledTimes(1));
   });
 });
 

@@ -95,6 +95,13 @@ public class TrackerTriggerServiceTests
             .Returns((Guid _, Func<ITrackerRepository, CancellationToken, Task<TrackerSuccessionResult>> work,
                 Func<ITrackerRepository, TrackerSuccessionResult, CancellationToken, Task<bool>>? _, CancellationToken ct) => work(_repository.Object, ct));
 
+        _repository
+            .Setup(r => r.ExecuteUnderDefinitionLockAsync(
+                It.IsAny<Guid>(), It.IsAny<Func<ITrackerRepository, CancellationToken, Task<List<TrackerInstanceEntity>>>>(),
+                It.IsAny<Func<ITrackerRepository, List<TrackerInstanceEntity>, CancellationToken, Task<bool>>?>(), It.IsAny<CancellationToken>()))
+            .Returns((Guid _, Func<ITrackerRepository, CancellationToken, Task<List<TrackerInstanceEntity>>> work,
+                Func<ITrackerRepository, List<TrackerInstanceEntity>, CancellationToken, Task<bool>>? _, CancellationToken ct) => work(_repository.Object, ct));
+
         _sut = new TrackerTriggerService(
             _repository.Object,
             _broadcast.Object,
@@ -106,7 +113,8 @@ public class TrackerTriggerServiceTests
         int? lifespanHours = 72,
         TrackerMode mode = TrackerMode.Duration,
         string userId = "definition-owner",
-        string? triggerNotesContains = null)
+        string? triggerNotesContains = null,
+        string[]? endEventTypes = null)
     {
         var definition = new TrackerDefinitionEntity
         {
@@ -117,6 +125,7 @@ public class TrackerTriggerServiceTests
             Mode = mode,
             TriggerNotesContains = triggerNotesContains,
             TriggerEventTypes = JsonSerializer.Serialize(triggerEventTypes ?? ["Site Change"]),
+            EndEventTypes = JsonSerializer.Serialize(endEventTypes ?? []),
         };
         _definitions.Add(definition);
         return definition;
@@ -414,6 +423,9 @@ public class TrackerTriggerServiceTests
     {
         var running = runs.Where(r => r.CompletedAt == null).ToList();
         _repository
+            .Setup(r => r.GetDefinitionsCompletedByAsync(It.IsAny<IReadOnlyCollection<string>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([]);
+        _repository
             .Setup(r => r.GetRunningStartedByAsync(It.IsAny<IReadOnlyCollection<string>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((IReadOnlyCollection<string> ids, CancellationToken _) =>
                 running.Where(r => ids.Contains(r.StartTreatmentId!)).ToList());
@@ -594,6 +606,121 @@ public class TrackerTriggerServiceTests
         var followed = await _sut.GetFollowedAsync([following.Id, other.Id]);
 
         followed.Should().BeEquivalentTo([following.Id]);
+    }
+
+    private TrackerDefinitionEntity GivenPodDefinition() =>
+        GivenDefinition(
+            triggerEventTypes: ["Pod Change", "Pod Activated"],
+            endEventTypes: ["Pod Deactivated"]);
+
+    [Fact]
+    public async Task PodActivated_StartsAPodRun()
+    {
+        var definition = GivenPodDefinition();
+
+        await _sut.OnCreatedAsync([Event(T0, DeviceEventType.PodActivated)]);
+
+        _started.Should().ContainSingle().Which.DefinitionId.Should().Be(definition.Id);
+    }
+
+    [Fact]
+    public async Task PodDeactivated_EndsTheRunningRunAndStartsNothing()
+    {
+        var definition = GivenPodDefinition();
+        var running = GivenActiveInstance(definition, T0.AddHours(-80));
+        var deactivated = Event(T0, DeviceEventType.PodDeactivated);
+
+        await _sut.OnCreatedAsync([deactivated]);
+
+        _started.Should().BeEmpty();
+        _completed.Should().ContainSingle();
+        _completed[0].InstanceId.Should().Be(running.Id);
+        _completed[0].Reason.Should().Be(CompletionReason.Expired);
+        _completed[0].CompletedAt.Should().Be(T0);
+        _completed[0].CompleteTreatmentId.Should().Be(deactivated.Id.ToString());
+        VerifyBroadcast(TrackerRealtimeAction.Complete, running, Times.Once());
+    }
+
+    /// <summary>A deactivation re-published after the next pod was activated is history.</summary>
+    [Fact]
+    public async Task EndOlderThanTheRunningRun_LeavesItRunning()
+    {
+        var definition = GivenPodDefinition();
+        GivenActiveInstance(definition, T0);
+
+        await _sut.OnCreatedAsync([Event(T0.AddMinutes(-10), DeviceEventType.PodDeactivated)]);
+
+        _completed.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task DeactivationThenActivation_EndsOneRunAndStartsTheNext()
+    {
+        var definition = GivenPodDefinition();
+        var running = GivenActiveInstance(definition, T0.AddDays(-3));
+
+        await _sut.OnCreatedAsync(
+        [
+            Event(T0.AddMinutes(5), DeviceEventType.PodActivated),
+            Event(T0, DeviceEventType.PodDeactivated),
+        ]);
+
+        _completed.Should().ContainSingle().Which.InstanceId.Should().Be(running.Id);
+        _started.Should().ContainSingle().Which.StartedAt.Should().Be(T0.AddMinutes(5));
+    }
+
+    [Fact]
+    public async Task EndEventADefinitionDoesNotList_IsIgnored()
+    {
+        var definition = GivenDefinition();
+        GivenActiveInstance(definition, T0.AddDays(-1));
+
+        await _sut.OnCreatedAsync([Event(T0, DeviceEventType.PodDeactivated)]);
+
+        _completed.Should().BeEmpty();
+    }
+
+    /// <summary>An end list only ends on the ending events; a restart event stored there is ignored.</summary>
+    [Fact]
+    public async Task EndListNamingARestartEvent_IsIgnored()
+    {
+        var definition = GivenDefinition(triggerEventTypes: [], endEventTypes: ["Site Change"]);
+        GivenActiveInstance(definition, T0.AddDays(-1));
+
+        await _sut.OnCreatedAsync([Event(T0)]);
+
+        _completed.Should().BeEmpty();
+        _started.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void EndNormalisation_RejectsAnEventThatIsNotAnEnd()
+    {
+        TrackerTriggerService.TryNormaliseEnds(["pod deactivated", " "], out var ends, out _).Should().BeTrue();
+        ends.Should().Equal("Pod Deactivated");
+
+        TrackerTriggerService.TryNormaliseEnds(["Site Change"], out _, out var error).Should().BeFalse();
+        error.Should().Contain("Site Change");
+    }
+
+    [Fact]
+    public async Task DeletedEnd_ReopensTheRunItEnded()
+    {
+        var definition = GivenPodDefinition();
+        var deactivated = Event(T0, DeviceEventType.PodDeactivated);
+        var ended = Run(definition, null, T0.AddDays(-3), completedAt: T0);
+        GivenRunsStartedByDeletes([]);
+        _repository
+            .Setup(r => r.GetDefinitionsCompletedByAsync(It.IsAny<IReadOnlyCollection<string>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((IReadOnlyCollection<string> ids, CancellationToken _) =>
+                ids.Contains(deactivated.Id.ToString()) ? [definition.Id] : []);
+        _repository
+            .Setup(r => r.ReopenCompletedByAsync(definition.Id, It.IsAny<IReadOnlyCollection<string>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([ended]);
+
+        await _sut.OnDeletedAsync([deactivated]);
+
+        VerifyBroadcast(TrackerRealtimeAction.Reopen, ended, Times.Once());
     }
 }
 

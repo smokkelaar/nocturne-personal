@@ -3,7 +3,7 @@
   import { Button } from "$lib/components/ui/button";
   import ArrowLeft from "@lucide/svelte/icons/arrow-left";
   import KeyRound from "@lucide/svelte/icons/key-round";
-  import { Artwork } from "@nocturne/watercolour";
+  import { Artwork } from "water-ui";
   import { fingerprintArtwork } from "$lib/watercolour-icons";
   import { getAuthState } from "../auth.remote";
   import { getAuthStatus } from "$lib/api/generated";
@@ -65,14 +65,6 @@
         >
           <KeyRound class="h-6 w-6 text-primary" />
         </div>
-      {:else}
-        <Artwork
-          artwork="crescent-moon"
-          palette="moonlight"
-          motion="auto"
-          autoplay="once"
-          class="mx-auto mb-4 size-48"
-        />
       {/if}
       {#if showGuestCode}
         <Card.Title class="text-2xl font-bold">Enter your guest code</Card.Title>

@@ -10,6 +10,12 @@ vi.mock("$app/navigation", async (importOriginal) => ({
   ...(await importOriginal<object>()),
   goto: vi.fn(() => Promise.resolve()),
 }));
+vi.mock("water-ui", async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  Artwork: (await import("$lib/test-stubs/Artwork.test-stub.svelte")).default,
+  hostSurface: () => "light",
+  watchSurface: () => () => {},
+}));
 const migrationHistory = vi.hoisted(() => ({ jobs: [] as { id: string; state: MigrationJobState }[] }));
 vi.mock("$api/generated/migrations.generated.remote", () => ({
   getHistory: () => remoteQuery(() => migrationHistory.jobs),
@@ -115,16 +121,16 @@ describe("setup who-for step", () => {
     expect(group.getByRole("radio").elements()).toHaveLength(3);
     await expect.element(page.getByText("Step 01 / 06")).toBeVisible();
     await expect
-      .element(page.getByTestId("step-icon"))
-      .toHaveAttribute("data-art", "who");
+      .element(page.getByTestId("artwork"))
+      .toHaveAttribute("data-artwork", "people-group");
   });
 
-  it("shows the step's icon inside the card, and folds the step list away on a phone", async () => {
+  it("paints the step's artwork inside the card, and folds the step list away on a phone", async () => {
     await page.viewport(360, 800);
     render(SetupPage);
 
-    await expect.element(page.getByTestId("step-icon")).toBeVisible();
-    expect(document.querySelector("section [data-testid=step-icon]")).not.toBeNull();
+    await expect.element(page.getByTestId("artwork")).toBeVisible();
+    expect(document.querySelector("section [data-testid=artwork]")).not.toBeNull();
     await expect
       .element(page.getByRole("button", { name: "Finish", exact: true }))
       .not.toBeInTheDocument();
@@ -300,19 +306,19 @@ describe("setup chrome", () => {
     expect(container.querySelector(".dark")).toBeNull();
   });
 
-  it("shows each step's icon beside it", async () => {
+  it("shows each step's artwork beside it", async () => {
     await renderAtPath();
 
-    const icon = page.getByTestId("step-icon");
-    await expect.element(icon).toHaveAttribute("data-art", "welcome");
+    const artwork = page.getByTestId("artwork");
+    await expect.element(artwork).toHaveAttribute("data-artwork", "crescent-moon");
 
     await continueButton().click();
 
-    await expect.element(icon).toHaveAttribute("data-art", "units");
+    await expect.element(artwork).toHaveAttribute("data-artwork", "world-globe");
 
     await skipButton().click();
 
-    await expect.element(icon).toHaveAttribute("data-art", "source");
+    await expect.element(artwork).toHaveAttribute("data-artwork", "plug");
   });
 
   // Leaving marks onboarding complete on the server, but nothing past the

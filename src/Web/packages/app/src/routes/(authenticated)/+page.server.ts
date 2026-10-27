@@ -17,12 +17,18 @@ export const load: PageServerLoad = async ({ locals, request, parent }) => {
 	// chart fetches start now instead of behind the layout chain's status and onboarding calls.
 	// A viewer the layout will redirect to sign-in is left out, so it spends no chart queries.
 	const { kind } = classifyRequestHost(request);
+	const maybeTenantless = kind === 'apex' || kind === 'dashboard-slug';
 	const chartData =
-		kind !== 'apex' && kind !== 'dashboard-slug' && (locals.isAuthenticated || locals.isShareHost)
+		!maybeTenantless && (locals.isAuthenticated || locals.isShareHost)
 			? loadChartData(apiClient)
 			: null;
 
-	const { tenantless, baseDomain, dashboardSlugs } = await parent();
+	// `parent()` in a server data request reruns every ancestor server load, invalidated or not,
+	// so a client navigation to the dashboard would repeat the layouts' API calls. Only a host
+	// that can be tenantless needs their answer.
+	const { tenantless, baseDomain, dashboardSlugs } = maybeTenantless
+		? await parent()
+		: { tenantless: false, baseDomain: null, dashboardSlugs: [] };
 
 	// A tenantless host serves the cross-tenant overview instead of one tenant's dashboard, so
 	// there is no tenant whose chart data could be loaded here. The overview itself is fetched
@@ -39,8 +45,9 @@ export const load: PageServerLoad = async ({ locals, request, parent }) => {
 		return { initialChartData: null };
 	}
 
-	const { initialChartData, initialWindowStart, historicalDataPromise } =
-		chartData ?? loadChartData(apiClient);
+	const loaded = chartData ?? (maybeTenantless ? loadChartData(apiClient) : null);
+	if (!loaded) return { initialChartData: null };
+	const { initialChartData, initialWindowStart, historicalDataPromise } = loaded;
 
 	return {
 		initialChartData: await initialChartData,

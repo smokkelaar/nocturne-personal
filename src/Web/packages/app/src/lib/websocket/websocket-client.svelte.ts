@@ -24,6 +24,9 @@ import {
 import { isRecord } from "$lib/utils/type-guards";
 import { isoNow } from "$lib/utils/now";
 
+/** The bridge's handshake error for a share host. Final: retrying cannot change it. */
+const SHARE_REALTIME_UNSUPPORTED = "share_realtime_unsupported";
+
 /** Per-socket record of whether its handshake carried a ticket. The bridge
  *  admits a ticket-less handshake so legacy Nightscout clients can run the
  *  classic `authorize` exchange, but joins such a socket to no room. */
@@ -122,6 +125,11 @@ export class WebSocketClient {
       return;
     }
 
+    if (this.config.disabled) {
+      this.connectionStatus = "unauthorized";
+      return;
+    }
+
     // Skip connection if URL is empty (SSR scenario)
     if (!this.config.url) {
       return;
@@ -186,7 +194,7 @@ export class WebSocketClient {
   /** Start the ticket request the first handshake would make, so it overlaps
    *  whatever the caller does before `connect()`. */
   prefetchTicket(): void {
-    if (!this.config.url || this.socket || this.prefetchedTicket) return;
+    if (!this.config.url || this.config.disabled || this.socket || this.prefetchedTicket) return;
     const requestedAt = Date.now();
     this.prefetchedTicket = { result: this.fetchTicket(), requestedAt };
   }
@@ -329,7 +337,7 @@ export class WebSocketClient {
       // A denied ticket means the API read policy rejected this connection — the
       // user isn't permitted realtime for this tenant. Report that as its own
       // status so no surface renders it as a fault.
-      if (this.lastTicketDenied) {
+      if (this.lastTicketDenied || error.message === SHARE_REALTIME_UNSUPPORTED) {
         this.connectionStatus = "unauthorized";
         this.lastError = null;
         this.clearAuthRetry();

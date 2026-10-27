@@ -7,7 +7,11 @@
   import { effectiveRail } from "$lib/components/status-pills/rail";
   import { GlucoseValueIndicator } from "$lib/components/shared";
   import { getRealtimeStore } from "$lib/stores/realtime-store.svelte";
-  import { dashboardRail, glucoseUnits } from "$lib/stores/appearance-store.svelte";
+  import {
+    dashboardRail,
+    dashboardTopWidgets,
+    glucoseUnits,
+  } from "$lib/stores/appearance-store.svelte";
   import { getUiSettings } from "$api/ui-settings.remote";
   import { STALE_THRESHOLD_MS } from "$lib/constants/staleness";
   import {
@@ -20,6 +24,9 @@
   import Clock from "@lucide/svelte/icons/clock";
   import { displayedGlucose } from "$lib/stores/current-glucose-status.svelte";
   import { getGlucoseTileVariant } from "$lib/utils/glucose-status";
+  import { trackUnwashedFill } from "./glucose-tile-wash-state.svelte";
+  import { stillArtwork } from "$lib/watercolour-deferral.svelte";
+  import { showsCurrentGlucoseWidget } from "./top-widget-ids";
 
   interface ComponentProps {
     /** Show the status pills besides the tracker pills. */
@@ -39,6 +46,10 @@
   const railItems = $derived(
     showPills ? rail : rail.filter((item) => item === RailItemId.Trackers)
   );
+
+  // The widget carries the reading (and its wash) when it is showing, which frees this row for
+  // the pills; otherwise the tile stays here so the reading never leaves the desktop dashboard.
+  const readingInWidget = $derived(showsCurrentGlucoseWidget(dashboardTopWidgets.current));
 
   const glucose = displayedGlucose(realtimeStore);
   const rawCurrentBG = $derived(glucose.currentBG);
@@ -67,6 +78,15 @@
   const isLoading = $derived(
     rawCurrentBG === 0 && realtimeStore.entries.length === 0
   );
+  // Over the flat range fill, so the tile reads the same until it arrives.
+  const tileWash = stillArtwork(() => import("./GlucoseTileWash.svelte"));
+  trackUnwashedFill(() => ({
+    loading: isLoading,
+    stale: isStale,
+    disconnected: isDisconnected,
+    variant: tileVariant,
+    washed: tileWash.component !== null,
+  }));
 
   function formatTimeSinceLastReading(): string {
     return relativeAge(lastUpdated, {
@@ -132,25 +152,34 @@
   }
 </script>
 
+{#snippet rangeWash()}
+  {#if tileWash.component}
+    <tileWash.component mills={glucose.mills} variant={tileVariant} delta={rawBgDelta} />
+  {/if}
+{/snippet}
+
 <!-- Desktop only: on mobile, MobileHeader carries the reading. -->
 <div class="@container">
   <h1 class="sr-only">Nocturne</h1>
   <div class="hidden @md:flex flex-wrap items-center gap-x-6 gap-y-3">
-    <div class="flex shrink-0 items-center gap-3">
-      <GlucoseValueIndicator
-        displayValue={displayCurrentBG}
-        variant={tileVariant}
-        {isLoading}
-        {isStale}
-        {isDisconnected}
-        {statusText}
-        {statusTooltip}
-        size="lg"
-      />
-      <div class="text-sm text-muted-foreground tabular-nums">
-        {displayBgDelta}
+    {#if !readingInWidget}
+      <div class="flex shrink-0 items-center gap-3">
+        <GlucoseValueIndicator
+          displayValue={displayCurrentBG}
+          variant={tileVariant}
+          {isLoading}
+          {isStale}
+          {isDisconnected}
+          {statusText}
+          {statusTooltip}
+          size="lg"
+          background={tileWash.component ? rangeWash : undefined}
+        />
+        <div class="text-sm text-muted-foreground tabular-nums">
+          {displayBgDelta}
+        </div>
       </div>
-    </div>
+    {/if}
 
     <StatusRail
       items={railItems}

@@ -12,6 +12,7 @@ using Nocturne.Core.Contracts.Treatments;
 using Nocturne.Core.Contracts.Glucose;
 using Nocturne.Core.Contracts.V4.Repositories;
 using Nocturne.Core.Models;
+using Nocturne.Core.Models.Battery;
 using Nocturne.Core.Models.V4;
 using Nocturne.API.Services.Glucose;
 using Nocturne.API.Services.Treatments;
@@ -501,34 +502,32 @@ public class PropertiesService : IPropertiesService
         };
     }
 
-    /// <summary>
-    /// Set battery level properties
-    /// </summary>
     private void SetBatteryProperties(Dictionary<string, object> properties, DData ddata)
     {
+        var now = _time.GetUtcNow().ToUnixTimeMilliseconds();
+
         // Only statuses that actually carry an uploader battery: AID systems interleave
         // pump-only device statuses, and the newest record is often one of those.
         var batteryReports = (ddata.DeviceStatus ?? [])
             .Where(d => d.Uploader?.Battery != null)
             .ToList();
 
-        if (batteryReports.Count == 0)
+        var weakest = UploaderBatterySelection.Select(
+            batteryReports.Select(ToBatteryReading),
+            now);
+        if (weakest == null)
             return;
 
         // The most recent report from each uploader, weakest battery first. Legacy
         // clients read this list to show more than one phone.
-        var latestPerDevice = batteryReports
-            .GroupBy(d => string.IsNullOrEmpty(d.Device) ? "unknown" : d.Device)
+        var devices = batteryReports
+            .GroupBy(DeviceKey)
             .Select(g => g.OrderByDescending(d => d.Mills).First())
             .OrderBy(d => d.Uploader!.Battery)
-            .ToList();
-
-        var devices = latestPerDevice
             .Select(d => new Dictionary<string, object?>
             {
-                ["name"] = d.Uploader!.Name
-                    ?? (string.IsNullOrEmpty(d.Device) ? "unknown" : d.Device),
-                ["device"] = string.IsNullOrEmpty(d.Device) ? "unknown" : d.Device,
+                ["name"] = d.Uploader!.Name ?? DeviceKey(d),
+                ["device"] = DeviceKey(d),
                 ["value"] = d.Uploader.Battery,
                 ["voltage"] = d.Uploader.BatteryVoltage,
                 ["isCharging"] = d.Uploader.IsCharging,
@@ -537,21 +536,37 @@ public class PropertiesService : IPropertiesService
             })
             .ToList();
 
-        // `level` stays the newest reported battery, as before — not the weakest — so
-        // single-uploader setups keep their existing reading.
-        var batteryLevel = batteryReports
-            .OrderByDescending(d => d.Mills)
-            .First()
-            .Uploader!.Battery!.Value;
+        var upbat = new Dictionary<string, object> { ["devices"] = devices };
 
-        properties["upbat"] = new Dictionary<string, object>
+        if (UpbatLevel(weakest) is { } level)
         {
-            ["level"] = batteryLevel,
-            ["display"] = $"{batteryLevel}%",
-            ["displayLine"] = $"Battery: {batteryLevel}%",
-            ["devices"] = devices,
-        };
+            upbat["level"] = level;
+            upbat["display"] = $"{weakest.Battery}%";
+            upbat["displayLine"] = $"Battery: {weakest.Battery}%";
+        }
+
+        properties["upbat"] = upbat;
     }
+
+    // Nightscout sets nothing for 0% without a voltage, and falls through to 25 for 0% with one.
+    private static int? UpbatLevel(BatteryReading reading) =>
+        reading.Battery != 0 ? reading.Level
+        : reading.Voltage is > 0 ? 25
+        : null;
+
+    private static string DeviceKey(DeviceStatus status) =>
+        string.IsNullOrEmpty(status.Device) ? "unknown" : status.Device;
+
+    private static BatteryReading ToBatteryReading(DeviceStatus status) =>
+        new()
+        {
+            Device = DeviceKey(status),
+            Battery = status.Uploader!.Battery,
+            Voltage = status.Uploader.BatteryVoltage,
+            IsCharging = status.Uploader.IsCharging ?? false,
+            Temperature = status.Uploader.Temperature,
+            Mills = status.Mills,
+        };
 
     /// <summary>
     /// Set the legacy device-age plugin properties: cannula (cage), sensor (sage),
@@ -568,14 +583,17 @@ public class PropertiesService : IPropertiesService
             // properties endpoint reports the service defaults.
             var prefs = new DeviceAgePreferences();
 
-            var sensor = await _deviceAgeService.GetSensorAgeAsync(prefs, ct: cancellationToken);
+            // The sage plugin always shows days and hours.
+            var sensor = await _deviceAgeService.GetSensorAgeAsync(
+                new DeviceAgePreferences { Display = "days" },
+                ct: cancellationToken);
 
             properties["cage"] = ToAgeDictionary(
                 await _deviceAgeService.GetCannulaAgeAsync(prefs, ct: cancellationToken));
             properties["sage"] = new Dictionary<string, object?>
             {
-                ["Sensor Start"] = ToAgeDictionary(sensor.SensorStart),
-                ["Sensor Change"] = ToAgeDictionary(sensor.SensorChange),
+                ["Sensor Start"] = ToSensorDictionary(sensor.SensorStart, sensor.Min == "Sensor Start"),
+                ["Sensor Change"] = ToSensorDictionary(sensor.SensorChange, sensor.Min == "Sensor Change"),
                 ["min"] = sensor.Min,
             };
             properties["iage"] = ToAgeDictionary(
@@ -598,20 +616,70 @@ public class PropertiesService : IPropertiesService
     /// <c>age</c>/<c>days</c>/<c>level</c> exactly when a site was just changed, and never
     /// emit <c>found: false</c>. Dictionary values are exempt from that condition.
     /// </summary>
-    private static Dictionary<string, object?> ToAgeDictionary(DeviceAgeInfo age) =>
-        new()
+    private static Dictionary<string, object?> ToAgeDictionary(DeviceAgeInfo age)
+    {
+        if (!age.Found)
         {
-            ["found"] = age.Found,
+            return new()
+            {
+                ["found"] = false,
+                ["age"] = 0,
+                ["treatmentDate"] = null,
+                ["checkForAlert"] = false,
+                ["level"] = age.Level,
+                // NIGHTSCOUT-COMPAT: Nightscout's trailing space.
+                ["display"] = "n/a ",
+            };
+        }
+
+        var result = FoundAgeFields(age);
+        result["checkForAlert"] = false;
+        result["level"] = age.Level;
+        result["display"] = age.Display;
+        if (age.Notification is not null)
+            result["notification"] = age.Notification;
+        return result;
+    }
+
+    /// <summary>
+    /// Projects one sage entry. Nightscout sets <c>level</c> and <c>notification</c> only on the
+    /// entry named by <c>min</c>, and gives an entry with nothing found no other field.
+    /// </summary>
+    private static Dictionary<string, object?> ToSensorDictionary(DeviceAgeInfo age, bool isMin)
+    {
+        var result = age.Found ? FoundAgeFields(age) : new Dictionary<string, object?> { ["found"] = false };
+        if (age.Found)
+        {
+            result["display"] = age.Display;
+            result["displayLong"] = age.Age >= 24
+                ? $"{age.Days} days {age.Hours} hours"
+                : $"{age.Hours} hours";
+        }
+
+        if (!isMin)
+            return result;
+
+        result["level"] = age.Level;
+        if (age.Notification is not null)
+            result["notification"] = age.Notification;
+        return result;
+    }
+
+    private static Dictionary<string, object?> FoundAgeFields(DeviceAgeInfo age)
+    {
+        var fields = new Dictionary<string, object?>
+        {
+            ["found"] = true,
+            ["treatmentDate"] = age.TreatmentDate,
             ["age"] = age.Age,
             ["days"] = age.Days,
             ["hours"] = age.Hours,
-            ["treatmentDate"] = age.TreatmentDate,
-            ["notes"] = age.Notes,
             ["minFractions"] = age.MinFractions,
-            ["level"] = age.Level,
-            ["display"] = age.Display,
-            ["notification"] = age.Notification,
         };
+        if (age.Notes is not null)
+            fields["notes"] = age.Notes;
+        return fields;
+    }
 
     /// <summary>
     /// Set profile properties

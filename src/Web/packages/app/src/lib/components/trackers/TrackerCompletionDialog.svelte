@@ -67,6 +67,7 @@
         return CompletionReason.Attended;
       case TrackerCategory.Sensor:
       case TrackerCategory.Cannula:
+      case TrackerCategory.Pod:
       case TrackerCategory.Consumable:
       case TrackerCategory.Battery:
         return CompletionReason.Completed;
@@ -134,6 +135,8 @@
       case TrackerCategory.Cannula:
       case TrackerCategory.Consumable:
         return [...consumableReasons, ...generalReasons];
+      case TrackerCategory.Pod:
+        return [...consumableReasons, CompletionReason.Empty, ...generalReasons];
       case TrackerCategory.Reminder:
       case TrackerCategory.Custom:
       case TrackerCategory.Battery:

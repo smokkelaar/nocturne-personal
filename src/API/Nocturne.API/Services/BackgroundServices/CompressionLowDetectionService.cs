@@ -12,6 +12,7 @@ using Nocturne.Core.Contracts.Profiles.Resolvers;
 using Nocturne.Core.Contracts.Treatments;
 using Nocturne.Core.Models;
 using Nocturne.Core.Models.Authorization;
+using Nocturne.Core.Models.Configuration;
 using Nocturne.Infrastructure.Data.Entities;
 using Nocturne.Infrastructure.Data.Services;
 
@@ -25,8 +26,9 @@ namespace Nocturne.API.Services.BackgroundServices;
 /// <remarks>
 /// Detection is tenant-aware: each tenant's sleep schedule and timezone are read from
 /// <see cref="IUISettingsService"/> to determine the overnight evaluation window.
-/// The service schedules itself to wake shortly after the configured wake time so that
-/// the full overnight window is available for analysis.
+/// Each wake scans, for every tenant, its most recent night that ended at least
+/// <see cref="DetectionDelayMinutes"/> ago and that this process has not scanned for it, so a night
+/// is never scanned before it is over. The loop then sleeps until the earliest next such time.
 /// </remarks>
 /// <seealso cref="CompressionLowDetection"/>
 public class CompressionLowDetectionService : BackgroundService
@@ -35,20 +37,33 @@ public class CompressionLowDetectionService : BackgroundService
 
     private readonly IServiceProvider _serviceProvider;
     private readonly ActiveTenantSnapshot _activeTenants;
+    private readonly TimeProvider _timeProvider;
     private readonly ILogger<CompressionLowDetectionService> _logger;
+    private readonly Dictionary<Guid, DateOnly> _lastScannedNight = [];
 
     public const string NotificationType = "glucose.compression_low_review";
 
     public static string NotificationSourceId(DateOnly nightOf) => nightOf.ToString("yyyy-MM-dd");
 
     // Detection configuration - sleep hours are now read from settings
-    private const int DetectionDelayMinutes = 15;
+    internal const int DetectionDelayMinutes = 15;
+    internal static readonly TimeSpan MinSleep = TimeSpan.FromMinutes(1);
+    internal static readonly TimeSpan MaxSleep = TimeSpan.FromHours(1);
     internal const double MinDropRateMgDlPerMin = 2.0;
     internal const int MinDropDurationMinutes = 10;
     internal const double NadirThresholdMgDl = 70.0;
     internal const double RecoveryPercentage = 0.20;
     internal const int MaxRecoveryMinutes = 60;
-    internal const double MinConfidenceThreshold = 0.5;
+    internal const double MinConfidenceThreshold = 0.65;
+    internal const double SharpnessWeight = 0.35;
+    internal const double TimeOfNightWeight = 0.35;
+    internal const double RecoveryWeight = 0.30;
+    internal const double SharpDropRateMgDlPerMin = 5.0;
+    internal const double SleepWindowEdgeShare = 0.25;
+    internal const double InsulinPenaltyWeight = 0.4;
+    internal const double CarbPenaltyWeight = 0.2;
+    // A snack's worth of carbs on board: from here the penalty stays at its weight.
+    internal const double CarbPenaltyFullCobGrams = 30.0;
     private const int StartTrimMinutes = 5;
 
     /// <summary>
@@ -56,14 +71,17 @@ public class CompressionLowDetectionService : BackgroundService
     /// </summary>
     /// <param name="serviceProvider">Root service provider; scoped services are resolved per tenant.</param>
     /// <param name="activeTenants">The active tenants to schedule and scan.</param>
+    /// <param name="timeProvider">Clock the schedule is computed against.</param>
     /// <param name="logger">Logger instance.</param>
     public CompressionLowDetectionService(
         IServiceProvider serviceProvider,
         ActiveTenantSnapshot activeTenants,
+        TimeProvider timeProvider,
         ILogger<CompressionLowDetectionService> logger)
     {
         _serviceProvider = serviceProvider;
         _activeTenants = activeTenants;
+        _timeProvider = timeProvider;
         _logger = logger;
     }
 
@@ -75,23 +93,17 @@ public class CompressionLowDetectionService : BackgroundService
         {
             try
             {
-                // Compute the next run time by finding the earliest wake time across all tenants.
-                // Each tenant has its own sleep schedule and timezone, so we iterate them to find
-                // the soonest upcoming wake-time + detection delay.
-                var delay = await ComputeNextRunDelayAsync(stoppingToken);
-                await Task.Delay(delay, stoppingToken);
-
-                // Run detection for all tenants
-                await RunForAllTenantsAsync(stoppingToken);
+                var delay = await ScanReadyNightsAsync(stoppingToken);
+                await Task.Delay(delay, _timeProvider, stoppingToken);
             }
-            catch (OperationCanceledException)
+            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
             {
                 break;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error in compression low detection cycle");
-                await Task.Delay(TimeSpan.FromMinutes(5), stoppingToken);
+                await Task.Delay(TimeSpan.FromMinutes(5), _timeProvider, stoppingToken);
             }
         }
 
@@ -99,17 +111,17 @@ public class CompressionLowDetectionService : BackgroundService
     }
 
     /// <summary>
-    /// Iterates all active tenants and computes the earliest next detection time based on each
-    /// tenant's configured wake-time and timezone. Returns the delay until that time.
-    /// Falls back to a 1-hour delay when no tenants are configured.
+    /// Scans each active tenant's latest finished night that this process has not scanned for it, and
+    /// returns how long to sleep until the earliest next night finishes, clamped to
+    /// <see cref="MinSleep"/> and <see cref="MaxSleep"/>. A night counts as finished
+    /// <see cref="DetectionDelayMinutes"/> after its window ends. A tenant whose settings cannot be read
+    /// is left out of the schedule, so <see cref="MaxSleep"/> bounds how long it waits for a retry.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>A <see cref="TimeSpan"/> representing the delay before the next detection run.</returns>
-    private async Task<TimeSpan> ComputeNextRunDelayAsync(CancellationToken cancellationToken)
+    internal async Task<TimeSpan> ScanReadyNightsAsync(CancellationToken cancellationToken)
     {
-        var nowUtc = DateTime.UtcNow;
-        DateTime? earliestNextRunUtc = null;
-        string? earliestTimezoneId = null;
+        var nowUtc = _timeProvider.GetUtcNow().UtcDateTime;
+        DateTime? earliestNextReadyUtc = null;
 
         var tenants = await _activeTenants.GetAsync(cancellationToken);
 
@@ -122,11 +134,9 @@ public class CompressionLowDetectionService : BackgroundService
                     new TenantContext(tenant.Id, tenant.Slug, tenant.DisplayName, true, IsDemo: false),
                     AuditEndpoint);
 
-                var uiSettingsService = scope.ServiceProvider.GetRequiredService<IUISettingsService>();
-                var therapySettingsResolver = scope.ServiceProvider.GetRequiredService<ITherapySettingsResolver>();
-                var entryService = scope.ServiceProvider.GetRequiredService<IEntryService>();
-
-                var settings = await uiSettingsService.GetSettingsAsync(cancellationToken);
+                var settings = await scope.ServiceProvider
+                    .GetRequiredService<IUISettingsService>()
+                    .GetSettingsAsync(cancellationToken);
                 if (settings == null)
                 {
                     _logger.LogWarning(
@@ -136,89 +146,79 @@ public class CompressionLowDetectionService : BackgroundService
                 }
 
                 var sleepSchedule = settings.DataQuality.SleepSchedule;
-                var wakeTimeHour = sleepSchedule.WakeTimeHour;
-                var lastNightGuess = DateOnly.FromDateTime(nowUtc.AddDays(-1));
-                var userTimeZone = ResolveTimeZone(sleepSchedule.Timezone)
-                    ?? await GetUserTimeZoneFromProfileAsync(therapySettingsResolver, cancellationToken)
-                    ?? await InferTimeZoneFromEntriesAsync(entryService, lastNightGuess, cancellationToken)
-                    ?? TimeZoneInfo.Utc;
+                var userTimeZone = await ResolveUserTimeZoneAsync(
+                    sleepSchedule,
+                    scope.ServiceProvider,
+                    DateOnly.FromDateTime(nowUtc.AddDays(-1)),
+                    cancellationToken);
 
-                var nowLocal = TimeZoneInfo.ConvertTimeFromUtc(nowUtc, userTimeZone);
-                var nextRunLocal = nowLocal.Date.AddHours(wakeTimeHour).AddMinutes(DetectionDelayMinutes);
+                var night = DateOnly.FromDateTime(TimeZoneInfo.ConvertTimeFromUtc(nowUtc, userTimeZone)).AddDays(-1);
+                while (ReadyAtUtc(night, userTimeZone, sleepSchedule) > nowUtc)
+                    night = night.AddDays(-1);
 
-                if (nowLocal >= nextRunLocal)
-                    nextRunLocal = nextRunLocal.AddDays(1);
+                var nextReadyUtc = ReadyAtUtc(night.AddDays(1), userTimeZone, sleepSchedule);
+                if (earliestNextReadyUtc == null || nextReadyUtc < earliestNextReadyUtc)
+                    earliestNextReadyUtc = nextReadyUtc;
 
-                var nextRunUtc = TimeZoneInfo.ConvertTimeToUtc(nextRunLocal, userTimeZone);
-
-                if (earliestNextRunUtc == null || nextRunUtc < earliestNextRunUtc)
-                {
-                    earliestNextRunUtc = nextRunUtc;
-                    earliestTimezoneId = userTimeZone.Id;
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "Failed to compute next run time for tenant {TenantSlug}, skipping", tenant.Slug);
-            }
-        }
-
-        if (earliestNextRunUtc == null)
-        {
-            _logger.LogDebug("No active tenants found for scheduling; retrying in 1 hour");
-            return TimeSpan.FromHours(1);
-        }
-
-        var delay = earliestNextRunUtc.Value - nowUtc;
-        _logger.LogDebug(
-            "Next compression low detection scheduled for {NextRunUtc:u} (earliest tenant timezone: {Timezone})",
-            earliestNextRunUtc.Value, earliestTimezoneId);
-
-        return delay;
-    }
-
-    private async Task RunForAllTenantsAsync(CancellationToken cancellationToken)
-    {
-        var tenants = await _activeTenants.GetAsync(cancellationToken);
-
-        foreach (var tenant in tenants)
-        {
-            try
-            {
-                await using var scope = TenantJobScope.Open(
-                    _serviceProvider,
-                    new TenantContext(tenant.Id, tenant.Slug, tenant.DisplayName, true, IsDemo: false),
-                    AuditEndpoint);
-
-                // Determine "last night" in the user's local timezone
-                var therapySettingsResolver = scope.ServiceProvider.GetRequiredService<ITherapySettingsResolver>();
-                var entryService = scope.ServiceProvider.GetRequiredService<IEntryService>();
-                var uiSettingsService = scope.ServiceProvider.GetRequiredService<IUISettingsService>();
-                var settings = await uiSettingsService.GetSettingsAsync(cancellationToken);
-                if (settings == null)
-                {
-                    _logger.LogWarning(
-                        "Could not read UI settings for tenant {TenantSlug}; skipping its detection run",
-                        tenant.Slug);
+                if (_lastScannedNight.TryGetValue(tenant.Id, out var scanned) && scanned >= night)
                     continue;
-                }
 
-                var lastNightGuess = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-1));
-                var userTimeZone = ResolveTimeZone(settings.DataQuality.SleepSchedule.Timezone)
-                    ?? await GetUserTimeZoneFromProfileAsync(therapySettingsResolver, cancellationToken)
-                    ?? await InferTimeZoneFromEntriesAsync(entryService, lastNightGuess, cancellationToken)
-                    ?? TimeZoneInfo.Utc;
-                var detectionTimeLocal = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, userTimeZone);
-                var lastNight = DateOnly.FromDateTime(detectionTimeLocal.AddDays(-1));
+                var repository = scope.ServiceProvider.GetRequiredService<ICompressionLowRepository>();
+                if (!await repository.AnySuggestionExistsForNightAsync(night, cancellationToken))
+                    await DetectForNightAsync(night, scope.ServiceProvider, cancellationToken);
 
-                await DetectForNightAsync(lastNight, scope.ServiceProvider, cancellationToken);
+                _lastScannedNight[tenant.Id] = night;
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error during compression low detection for tenant {TenantSlug}", tenant.Slug);
             }
         }
+
+        if (earliestNextReadyUtc == null)
+        {
+            _logger.LogDebug("No active tenants found for scheduling; retrying in {Delay}", MaxSleep);
+            return MaxSleep;
+        }
+
+        var delay = TimeSpan.FromTicks(Math.Clamp(
+            (earliestNextReadyUtc.Value - nowUtc).Ticks,
+            MinSleep.Ticks,
+            MaxSleep.Ticks));
+        _logger.LogDebug(
+            "Next compression low detection wake in {Delay} (earliest night ready {NextReadyUtc:u})",
+            delay, earliestNextReadyUtc.Value);
+
+        return delay;
     }
+
+    private static DateTime ReadyAtUtc(DateOnly nightOf, TimeZoneInfo userTimeZone, SleepScheduleSettings sleepSchedule)
+    {
+        var (_, windowEnd) = TimeZoneHelper.GetOvernightWindow(
+            nightOf, userTimeZone, sleepSchedule.BedtimeHour, sleepSchedule.WakeTimeHour);
+
+        return DateTimeOffset.FromUnixTimeMilliseconds(windowEnd).UtcDateTime.AddMinutes(DetectionDelayMinutes);
+    }
+
+    /// <summary>
+    /// Prefers the timezone in the sleep schedule, then the therapy profile's, then one inferred from
+    /// the UTC offsets of entries near <paramref name="nightOf"/>, then UTC.
+    /// </summary>
+    private async Task<TimeZoneInfo> ResolveUserTimeZoneAsync(
+        SleepScheduleSettings sleepSchedule,
+        IServiceProvider scopedProvider,
+        DateOnly nightOf,
+        CancellationToken cancellationToken) =>
+        ResolveTimeZone(sleepSchedule.Timezone)
+            ?? await GetUserTimeZoneFromProfileAsync(
+                scopedProvider.GetRequiredService<ITherapySettingsResolver>(), cancellationToken)
+            ?? await InferTimeZoneFromEntriesAsync(
+                scopedProvider.GetRequiredService<IEntryService>(), nightOf, cancellationToken)
+            ?? TimeZoneInfo.Utc;
 
     /// <summary>
     /// Detects and saves the compression lows of the night of <paramref name="nightOf"/> for the tenant
@@ -234,9 +234,9 @@ public class CompressionLowDetectionService : BackgroundService
     {
         var repository = scopedProvider.GetRequiredService<ICompressionLowRepository>();
         var entryService = scopedProvider.GetRequiredService<IEntryService>();
-        var treatmentService = scopedProvider.GetRequiredService<ITreatmentService>();
+        var iobCobReader = scopedProvider.GetRequiredService<IIobCobReader>();
+        var sensitivityResolver = scopedProvider.GetRequiredService<ISensitivityResolver>();
         var notificationService = scopedProvider.GetRequiredService<IInAppNotificationService>();
-        var therapySettingsResolver = scopedProvider.GetRequiredService<ITherapySettingsResolver>();
         var uiSettingsService = scopedProvider.GetRequiredService<IUISettingsService>();
         var tenantAccessor = scopedProvider.GetRequiredService<ITenantAccessor>();
 
@@ -270,12 +270,7 @@ public class CompressionLowDetectionService : BackgroundService
             return 0;
         }
 
-        // Get user's timezone: prefer UI settings, fall back to profile,
-        // then infer from entry UTC offsets, then UTC
-        var userTimeZone = ResolveTimeZone(sleepSchedule.Timezone)
-            ?? await GetUserTimeZoneFromProfileAsync(therapySettingsResolver, nightOf, cancellationToken)
-            ?? await InferTimeZoneFromEntriesAsync(entryService, nightOf, cancellationToken)
-            ?? TimeZoneInfo.Utc;
+        var userTimeZone = await ResolveUserTimeZoneAsync(sleepSchedule, scopedProvider, nightOf, cancellationToken);
 
         // Get overnight window in user's local time
         var (windowStart, windowEnd) = TimeZoneHelper.GetOvernightWindow(nightOf, userTimeZone, bedtimeHour, wakeTimeHour);
@@ -296,12 +291,6 @@ public class CompressionLowDetectionService : BackgroundService
             return 0;
         }
 
-        // Get treatments for IOB context
-        var treatments = (await treatmentService.GetTreatmentsAsync(
-            find: $"{{\"mills\":{{\"$gte\":{windowStart},\"$lte\":{windowEnd}}}}}",
-            cancellationToken: cancellationToken))
-            .ToList();
-
         // Detect V-shape candidates
         var candidates = DetectVShapeCandidates(entries);
 
@@ -309,7 +298,8 @@ public class CompressionLowDetectionService : BackgroundService
         var suggestions = new List<CompressionLowSuggestion>();
         foreach (var candidate in candidates)
         {
-            var confidence = ScoreCandidate(candidate, treatments, userTimeZone);
+            var confidence = await ScoreCandidateAsync(
+                candidate, userTimeZone, bedtimeHour, wakeTimeHour, iobCobReader, sensitivityResolver, cancellationToken);
             if (confidence >= MinConfidenceThreshold)
             {
                 var trimmedStartMills = candidate.StartMills + (StartTrimMinutes * 60 * 1000);
@@ -519,57 +509,71 @@ public class CompressionLowDetectionService : BackgroundService
         return merged;
     }
 
-    internal double ScoreCandidate(VShapeCandidate candidate, List<Treatment> treatments, TimeZoneInfo userTimeZone)
+    internal async Task<double> ScoreCandidateAsync(
+        VShapeCandidate candidate,
+        TimeZoneInfo userTimeZone,
+        int bedtimeHour,
+        int wakeTimeHour,
+        IIobCobReader iobCobReader,
+        ISensitivityResolver sensitivityResolver,
+        CancellationToken cancellationToken)
     {
-        var score = 0.4; // Base score
+        var sharpness = Math.Clamp(
+            (candidate.MaxDropRate - MinDropRateMgDlPerMin) / (SharpDropRateMgDlPerMin - MinDropRateMgDlPerMin),
+            0,
+            1);
+        var recovery = Math.Clamp(1.0 - candidate.RecoveryMinutes / (double)MaxRecoveryMinutes, 0, 1);
+        var nadirLocalTime = TimeZoneInfo.ConvertTimeFromUtc(candidate.NadirTime, userTimeZone).TimeOfDay;
 
-        // V-shape clarity (0-0.3)
-        var sharpness = candidate.MaxDropRate / 5.0;
-        score += Math.Min(0.3, sharpness * 0.3);
+        var score = sharpness * SharpnessWeight
+            + TimeOfNightFraction(nadirLocalTime, bedtimeHour, wakeTimeHour) * TimeOfNightWeight
+            + recovery * RecoveryWeight;
 
-        // Time of night (0-0.25)
-        var nadirTimeLocal = TimeZoneInfo.ConvertTimeFromUtc(candidate.NadirTime, userTimeZone);
-        var nadirHour = nadirTimeLocal.Hour;
-        if (nadirHour >= 2 && nadirHour <= 5)
-            score += 0.25;
-        else if (nadirHour >= 0 && nadirHour <= 1)
-            score += 0.15;
-        else if (nadirHour == 23 || nadirHour == 6)
-            score += 0.10;
+        var onBoard = await iobCobReader.ReadTotalAsync(candidate.StartMills, live: false, cancellationToken);
+        score -= await InsulinPenaltyAsync(candidate, onBoard, sensitivityResolver, cancellationToken);
+        score -= CarbPenalty(onBoard);
 
-        // Recovery completeness (0-0.2)
-        var recoveryScore = 1.0 - (candidate.RecoveryMinutes / (double)MaxRecoveryMinutes);
-        score += recoveryScore * 0.2;
-
-        // IOB penalty (0-0.2 penalty)
-        var iobPenalty = CalculateIobPenalty(candidate.StartMills, treatments);
-        score -= iobPenalty;
-
-        // Carb penalty (0-0.15 penalty)
-        var carbPenalty = CalculateCarbPenalty(candidate.StartMills, treatments);
-        score -= carbPenalty;
-
-        return Math.Max(0, Math.Min(1, score));
+        return Math.Clamp(score, 0, 1);
     }
 
-    private double CalculateIobPenalty(long dropStartMills, List<Treatment> treatments)
+    internal static double TimeOfNightFraction(TimeSpan nadirLocalTime, int bedtimeHour, int wakeTimeHour)
     {
-        var windowStart = dropStartMills - (2 * 60 * 60 * 1000);
-        var recentInsulin = treatments
-            .Where(t => t.Mills >= windowStart && t.Mills <= dropStartMills)
-            .Sum(t => t.Insulin ?? 0);
+        var windowHours = ((wakeTimeHour - bedtimeHour) % 24 + 24) % 24;
+        if (windowHours == 0)
+            windowHours = 24;
 
-        return Math.Min(0.2, recentInsulin * 0.1);
+        var hoursIntoWindow = ((nadirLocalTime.TotalHours - bedtimeHour) % 24 + 24) % 24;
+        if (hoursIntoWindow >= windowHours)
+            return 0;
+
+        var share = hoursIntoWindow / windowHours;
+        return Math.Min(1, Math.Min(share, 1 - share) / SleepWindowEdgeShare);
     }
 
-    private double CalculateCarbPenalty(long dropStartMills, List<Treatment> treatments)
+    private static async Task<double> InsulinPenaltyAsync(
+        VShapeCandidate candidate,
+        IobCobReading onBoard,
+        ISensitivityResolver sensitivityResolver,
+        CancellationToken cancellationToken)
     {
-        var windowStart = dropStartMills - (2 * 60 * 60 * 1000);
-        var recentCarbs = treatments
-            .Where(t => t.Mills >= windowStart && t.Mills <= dropStartMills)
-            .Sum(t => t.Carbs ?? 0);
+        var observedDrop = candidate.PreDropGlucose - candidate.LowestGlucose;
+        if (!onBoard.HasIob || onBoard.Iob.Iob <= 0 || observedDrop <= 0)
+            return 0;
 
-        return Math.Min(0.15, recentCarbs / 200.0);
+        var isf = await sensitivityResolver.GetSensitivityAsync(candidate.StartMills, ct: cancellationToken);
+        if (isf <= 0)
+            return 0;
+
+        var explainedDrop = onBoard.Iob.Iob * isf;
+        return Math.Min(1, explainedDrop / observedDrop) * InsulinPenaltyWeight;
+    }
+
+    private static double CarbPenalty(IobCobReading onBoard)
+    {
+        if (!onBoard.HasCob || onBoard.Cob!.Cob <= 0)
+            return 0;
+
+        return Math.Min(1, onBoard.Cob.Cob / CarbPenaltyFullCobGrams) * CarbPenaltyWeight;
     }
 
     private async Task CreateNotificationAsync(
@@ -644,31 +648,6 @@ public class CompressionLowDetectionService : BackgroundService
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Failed to get user timezone from profile");
-            return null;
-        }
-    }
-
-    /// <summary>
-    /// Reads the user's timezone from the therapy settings.
-    /// Returns <see langword="null"/> when no timezone is configured.
-    /// </summary>
-    /// <param name="therapySettingsResolver">Resolver used to look up the timezone.</param>
-    /// <param name="nightOf">The local calendar date (unused, kept for overload compatibility).</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>The user's <see cref="TimeZoneInfo"/>, or <see langword="null"/>.</returns>
-    private async Task<TimeZoneInfo?> GetUserTimeZoneFromProfileAsync(
-        ITherapySettingsResolver therapySettingsResolver,
-        DateOnly nightOf,
-        CancellationToken cancellationToken)
-    {
-        try
-        {
-            var timezoneId = await therapySettingsResolver.GetTimezoneAsync(ct: cancellationToken);
-            return ResolveTimeZone(timezoneId);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Failed to get user timezone from profile for night {NightOf}", nightOf);
             return null;
         }
     }

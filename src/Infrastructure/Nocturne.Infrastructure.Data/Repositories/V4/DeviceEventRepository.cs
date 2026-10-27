@@ -264,6 +264,27 @@ public class DeviceEventRepository : SyncUpsertRepositoryBase<DeviceEvent, Devic
         return entity is null ? null : DeviceEventMapper.ToDomainModel(entity);
     }
 
+    /// <inheritdoc />
+    public async Task<DeviceEvent?> GetLatestOfAnyTypeAsync(
+        IReadOnlyCollection<DeviceEventType> eventTypes, DateTime? asOf, CancellationToken ct = default)
+    {
+        await using var ctx = await ContextFactory.CreateAsync(ct);
+        var eventTypeStrings = eventTypes.Select(t => t.ToString()).ToList();
+        var query = ctx.DeviceEvents
+            .AsNoTracking()
+            .Where(e => eventTypeStrings.Contains(e.EventType));
+        if (asOf is { } cutoff)
+            query = query.Where(e => e.Timestamp <= cutoff);
+
+        query = ApplyReadVisibility(query, ctx);
+
+        var entity = await query
+            .OrderByDescending(e => e.Timestamp)
+            .FirstOrDefaultAsync(ct);
+
+        return entity is null ? null : DeviceEventMapper.ToDomainModel(entity);
+    }
+
     /// <summary>
     /// Gets the latest device event from a set of event types.
     /// </summary>

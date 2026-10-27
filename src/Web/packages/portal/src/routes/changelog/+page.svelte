@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { Artwork } from "@nocturne/watercolour";
+    import { Artwork } from "water-ui";
     import { getChangelog, type ChangelogRelease } from "$lib/data/portal";
     import { Button } from "@nocturne/ui/ui/button";
     import { renderReleaseMarkdown } from "$lib/utils/release-markdown";

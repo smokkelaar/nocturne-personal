@@ -51,7 +51,7 @@
 	"dependencies": {
 		"@nocturne/app": "workspace:*",
 		"@nocturne/ui": "workspace:*",
-		"@nocturne/watercolour": "workspace:*",
+		"water-ui": "workspace:*",
 		"lucide": "^1.47.0",
 		"marked": "^18.0.2",
 		"runed": "^0.37.1",

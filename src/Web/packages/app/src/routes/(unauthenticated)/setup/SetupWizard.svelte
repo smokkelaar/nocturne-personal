@@ -51,7 +51,7 @@
     type ImportResult,
     type SourceResult,
   } from "./steps/Finish.svelte";
-  import StepIcon, { type StepArt } from "./StepIcon.svelte";
+  import StepArtwork, { type StepArt } from "./StepArtwork.svelte";
   import { retainQuery } from "$lib/api/retain-query.svelte";
 
   // Auth check is handled server-side in +page.server.ts:
@@ -131,6 +131,7 @@
       dataSourcesQuery == null ||
       dataSourcesQuery.current === undefined
   );
+  let importProgress = $state(0);
   let importResult = $state<ImportResult>(null);
   // The import step blocks until the run ends or its status can no longer be followed.
   let importSettled = $state(false);
@@ -255,6 +256,10 @@
     if (!setupRequired) void navigateTo(index);
     else if (index <= setupStepIndex) setupStepIndex = index;
   }
+
+  const artProgress = $derived(
+    currentStep?.id === "import" ? importProgress / 100 : undefined
+  );
 
   // ── Data source loading ──────────────────────────────────────────────
   const connectors = $derived(servicesData?.availableConnectors ?? []);
@@ -513,9 +518,10 @@
           </div>
 
           <div class="flex-1 px-1 py-3 @lg/card:px-5 @max-4xl/wizard:[&_:is(input,select,textarea,[role=combobox],[role=radio])]:scroll-mb-44">
-            <StepIcon
+            <StepArtwork
               art={activeStep?.art ?? "welcome"}
-              class="mx-auto mt-4 size-10 text-(--onb-accent) @xl/card:size-12"
+              progress={artProgress}
+              class="mx-auto mt-4 size-28 @xl/card:size-40 @4xl/wizard:size-48"
             />
             {#if activeStep?.id === "tenant"}
               <TenantIdentity onComplete={handleTenantCreated} />
@@ -645,6 +651,7 @@
                 jobId={migrationJobId}
                 startError={migrationStartError}
                 {voice}
+                onProgressChange={(pct) => (importProgress = pct)}
                 onResult={(result) => (importResult = result)}
                 onSettled={() => (importSettled = true)}
                 onComplete={goToFinish}

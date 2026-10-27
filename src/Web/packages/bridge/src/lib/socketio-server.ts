@@ -4,6 +4,7 @@ import logger from './logger.js';
 import type { ClientInfo, AlarmData, AlarmEvent, ServerStats } from '../types.js';
 import {
   verifyHandshakeTicket,
+  isHandshakeTicketShaped,
   normalizeHandshakeHost,
   REALTIME_ADMISSION_PATH,
   HANDSHAKE_TICKET_LIFETIME_MS,
@@ -18,6 +19,11 @@ interface BridgeSocketData {
   tenantSlug?: string;
   /** The tenant the socket's host resolved to, before it has authorized. */
   pendingTenantSlug?: string;
+  /**
+   * An access token a legacy client put in its handshake query, which its
+   * `authorize` presents when it carries no credential of its own.
+   */
+  handshakeToken?: string;
   /**
    * Whether the socket's credential may join the tenant-wide room. The room
    * carries live payloads of more than one category, so a guest link or
@@ -72,6 +78,9 @@ export const TICKET_REFRESH_TIMEOUT_MS = 10_000;
 
 /** How soon a browser that could not produce a fresh ticket is asked again. */
 export const TICKET_RETRY_MS = 30_000;
+
+/** The handshake error for a share host. The web client treats it as final and does not retry. */
+export const SHARE_REALTIME_UNSUPPORTED = 'share_realtime_unsupported';
 
 /** A probe the API did not answer: unreachable, timed out, or failing itself. */
 const UNANSWERED = 'unanswered';
@@ -253,6 +262,12 @@ function hostTenant(host: string | undefined, baseDomain: string): string | type
   return hostname === baseDomainHost ? APEX : null;
 }
 
+/** Whether a host is a public share link, `<anything>.share.<baseDomain>`. The bare `share.<baseDomain>` is a tenant slug. */
+export function isShareHost(host: string | undefined, baseDomain: string): boolean {
+  const tenant = hostTenant(host, baseDomain);
+  return typeof tenant === 'string' && /^[^.]+\.share$/i.test(tenant);
+}
+
 /** Resolve the tenant slug a host belongs to. A subdomain resolves to its slug;
  *  the apex domain resolves to `apexTenantSlug`, the tenant the API serves there
  *  (see `discoverApexTenant`). Returns null when the host is foreign or the apex
@@ -340,7 +355,22 @@ class SocketIOServer {
    *  rejected so the socket never receives broadcasts. */
   private setupHandshakeAuth(): void {
     if (!this.io) return;
-    this.io.use((socket, next) => this.authorizeHandshake(socket, next));
+    this.useHandshake(this.io.of('/'), (socket, next) => this.authorizeHandshake(socket, next));
+  }
+
+  /** Registers a namespace's handshake middleware behind the one share-host refusal, which
+   *  runs ahead of any tenant resolution, registry read or API probe. */
+  private useHandshake(
+    nsp: BridgeNamespace,
+    handshake: (socket: BridgeSocket, next: (err?: Error) => void) => unknown,
+  ): void {
+    nsp.use((socket, next) => {
+      if (isShareHost(pickHandshakeHost(socket.handshake.headers), this.baseDomain)) {
+        logger.debug(`Rejecting connection ${socket.id}: share hosts have no realtime`);
+        return next(new Error(SHARE_REALTIME_UNSUPPORTED));
+      }
+      return handshake(socket, next);
+    });
   }
 
   /** Resolve the tenant for a handshake and authorize it from its ticket. Sets
@@ -356,10 +386,14 @@ class SocketIOServer {
       }
 
       // Engine.IO v3 clients have no `auth` payload — that arrived with the v4
-      // protocol — so also accept the ticket from the handshake query.
+      // protocol — so also accept the ticket from the handshake query. A query
+      // token that is not shaped as a ticket is a legacy client's access token
+      // (LoopFollow sends one there), which its `authorize` presents to the API.
+      const queryToken = queryValue(socket.handshake.query?.token);
+      const clientToken = queryToken && !isHandshakeTicketShaped(queryToken) ? queryToken : undefined;
       const token =
         stringField(socket.handshake.auth, 'token')
-        ?? queryValue(socket.handshake.query?.token);
+        ?? (clientToken ? undefined : queryToken);
       if (token) {
         // A ticket was offered, so this is the browser path: reject it outright if
         // it doesn't verify. Admitting it silently would leave a client whose
@@ -384,6 +418,11 @@ class SocketIOServer {
         }
 
         this.setGrant(socket, tenantSlug, ticket);
+        if (!this.holdsTenantNow(tenantSlug, ticket.t)) {
+          logger.warn(`Rejecting connection ${socket.id}: tenant ${tenantSlug} changed while the handshake was admitted`);
+          this.clearGrant(socket);
+          return next(new Error('unauthorized'));
+        }
         socket.data.readmission = { kind: 'ticket' };
         this.scheduleReadmission(socket, ticket.exp - Date.now());
         return next();
@@ -395,6 +434,7 @@ class SocketIOServer {
       // so it receives nothing in the meantime.
       logger.debug(`Connection ${socket.id} carries no ticket; awaiting classic authorize for tenant ${tenantSlug}`);
       socket.data.pendingTenantSlug = tenantSlug;
+      socket.data.handshakeToken = clientToken;
       next();
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -473,6 +513,13 @@ class SocketIOServer {
     socket.data.categories = storageCategories(grant);
   }
 
+  private clearGrant(socket: BridgeSocket): void {
+    socket.data.tenantSlug = undefined;
+    socket.data.tenantRelay = undefined;
+    socket.data.subjectId = undefined;
+    socket.data.categories = undefined;
+  }
+
   /** Moves an admitted socket onto the rooms of a fresh admission, leaving any it no longer holds. */
   private regrant(socket: BridgeSocket, tenantSlug: string, grant: RealtimeGrant): void {
     const before = grantedRooms(socket.data);
@@ -538,6 +585,11 @@ class SocketIOServer {
         }
         socket.data.ticketGraceUntil = undefined;
         this.regrant(socket, tenantSlug, answer);
+        if (!this.holdsTenantNow(tenantSlug, answer.t)) {
+          logger.warn(`Client ${socket.id} is bound to tenant ${tenantSlug}, which changed during its re-check; closing its transport`);
+          this.disconnectSocket(socket);
+          return null;
+        }
         return answer.exp - Date.now();
       }
       case 'credential': {
@@ -612,7 +664,10 @@ class SocketIOServer {
    *  obtain — a handshake ticket, because /realtime/ticket mints one only for a
    *  browser session the API admits to realtime. They
    *  authenticate the way they do against classic Nightscout instead: an API
-   *  secret (already SHA-1 hashed by the client) and/or a subject token.
+   *  secret (already SHA-1 hashed by the client) and/or a subject token, in the
+   *  payload or, for the token, in the handshake query. A client may send its
+   *  access token as `secret`, so a secret the API refuses is presented again as
+   *  a token. With no credential at all the admission is asked anonymously.
    *
    *  Rather than interpret those credentials here, replay them against the same
    *  admission the ticket endpoint asks for. The API applies its own per-tenant
@@ -644,15 +699,18 @@ class SocketIOServer {
     if (!this.apiBaseUrl) return deny('bridge has no API base URL configured');
 
     const secret = stringField(payload, 'secret');
-    const token = stringField(payload, 'token');
-    if (!secret && !token) return deny('no credentials supplied');
-
-    const admission = await this.probeRealtimeAdmission(tenantSlug, { apiSecret: secret, token });
+    let credential = { apiSecret: secret, token: stringField(payload, 'token') ?? socket.data.handshakeToken };
+    let admission = await this.probeRealtimeAdmission(tenantSlug, credential);
+    if (admission === null && secret) {
+      credential = { apiSecret: undefined, token: secret };
+      admission = await this.probeRealtimeAdmission(tenantSlug, credential);
+    }
     if (admission === null || admission === UNANSWERED) return deny('API denied the credential');
 
     this.setGrant(socket, tenantSlug, admission);
+    socket.data.handshakeToken = undefined;
     this.joinTenantRoom(socket);
-    socket.data.readmission = { kind: 'credential', apiSecret: secret, token };
+    socket.data.readmission = { kind: 'credential', ...credential };
     this.scheduleReadmission(socket, ADMISSION_RECHECK_INTERVAL_MS);
     logger.info(`Client ${socket.id} authorized via legacy credentials for tenant: ${tenantSlug}`);
     callback?.({ read: true, write: false, write_treatment: false });
@@ -891,6 +949,11 @@ class SocketIOServer {
    *  to the bridge's tenant list. */
   isCurrentTenant: (tenantSlug: string, tenantId: string) => Promise<boolean> = async () => false;
 
+  /** Whether `tenantId` is the tenant `tenantSlug` names right now, from what the bridge already holds.
+   *  Asked straight after an `await` to close the window in which a tenant list read removed or
+   *  recreated the slug. Refuses every ticket until it is wired to the bridge's tenant list. */
+  holdsTenantNow: (tenantSlug: string, tenantId: string) => boolean = () => false;
+
   /** Awaited when a connection arrives on the apex while the apex serves no tenant, before it is
    *  refused: an install's first tenant is created after the bridge starts. */
   onApexUnresolved: () => Promise<void> = async () => {};
@@ -910,12 +973,16 @@ class SocketIOServer {
     for (const nsp of [this.io?.of('/'), this.storageNsp, this.alarmNsp]) {
       for (const socket of nsp?.sockets.values() ?? []) {
         if (socket.data.tenantSlug !== tenantSlug && socket.data.pendingTenantSlug !== tenantSlug) continue;
-        for (const room of [...socket.rooms]) {
-          if (room !== socket.id) socket.leave(room);
-        }
-        socket.conn.close();
+        this.disconnectSocket(socket);
       }
     }
+  }
+
+  private disconnectSocket(socket: BridgeSocket): void {
+    for (const room of [...socket.rooms]) {
+      if (room !== socket.id) socket.leave(room);
+    }
+    socket.conn.close();
   }
 
   getIO(): BridgeServer | null {
@@ -1014,7 +1081,7 @@ class SocketIOServer {
 
     // Admit the socket unauthorized; the tenant is resolved for room routing
     // but no room is joined until `subscribe` succeeds.
-    this.storageNsp.use(async (socket, next) => {
+    this.useHandshake(this.storageNsp, async (socket, next) => {
       const tenantSlug = await this.resolveNamespaceTenant(socket);
       if (!tenantSlug) {
         logger.warn(`Rejecting /storage connection ${socket.id}: no resolvable tenant`);
@@ -1142,7 +1209,7 @@ class SocketIOServer {
     if (!this.io) return;
     this.alarmNsp = this.io.of('/alarm');
 
-    this.alarmNsp.use(async (socket, next) => {
+    this.useHandshake(this.alarmNsp, async (socket, next) => {
       const tenantSlug = await this.resolveNamespaceTenant(socket);
       if (!tenantSlug) {
         logger.warn(`Rejecting /alarm connection ${socket.id}: no resolvable tenant`);

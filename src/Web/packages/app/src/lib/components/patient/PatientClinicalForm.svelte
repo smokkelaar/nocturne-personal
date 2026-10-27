@@ -30,7 +30,9 @@
   class="@container"
   bind:this={formEl}
   {...clinical.guard.enhance(async () => {
-    if (await clinical.weight.save()) await onsaved?.();
+    const saved = await clinical.weight.save();
+    if (saved) await onsaved?.();
+    return saved;
   })}
 >
   <!-- Hidden fields for read-only record data -->

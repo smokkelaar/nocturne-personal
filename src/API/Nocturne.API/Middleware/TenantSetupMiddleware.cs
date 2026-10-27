@@ -161,18 +161,26 @@ public class TenantSetupMiddleware
     {
         await using var db = await dbFactory.CreateSystemPinnedAsync(tenantId, ct);
 
-        // Check 1: Does this tenant have any members with auth credentials (passkey or OIDC)?
-        // These entities are subject-scoped (not tenant-scoped), so we join through TenantMembers.
-        var memberCount = await db.TenantMembers
-            .Where(m => m.TenantId == tenantId)
-            .CountAsync(ct);
-        var hasCredentials = memberCount > 0 && await db.TenantMembers
-            .Where(m => m.TenantId == tenantId)
-            .AnyAsync(m =>
-                db.PasskeyCredentials.Any(c => c.SubjectId == m.SubjectId) ||
-                db.WorkingOidcIdentities().Any(i => i.SubjectId == m.SubjectId), ct);
-        if (!hasCredentials)
+        // Every API request passes through here, so both checks are one statement: no member row
+        // means no member can hold a credential, and the counts below are read only to log a refusal.
+        // Credentials and OIDC identities are subject-scoped (not tenant-scoped), so the checks join
+        // through TenantMembers.
+        var members = db.TenantMembers.Where(m => m.TenantId == tenantId);
+        var orphans = db.OrphanedSubjectsOf(tenantId);
+        var gate = await members
+            .Take(1)
+            .Select(_ => new
+            {
+                HasCredentials = members.Any(m =>
+                    db.PasskeyCredentials.Any(c => c.SubjectId == m.SubjectId) ||
+                    db.WorkingOidcIdentities().Any(i => i.SubjectId == m.SubjectId)),
+                HasOrphans = orphans.Any(),
+            })
+            .FirstOrDefaultAsync(ct);
+
+        if (gate is not { HasCredentials: true })
         {
+            var memberCount = gate is null ? 0 : await members.CountAsync(ct);
             var passkeyCount = memberCount > 0
                 ? await db.TenantMembers
                     .Where(m => m.TenantId == tenantId)
@@ -195,12 +203,12 @@ public class TenantSetupMiddleware
             return SetupGate.SetupRequired;
         }
 
-        var orphanedSubjects = await db.OrphanedSubjectsOf(tenantId)
-            .Select(s => new { s.Id, s.Name, s.Username })
-            .ToListAsync(ct);
-
-        if (orphanedSubjects.Count > 0)
+        if (gate.HasOrphans)
         {
+            var orphanedSubjects = await orphans
+                .Select(s => new { s.Id, s.Name, s.Username })
+                .ToListAsync(ct);
+
             _logger.LogWarning(
                 "Tenant {TenantId} has orphaned subjects, returning 503 recovery_mode. " +
                 "Path={Path}, OrphanedSubjects={@OrphanedSubjects}",

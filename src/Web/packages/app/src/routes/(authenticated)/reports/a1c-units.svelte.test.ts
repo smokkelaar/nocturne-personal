@@ -15,7 +15,7 @@ vi.mock("$lib/hooks/resource-context.svelte", () => ({
     error: null,
     date: { from: new Date(2025, 0, 1), to: new Date(2025, 0, 14) },
     current: {
-      entries: [],
+      readingCount: 0,
       analysis: {
         basicStats: { mean: 154 },
         glycemicVariability: {

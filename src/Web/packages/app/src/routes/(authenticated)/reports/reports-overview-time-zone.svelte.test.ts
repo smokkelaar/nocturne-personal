@@ -36,7 +36,7 @@ const NOTE = /target range that changes through the day is not shown/;
 
 function respond(timeZoneUnavailableReason?: TimeZoneUnavailableReason) {
   resource.current = {
-    entries: [],
+    readingCount: 0,
     analysis: { reliability: { meetsReliabilityCriteria: false, daysOfData: 3, recommendedMinimumDays: 14 }, timeInRange: { percentages: { target: 70 } }, basicStats: {}, glycemicVariability: {} },
     averagedStats: [],
     timeZoneUnavailableReason,

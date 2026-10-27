@@ -6,6 +6,7 @@ import Users from "@lucide/svelte/icons/users";
 import HeartPulse from "@lucide/svelte/icons/heart-pulse";
 import type { Component } from "svelte";
 import { resolve } from "$app/paths";
+import type { PaletteId } from "water-ui";
 import { SetupHubItemKey } from "$api";
 import type { PatientVoice } from "$lib/onboarding/patient-voice.svelte";
 
@@ -20,6 +21,7 @@ export interface SetupHubItemView {
   /** The guided page is `/setup/<slug>`. */
   slug: string;
   icon: Component;
+  palette: PaletteId;
   /** The full settings page the guided page hands over to. */
   settingsHref: string;
   title: string;
@@ -37,6 +39,7 @@ export function setupHubItems(): Record<SetupHubItemKey, SetupHubItemView> {
     [SetupHubItemKey.ConnectData]: {
       slug: "connect-data",
       icon: Plug,
+      palette: "water",
       settingsHref: resolve("/(authenticated)/settings/connectors"),
       title: "Connect data",
       description: (voice) =>
@@ -49,6 +52,7 @@ export function setupHubItems(): Record<SetupHubItemKey, SetupHubItemView> {
     [SetupHubItemKey.Alerts]: {
       slug: "alerts",
       icon: Bell,
+      palette: "ember",
       settingsHref: resolve("/(authenticated)/alerts"),
       title: "Alerts",
       description: (voice) =>
@@ -61,6 +65,7 @@ export function setupHubItems(): Record<SetupHubItemKey, SetupHubItemView> {
     [SetupHubItemKey.Devices]: {
       slug: "devices",
       icon: Smartphone,
+      palette: "slate",
       settingsHref: resolve("/(authenticated)/settings/patient"),
       title: "Devices",
       description: (voice) =>
@@ -73,6 +78,7 @@ export function setupHubItems(): Record<SetupHubItemKey, SetupHubItemView> {
     [SetupHubItemKey.Therapy]: {
       slug: "therapy",
       icon: Syringe,
+      palette: "moonlight",
       settingsHref: resolve("/(authenticated)/settings/profile"),
       title: "Therapy settings",
       description: (voice) =>
@@ -86,6 +92,7 @@ export function setupHubItems(): Record<SetupHubItemKey, SetupHubItemView> {
     [SetupHubItemKey.Sharing]: {
       slug: "sharing",
       icon: Users,
+      palette: "dusk",
       settingsHref: resolve("/(authenticated)/settings/members"),
       title: "Sharing",
       description: (voice) =>
@@ -98,6 +105,7 @@ export function setupHubItems(): Record<SetupHubItemKey, SetupHubItemView> {
     [SetupHubItemKey.About]: {
       slug: "about",
       icon: HeartPulse,
+      palette: "moss",
       settingsHref: resolve("/(authenticated)/settings/patient"),
       title: "About",
       description: (voice) =>
@@ -113,4 +121,20 @@ export function setupHubItems(): Record<SetupHubItemKey, SetupHubItemView> {
 export function setupHubItemBySlug(slug: string): SetupHubItemKey | undefined {
   const items = setupHubItems();
   return Object.values(SetupHubItemKey).find((key) => items[key].slug === slug);
+}
+
+/**
+ * Painted stages in `hub-dawn-ridges`; stop k of them is a finished, dry
+ * picture.
+ */
+export const HUB_PAINTING_STOPS = 6;
+
+/**
+ * The painting stop a hub with `open` items left shows: one whole stage per
+ * resolved item, counted back from the finished picture, so an item a tenant
+ * is never offered is already painted. With every item open it shows half the
+ * first stage rather than blank paper; any resolved item lands on a dry stop.
+ */
+export function hubPaintingStop(open: number): number {
+  return Math.min(HUB_PAINTING_STOPS, Math.max(HUB_PAINTING_STOPS - open, 0.5));
 }

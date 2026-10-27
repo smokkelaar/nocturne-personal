@@ -36,7 +36,7 @@ const NOTE = /place each reading at the local time its device reported/;
 
 function respond(timeZoneUnavailableReason?: TimeZoneUnavailableReason) {
   resource.current = {
-    entries: [],
+    readingCount: 0,
     boluses: [],
     activeSchedules: [],
     analysis: { reliability: { meetsReliabilityCriteria: false, daysOfData: 3, recommendedMinimumDays: 14 }, basicStats: {}, glycemicVariability: {}, timeInRange: { percentages: {} } },

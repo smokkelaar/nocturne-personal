@@ -93,9 +93,8 @@ export const getBolusesAndCarbs = query(
 );
 
 /**
- * Reports data for pages that render raw readings (overview, executive summary, AGP,
- * week-to-week): sensor glucose for the range plus server-computed extended analytics
- * and averaged stats.
+ * Reports data for the overview, executive summary and AGP pages: how many sensor readings the
+ * range holds, plus server-computed extended analytics and averaged stats.
  */
 export const getReportsData = query(
   DateRangeSchema.optional(),
@@ -104,13 +103,15 @@ export const getReportsData = query(
     const { apiClient } = locals;
     const { startDate, endDate } = await resolveReportRange(input);
 
-    const [entries, { analysis, averagedStats, personalRange, timeZoneUnavailableReason }] = await Promise.all([
-      fetchAllGlucose(apiClient, startDate, endDate),
+    // The pages show how many readings the window holds, not the readings: one row and the
+    // total rather than every reading of the window.
+    const [readings, { analysis, averagedStats, personalRange, timeZoneUnavailableReason }] = await Promise.all([
+      apiClient.sensorGlucose.getAll(startDate, endDate, 1, 0),
       apiClient.statistics.getRangeAnalytics(startDate, endDate),
     ]);
 
     return {
-      entries,
+      readingCount: readings.pagination?.total ?? 0,
       analysis,
       averagedStats,
       personalRange,

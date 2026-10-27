@@ -421,6 +421,50 @@ public class DeviceSetupServiceTests
     }
 
     [Fact]
+    public async Task EveryPartOfThePumpWithALifespan_IsOffered()
+    {
+        await _service.ConfirmDeviceAsync("accu-chek-solo", null, CancellationToken.None);
+
+        (await Setup()).Trackers.Should().Equal(
+            new TrackerOffer(TrackerOfferKind.InfusionSet, "Accu-Chek Solo", 3, 0, false, TrackerOfferState.Off, null),
+            new TrackerOffer(TrackerOfferKind.Reservoir, "Accu-Chek Solo", 4, 0, false, TrackerOfferState.Off, null),
+            new TrackerOffer(TrackerOfferKind.Base, "Accu-Chek Solo", 90, 0, false, TrackerOfferState.Off, null,
+                StartsByHand: true));
+    }
+
+    [Fact]
+    public async Task ATrackerOfTheSamePart_IsShownAsTracked()
+    {
+        await _service.ConfirmDeviceAsync("accu-chek-solo", null, CancellationToken.None);
+        var mine = ExistingTracker(TrackerCategory.Consumable);
+        mine.DeviceComponent = "accu-chek-solo/base";
+        await _db.SaveChangesAsync();
+
+        (await Setup()).Trackers.Single(t => t.Kind == TrackerOfferKind.Base).Should().BeEquivalentTo(new
+        {
+            State = TrackerOfferState.AlreadyTracked, DefinitionId = (Guid?)mine.Id,
+        });
+    }
+
+    [Fact]
+    public async Task APodTracker_IsFiledAsAPodThatCoversTheSiteTheInsulinAndTheBattery()
+    {
+        await _service.ConfirmDeviceAsync("beta-bionics-mint", null, CancellationToken.None);
+
+        (await Setup()).Trackers.Select(t => t.Kind).Should().Equal(TrackerOfferKind.Pod, TrackerOfferKind.Controller);
+        await _service.AddTrackerAsync(TrackerOfferKind.Pod, "Mint pod", Owner, CancellationToken.None);
+
+        var definition = _db.TrackerDefinitions.Should().ContainSingle().Subject;
+        definition.Should().BeEquivalentTo(new
+        {
+            Name = "Mint pod", Category = TrackerCategory.Pod, LifespanHours = (int?)72,
+            DeviceComponent = "beta-bionics-mint/pod",
+        });
+        JsonSerializer.Deserialize<string[]>(definition.Covers).Should().Equal("Site", "Reservoir", "Power");
+        JsonSerializer.Deserialize<string[]>(definition.EndEventTypes).Should().Equal("Pod Deactivated");
+    }
+
+    [Fact]
     public async Task TurningATrackerOn_CreatesItWithTheWearTimeAndChangeTriggers_Once_AndOffDeletesIt()
     {
         await _service.ConfirmDeviceAsync("libre-3", null, CancellationToken.None);

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { EmptyState } from "$lib/components/shared";
   import {
     a1cLabel,
     a1cUnitLabel,
@@ -47,7 +48,7 @@
   );
 
   const data = $derived({
-    entries: reportsResource.current?.entries ?? [],
+    readingCount: reportsResource.current?.readingCount ?? 0,
     boluses: reportsResource.current?.boluses ?? [],
     insulinDeliveryStats: reportsResource.current?.insulinDeliveryStats,
     activeSchedules: reportsResource.current?.activeSchedules ?? [],
@@ -58,7 +59,7 @@
   });
 
   // Derived values from data
-  const entries = $derived(data.entries);
+  const readingCount = $derived(data.readingCount);
   const boluses = $derived(data.boluses);
   const insulinStats = $derived(data.insulinDeliveryStats);
   const analysis = $derived(data.analysis);
@@ -88,7 +89,7 @@
       <span class="text-muted-foreground/50 print:hidden">•</span>
       <span class="print:hidden">{dayCount} days</span>
       <span class="text-muted-foreground/50 print:hidden">•</span>
-      <span>{formatNumber(entries.length)} readings</span>
+      <span>{formatNumber(readingCount)} readings</span>
     </div>
   </div>
 
@@ -218,9 +219,7 @@
             </div>
           </div>
         {:else}
-          <div class="text-center text-muted-foreground py-8">
-            No glucose analysis available
-          </div>
+          <EmptyState art="report-pages" size="compact" title="No glucose analysis available" />
         {/if}
       </CardContent>
     </Card>
@@ -243,9 +242,7 @@
         {#if analysis?.gri}
           <GlycemicRiskIndexChart gri={analysis.gri} />
         {:else}
-          <div class="flex items-center justify-center h-full text-muted-foreground">
-            No GRI data available
-          </div>
+          <EmptyState art="report-pages" size="compact" title="No GRI data available" class="h-full" />
         {/if}
       </CardContent>
     </Card>

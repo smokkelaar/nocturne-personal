@@ -56,6 +56,7 @@
         submitLabel="Save changes"
         form={clinicalState?.form}
         pending={!!clinicalState?.weight.saving}
+        saved={clinicalState?.guard.saved}
         error={clinicalState?.guard.submitError}
         focusError
         disabled={!clinicalState?.record

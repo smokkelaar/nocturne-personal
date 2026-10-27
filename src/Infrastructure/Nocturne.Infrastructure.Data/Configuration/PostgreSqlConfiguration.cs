@@ -64,6 +64,25 @@ public class PostgreSqlConfiguration
     public int MaxPoolSize { get; set; } = 100;
 
     /// <summary>
+    /// How many of its most-used statements each runtime-pool connection keeps prepared on the
+    /// server (Npgsql <c>Max Auto Prepare</c>), so PostgreSQL reuses their plans instead of parsing
+    /// and planning every execution; under load that work was over a third of the database's time.
+    /// Each kept statement holds a plan in its backend's memory. Zero turns preparation off.
+    /// </summary>
+    /// <remarks>
+    /// With statements prepared, Npgsql resets a returned connection with <c>RESET ALL</c> rather
+    /// than <c>DISCARD ALL</c>, which clears the RLS GUCs just the same;
+    /// <c>PoolReturnDiscardsRlsGucsIntegrationTests</c> covers both resets.
+    /// <para>
+    /// A <c>Max Auto Prepare</c> in the connection string wins over this. Behind a pooler in
+    /// transaction mode that does not track prepared statements (PgBouncer before 1.21, or without
+    /// <c>max_prepared_statements</c>), set either to zero: a prepared statement does not follow the
+    /// client to the next server connection.
+    /// </para>
+    /// </remarks>
+    public int MaxAutoPrepare { get; set; } = 50;
+
+    /// <summary>
     /// How long, in seconds, a runtime-pool transaction may sit idle between statements before
     /// PostgreSQL ends its session (<c>idle_in_transaction_session_timeout</c>). A non-positive
     /// value leaves the server default (no limit).

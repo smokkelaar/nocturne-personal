@@ -1,5 +1,7 @@
 packages:
   - "packages/*"
+  # The watercolour library, a submodule of ryceg/water-ui.
+  - "vendor/water-ui/packages/water-ui"
 
 enableGlobalVirtualStore: true
 

@@ -76,6 +76,7 @@ public class SensorContextEnricherTests
         _predictionService.Verify(s => s.GetPredictionsAsync(It.IsAny<string?>(), It.IsAny<DateTimeOffset?>(), It.IsAny<CancellationToken>()), Times.Never);
         _pumpSnapshotRepository.Verify(s => s.GetAsync(It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()), Times.Never);
         _deviceEventRepository.Verify(s => s.GetLatestByEventTypeAsync(It.IsAny<DeviceEventType>(), It.IsAny<DateTime?>(), It.IsAny<CancellationToken>()), Times.Never);
+        _deviceEventRepository.Verify(s => s.GetLatestOfAnyTypeAsync(It.IsAny<IReadOnlyCollection<DeviceEventType>>(), It.IsAny<DateTime?>(), It.IsAny<CancellationToken>()), Times.Never);
         _alertRepository.Verify(s => s.GetActiveAlertSnapshotsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
@@ -378,7 +379,9 @@ public class SensorContextEnricherTests
     {
         var enricher = BuildEnricher();
         var siteChangeAt = new DateTime(2026, 3, 20, 8, 0, 0, DateTimeKind.Utc);
-        _deviceEventRepository.Setup(r => r.GetLatestByEventTypeAsync(DeviceEventType.SiteChange, It.IsAny<DateTime?>(), It.IsAny<CancellationToken>()))
+        _deviceEventRepository.Setup(r => r.GetLatestOfAnyTypeAsync(
+                It.Is<IReadOnlyCollection<DeviceEventType>>(t => t.Contains(DeviceEventType.SiteChange)),
+                It.IsAny<DateTime?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new DeviceEvent { Timestamp = siteChangeAt, EventType = DeviceEventType.SiteChange });
         var rule = MakeRule(AlertConditionType.SiteAge, """{"operator":">","value":72}""");
 
@@ -386,6 +389,23 @@ public class SensorContextEnricherTests
 
         enriched.LastSiteChangeAt.Should().Be(siteChangeAt);
         _deviceEventRepository.Verify(r => r.GetLatestByEventTypeAsync(DeviceEventType.SensorStart, It.IsAny<DateTime?>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    /// <summary>A pod change is a new site, however the pump reports it.</summary>
+    [Fact]
+    public async Task SiteAge_follows_pod_changes_and_activations()
+    {
+        var enricher = BuildEnricher();
+        IReadOnlyCollection<DeviceEventType>? asked = null;
+        _deviceEventRepository.Setup(r => r.GetLatestOfAnyTypeAsync(
+                It.IsAny<IReadOnlyCollection<DeviceEventType>>(), It.IsAny<DateTime?>(), It.IsAny<CancellationToken>()))
+            .Callback((IReadOnlyCollection<DeviceEventType> types, DateTime? _, CancellationToken _) => asked = types)
+            .ReturnsAsync((DeviceEvent?)null);
+        var rule = MakeRule(AlertConditionType.SiteAge, """{"operator":">","value":72}""");
+
+        await enricher.EnrichAsync(BaseContext(), new[] { rule }, _tenantId, CancellationToken.None);
+
+        asked.Should().Contain([DeviceEventType.SiteChange, DeviceEventType.PodChange, DeviceEventType.PodActivated]);
     }
 
     [Fact]

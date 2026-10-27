@@ -3,6 +3,8 @@ import { page } from "vitest/browser";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { reactiveFields } from "$lib/test-stubs/reactive-fields.svelte";
 import { remoteQuery } from "$lib/test-stubs/remote-resource";
+import { WidgetId } from "$lib/api/generated/nocturne-api-client";
+import { dashboardTopWidgets } from "$lib/stores/appearance-store.svelte";
 import type {
   BasalPillData,
   COBPillData,
@@ -76,6 +78,9 @@ const arrive = async () => {
 
 describe("CurrentBGDisplay pill rows", () => {
   beforeEach(() => {
+    // The header carries the reading only while the Current glucose widget is off the grid,
+    // and the row widths below assume the reading sits beside the pills.
+    dashboardTopWidgets.hydrate([WidgetId.TirChart, WidgetId.Tdd]);
     localStorage.removeItem(STORAGE_KEY);
     store.pillsData = { cob: null, basal: null, iob: null, loop: null };
     store.currentReservoir = null;

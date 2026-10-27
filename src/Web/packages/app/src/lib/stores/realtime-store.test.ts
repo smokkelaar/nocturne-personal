@@ -58,6 +58,7 @@ import {
   SyncPhase,
   LegacyConsumableKind,
   TrackerRealtimeAction,
+  type InAppNotificationDto,
   type LegacyCoverageDto,
   type LegacyFallbackDto,
   type LegacyFallbacksDto,
@@ -88,6 +89,8 @@ interface StoreInternals {
       syncProgress?: (event: SyncProgressEvent) => void;
       trackerUpdate?: (event: TrackerUpdateEvent) => void;
       trackerDefinitionUpdate?: (event: TrackerDefinitionUpdateEvent) => void;
+      notificationUpdated?: (notification: InAppNotificationDto) => void;
+      notificationArchived?: (notification: InAppNotificationDto) => void;
     };
   };
 }
@@ -120,6 +123,8 @@ type TestStore = StoreInternals &
     | "destroy"
     | "refreshTrackers"
     | "initialize"
+    | "inAppNotifications"
+    | "removeNotification"
   >;
 
 /** Store instance with an empty socket URL, so nothing connects. */
@@ -738,6 +743,37 @@ describe("RealtimeStore events for a REST-backfilled reading", () => {
   });
 });
 
+describe("RealtimeStore events for a reading two uploaders report", () => {
+  // Prelude and AAPS each upload the same reading under their own ids; AAPS then
+  // revises its value to Prelude's, so the two rows share a reading.
+  const prelude = { _id: "prelude-reading", type: "sgv", sgv: 201.8, mills: 1_000 };
+  const aaps = { _id: "aaps-reading", type: "sgv", sgv: 202, mills: 1_000 };
+
+  it("updates the row with the update's id, not the other uploader's row with its reading", () => {
+    const store = makeStore();
+    store.handleDataUpdate({ data: [prelude] });
+    store.handleDataUpdate({ data: [aaps] });
+
+    store.handleUpdate({ colName: "entries", doc: { ...aaps, sgv: 201.8 } });
+
+    expect(store.entries.map((entry) => [entry._id, entry.sgv])).toEqual([
+      ["prelude-reading", 201.8],
+      ["aaps-reading", 201.8],
+    ]);
+    store.destroy();
+  });
+
+  it("deletes only the row with the delete's id", () => {
+    const store = makeStore();
+    store.entries = [prelude, { ...aaps, sgv: 201.8 }];
+
+    store.handleDelete({ colName: "entries", doc: { ...aaps, sgv: 201.8 } });
+
+    expect(store.entries.map((entry) => entry._id)).toEqual(["prelude-reading"]);
+    store.destroy();
+  });
+});
+
 describe("RealtimeStore native record broadcasts", () => {
   const NOW = Date.parse("2026-10-20T12:00:00Z");
   const minutesAgo = (minutes: number) => NOW - minutes * 60_000;
@@ -964,6 +1000,70 @@ describe("RealtimeStore sync progress", () => {
     expect(store.syncProgressByConnector.dexcom).toBeUndefined();
     expect(store.syncProgressByConnector.glooko?.phase).toBe(SyncPhase.Syncing);
 
+    store.destroy();
+  });
+});
+
+describe("RealtimeStore optimistic notification removal", () => {
+  const notification = (id: string, readAt?: string): InAppNotificationDto => ({
+    id,
+    title: id,
+    createdAt: "2026-09-21T08:00:00Z",
+    readAt,
+  });
+
+  function emit(
+    store: TestStore,
+    event: "notificationUpdated" | "notificationArchived",
+    n: InAppNotificationDto
+  ): void {
+    store.websocketClient.eventHandlers[event]?.(n);
+  }
+
+  it("puts a removed notification back when restored", () => {
+    const store = makeStore();
+    store.inAppNotifications = [notification("a"), notification("b")];
+
+    store.removeNotification("a").restore();
+
+    expect(store.inAppNotifications.map((n) => n.id).sort()).toEqual(["a", "b"]);
+    store.destroy();
+  });
+
+  it("does not put back a notification whose archive arrived before the failure", () => {
+    const store = makeStore();
+    store.inAppNotifications = [notification("a")];
+
+    const removal = store.removeNotification("a");
+    emit(store, "notificationArchived", notification("a"));
+    removal.restore();
+
+    expect(store.inAppNotifications).toEqual([]);
+    store.destroy();
+  });
+
+  it("keeps an update for a notification being removed off the list, and restores that update", () => {
+    const store = makeStore();
+    store.inAppNotifications = [notification("a")];
+
+    const removal = store.removeNotification("a");
+    const read = notification("a", "2026-09-21T09:00:00Z");
+    emit(store, "notificationUpdated", read);
+    expect(store.inAppNotifications).toEqual([]);
+
+    removal.restore();
+    expect(store.inAppNotifications).toEqual([read]);
+    store.destroy();
+  });
+
+  it("lets updates add the notification again once the removal has settled", () => {
+    const store = makeStore();
+    store.inAppNotifications = [notification("a")];
+
+    store.removeNotification("a").settle();
+    emit(store, "notificationUpdated", notification("a"));
+
+    expect(store.inAppNotifications.map((n) => n.id)).toEqual(["a"]);
     store.destroy();
   });
 });

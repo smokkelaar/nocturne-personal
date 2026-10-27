@@ -33,12 +33,13 @@
   import Bookmark from "@lucide/svelte/icons/bookmark";
   import Loader2 from "@lucide/svelte/icons/loader-circle";
   import Activity from "@lucide/svelte/icons/activity";
-  import { tick } from "svelte";
   import { goto } from "$app/navigation";
   import { resolve } from "$app/paths";
   import { page } from "$app/state";
   import * as trackersRemote from "$api/generated/trackers.generated.remote";
   import { remoteErrorMessage } from "$lib/api/remote-error";
+  import { describeSubmitError } from "$lib/forms/submit-error";
+  import { toast } from "svelte-sonner";
   import { coachmark } from "@nocturne/coach";
   import { coachFor } from "$lib/coach-marks/copy.svelte";
   import {
@@ -48,6 +49,7 @@
     DashboardVisibility,
     TrackerMode,
     ReservoirReportKind,
+    PumpCapability,
     type TrackerDefinitionDto,
     type TrackerInstanceDto,
     type TrackerPresetDto,
@@ -124,6 +126,8 @@
   let formStartEventType = $state<string | undefined>(undefined);
   let formCompletionEventType = $state<string | undefined>(undefined);
   let formTriggerEventTypes = $state<string[]>([]);
+  let formEndEventTypes = $state<string[]>([]);
+  let formCovers = $state<PumpCapability[]>([]);
   let formTriggerNotesContains = $state("");
 
   // Helper to convert API format to notifications array
@@ -194,6 +198,7 @@
     [TrackerCategory.Sensor]: "Sensor",
     [TrackerCategory.Cannula]: "Cannula",
     [TrackerCategory.Battery]: "Battery",
+    [TrackerCategory.Pod]: "Pod",
   };
 
   // Completion reason labels
@@ -222,6 +227,7 @@
     [TrackerCategory.Sensor]: "text-cyan-500",
     [TrackerCategory.Cannula]: "text-pink-500",
     [TrackerCategory.Battery]: "text-yellow-500",
+    [TrackerCategory.Pod]: "text-rose-500",
   };
 
   // Format date
@@ -288,6 +294,8 @@
     formStartEventType = undefined;
     formCompletionEventType = undefined;
     formTriggerEventTypes = [];
+    formEndEventTypes = [];
+    formCovers = [];
     formTriggerNotesContains = "";
     isDefinitionDialogOpen = true;
   }
@@ -313,6 +321,8 @@
     formStartEventType = def.startEventType ?? undefined;
     formCompletionEventType = def.completionEventType ?? undefined;
     formTriggerEventTypes = [...(def.triggerEventTypes ?? [])];
+    formEndEventTypes = [...(def.endEventTypes ?? [])];
+    formCovers = [...(def.covers ?? [])];
     formTriggerNotesContains = def.triggerNotesContains ?? "";
     isDefinitionDialogOpen = true;
   }
@@ -325,16 +335,23 @@
     isDeleteDefinitionDialogOpen = true;
   }
 
+  // Its instances and presets go with it on the server.
   async function confirmDeleteDefinition() {
-    if (!deletingDefinitionId) return;
+    const id = deletingDefinitionId;
+    if (!id) return;
+    isDeleteDefinitionDialogOpen = false;
+    deletingDefinitionId = null;
+    const notOfDefinition = <T extends { definitionId?: string }>(current: T[]) =>
+      current.filter((x) => x.definitionId !== id);
     try {
-      await trackersRemote.deleteDefinition(deletingDefinitionId);
-      await loadData();
-      await tick();
-      isDeleteDefinitionDialogOpen = false;
-      deletingDefinitionId = null;
+      await trackersRemote.deleteDefinition(id).updates(
+        definitionsQuery.withOverride((current) => current.filter((d) => d.id !== id)),
+        activeInstancesQuery.withOverride(notOfDefinition),
+        historyInstancesQuery.withOverride(notOfDefinition),
+        presetsQuery.withOverride(notOfDefinition)
+      );
     } catch (err) {
-      console.error("Failed to delete definition:", err);
+      toast.error(describeSubmitError(err));
     }
   }
 
@@ -349,15 +366,16 @@
   }
 
   async function confirmDeleteInstance() {
-    if (!deletingInstanceId) return;
+    const id = deletingInstanceId;
+    if (!id) return;
+    isDeleteInstanceDialogOpen = false;
+    deletingInstanceId = null;
     try {
-      await trackersRemote.deleteInstance(deletingInstanceId);
-      await loadData();
-      await tick();
-      isDeleteInstanceDialogOpen = false;
-      deletingInstanceId = null;
+      await trackersRemote.deleteInstance(id).updates(
+        activeInstancesQuery.withOverride((current) => current.filter((i) => i.id !== id))
+      );
     } catch (err) {
-      console.error("Failed to delete instance:", err);
+      toast.error(describeSubmitError(err));
     }
   }
 
@@ -366,11 +384,10 @@
     if (!requireAuth()) return;
 
     try {
-      await trackersRemote.applyPreset({ id: presetId });
-      await loadData();
-      await tick();
+      await trackersRemote.applyPreset({ id: presetId })
+        .updates(activeInstancesQuery, historyInstancesQuery);
     } catch (err) {
-      console.error("Failed to apply preset:", err);
+      toast.error(describeSubmitError(err));
     }
   }
 
@@ -393,12 +410,10 @@
         name: formPresetName,
         definitionId: formPresetDefinitionId,
         defaultStartNotes: formPresetDefaultStartNotes || undefined,
-      });
-      await loadData();
-      await tick();
+      }).updates(presetsQuery);
       isPresetDialogOpen = false;
     } catch (err) {
-      console.error("Failed to save preset:", err);
+      toast.error(describeSubmitError(err));
     }
   }
 
@@ -411,15 +426,16 @@
   }
 
   async function confirmDeletePreset() {
-    if (!deletingPresetId) return;
+    const id = deletingPresetId;
+    if (!id) return;
+    isDeletePresetDialogOpen = false;
+    deletingPresetId = null;
     try {
-      await trackersRemote.deletePreset(deletingPresetId);
-      await loadData();
-      await tick();
-      isDeletePresetDialogOpen = false;
-      deletingPresetId = null;
+      await trackersRemote.deletePreset(id).updates(
+        presetsQuery.withOverride((current) => current.filter((p) => p.id !== id))
+      );
     } catch (err) {
-      console.error("Failed to delete preset:", err);
+      toast.error(describeSubmitError(err));
     }
   }
 </script>
@@ -470,25 +486,25 @@
     ]))}
 
     <Tabs.Root bind:value={activeTab} class="space-y-6">
-      <Tabs.List class="grid w-full grid-cols-4">
-        <Tabs.Trigger value="active">
+      <Tabs.List class="grid h-auto w-full grid-cols-2 @xl:h-9 @xl:grid-cols-4">
+        <Tabs.Trigger value="active" class="min-h-11 @xl:min-h-0">
           <Activity class="h-4 w-4" />
           Active
           {#if activeCount > 0}
             <Badge variant="secondary" class="ml-1">{activeCount}</Badge>
           {/if}
         </Tabs.Trigger>
-        <Tabs.Trigger value="history">
+        <Tabs.Trigger value="history" class="min-h-11 @xl:min-h-0">
           <History class="h-4 w-4" />
           History
         </Tabs.Trigger>
         <div class="flex" {@attach coachmark({ ...coachFor("tracker-intro.settings") })}>
-          <Tabs.Trigger value="definitions">
+          <Tabs.Trigger value="definitions" class="min-h-11 @xl:min-h-0">
             <Settings2 class="h-4 w-4" />
             Definitions
           </Tabs.Trigger>
         </div>
-        <Tabs.Trigger value="presets">
+        <Tabs.Trigger value="presets" class="min-h-11 @xl:min-h-0">
           <Bookmark class="h-4 w-4" />
           Presets
         </Tabs.Trigger>
@@ -562,6 +578,8 @@
   bind:formStartEventType
   bind:formCompletionEventType
   bind:formTriggerEventTypes
+  bind:formEndEventTypes
+  bind:formCovers
   bind:formTriggerNotesContains
   {categoryLabels}
   {loadData}
@@ -573,10 +591,7 @@
   definition={startDefinition}
   history={historyInstances}
   onClose={() => (startDefinition = null)}
-  onStart={() => {
-    startDefinition = null;
-    loadData();
-  }}
+  onStart={() => (startDefinition = null)}
 />
 
 <!-- Complete Instance Dialog -->
@@ -594,7 +609,6 @@
   onComplete={() => {
     completingInstance = null;
     completingDefinition = null;
-    loadData();
   }}
 />
 

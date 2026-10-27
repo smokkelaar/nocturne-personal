@@ -1,4 +1,4 @@
-import type { ArtworkId, PaletteId } from '@nocturne/watercolour';
+import type { ArtworkId, PaletteId } from 'water-ui';
 
 export interface DocsHero {
   artwork: ArtworkId;

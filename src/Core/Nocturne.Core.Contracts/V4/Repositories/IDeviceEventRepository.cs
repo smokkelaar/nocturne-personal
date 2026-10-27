@@ -119,6 +119,13 @@ public interface IDeviceEventRepository : ILegacyKeyedRepository<DeviceEvent>, I
         => GetLatestByEventTypeAsync(eventType, asOf: null, ct);
 
     /// <summary>
+    /// As <see cref="GetLatestByEventTypeAsync(DeviceEventType, DateTime?, CancellationToken)"/>, for the
+    /// most recent event of any of <paramref name="eventTypes"/>.
+    /// </summary>
+    Task<DeviceEvent?> GetLatestOfAnyTypeAsync(
+        IReadOnlyCollection<DeviceEventType> eventTypes, DateTime? asOf, CancellationToken ct = default);
+
+    /// <summary>
     /// Retrieve the most recent <see cref="DeviceEvent"/> matching any of the specified <see cref="DeviceEventType"/> values.
     /// </summary>
     /// <param name="eventTypes">Array of <see cref="DeviceEventType"/> values to search for.</param>

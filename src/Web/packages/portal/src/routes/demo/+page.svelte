@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { ConfirmationBackground } from "@nocturne/watercolour";
+    import { ConfirmationBackground } from "water-ui";
     import { Button } from "@nocturne/ui/ui/button";
     import ExternalLink from "@lucide/svelte/icons/external-link";
     import { DEMO_ENABLED, DEMO_WEB_URL } from "$lib/config";

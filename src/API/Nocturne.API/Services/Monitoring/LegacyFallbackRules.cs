@@ -33,10 +33,11 @@ public static class LegacyFallbackRules
 
     /// <summary>
     /// Whether <paramref name="definition"/> already stands for <paramref name="kind"/>: a Duration
-    /// tracker restarted by one of its events, whatever its category, dashboard visibility or notes
-    /// filter, or a Duration sensor, cannula or reservoir tracker of the kind's category that
-    /// restarts on nothing, run by hand. A definition hidden from the dashboard still covers the
-    /// kind; the member chose not to see it.
+    /// tracker whose hardware provides the kind's capability (<see cref="TrackerCoverage.Of"/>), or,
+    /// when that is not known, one restarted by one of the kind's events, whatever its category,
+    /// dashboard visibility or notes filter, or a Duration sensor, cannula or reservoir tracker of
+    /// the kind's category that restarts on nothing, run by hand. A definition hidden from the
+    /// dashboard still covers the kind; the member chose not to see it.
     /// </summary>
     /// <remarks>
     /// The battery category is not enough on its own: it also holds phone and CGM transmitter
@@ -47,6 +48,10 @@ public static class LegacyFallbackRules
         if (definition.Mode != TrackerMode.Duration)
             return false;
 
+        var covers = TrackerCoverage.Of(definition);
+        if (covers.Count > 0 && ConsumableTrackerSpecs.CapabilityOf(kind) is { } capability)
+            return covers.Contains(capability);
+
         var triggers = TrackerTriggerService.ParseTriggerEventTypes(definition.TriggerEventTypes);
         if (triggers.Count > 0)
             return ConsumableTrackerSpecs.EventTypes(kind).Any(triggers.Contains);
@@ -56,21 +61,42 @@ public static class LegacyFallbackRules
     }
 
     /// <summary>
-    /// Whether <paramref name="definition"/> already does <paramref name="spec"/>'s job: it
-    /// <see cref="Covers"/> the kind and, for a site, follows the same hardware (pod or infusion set).
+    /// Whether <paramref name="definition"/> already does <paramref name="spec"/>'s job: it follows
+    /// the same catalog part; or it <see cref="Covers"/> the spec's kind and restarts on every event
+    /// the spec does; or it covers exactly what the spec's hardware provides; or, when either's
+    /// coverage is not known, it covers the kind and, for a site, follows the same hardware (pod or
+    /// infusion set).
     /// </summary>
+    /// <remarks>
+    /// Equal coverage is enough across models, so switching between two pod pumps keeps the pod
+    /// tracker, while switching between a pod and an infusion set adds the new one.
+    /// </remarks>
     public static bool Follows(TrackerDefinitionEntity definition, ConsumableTrackerSpec spec)
     {
-        if (ConsumableTrackerSpecs.KindOf(spec) is not { } kind || !Covers(kind, definition))
+        if (definition.Mode != TrackerMode.Duration)
+            return false;
+        if (spec.Component is not null && definition.DeviceComponent == spec.Component)
+            return true;
+
+        var kind = ConsumableTrackerSpecs.KindOf(spec);
+        var triggers = TrackerTriggerService.ParseTriggerEventTypes(definition.TriggerEventTypes);
+        var specTriggers = ConsumableTrackerSpecs.TriggerEventTypes(spec);
+        if (kind is { } restarted && Covers(restarted, definition)
+            && specTriggers.Count > 0 && specTriggers.All(triggers.Contains))
+            return true;
+
+        var covers = TrackerCoverage.Of(definition);
+        if (covers.Count > 0 && spec.Covers is { Count: > 0 } specCovers)
+            return covers.SetEquals(specCovers);
+
+        if (kind is null || !Covers(kind.Value, definition))
             return false;
         if (kind != LegacyConsumableKind.Site)
             return true;
 
-        var triggers = TrackerTriggerService.ParseTriggerEventTypes(definition.TriggerEventTypes);
         if (triggers.Count == 0)
             return true;
 
-        var specTriggers = ConsumableTrackerSpecs.TriggerEventTypes(spec);
         return specTriggers.Contains(DeviceEventType.PodChange)
             ? triggers.Contains(DeviceEventType.PodChange)
             : !triggers.Contains(DeviceEventType.PodChange) || specTriggers.All(triggers.Contains);

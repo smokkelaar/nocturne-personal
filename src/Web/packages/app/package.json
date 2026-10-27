@@ -104,7 +104,7 @@
     "@nocturne/cms": "workspace:*",
     "@nocturne/coach": "workspace:*",
     "@nocturne/ui": "workspace:*",
-    "@nocturne/watercolour": "workspace:*",
+    "water-ui": "workspace:*",
     "@opentelemetry/api": "^1.9.1",
     "@opentelemetry/api-logs": "^0.218.0",
     "@opentelemetry/auto-instrumentations-node": "^0.76.0",

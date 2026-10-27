@@ -153,6 +153,8 @@
     [TrackerOfferKind.Pod]: "Pod changes",
     [TrackerOfferKind.InfusionSet]: "Infusion set changes",
     [TrackerOfferKind.Reservoir]: "Reservoir changes",
+    [TrackerOfferKind.Base]: "Pump base replacement",
+    [TrackerOfferKind.Controller]: "Controller replacement",
   };
 
   function trackerName(offer: TrackerOffer): string {
@@ -163,6 +165,10 @@
         return `${offer.deviceName} pod`;
       case TrackerOfferKind.InfusionSet:
         return `${offer.deviceName} infusion set`;
+      case TrackerOfferKind.Base:
+        return `${offer.deviceName} pump base`;
+      case TrackerOfferKind.Controller:
+        return `${offer.deviceName} controller`;
       default:
         return `${offer.deviceName} reservoir`;
     }
@@ -403,8 +409,8 @@
             Trackers
           </h2>
           <p class="text-sm text-muted-foreground">
-            A tracker counts how long a sensor, pod, infusion set or reservoir is in use, so it is
-            easy to see when the next change is due. It restarts when a change is logged. These are
+            A tracker counts how long a sensor, pod, infusion set, reservoir or pump part is in use. It shows
+            when the next change is due. It restarts when a change is logged. These are
             optional, and the wear time can be changed in <a class="underline" href={trackerSettingsHref}>tracker settings</a>.
           </p>
           <p class="text-sm text-muted-foreground">
@@ -417,6 +423,11 @@
             <div class="flex flex-col gap-0.5">
               <Label for="tracker-{offer.kind}">{trackerTitles[offer.kind!]}</Label>
               <span class="text-xs text-muted-foreground">{@render wearTime(offer)}</span>
+              {#if offer.startsByHand}
+                <span class="text-xs text-muted-foreground">
+                  Your devices do not report this change. Start the tracker in tracker settings when you replace the part.
+                </span>
+              {/if}
             </div>
             {#if offer.state === TrackerOfferState.AlreadyTracked}
               <div class="flex items-center gap-2 text-sm">

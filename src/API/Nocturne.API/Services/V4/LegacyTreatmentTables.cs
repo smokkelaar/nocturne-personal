@@ -515,6 +515,8 @@ internal static class LegacyTreatmentTables
             [DeviceEventType.InsulinChange] = TreatmentTypes.InsulinChange,
             [DeviceEventType.PumpBatteryChange] = TreatmentTypes.PumpBatteryChange,
             [DeviceEventType.PodChange] = TreatmentTypes.PodChange,
+            [DeviceEventType.PodActivated] = TreatmentTypes.PodActivated,
+            [DeviceEventType.PodDeactivated] = TreatmentTypes.PodDeactivated,
             [DeviceEventType.ReservoirChange] = TreatmentTypes.ReservoirChange,
             [DeviceEventType.CannulaChange] = TreatmentTypes.CannulaChange,
             [DeviceEventType.TransmitterSensorInsert] = TreatmentTypes.TransmitterSensorInsert,

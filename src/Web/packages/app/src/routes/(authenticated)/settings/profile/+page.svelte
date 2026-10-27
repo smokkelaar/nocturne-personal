@@ -18,6 +18,8 @@
   import Lock from "@lucide/svelte/icons/lock";
   import Trash2 from "@lucide/svelte/icons/trash-2";
   import RefreshCw from "@lucide/svelte/icons/refresh-cw";
+  import { EmptyState } from "$lib/components/shared";
+  import { syringeArtwork } from "$lib/watercolour-icons";
   import * as Alert from "$lib/components/ui/alert";
   import { goto } from "$app/navigation";
   import { ConfirmDialog } from "$lib/components/ui/confirm-dialog";
@@ -26,6 +28,8 @@
     setDefaultProfile,
     deleteProfileByName,
   } from "$api/generated/profiles.generated.remote";
+  import { getActivationStatus } from "$api/generated/profileActivations.generated.remote";
+  import { startQueries } from "$lib/utils/start-queries";
   import { remoteErrorMessage } from "$lib/api/remote-error";
   import { relativeAge } from "$lib/utils/formatting";
   import { describeSubmitError } from "$lib/forms/submit-error";
@@ -93,6 +97,8 @@
   // server but serializes no hydratable, so the client throws
   // hydratable_missing_but_required and falls into the error state.
   const summaryQuery = getProfileSummary(undefined);
+  // ActiveProfileActivation reads the same query once the summary has rendered it.
+  startQueries(summaryQuery, getActivationStatus(undefined));
   const data = $derived(summaryQuery.current);
   const loadError = $derived(summaryQuery.error);
 
@@ -206,32 +212,20 @@
     </div>
 
     {#if profileNames.length === 0}
-      <!-- Empty State -->
-      <Card variant="dashed">
-        <CardContent class="py-12">
-          <div class="text-center space-y-4">
-            <div
-              class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-muted"
-            >
-              <User class="h-8 w-8 text-muted-foreground" />
-            </div>
-            <div>
-              <h3 class="text-lg font-semibold">No profile found</h3>
-              <p class="text-sm text-muted-foreground max-w-md mx-auto mt-1">
-                Profiles are typically uploaded from your diabetes management
-                app (like AAPS, Loop, or xDrip+). They contain your basal rates,
-                insulin sensitivity factors, and carb ratios.
-              </p>
-            </div>
-            <div class="flex items-center justify-center gap-2">
-              <Button variant="outline" href="/settings/connectors">
-                <Settings class="h-4 w-4 mr-2" />
-                Configure data sources
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <EmptyState
+        art={syringeArtwork}
+        variant="dashed"
+        title="No profile found"
+        headingLevel={3}
+        body="Profiles are typically uploaded from your diabetes management app (like AAPS, Loop, or xDrip+). They contain your basal rates, insulin sensitivity factors, and carb ratios."
+      >
+        {#snippet action()}
+          <Button variant="outline" href="/settings/connectors">
+            <Settings class="h-4 w-4 mr-2" />
+            Configure data sources
+          </Button>
+        {/snippet}
+      </EmptyState>
     {:else}
       <ActiveProfileActivation />
 
@@ -518,15 +512,11 @@
         </Card>
       {:else if selectedProfileName}
         <!-- Profile selected but no therapy settings found -->
-        <Card variant="dashed">
-          <CardContent class="py-8">
-            <div class="text-center text-muted-foreground">
-              <p>
-                No therapy settings found for profile "{selectedProfileName}".
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+        <EmptyState
+          art={syringeArtwork}
+          variant="dashed"
+          title={`No therapy settings found for profile "${selectedProfileName}"`}
+        />
       {/if}
     {/if}
   </div>

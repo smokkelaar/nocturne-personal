@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { ArtworkHero } from "@nocturne/watercolour";
+    import { ArtworkHero } from "water-ui";
     import { DOCS_HERO } from "$lib/data/docs-artwork";
     import Callout from "@nocturne/cms/components/Callout.svelte";
     import NextSteps from "$lib/components/docs/NextSteps.svelte";

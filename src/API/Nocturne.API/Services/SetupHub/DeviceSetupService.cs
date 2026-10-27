@@ -115,7 +115,7 @@ public partial class DeviceSetupService(
             currentInsulins.Where(i => i.FormulationId is null || !listedIds.Contains(i.FormulationId)).ToList(),
             await ActionTimeAsync(ct),
             takesNoInsulin,
-            await TrackerOffersAsync(current, ct));
+            [.. (await TrackerOffersAsync(current, ct)).Select(o => o.Offer)]);
     }
 
     /// <summary>The insulin action time in use now, resolved as insulin on board resolves it.</summary>
@@ -254,12 +254,12 @@ public partial class DeviceSetupService(
         var created = await trackers.ExecuteUnderConsumableLockAsync(
             async (tx, unit, token) =>
             {
-                var (offer, hours) = await OfferAsync(kind, token, unit.Context);
+                var (offer, spec) = await OfferAsync(kind, token, unit.Context);
                 if (offer.State != TrackerOfferState.Off)
                     return null;
 
                 var written = await trackerWriter.CreateAsync(
-                    tx, unit, SpecOf(kind, name, hours), createdBy, withAlerts: false, token);
+                    tx, unit, spec with { Name = name }, createdBy, withAlerts: false, token);
                 unit.Context.SetupHubAdditions.Add(new SetupHubAdditionEntity
                 {
                     Id = Guid.CreateVersion7(),
@@ -326,15 +326,16 @@ public partial class DeviceSetupService(
             await trackerRuleSync.DeleteRulesForDefinitionAsync(definitionId, CancellationToken.None);
     }
 
-    /// <summary>The offer of <paramref name="kind"/> and the lifespan its tracker gets.</summary>
+    /// <summary>The offer of <paramref name="kind"/> and the tracker it stands for.</summary>
     /// <param name="db">The caller's transaction context, so the offer reads what it holds.</param>
-    private async Task<(TrackerOffer Offer, int Hours)> OfferAsync(
+    private async Task<(TrackerOffer Offer, ConsumableTrackerSpec Spec)> OfferAsync(
         TrackerOfferKind kind, CancellationToken ct, NocturneDbContext? db = null)
     {
         var current = (await devices.GetCurrentAsync(ct)).ToList();
-        var offer = (await TrackerOffersAsync(current, ct, db)).FirstOrDefault(o => o.Kind == kind)
-            ?? throw new ArgumentException($"No {kind} tracker is offered for the recorded devices.", nameof(kind));
-        return (offer, offer.WearDays * 24 + offer.WearHours);
+        var offered = (await TrackerOffersAsync(current, ct, db)).FirstOrDefault(o => o.Offer.Kind == kind);
+        if (offered.Offer is null)
+            throw new ArgumentException($"No {kind} tracker is offered for the recorded devices.", nameof(kind));
+        return offered;
     }
 
     private async Task<bool> TakesNoInsulinAsync(CancellationToken ct)
@@ -402,29 +403,41 @@ public partial class DeviceSetupService(
         ];
     }
 
-    private async Task<IReadOnlyList<TrackerOffer>> TrackerOffersAsync(
+    /// <summary>
+    /// The trackers offered for <paramref name="current"/>: the CGM's sensor, and a tracker for each
+    /// part of the pump with a lifespan, including those registering it does not track. A device
+    /// with no catalog entry gets the typical sensor, or infusion set and reservoir.
+    /// </summary>
+    private async Task<IReadOnlyList<(TrackerOffer Offer, ConsumableTrackerSpec Spec)>> TrackerOffersAsync(
         IReadOnlyList<PatientDevice> current, CancellationToken ct, NocturneDbContext? within = null)
     {
-        var offers = new List<(TrackerOfferKind Kind, string Device, int? Hours)>();
+        var offers = new List<(TrackerOfferKind Kind, string Device, bool Typical, ConsumableTrackerSpec Spec)>();
 
         if (current.FirstOrDefault(d => d.DeviceCategory == DeviceCategory.CGM) is { } cgm)
         {
             var entry = cgm.CatalogId is null ? null : DeviceCatalog.GetById(cgm.CatalogId);
-            offers.Add((TrackerOfferKind.Sensor, entry?.Name ?? cgm.Model, entry?.Cgm?.SensorDurationDays * 24));
+            var name = entry?.Name ?? cgm.Model;
+            var typical = ConsumableTrackerSpecs.Generic(LegacyConsumableKind.Sensor);
+            offers.Add(entry?.Cgm is { } properties
+                ? (TrackerOfferKind.Sensor, name, false, typical with { LifespanHours = properties.SensorDurationDays * 24 })
+                : (TrackerOfferKind.Sensor, name, true, typical));
         }
 
         if (current.FirstOrDefault(d => d.DeviceCategory == DeviceCategory.InsulinPump) is { } pump)
         {
             var entry = pump.CatalogId is null ? null : DeviceCatalog.GetById(pump.CatalogId);
             var name = entry?.Name ?? pump.Model;
-            if (entry?.Pump is { IsPatch: true } patch)
+            if (entry?.Pump is { } properties)
             {
-                offers.Add((TrackerOfferKind.Pod, name, patch.SiteDurationHours));
+                foreach (var component in properties.Components)
+                    if (ConsumableTrackerSpecs.SpecFor(entry, component) is { } spec)
+                        offers.Add((OfferKindOf(component.Kind), name, false, spec));
             }
             else
             {
-                offers.Add((TrackerOfferKind.InfusionSet, name, entry?.Pump?.SiteDurationHours));
-                offers.Add((TrackerOfferKind.Reservoir, name, entry?.Pump?.ReservoirDurationHours));
+                offers.Add((TrackerOfferKind.InfusionSet, name, true, ConsumableTrackerSpecs.Generic(LegacyConsumableKind.Site)
+                    with { Triggers = [TreatmentTypes.SiteChange, TreatmentTypes.CannulaChange], Ends = null }));
+                offers.Add((TrackerOfferKind.Reservoir, name, true, ConsumableTrackerSpecs.Generic(LegacyConsumableKind.Reservoir)));
             }
         }
 
@@ -437,49 +450,28 @@ public partial class DeviceSetupService(
 
         return offers.Select(o =>
         {
-            var spec = SpecOf(o.Kind, o.Device, o.Hours);
-            var typical = o.Hours is null;
-            var covering = existing.Where(d => LegacyFallbackRules.Follows(d, spec)).ToList();
+            var covering = existing.Where(d => LegacyFallbackRules.Follows(d, o.Spec)).ToList();
             var mine = covering.Where(d => added.Contains(d.Id)).Select(d => (Guid?)d.Id).FirstOrDefault();
             var (state, id) = mine is not null
                 ? (TrackerOfferState.AddedHere, mine)
                 : covering.Count > 0
                     ? (TrackerOfferState.AlreadyTracked, covering[0].Id)
                     : (TrackerOfferState.Off, null);
-            return new TrackerOffer(
-                o.Kind, o.Device, spec.LifespanHours / 24, spec.LifespanHours % 24, typical, state, id);
+            var offer = new TrackerOffer(
+                o.Kind, o.Device, o.Spec.LifespanHours / 24, o.Spec.LifespanHours % 24, o.Typical, state, id,
+                StartsByHand: o.Spec.Triggers.Count == 0);
+            return (offer, o.Spec);
         }).ToList();
     }
 
-    /// <summary>
-    /// The tracker an offer of <paramref name="kind"/> stands for. Its triggers and category decide
-    /// what already does its job (<see cref="LegacyFallbackRules.Follows"/>).
-    /// </summary>
-    private static ConsumableTrackerSpec SpecOf(TrackerOfferKind kind, string name, int? hours)
+    private static TrackerOfferKind OfferKindOf(PumpComponentKind kind) => kind switch
     {
-        var typical = ConsumableTrackerSpecs.Generic(kind switch
-        {
-            TrackerOfferKind.Sensor => LegacyConsumableKind.Sensor,
-            TrackerOfferKind.Reservoir => LegacyConsumableKind.Reservoir,
-            _ => LegacyConsumableKind.Site,
-        });
-        return new ConsumableTrackerSpec(
-            name, TrackerCategoryOf(kind), typical.Icon, hours ?? typical.LifespanHours, TriggersOf(kind));
-    }
-
-    private static TrackerCategory TrackerCategoryOf(TrackerOfferKind kind) => kind switch
-    {
-        TrackerOfferKind.Sensor => TrackerCategory.Sensor,
-        TrackerOfferKind.Reservoir => TrackerCategory.Reservoir,
-        _ => TrackerCategory.Cannula,
-    };
-
-    private static string[] TriggersOf(TrackerOfferKind kind) => kind switch
-    {
-        TrackerOfferKind.Sensor => [TreatmentTypes.SensorStart, TreatmentTypes.SensorChange],
-        TrackerOfferKind.Pod => [TreatmentTypes.PodChange, TreatmentTypes.SiteChange],
-        TrackerOfferKind.InfusionSet => [TreatmentTypes.SiteChange, TreatmentTypes.CannulaChange],
-        _ => [TreatmentTypes.InsulinChange, TreatmentTypes.ReservoirChangeEvent],
+        PumpComponentKind.Pod => TrackerOfferKind.Pod,
+        PumpComponentKind.InfusionSet => TrackerOfferKind.InfusionSet,
+        PumpComponentKind.Reservoir => TrackerOfferKind.Reservoir,
+        PumpComponentKind.Base => TrackerOfferKind.Base,
+        PumpComponentKind.Controller => TrackerOfferKind.Controller,
+        _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, null),
     };
 
     private sealed record Evidence(IReadOnlyList<DeviceEvidence> Devices, AlgorithmGuess? Algorithm);

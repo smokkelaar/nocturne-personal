@@ -8,6 +8,7 @@
 </script>
 
 <script lang="ts">
+  import SuccessBanner from "$lib/forms/SuccessBanner.svelte";
   import { Button } from "$lib/components/ui/button";
   import * as Card from "$lib/components/ui/card";
   import * as Collapsible from "$lib/components/ui/collapsible";
@@ -16,16 +17,15 @@
   import { Label } from "$lib/components/ui/label";
   import * as RadioGroup from "$lib/components/ui/radio-group";
   import { Select, SelectContent, SelectItem, SelectTrigger } from "$lib/components/ui/select";
-  import Check from "@lucide/svelte/icons/check";
   import ChevronDown from "@lucide/svelte/icons/chevron-down";
   import ChevronUp from "@lucide/svelte/icons/chevron-up";
-  import Copy from "@lucide/svelte/icons/copy";
   import Loader2 from "@lucide/svelte/icons/loader-circle";
   import PermissionCategorySelector from "$lib/components/rbac/PermissionCategorySelector.svelte";
   import CopyInvitationMessageButton from "$lib/components/members/CopyInvitationMessageButton.svelte";
+  import CopyButton from "$lib/components/members/CopyButton.svelte";
+  import { Artwork } from "water-ui";
   import { createInvite } from "$api/generated/memberInvites.generated.remote";
   import type { TenantRoleDto } from "$lib/api/generated/nocturne-api-client";
-  import { createCopyFeedback } from "$lib/hooks/copy-feedback.svelte";
   import { describeSubmitError } from "$lib/forms";
 
   interface Props {
@@ -73,7 +73,6 @@
   let limitTo24Hours = $state(false);
   let createdInviteUrl = $state<string | null>(null);
   let createdByName = $state<string | undefined>(undefined);
-  const copy = createCopyFeedback();
   let isCreatingInvite = $state(false);
   let errorMessage = $state<string | null>(null);
 
@@ -83,10 +82,6 @@
     } else {
       inviteRoleIds = [...inviteRoleIds, roleId];
     }
-  }
-
-  async function copyInviteUrl() {
-    if (createdInviteUrl) await copy.copy(createdInviteUrl);
   }
 
   async function handleCreateInvite() {
@@ -153,16 +148,14 @@
   <Card.Content class="@container">
     {#if createdInviteUrl}
       <div class="space-y-4">
-        <div
-          class="flex items-start gap-3 rounded-md border border-success/30 bg-success/10 p-3"
-        >
-          <Check
-            class="mt-0.5 h-4 w-4 shrink-0 text-success"
-          />
-          <p class="text-sm text-success">
-            Invite link created. Share it with the new member.
-          </p>
-        </div>
+        <Artwork
+          artwork="people-group"
+          palette="dusk"
+          motion="auto"
+          autoplay="once"
+          class="mx-auto size-32"
+        />
+        <SuccessBanner>Invite link created. Share it with the new member.</SuccessBanner>
 
         <div class="flex gap-2">
           <Input
@@ -171,13 +164,11 @@
             readonly
             class="font-mono"
           />
-          <Button variant="outline" size="icon" onclick={copyInviteUrl}>
-            {#if copy.isCopied()}
-              <Check class="h-4 w-4 text-success" />
-            {:else}
-              <Copy class="h-4 w-4" />
-            {/if}
-          </Button>
+          <CopyButton
+            text={createdInviteUrl}
+            label="Copy invite link"
+            oncopied={() => (errorMessage = null)}
+          />
         </div>
 
         <CopyInvitationMessageButton

@@ -13,7 +13,7 @@
   import { getMeals, addCarbIntakeFood, deleteCarbIntakeFood } from "$api/generated/nutritions.generated.remote";
   import { getSuggestions as getMealMatchingSuggestions, acceptMatch, dismissMatch } from "$api/generated/mealMatchings.generated.remote";
   import { toast } from "svelte-sonner";
-  import { useToastSubmission } from "$lib/forms";
+  import { toastSaved, useToastSubmission } from "$lib/forms";
   import {
     TreatmentFoodSelectorDialog,
     TreatmentFoodEntryEditDialog,
@@ -75,8 +75,10 @@
     attributed: filterMode === "unattributed" ? false : undefined,
   });
 
-  const mealsQuery = $derived(getMeals(queryParams));
-  const meals = $derived<MealEvent[]>(mealsQuery.current ?? []);
+  // Not before the filter bar's date picker has reported its range: a query without one reads
+  // every meal, and the picker replaces it as it mounts.
+  const mealsQuery = $derived(dateRange.from ? getMeals(queryParams) : null);
+  const meals = $derived<MealEvent[]>(mealsQuery?.current ?? []);
   const bolusMeal = $derived(
     meals.find((m) => m.carbIntakes?.[0]?.id === bolusMealCarbId) ?? null
   );
@@ -97,7 +99,7 @@
   );
 
   // Loading state - check if data has arrived yet
-  const isLoading = $derived(mealsQuery.current === undefined);
+  const isLoading = $derived(mealsQuery?.current === undefined);
 
   // Create a map of carbIntakeId -> suggestions for easy lookup
   const suggestionsByCarbIntake = $derived.by(() => {
@@ -272,12 +274,12 @@
       toast.success("Food unlinked");
       showUnlinkConfirm = false;
       unlinkTarget = null;
-      mealsQuery.refresh();
+      mealsQuery?.refresh();
     });
   }
 
   async function handleFoodEntrySaved() {
-    await mealsQuery.refresh();
+    await mealsQuery?.refresh();
   }
 
   async function handleAddFoodSubmit(request: CarbIntakeFoodRequest) {
@@ -289,10 +291,10 @@
         id: carbIntakeId,
         request,
       });
-      toast.success("Food added");
+      toastSaved("Food added");
       showAddFoodDialog = false;
       addFoodMeal = null;
-      mealsQuery.refresh();
+      mealsQuery?.refresh();
     });
   }
 
@@ -301,6 +303,18 @@
   function openReviewDialog(match: SuggestedMealMatch) {
     reviewMatch = match;
     showReviewDialog = true;
+  }
+
+  /** The meal a match was last accepted into; its row paints the link. */
+  let matched = $state({ carbIntakeId: "", count: 0 });
+
+  /**
+   * Under the unattributed filter the accepted meal leaves the list on the
+   * next refresh, taking its row's moment with it, so the toast confirms instead.
+   */
+  function markMatched(carbIntakeId: string) {
+    if (filterMode === "unattributed") toast.success("Meal match accepted");
+    else matched = { carbIntakeId, count: matched.count + 1 };
   }
 
   async function handleQuickAccept(match: SuggestedMealMatch) {
@@ -313,7 +327,7 @@
         carbs: match.carbs ?? 0,
         timeOffsetMinutes: 0,
       }).updates(getMealMatchingSuggestions, getMeals);
-      toast.success("Meal match accepted");
+      markMatched(match.carbIntakeId!);
     } catch (err) {
       console.error("Failed to accept match:", err);
       toast.error(describeSubmitError(err, "Failed to accept match"));
@@ -323,7 +337,9 @@
   async function handleDismiss(match: SuggestedMealMatch) {
     try {
       await dismissMatch({ foodEntryId: match.foodEntryId! }).updates(
-        getMealMatchingSuggestions
+        suggestionsQuery.withOverride((current) =>
+          current.filter((s) => s.foodEntryId !== match.foodEntryId)
+        )
       );
       toast.success("Match dismissed");
     } catch (err) {
@@ -334,7 +350,7 @@
 
   function handleReviewComplete() {
     reviewMatch = null;
-    mealsQuery.refresh();
+    mealsQuery?.refresh();
     suggestionsQuery.refresh();
   }
 </script>
@@ -394,6 +410,7 @@
       onUnlinkFood={confirmUnlinkFood}
       onEditInsulin={openBolusDialog}
       onAcceptSuggestion={handleQuickAccept}
+      {matched}
       onDismissSuggestion={handleDismiss}
       onReviewSuggestion={openReviewDialog}
     />
@@ -439,7 +456,7 @@
     if (!value) bolusMealCarbId = null;
   }}
   meal={bolusMeal}
-  onSave={() => mealsQuery.refresh()}
+  onSave={() => mealsQuery?.refresh()}
 />
 
 <MealMatchReviewDialog
@@ -450,6 +467,7 @@
   }}
   match={reviewMatch}
   onComplete={handleReviewComplete}
+  onAccepted={markMatched}
 />
 
 <ConfirmDialog

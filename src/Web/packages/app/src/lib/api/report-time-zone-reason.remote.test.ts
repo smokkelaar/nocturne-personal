@@ -20,6 +20,7 @@ vi.mock("$app/server", () => ({
           getAidSystemMetrics: async () => ({}),
         },
         bolus: { getAll: async () => ({ data: [] }) },
+        sensorGlucose: { getAll: async () => ({ data: [], pagination: { total: 0 } }) },
         profile: { getActiveSchedules: async () => [] },
       },
     },

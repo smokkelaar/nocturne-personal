@@ -97,7 +97,7 @@ public class DeviceTrackerProvisionerTests
         created.Should().Be(1);
         var pod = _created.Single();
         pod.Name.Should().Be("Omnipod DASH pod");
-        pod.Category.Should().Be(TrackerCategory.Cannula);
+        pod.Category.Should().Be(TrackerCategory.Pod);
         pod.LifespanHours.Should().Be(72);
         pod.TriggerEventTypes.Should().Contain("Pod Change").And.Contain("Site Change");
     }
@@ -282,7 +282,7 @@ public class DeviceTrackerProvisionerTests
     [Fact]
     public async Task SwitchingFromAPatchPumpToATubedPump_AddsTheSiteAndReservoirTrackers()
     {
-        Existing(SpecOf("omnipod-dash", TrackerCategory.Cannula));
+        Existing(SpecOf("omnipod-dash", TrackerCategory.Pod));
 
         await _provisioner.ProvisionAsync(Device("dana-i", DeviceCategory.InsulinPump), UserId);
 

@@ -65,30 +65,9 @@ public class DataOverviewService : IDataOverviewService
     {
         _logger.LogDebug("Getting available years for data overview");
 
-        await using var context = await _factory.CreateAsync(cancellationToken);
-
-        // Run all queries sequentially — DbContext is not thread-safe
-        long? globalMin = null;
-        long? globalMax = null;
-        var allDataSources = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-        foreach (var table in DataOverviewTables.All)
-        {
-            var (min, max) = await GetMinMaxTimestamp(
-                table.Timestamps(context),
-                cancellationToken
-            );
-            if (min.HasValue && (!globalMin.HasValue || min.Value < globalMin.Value))
-                globalMin = min.Value;
-            if (max.HasValue && (!globalMax.HasValue || max.Value > globalMax.Value))
-                globalMax = max.Value;
-
-            if (table.Sources(context) is not { } sources)
-                continue;
-
-            foreach (var ds in await GetDistinctDataSources(sources, cancellationToken))
-                allDataSources.Add(ds);
-        }
+        var extent = await GetDataExtentAsync(cancellationToken);
+        var globalMin = extent.MinMills;
+        var globalMax = extent.MaxMills;
 
         var clock = await _tenantClock.ResolveAsync(cancellationToken);
         var years = Array.Empty<int>();
@@ -117,12 +96,73 @@ public class DataOverviewService : IDataOverviewService
         return new DataOverviewYearsResponse
         {
             Years = years,
-            AvailableDataSources = allDataSources
-                .OrderBy(s => s, StringComparer.OrdinalIgnoreCase)
-                .ToArray(),
+            AvailableDataSources = extent.DataSources,
             Thresholds = _statisticsService.HourlyBandThresholds,
             TimeZoneUnavailableReason = clock.Reason,
         };
+    }
+
+    /// <summary>
+    /// The earliest and latest timestamp, and the data sources, across every table the overview
+    /// covers.
+    /// </summary>
+    /// <remarks>
+    /// Cached for <see cref="DataExtentLifetime"/>: the data sources are a DISTINCT over each
+    /// whole table, which grows with the tenant's history, and the answer only moves when a source
+    /// is added or a record lands outside the span. A new source or year can therefore appear in
+    /// the report filters up to that long after its first record.
+    /// </remarks>
+    private Task<DataExtent> GetDataExtentAsync(CancellationToken cancellationToken) =>
+        _cache.GetOrSetAsync(
+            $"{TenantCacheFamily.DataOverview}:extent",
+            () => ReadDataExtentAsync(cancellationToken),
+            DataExtentLifetime,
+            cancellationToken
+        );
+
+    private async Task<DataExtent> ReadDataExtentAsync(CancellationToken cancellationToken)
+    {
+        await using var context = await _factory.CreateAsync(cancellationToken);
+
+        // Run all queries sequentially — DbContext is not thread-safe
+        long? globalMin = null;
+        long? globalMax = null;
+        var allDataSources = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var table in DataOverviewTables.All)
+        {
+            var (min, max) = await GetMinMaxTimestamp(
+                table.Timestamps(context),
+                cancellationToken
+            );
+            if (min.HasValue && (!globalMin.HasValue || min.Value < globalMin.Value))
+                globalMin = min.Value;
+            if (max.HasValue && (!globalMax.HasValue || max.Value > globalMax.Value))
+                globalMax = max.Value;
+
+            if (table.Sources(context) is not { } sources)
+                continue;
+
+            foreach (var ds in await GetDistinctDataSources(sources, cancellationToken))
+                allDataSources.Add(ds);
+        }
+
+        return new DataExtent
+        {
+            MinMills = globalMin,
+            MaxMills = globalMax,
+            DataSources = allDataSources.OrderBy(s => s, StringComparer.OrdinalIgnoreCase).ToArray(),
+        };
+    }
+
+    private static readonly TimeSpan DataExtentLifetime = TimeSpan.FromMinutes(10);
+
+    /// <summary>What <see cref="GetDataExtentAsync"/> reads; cached as a whole.</summary>
+    private sealed class DataExtent
+    {
+        public long? MinMills { get; init; }
+        public long? MaxMills { get; init; }
+        public string[] DataSources { get; init; } = [];
     }
 
     public async Task<YearSummaryResponse> GetYearSummaryAsync(

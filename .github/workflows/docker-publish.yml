@@ -79,6 +79,12 @@ jobs:
         with:
           targets: aarch64-unknown-linux-gnu
 
+      # crates/rust-toolchain.toml pins the toolchain cargo runs there, and the target above went to
+      # stable, so the pinned one needs it too.
+      - name: Add the aarch64 target to the pinned toolchain
+        working-directory: crates
+        run: rustup target add aarch64-unknown-linux-gnu
+
       - name: Install aarch64 cross-linker
         run: sudo apt-get update && sudo apt-get install -y gcc-aarch64-linux-gnu
 
@@ -182,6 +188,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
+        with:
+          submodules: true
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
@@ -262,7 +270,7 @@ jobs:
             exit 1
           fi
 
-      # The web image bundles @nocturne/watercolour, whose wasm is built from crates/.
+      # The web image bundles water-ui, whose wasm is built from the src/Web/vendor/water-ui submodule.
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
         with:
@@ -274,8 +282,8 @@ jobs:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
-            crates/target
-          key: cargo-wasm-${{ runner.os }}-${{ hashFiles('crates/Cargo.lock', 'crates/**/*.rs', 'crates/**/Cargo.toml') }}
+            src/Web/vendor/water-ui/target
+          key: cargo-wasm-${{ runner.os }}-${{ hashFiles('src/Web/vendor/water-ui/Cargo.lock', 'src/Web/vendor/water-ui/crates/**/*.rs', 'src/Web/vendor/water-ui/crates/**/Cargo.toml') }}
 
       - name: Install wasm-bindgen-cli
         uses: taiki-e/install-action@v2
@@ -287,7 +295,7 @@ jobs:
 
       - name: Build watercolour wasm
         working-directory: src/Web
-        run: pnpm --filter @nocturne/watercolour build:wasm
+        run: pnpm --filter water-ui build:wasm
 
       - name: Build and push Nocturne.Web container
         run: |

@@ -6,7 +6,7 @@
   import KeyRound from "@lucide/svelte/icons/key-round";
   import Globe from "@lucide/svelte/icons/globe";
   import ArrowLeft from "@lucide/svelte/icons/arrow-left";
-  import { Artwork } from "@nocturne/watercolour";
+  import { Artwork } from "water-ui";
   import { fingerprintArtwork } from "$lib/watercolour-icons";
   // Quote the sign-in controls by name — this is the page a locked-out person
   // reaches, so the names have to match what they're looking at.

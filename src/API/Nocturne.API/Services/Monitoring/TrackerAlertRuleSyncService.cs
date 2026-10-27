@@ -109,7 +109,7 @@ public sealed class TrackerAlertRuleSyncService : ITrackerAlertRuleSyncService
             .ToDictionaryAsync(r => r.Id, ct);
         if (managedRules.Count == 0
             && definition.NotificationThresholds.Count == 0
-            && definition is not { Category: TrackerCategory.Reservoir, LowReservoirUnits: not null })
+            && !(definition.LowReservoirUnits is not null && TrackerCoverage.HoldsInsulin(definition)))
             return;
 
         var recipient = await InAppRecipientOfAsync(db, tenantId, definition, ct);
@@ -306,12 +306,13 @@ public sealed class TrackerAlertRuleSyncService : ITrackerAlertRuleSyncService
     }
 
     /// <summary>
-    /// Synthesises the single reservoir-level rule for a Reservoir-category definition
-    /// with <see cref="TrackerDefinitionEntity.LowReservoirUnits"/> set. The rule is
+    /// Synthesises the single reservoir-level rule for a definition that holds insulin
+    /// (<see cref="TrackerCoverage.HoldsInsulin(TrackerDefinitionEntity)"/>) with
+    /// <see cref="TrackerDefinitionEntity.LowReservoirUnits"/> set. The rule is
     /// identified within the definition's managed set by its Reservoir condition type
     /// (there is at most one), so edits adopt the existing rule and preserve user edits
-    /// exactly like the tracker_age rules. When the units are cleared — or the category
-    /// changes away from Reservoir — the rule is not marked kept, so the shared orphan
+    /// exactly like the tracker_age rules. When the units are cleared — or the definition
+    /// stops holding insulin — the rule is not marked kept, so the shared orphan
     /// pass removes it.
     /// </summary>
     private void SyncReservoirLevelRule(
@@ -324,7 +325,7 @@ public sealed class TrackerAlertRuleSyncService : ITrackerAlertRuleSyncService
         HashSet<Guid> keptRuleIds,
         List<Guid> changed)
     {
-        if (definition.Category != TrackerCategory.Reservoir || definition.LowReservoirUnits is not { } units)
+        if (!TrackerCoverage.HoldsInsulin(definition) || definition.LowReservoirUnits is not { } units)
             return;
 
         // Snake_case, the condition models' wire form (ReservoirCondition).

@@ -82,7 +82,7 @@ describe("PatientDeviceManager", () => {
 
   it("fills the whole device from a catalog name picked in the combobox", async () => {
     catalogCurrent = [
-      { id: "omnipod-dash", name: "Omnipod DASH", manufacturer: "Insulet", category: "InsulinPump", pump: { isPatch: true, siteDurationHours: 72 } },
+      { id: "omnipod-dash", name: "Omnipod DASH", manufacturer: "Insulet", category: "InsulinPump", pump: { isPatch: true, components: [] } },
       { id: "custom-pump", name: "Custom Pump", manufacturer: "Custom", category: "InsulinPump" },
       { id: "dexcom-g7", name: "Dexcom G7", manufacturer: "Dexcom", category: "CGM", cgm: { hasSeparateTransmitter: false } },
     ];

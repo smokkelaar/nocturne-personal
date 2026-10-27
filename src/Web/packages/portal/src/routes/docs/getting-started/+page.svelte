@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { ArtworkHero } from "@nocturne/watercolour";
+    import { ArtworkHero } from "water-ui";
     import Content from "../../../content/docs/getting-started.svx";
     import { Button } from "@nocturne/ui/ui/button";
     import ArrowRight from "@lucide/svelte/icons/arrow-right";

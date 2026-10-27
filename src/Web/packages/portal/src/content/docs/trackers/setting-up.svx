@@ -24,7 +24,8 @@ a row to edit one.
 | Field | What it does |
 |-------|--------------|
 | **Name** | What you call it: "CGM sensor", "Left site", "Endocrinologist". Shown on the dashboard pill and in notifications. |
-| **Category** | What kind of thing it is. This sets the icon and the reasons you can pick when you complete it, and **Reservoir** adds a [low insulin alert](#reservoir-trackers). |
+| **Category** | What kind of thing it is. This sets the icon and the reasons you can pick when you complete it. **Pod** is for a patch pump's pod, which is the site and the insulin in one. **Reservoir** and **Pod** add a [low insulin alert](#reservoir-trackers). |
+| **Replaced with this part** | Pump hardware only. What is new each time the tracker restarts: the infusion site, the insulin, the pump battery, or a combination. See [what a tracker replaces](#what-a-tracker-replaces). |
 | **Description** | Optional. For your own reference. |
 | **Tracker Mode** | **Duration** counts up from when you start it. Use it for anything you wear or use up. **Event** counts down to a date and time you set. Use it for appointments, refills and other booked things. |
 | **Expected Lifespan** | Duration trackers only. How long this thing is meant to last. Type `10d` for ten days, or `10x24` for ten lots of 24 hours. |
@@ -41,7 +42,8 @@ approved for.
 A duration tracker can restart by itself when your pump, loop or a connector
 reports a change. Under **Restart automatically on**, tick the events that mean
 this thing was changed: `Sensor Start` for a CGM sensor, `Site Change` or
-`Cannula Change` for an infusion site, `Pod Change` for a pod, and so on.
+`Cannula Change` for an infusion site, `Pod Change` and `Pod Activated` for a
+pod, and so on.
 
 <Screenshot id="tracker-triggers" />
 
@@ -54,6 +56,31 @@ Which events arrive depends on your devices and apps, so check a tracker
 restarts the first time you make a change. See
 [automatic restarts](/docs/trackers/everyday-use#automatic-restarts) for what
 happens when one does.
+
+## Stopping automatically
+
+Some events mean a thing came off with nothing in its place yet: `Sensor Stop`
+when a sensor session ends, `Pod Deactivated` when a pod is removed. Tick these
+under **Stop automatically on**. When one arrives, the running tracker is
+completed and no new one starts. The next restart event, such as
+`Pod Activated`, starts the next run.
+
+## What a tracker replaces
+
+Some pump parts replace more than one thing. A pod is the infusion site, the
+insulin and the battery together. Under **Replaced with this part**, tick what
+is new each time the tracker restarts. Choosing the **Pod** category ticks all
+three.
+
+Nocturne uses this to decide which legacy ages the tracker stands for. A pod
+tracker stands for the cannula, insulin and pump battery ages, so Nocturne does not
+also show those as separate pills. A tracker that replaces the insulin can have
+a [low insulin alert](#reservoir-trackers).
+
+When you add a pump under **Devices**, Nocturne knows its parts. For example,
+an Omnipod gets one pod tracker, and an Accu-Chek Solo gets an infusion site
+tracker and a reservoir tracker. Parts that last a long time, such as a pump
+base, are offered in setup but are not tracked unless you turn them on.
 
 ## Notification thresholds
 
@@ -139,7 +166,8 @@ reads them, you can leave it off.
 
 ## Reservoir trackers
 
-Choose the **Reservoir** category and two more fields appear:
+Choose the **Reservoir** or **Pod** category, or tick **Insulin** under
+**Replaced with this part**, and two more fields appear:
 
 - **Low reservoir alert (units)**: warn when the estimated insulin left in the
   pump drops below this many units.

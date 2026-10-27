@@ -7,6 +7,8 @@
   import { cn } from "$lib/utils";
   import { tryGetRealtimeStore } from "$lib/stores/realtime-store.svelte";
   import { goto } from "$app/navigation";
+  import { toast } from "svelte-sonner";
+  import { describeSubmitError, errorStatus } from "$lib/forms/submit-error";
   import { resolve } from "$app/paths";
   import {
     executeAction,
@@ -18,6 +20,7 @@
     NotificationUrgency,
     type InAppNotificationDto,
   } from "$lib/api/generated/nocturne-api-client";
+  import { EmptyState } from "$lib/components/shared";
   import NotificationItem from "./NotificationItem.svelte";
   import DndPanel from "$lib/components/alerts/DndPanel.svelte";
 
@@ -71,14 +74,15 @@
         : "secondary"
   );
 
-  // Handle action on a notification
+  // Every action the server runs from here archives the notification, so the tray
+  // drops it at once; the notificationArchived broadcast confirms it.
   async function handleAction(
     notification: InAppNotificationDto,
     actionId: string
   ) {
     isOpen = false;
+    if (!notification.id) return;
 
-    // Handle review action for meal match notifications
     if (
       notification.type === "meal_matching.suggested_match" &&
       actionId === "review"
@@ -95,47 +99,53 @@
       notification.type === "glucose.compression_low_review" &&
       actionId === "review"
     ) {
-      if (notification.id) {
-        realtimeStore?.markNotificationRead(notification.id);
-        markAsRead(notification.id).catch((err) =>
-          console.error("Failed to mark notification read:", err)
-        );
-      }
+      markRead(notification.id);
       goto(resolve("/reports/data-quality/compression-lows"));
       return;
     }
 
     if (notification.type === "data.rejected_uploads" && actionId === "review") {
-      if (notification.id) {
-        realtimeStore?.markNotificationRead(notification.id);
-        markAsRead(notification.id).catch((err) =>
-          console.error("Failed to mark notification read:", err)
-        );
-      }
+      markRead(notification.id);
       goto(resolve("/reports/data-quality/rejected-uploads"));
       return;
     }
 
+    const removal = realtimeStore?.removeNotification(notification.id);
     try {
-      await executeAction({
-        id: notification.id!,
-        actionId,
-      });
+      await executeAction({ id: notification.id, actionId });
+      removal?.settle();
     } catch (err) {
-      console.error("Failed to execute notification action:", err);
+      // A 404 means the notification is already gone, so putting it back would only
+      // offer the same failing action again.
+      if (errorStatus(err) === 404) removal?.settle();
+      else removal?.restore();
+      toast.error(describeSubmitError(err));
+    }
+  }
+
+  async function markRead(id: string) {
+    const restore = realtimeStore?.markNotificationsRead((n) => n.id === id);
+    try {
+      await markAsRead(id);
+    } catch (err) {
+      restore?.();
+      toast.error(describeSubmitError(err));
     }
   }
 
   async function handleMarkAllRead() {
-    realtimeStore?.markAllNotificationsRead();
+    const restore = realtimeStore?.markNotificationsRead();
     try {
       await markAllAsRead();
     } catch (err) {
-      console.error("Failed to mark all notifications read:", err);
+      restore?.();
+      toast.error(describeSubmitError(err));
     }
   }
 
+  // Accepting or dismissing the match archives its notification on the server.
   function handleReviewComplete() {
+    if (reviewNotification?.id) realtimeStore?.removeNotification(reviewNotification.id).settle();
     reviewNotification = null;
   }
 </script>
@@ -195,16 +205,20 @@
       <DndPanel onNavigate={() => (isOpen = false)} />
 
       {#if totalCount === 0}
-        <div class="flex flex-col items-center justify-center py-8 text-center">
-          <Bell class="h-8 w-8 text-muted-foreground/50 mb-2" />
-          <p class="text-sm text-muted-foreground">No active notifications</p>
-          <a
-            href={resolve("/settings/trackers")}
-            class="mt-2 text-xs text-primary hover:underline"
-          >
-            Configure trackers
-          </a>
-        </div>
+        <EmptyState
+          art="chat-bubble"
+          size="compact"
+          title="No active notifications"
+        >
+          {#snippet action()}
+            <a
+              href={resolve("/settings/trackers")}
+              class="text-xs text-primary hover:underline"
+            >
+              Configure trackers
+            </a>
+          {/snippet}
+        </EmptyState>
       {:else}
         <div class="max-h-[350px] overflow-y-auto">
           {#each sortedNotifications as notification (notification.id)}

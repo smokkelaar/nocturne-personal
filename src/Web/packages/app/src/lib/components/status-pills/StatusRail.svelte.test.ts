@@ -212,7 +212,7 @@ describe("StatusRail", () => {
     dashboardRail.hydrate({ hidden: [Cob, Basal, Iob, Loop] });
     render(CurrentBGDisplay);
 
-    await expect.element(page.getByText("123")).toBeInTheDocument();
+    await expect.element(page.getByTestId(DESKTOP)).toBeInTheDocument();
     expect(page.getByTestId(MOBILE).elements()).toHaveLength(0);
   });
 

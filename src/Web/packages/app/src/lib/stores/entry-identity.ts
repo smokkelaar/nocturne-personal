@@ -20,6 +20,21 @@ export function isSameEntry(a: Entry, b: Entry): boolean {
 }
 
 /**
+ * Whether a held entry is the one `doc` names: by `_id` when an entry in `known` holds it,
+ * else by {@link isSameEntry}. Two uploaders can report one reading under their own ids, so
+ * the reading stands in for the id only when no entry holds it; matching it first lets one
+ * uploader's update overwrite the other's row while its own row stays, which leaves two rows
+ * under one `_id`.
+ */
+export function namedEntry(known: readonly Entry[], doc: Entry): (entry: Entry) => boolean {
+  const id = doc._id;
+  if (typeof id === "string" && known.some((entry) => entry._id === id)) {
+    return (entry) => entry._id === id;
+  }
+  return (entry) => isSameEntry(entry, doc);
+}
+
+/**
  * The pending entries that match neither a known entry nor an earlier pending
  * one, by `_id` or by reading.
  */

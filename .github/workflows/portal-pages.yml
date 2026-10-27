@@ -37,6 +37,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
+        with:
+          submodules: true
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v5
@@ -67,10 +69,11 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             crates/target
+            src/Web/vendor/water-ui/target
           # Sources, not just the lockfile: actions/cache restores crates/target with mtimes
           # newer than the checkout, and cargo's path-package fingerprint is mtime-based, so a
           # lockfile-only key lets a source-only change reuse a stale build and never re-save it.
-          key: cargo-${{ runner.os }}-${{ hashFiles('crates/Cargo.lock', 'crates/**/*.rs', 'crates/**/Cargo.toml') }}
+          key: cargo-${{ runner.os }}-${{ hashFiles('crates/Cargo.lock', 'crates/**/*.rs', 'crates/**/Cargo.toml', 'src/Web/vendor/water-ui/Cargo.lock', 'src/Web/vendor/water-ui/crates/**/*.rs', 'src/Web/vendor/water-ui/crates/**/Cargo.toml') }}
 
       - name: Install wasm-bindgen-cli
         uses: taiki-e/install-action@v2
@@ -82,7 +85,7 @@ jobs:
 
       - name: Build watercolour wasm
         working-directory: src/Web
-        run: pnpm --filter @nocturne/watercolour build:wasm
+        run: pnpm --filter water-ui build:wasm
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
@@ -113,6 +116,7 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             crates/target
+            src/Web/vendor/water-ui/target
           # Sources, not just the lockfile: cargo's path-package fingerprint is mtime-based, and
           # a restored crates/target is newer than the checkout (see docker-publish.yml).
           key: cargo-wasm-${{ runner.os }}-${{ hashFiles('crates/Cargo.lock', 'crates/**/*.rs', 'crates/**/Cargo.toml') }}

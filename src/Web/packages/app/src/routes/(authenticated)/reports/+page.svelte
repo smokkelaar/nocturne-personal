@@ -12,6 +12,7 @@
   import Calendar from "@lucide/svelte/icons/calendar";
   import ChevronRight from "@lucide/svelte/icons/chevron-right";
   import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "$lib/components/ui/card";
+  import { EmptyState } from "$lib/components/shared";
   import { page } from "$app/state";
   import {
     reportsOverviewScopes,
@@ -62,7 +63,7 @@
 
   const isLoading = $derived(reportsResource.loading);
   const queryData = $derived(reportsResource.current);
-  const entries = $derived(queryData?.entries ?? []);
+  const readingCount = $derived(queryData?.readingCount ?? 0);
   const analysis = $derived(queryData?.analysis);
   const averagedStats = $derived(queryData?.averagedStats);
   const startDate = $derived(reportsResource.date.from);
@@ -139,7 +140,7 @@
         <p class="mt-1 text-muted-foreground tabular-nums">
           {formatShortDate(startDate)} – {formatShortDate(endDate, true)}
           {#if canLoadSummary}
-            · {formatNumber(entries.length)} readings
+            · {formatNumber(readingCount)} readings
           {/if}
         </p>
       </div>
@@ -242,15 +243,13 @@
           </CardContent>
         </Card>
       {:else if !isLoading}
-        <Card variant="dashed">
-          <CardContent class="text-center">
-            <h2 class="mb-2 text-lg font-semibold">No data in this range</h2>
-            <p class="mx-auto max-w-md text-muted-foreground">
-              There are not enough glucose readings between these dates to
-              summarize. Choose a longer date range.
-            </p>
-          </CardContent>
-        </Card>
+        <EmptyState
+          art="report-pages"
+          variant="dashed"
+          title="No data in this range"
+          headingLevel={2}
+          body="There are not enough glucose readings between these dates to summarize. Choose a longer date range."
+        />
       {/if}
     {/if}
 

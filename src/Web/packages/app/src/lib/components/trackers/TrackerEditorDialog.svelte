@@ -8,8 +8,8 @@
   import { DurationInput } from "$lib/components/ui/duration-input";
   import { TrackerNotificationEditor, type TrackerNotification } from "$lib/components/trackers";
   import EventTypeCombobox from "$lib/components/treatments/EventTypeCombobox.svelte";
-  import { Artwork } from "@nocturne/watercolour";
-  import { batteryArtwork, sensorArtwork } from "$lib/watercolour-icons";
+  import { Artwork } from "water-ui";
+  import { batteryArtwork } from "$lib/watercolour-icons";
   import * as trackersRemote from "$api/generated/trackers.generated.remote";
   import { tick } from "svelte";
   import {
@@ -17,6 +17,7 @@
     DashboardVisibility,
     TrackerMode,
     NotificationUrgency,
+    PumpCapability,
     type TrackerDefinitionDto,
   } from "$api";
 
@@ -41,6 +42,8 @@
     formStartEventType?: string | undefined;
     formCompletionEventType?: string | undefined;
     formTriggerEventTypes?: string[];
+    formEndEventTypes?: string[];
+    formCovers?: PumpCapability[];
     formTriggerNotesContains?: string;
     categoryLabels: Record<TrackerCategory, string>;
     loadData: () => Promise<void>;
@@ -64,6 +67,8 @@
     formStartEventType = $bindable(undefined),
     formCompletionEventType = $bindable(undefined),
     formTriggerEventTypes = $bindable([]),
+    formEndEventTypes = $bindable([]),
+    formCovers = $bindable([]),
     formTriggerNotesContains = $bindable(""),
     categoryLabels,
     loadData,
@@ -85,6 +90,65 @@
       ? [...formTriggerEventTypes, eventType]
       : formTriggerEventTypes.filter((t) => t !== eventType);
   }
+
+  const endEventTypesQuery = trackersRemote.getEndEventTypes();
+  const endEventTypes = $derived(endEventTypesQuery.current ?? []);
+
+  // Posted like the triggers, for the same reason.
+  const postedEnds = $derived(
+    formMode === TrackerMode.Duration && formEndEventTypes.length > 0
+      ? formEndEventTypes
+      : [""]
+  );
+
+  function toggleEnd(eventType: string, checked: boolean) {
+    formEndEventTypes = checked
+      ? [...formEndEventTypes, eventType]
+      : formEndEventTypes.filter((t) => t !== eventType);
+  }
+
+  const capabilityLabels: Record<PumpCapability, string> = {
+    [PumpCapability.Site]: "Infusion site",
+    [PumpCapability.Reservoir]: "Insulin",
+    [PumpCapability.Power]: "Pump battery",
+  };
+
+  const capabilities = Object.values(PumpCapability);
+
+  // Pump hardware only: a sensor, an appointment or a reminder replaces none of these.
+  const showsCovers = $derived(
+    formMode === TrackerMode.Duration &&
+      formCategory !== TrackerCategory.Sensor &&
+      formCategory !== TrackerCategory.Appointment &&
+      formCategory !== TrackerCategory.Reminder
+  );
+
+  // Posted like the triggers, for the same reason.
+  const postedCovers = $derived(
+    showsCovers && formCovers.length > 0 ? formCovers : [""]
+  );
+
+  // A pod tracker that states nothing covers what a pod provides, as the server reads it.
+  const holdsInsulin = $derived(
+    formCategory === TrackerCategory.Reservoir ||
+      (formCategory === TrackerCategory.Pod && formCovers.length === 0) ||
+      (showsCovers && formCovers.includes(PumpCapability.Reservoir))
+  );
+
+  function toggleCover(capability: PumpCapability, checked: boolean) {
+    formCovers = checked
+      ? [...formCovers, capability]
+      : formCovers.filter((c) => c !== capability);
+  }
+
+  // A pod is the site, the insulin and the battery together.
+  function changeCategory(category: string) {
+    if (category === TrackerCategory.Pod) formCovers = [...capabilities];
+  }
+
+  const followsEvents = $derived(
+    formTriggerEventTypes.length > 0 || formEndEventTypes.length > 0
+  );
 
   const createForm = $derived(createRemote.for("create"));
   const updateForm = $derived(updateRemote.for(editingDefinition?.id ?? ""));
@@ -118,11 +182,13 @@
         type="single"
         name="{prefix}category"
         bind:value={formCategory}
+        onValueChange={changeCategory}
       >
-        <Select.Trigger>{categoryLabels[formCategory]}</Select.Trigger>
+        <Select.Trigger data-testid="tracker-category-trigger">{categoryLabels[formCategory]}</Select.Trigger>
         <Select.Content>
           <Select.Item value={TrackerCategory.Sensor} label="Sensor" />
           <Select.Item value={TrackerCategory.Cannula} label="Cannula" />
+          <Select.Item value={TrackerCategory.Pod} label="Pod" />
           <Select.Item value={TrackerCategory.Battery} label="Battery" />
           <Select.Item value={TrackerCategory.Reservoir} label="Reservoir" />
           <Select.Item
@@ -151,8 +217,8 @@
         />
       {:else}
         <Artwork
-          icon={sensorArtwork}
-          palette="slate"
+          artwork="cgm-sensor"
+          palette="water"
           motion="auto"
           autoplay="once"
           class="size-56"
@@ -217,7 +283,36 @@
     </div>
   {/if}
 
-  {#if formCategory === TrackerCategory.Reservoir}
+  {#if showsCovers}
+    <div class="space-y-3" data-testid="tracker-covers">
+      <div>
+        <Label>Replaced with this part</Label>
+        <p class="text-xs text-muted-foreground">
+          Select what is new each time this tracker restarts. For a pod, select
+          all three.
+        </p>
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        {#each capabilities as capability (capability)}
+          <div class="flex items-center gap-2">
+            <Checkbox
+              id="covers-{capability}"
+              checked={formCovers.includes(capability)}
+              onCheckedChange={(checked) => toggleCover(capability, checked === true)}
+            />
+            <Label for="covers-{capability}" variant="option" class="cursor-pointer">
+              {capabilityLabels[capability]}
+            </Label>
+          </div>
+        {/each}
+      </div>
+    </div>
+  {/if}
+  {#each postedCovers as capability, i (i)}
+    <input type="hidden" name="{prefix}covers[]" value={capability} />
+  {/each}
+
+  {#if holdsInsulin}
     <div class="grid grid-cols-1 @lg:grid-cols-2 gap-4">
       <div class="space-y-2">
         <Label for="lowReservoirUnits">Low reservoir alert (units)</Label>
@@ -280,7 +375,7 @@
           tracker is completed and a new one starts at that moment.
         </p>
       </div>
-      <div class="grid grid-cols-2 gap-2">
+      <div class="grid grid-cols-1 gap-2 @sm:grid-cols-2">
         {#each triggerEventTypes as eventType (eventType)}
           <div class="flex items-center gap-2">
             <Checkbox
@@ -294,7 +389,30 @@
           </div>
         {/each}
       </div>
-      {#if formTriggerEventTypes.length > 0}
+    </div>
+    <div class="space-y-3" data-testid="tracker-ends">
+      <div>
+        <Label>Stop automatically on</Label>
+        <p class="text-xs text-muted-foreground">
+          When your pump, loop or a connector reports one of these, the running
+          tracker is completed. A new one does not start until a restart event.
+        </p>
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        {#each endEventTypes as eventType (eventType)}
+          <div class="flex items-center gap-2">
+            <Checkbox
+              id="end-{eventType}"
+              checked={formEndEventTypes.includes(eventType)}
+              onCheckedChange={(checked) => toggleEnd(eventType, checked === true)}
+            />
+            <Label for="end-{eventType}" variant="option" class="cursor-pointer">
+              {eventType}
+            </Label>
+          </div>
+        {/each}
+      </div>
+      {#if followsEvents}
         <div class="space-y-2">
           <Label for="triggerNotesContains" size="sm">
             Only when the event's notes contain (optional)
@@ -316,10 +434,13 @@
   {#each postedTriggers as eventType, i (i)}
     <input type="hidden" name="{prefix}triggerEventTypes[]" value={eventType} />
   {/each}
+  {#each postedEnds as eventType, i (i)}
+    <input type="hidden" name="{prefix}endEventTypes[]" value={eventType} />
+  {/each}
   <input
     type="hidden"
     name="{prefix}triggerNotesContains"
-    value={formTriggerEventTypes.length > 0 ? formTriggerNotesContains : ""}
+    value={followsEvents ? formTriggerNotesContains : ""}
   />
 
   <TrackerNotificationEditor
@@ -454,7 +575,7 @@
 
 <Dialog.Root bind:open>
   <Dialog.Content
-    class="@container max-w-2xl max-h-[90vh] overflow-y-auto"
+    class="@container max-h-[90vh] overflow-y-auto"
     data-testid="tracker-editor"
   >
     <Dialog.Header>

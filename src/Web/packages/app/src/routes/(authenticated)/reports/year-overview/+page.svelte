@@ -32,10 +32,8 @@
   import {
     glucoseScale,
     intensityScale,
-    metricRamp,
     scaleFill,
     GLUCOSE_LIMITS,
-    GLUCOSE_RAMP,
     type ColorBoundary,
     type ColorEnds,
     type ColorFocusRange,
@@ -187,8 +185,8 @@
     low: colorPreferences[scaleKeys.low],
     high: colorPreferences[scaleKeys.high],
   });
+  /** Personal: no palette presets; a saved palette is kept but no longer drawn. */
   const scaleLook = $derived<RampLook>({
-    palette: resolvePalette(colorPreferences[scaleKeys.palette]) ?? undefined,
     mirror: colorPreferences[scaleKeys.mirror] === true,
   });
   const scale = $derived(
@@ -212,12 +210,6 @@
           scaleLook,
           colorPreferences[scaleKeys.range]
         )
-  );
-  const themeColors = $derived(
-    (selectedMetric === "avgGlucose"
-      ? GLUCOSE_RAMP
-      : metricRamp(METRIC_CSS_VARS[selectedMetric])
-    ).map((stop) => stop.color)
   );
 
   /** Writes only the current shape, so keys from a retired one are dropped on the next save. */
@@ -274,16 +266,6 @@
       else delete next[scaleKeys.low];
       if (ends.high) next[scaleKeys.high] = ends.high;
       else delete next[scaleKeys.high];
-    });
-  }
-
-  /** A palette shows its own ends, so it clears the end colors chosen over the last one. */
-  function setScalePalette(palette: string[] | null) {
-    saveColorPreferences((next) => {
-      if (palette) next[scaleKeys.palette] = palette;
-      else delete next[scaleKeys.palette];
-      delete next[scaleKeys.low];
-      delete next[scaleKeys.high];
     });
   }
 
@@ -727,10 +709,7 @@
       onEndsChange={setScaleEnds}
       onDimChange={setDim}
       onReset={resetScale}
-      {themeColors}
-      palette={scaleLook.palette}
       mirror={scaleLook.mirror}
-      onPaletteChange={setScalePalette}
       onMirrorChange={setScaleMirror}
       {glucoseBands}
     />

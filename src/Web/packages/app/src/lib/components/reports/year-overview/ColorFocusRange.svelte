@@ -272,97 +272,93 @@
         {/each}
       </div>
 
-      <!-- Personal: the dimming window has its own slider, so it never moves the colors. -->
-      <Slider.Root
-        type="multiple"
-        min={scale.axis[0]}
-        max={scale.axis[1]}
-        step={sliderSteps}
-        autoSort={false}
-        thumbPositioning="exact"
-        bind:value={() => [...windowValues], moveWindow}
-        class="relative flex h-6 w-full touch-none select-none items-center"
-        aria-label={`${metricLabel} focus window`}
-        data-testid={glucose ? "glucose-focus-slider" : "focus-slider"}
-      >
-        {#snippet children({ thumbItems })}
-          <span class="relative h-1 w-full rounded-full bg-muted">
-            <span
-              class="absolute inset-y-0 left-(--from) right-(--to) rounded-full bg-muted-foreground/60"
-              style:--from="{percent(scale.window[0])}%"
-              style:--to="{100 - percent(scale.window[1])}%"
-            ></span>
-          </span>
-          {#each thumbItems as thumb (thumb.index)}
-            <Slider.Thumb
-              index={thumb.index}
-              aria-label={`${metricLabel} focus ${thumb.index === 0 ? "minimum" : "maximum"}`}
-              aria-valuetext={`${formatted(thumb.value)} ${unitLabel}`}
-              class="relative z-10 block h-5 w-2.5 cursor-ew-resize rounded-sm border-2 border-foreground bg-background shadow-md before:absolute before:-inset-3 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring/50"
-            />
-          {/each}
-        {/snippet}
-      </Slider.Root>
+      <!-- Personal: the dimming window is its own slider laid over the color bar, so it never moves
+           the colors. Its handles stand taller than the color dots, which lie above them. -->
+      <div class="relative h-10 w-full">
+        <Slider.Root
+          type="multiple"
+          min={scale.axis[0]}
+          max={scale.axis[1]}
+          step={sliderSteps}
+          autoSort={false}
+          thumbPositioning="exact"
+          bind:value={() => [...windowValues], moveWindow}
+          class="pointer-events-none absolute inset-0 flex touch-none select-none items-center"
+          aria-label={`${metricLabel} focus window`}
+          data-testid={glucose ? "glucose-focus-slider" : "focus-slider"}
+        >
+          {#snippet children({ thumbItems })}
+            {#each thumbItems as thumb (thumb.index)}
+              <Slider.Thumb
+                index={thumb.index}
+                aria-label={`${metricLabel} focus ${thumb.index === 0 ? "minimum" : "maximum"}`}
+                aria-valuetext={`${formatted(thumb.value)} ${unitLabel}`}
+                class="pointer-events-auto relative z-10 block h-9 w-2.5 cursor-ew-resize rounded-sm border-2 border-foreground bg-background shadow-md before:absolute before:inset-y-0 before:-inset-x-2 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring/50"
+              />
+            {/each}
+          {/snippet}
+        </Slider.Root>
 
-      <Slider.Root
-        type="multiple"
-        min={scale.axis[0]}
-        max={scale.axis[1]}
-        step={sliderSteps}
-        autoSort={false}
-        thumbPositioning="exact"
-        bind:value={() => [...colorValues], moveColors}
-        class="relative flex h-9 w-full touch-none select-none items-center"
-        aria-label={`${metricLabel} color scale`}
-      >
-        {#snippet children({ thumbItems })}
-          <span
-            class="relative h-3.5 w-full overflow-hidden rounded-sm bg-(image:--scale-gradient)"
-            style:--scale-gradient={gradient}
-            role="img"
-            aria-label={`${metricLabel} color scale from ${formatted(scale.axis[0])} to ${formatted(scale.axis[1])} ${unitLabel}`}
-            data-testid={glucose ? "glucose-color-track" : "color-focus-track"}
-          >
-            {#if dimLeft > 0}
-              <span
-                class="pointer-events-none absolute inset-y-0 left-0 w-(--edge) bg-background opacity-(--dim)"
-                style:--edge="{dimLeft}%"
-                style:--dim={scale.dim / 100}
-              ></span>
-            {/if}
-            {#if dimRight < 100}
-              <span
-                class="pointer-events-none absolute inset-y-0 right-0 left-(--edge) bg-background opacity-(--dim)"
-                style:--edge="{dimRight}%"
-                style:--dim={scale.dim / 100}
-              ></span>
-            {/if}
-          </span>
-          {#each thumbItems as thumb (thumb.index)}
-            {#if thumb.index < 2}
-              <!-- Personal: the outer dots hold the end colors and set where the ramp starts and ends. -->
-              {@const end = thumb.index === 0 ? "low" : "high"}
-              <Slider.Thumb
-                index={thumb.index}
-                aria-label={end === "low" ? `${metricLabel} low color position` : `${metricLabel} high color position`}
-                aria-valuetext={`${formatted(thumb.value)} ${unitLabel}`}
-                class="relative z-10 block size-5 cursor-ew-resize rounded-full border-2 border-foreground bg-(--pin) shadow-md before:absolute before:-inset-3 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring/50"
-                style="--pin: {end === 'low' ? lowColor : highColor}"
-                data-testid={`color-range-${end}-handle`}
-              />
-            {:else}
-              {@const boundary = scale.boundaries[thumb.index - 2]}
-              <Slider.Thumb
-                index={thumb.index}
-                aria-label={`${metricLabel} color boundary ${thumb.index - 1}`}
-                aria-valuetext={`${formatted(thumb.value)} ${unitLabel}`}
-                class="relative z-20 block size-4 cursor-pointer rounded-full border-2 border-foreground bg-(--pin) shadow-sm before:absolute before:-inset-3 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring/50"
-                style="--pin: {rampColor(scale.ramp, boundary.position)}"
-              />
-            {/if}
-          {/each}
-        {/snippet}
-      </Slider.Root>
+        <Slider.Root
+          type="multiple"
+          min={scale.axis[0]}
+          max={scale.axis[1]}
+          step={sliderSteps}
+          autoSort={false}
+          thumbPositioning="exact"
+          bind:value={() => [...colorValues], moveColors}
+          class="relative flex h-10 w-full touch-none select-none items-center"
+          aria-label={`${metricLabel} color scale`}
+        >
+          {#snippet children({ thumbItems })}
+            <span
+              class="relative h-3.5 w-full overflow-hidden rounded-sm bg-(image:--scale-gradient)"
+              style:--scale-gradient={gradient}
+              role="img"
+              aria-label={`${metricLabel} color scale from ${formatted(scale.axis[0])} to ${formatted(scale.axis[1])} ${unitLabel}`}
+              data-testid={glucose ? "glucose-color-track" : "color-focus-track"}
+            >
+              {#if dimLeft > 0}
+                <span
+                  class="pointer-events-none absolute inset-y-0 left-0 w-(--edge) bg-background opacity-(--dim)"
+                  style:--edge="{dimLeft}%"
+                  style:--dim={scale.dim / 100}
+                ></span>
+              {/if}
+              {#if dimRight < 100}
+                <span
+                  class="pointer-events-none absolute inset-y-0 right-0 left-(--edge) bg-background opacity-(--dim)"
+                  style:--edge="{dimRight}%"
+                  style:--dim={scale.dim / 100}
+                ></span>
+              {/if}
+            </span>
+            {#each thumbItems as thumb (thumb.index)}
+              {#if thumb.index < 2}
+                <!-- Personal: the outer dots hold the end colors and set where the ramp starts and ends. -->
+                {@const end = thumb.index === 0 ? "low" : "high"}
+                <Slider.Thumb
+                  index={thumb.index}
+                  aria-label={end === "low" ? `${metricLabel} low color position` : `${metricLabel} high color position`}
+                  aria-valuetext={`${formatted(thumb.value)} ${unitLabel}`}
+                  class="relative z-20 block size-5 cursor-ew-resize rounded-full border-2 border-foreground bg-(--pin) shadow-md before:absolute before:inset-y-0 before:-inset-x-3 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring/50"
+                  style="--pin: {end === 'low' ? lowColor : highColor}"
+                  data-testid={`color-range-${end}-handle`}
+                />
+              {:else}
+                {@const boundary = scale.boundaries[thumb.index - 2]}
+                <Slider.Thumb
+                  index={thumb.index}
+                  aria-label={`${metricLabel} color boundary ${thumb.index - 1}`}
+                  aria-valuetext={`${formatted(thumb.value)} ${unitLabel}`}
+                  class="relative z-30 block size-4 cursor-pointer rounded-full border-2 border-foreground bg-(--pin) shadow-sm before:absolute before:inset-y-0 before:-inset-x-3 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring/50"
+                  style="--pin: {rampColor(scale.ramp, boundary.position)}"
+                />
+              {/if}
+            {/each}
+          {/snippet}
+        </Slider.Root>
+      </div>
 
       <div class="flex items-center justify-between gap-2 tabular-nums">
         <span class="flex items-center gap-1.5">

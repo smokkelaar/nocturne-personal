@@ -211,6 +211,25 @@ describe("chosen colors", () => {
     ]);
   });
 
+  it("blends straight between the ends and the colored boundaries, dropping the theme stops between", () => {
+    const ramp = paintRamp(
+      GLUCOSE_RAMP,
+      { low: "#000080", high: "#ffff00" },
+      [
+        { value: 100, position: 0.3, color: "#00ff00" },
+        { value: 150, position: 0.45 },
+        { value: 250, position: 0.7, color: "#ff0000" },
+      ],
+      [40, 350]
+    );
+    expect(ramp).toEqual([
+      { position: 0, color: "#000080" },
+      { position: 0.3, color: "#00ff00" },
+      { position: 0.7, color: "#ff0000" },
+      { position: 1, color: "#ffff00" },
+    ]);
+  });
+
   it("leaves the theme ramp untouched without chosen colors", () => {
     expect(paintRamp(GLUCOSE_RAMP, {}, [{ value: 100, position: 0.3 }], [40, 350])).toBe(GLUCOSE_RAMP);
   });

@@ -43133,7 +43133,7 @@ msgid "Changing a patient detail does not rewrite device measurements. Use the c
 msgstr ""
 
 #: src/lib/help/settings.svelte.ts
-msgid "Open and close help with the book next to Nocturne, the close button, or Escape. Your original page and inputs stay in place. Navigation drawer and Replace page use the existing menu for help. Right drawer uses a panel. Side by side keeps the page usable on wide screens. Hidden help can always be enabled here. Documentation appearance is saved in this browser."
+msgid "Open help with the book next to Nocturne, or press I, D or H when you are not typing in a field. Close it with the book, the close button, or Escape. Your original page and inputs stay in place. Navigation drawer and Replace page use the existing menu for help. Right drawer uses a panel. Side by side keeps the page usable on wide screens. Hidden help can always be enabled here. Documentation appearance is saved in this browser."
 msgstr ""
 
 #: src/lib/help/settings.svelte.ts
@@ -43429,7 +43429,7 @@ msgid "The selected tenant, saved display preferences and records received from 
 msgstr ""
 
 #: src/lib/help/workflows.svelte.ts
-msgid "Open help with the book beside Nocturne. Close it with the close button or Escape to return to your original page and inputs. Appearance controls units, theme, language and help display."
+msgid "Open help with the book beside Nocturne, or press I, D or H when you are not typing in a field. Close it with the close button or Escape to return to your original page and inputs. Appearance controls units, theme, language and help display."
 msgstr ""
 
 #: src/lib/help/workflows.svelte.ts

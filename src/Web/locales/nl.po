@@ -2103,7 +2103,7 @@ msgstr ""
 #: src/lib/components/alerts/AlertHistoryCard.svelte
 #: src/routes/(authenticated)/alerts/history/+page.svelte
 msgid "Next"
-msgstr ""
+msgstr "Volgende"
 
 #~ msgid "Low Glucose"
 #~ msgstr ""
@@ -2543,7 +2543,7 @@ msgstr ""
 #: src/lib/coach-marks/copy.svelte.ts
 #: src/lib/components/auth/LoginForm.svelte
 msgid "Back"
-msgstr ""
+msgstr "Terug"
 
 #: src/lib/components/auth/LoginForm.svelte
 msgid "Recovery code"
@@ -3959,7 +3959,7 @@ msgstr ""
 #: src/routes/(unauthenticated)/setup/SetupWizard.svelte
 #: src/routes/(unauthenticated)/setup/SetupWizard.svelte
 msgid "Done"
-msgstr ""
+msgstr "Klaar"
 
 #~ msgid "Cancel Job"
 #~ msgstr ""
@@ -4233,7 +4233,7 @@ msgstr "Delen en privacy"
 #: src/lib/components/meals/MealSuggestionRow.svelte
 #: src/routes/(authenticated)/settings/admin/tenants/+page.svelte
 msgid "Dismiss"
-msgstr ""
+msgstr "Sluiten"
 
 #: src/lib/components/dashboard/PredictionSettings.svelte
 msgid "Predictions unavailable"
@@ -8900,7 +8900,7 @@ msgstr ""
 #: src/routes/(authenticated)/reports/sleep/+page.svelte
 #: src/routes/(authenticated)/reports/treatments/+page.svelte
 msgid "{0} of {1}"
-msgstr ""
+msgstr "{0} van {1}"
 
 #: src/routes/(authenticated)/food/+page.svelte
 msgid "Loading food database..."
@@ -27105,55 +27105,55 @@ msgstr ""
 
 #: src/lib/coach-marks/copy.svelte.ts
 msgid "Your glucose, live"
-msgstr ""
+msgstr "Je glucose, live"
 
 #: src/lib/coach-marks/copy.svelte.ts
 msgid "This updates in real-time as new readings arrive from your CGM."
-msgstr ""
+msgstr "Deze waarde verandert direct als er nieuwe metingen van je CGM binnenkomen."
 
 #: src/lib/coach-marks/copy.svelte.ts
 msgid "Customisable widgets"
-msgstr ""
+msgstr "Widgets naar keuze"
 
 #: src/lib/coach-marks/copy.svelte.ts
 msgid "Reorder or swap these in Settings → Appearance to show the stats you care about."
-msgstr ""
+msgstr "Verander de volgorde of kies andere widgets in Settings → Weergave, zodat je de cijfers ziet die voor jou belangrijk zijn."
 
 #: src/lib/coach-marks/copy.svelte.ts
 msgid "Interactive chart"
-msgstr ""
+msgstr "Interactieve grafiek"
 
 #~ msgid "Drag to pan, pinch or scroll to zoom. Tap any point to see the exact reading and time."
 #~ msgstr ""
 
 #: src/lib/coach-marks/copy.svelte.ts
 msgid "View modes"
-msgstr ""
+msgstr "Weergaven"
 
 #~ msgid "Switch between Time in Range and Profile views to see different patterns."
 #~ msgstr ""
 
 #: src/lib/coach-marks/copy.svelte.ts
 msgid "Tracker events"
-msgstr ""
+msgstr "Trackergebeurtenissen"
 
 #~ msgid "Tracker events appear on your calendar — coloured by urgency."
 #~ msgstr ""
 
 #: src/lib/coach-marks/copy.svelte.ts
 msgid "Smart matching"
-msgstr ""
+msgstr "Slim koppelen"
 
 #~ msgid "Nocturne suggests food matches based on your history — review them here."
 #~ msgstr ""
 
 #: src/lib/coach-marks/copy.svelte.ts
 msgid "Widget order"
-msgstr ""
+msgstr "Volgorde van widgets"
 
 #: src/lib/coach-marks/copy.svelte.ts
 msgid "Drag to reorder your dashboard widgets."
-msgstr ""
+msgstr "Sleep om de volgorde van je dashboardwidgets te veranderen."
 
 #~ msgid "Start with Executive Summary"
 #~ msgstr ""
@@ -27214,26 +27214,26 @@ msgstr ""
 
 #: src/lib/coach-marks/copy.svelte.ts
 msgid "Pages and filters"
-msgstr ""
+msgstr "Pagina's en filters"
 
 #~ msgid "Select a page name to open that page. Select Filters (the funnel icon) at the top of the report to choose the data that the report uses. All the Loop Analysis pages use the same filters."
 #~ msgstr ""
 
 #: src/lib/coach-marks/copy.svelte.ts
 msgid "Daily totals"
-msgstr ""
+msgstr "Dagtotalen"
 
 #: src/lib/coach-marks/copy.svelte.ts
 msgid "These figures show the mean insulin for one day in the range. They show basal, automatic boluses, manual boluses and the net loop correction."
-msgstr ""
+msgstr "Deze cijfers tonen de gemiddelde insuline voor één dag in de periode. Ze tonen basaal, automatische bolussen, handmatige bolussen en de netto loopcorrectie."
 
 #: src/lib/coach-marks/copy.svelte.ts
 msgid "Your usual day"
-msgstr ""
+msgstr "Je gewone dag"
 
 #: src/lib/coach-marks/copy.svelte.ts
 msgid "Each chart shows all the days in the range on one 24-hour axis. The line is the median. The bands show the spread of the days. Move the pointer along a chart to see the values at a time."
-msgstr ""
+msgstr "Elke grafiek toont alle dagen in de periode op één as van 24 uur. De lijn is de mediaan. De banden tonen de spreiding van de dagen. Beweeg de aanwijzer over een grafiek om de waarden op een tijdstip te zien."
 
 #: src/lib/coach-marks/copy.svelte.ts
 #: src/lib/components/reports/loop-analysis/DailyProfileBody.svelte
@@ -27244,15 +27244,15 @@ msgstr ""
 #: src/lib/components/reports/loop-analysis/SlotDays.svelte
 #: src/lib/help/reports.svelte.ts
 msgid "Net loop correction"
-msgstr ""
+msgstr "Netto loopcorrectie"
 
 #: src/lib/coach-marks/copy.svelte.ts
 msgid "This chart shows the insulin that the loop added to your scheduled basal or removed from it. It includes temp basals and automatic boluses. Use the switches below the chart to show manual temp basals, suspends and inferred delivery."
-msgstr ""
+msgstr "Deze grafiek toont de insuline die de loop aan je geplande basaal toevoegde of ervan afhaalde. Tijdelijke basalen en automatische bolussen tellen mee. Gebruik de schakelaars onder de grafiek om handmatige tijdelijke basalen, onderbrekingen en afgeleide afgifte te tonen."
 
 #: src/lib/coach-marks/copy.svelte.ts
 msgid "Days at a time of day"
-msgstr ""
+msgstr "Dagen op een tijdstip"
 
 #~ msgid "Select a time on a chart to see the days for that time. Select a day to open it in Day in Review. Faded areas have too few days to show a pattern."
 #~ msgstr ""
@@ -27260,15 +27260,15 @@ msgstr ""
 #: src/lib/coach-marks/copy.svelte.ts
 #: src/lib/components/reports/loop-analysis/EventCohortBuilder.svelte
 msgid "Events to align"
-msgstr ""
+msgstr "Gebeurtenissen om uit te lijnen"
 
 #: src/lib/coach-marks/copy.svelte.ts
 msgid "Select the type of event for each cohort, for example meals or correction boluses. You can compare a maximum of three cohorts. Isolated events only removes each event that has another meal, correction bolus or unannounced rise in its window."
-msgstr ""
+msgstr "Kies voor elke groep het soort gebeurtenis, bijvoorbeeld maaltijden of correctiebolussen. Je kunt maximaal drie groepen vergelijken. Isolated events only laat elke gebeurtenis weg met een andere maaltijd, correctiebolus of onaangekondigde stijging in het venster."
 
 #: src/lib/coach-marks/copy.svelte.ts
 msgid "Before and after each event"
-msgstr ""
+msgstr "Voor en na elke gebeurtenis"
 
 #~ msgid "The charts align all the events of a cohort at 0. The dashed line at 0 is the time of the event. Each colour is one cohort. The line is the median of its events."
 #~ msgstr ""
@@ -27276,15 +27276,15 @@ msgstr ""
 #: src/lib/coach-marks/copy.svelte.ts
 #: src/lib/components/reports/loop-analysis/EventResponseBody.svelte
 msgid "Results after each event"
-msgstr ""
+msgstr "Resultaten na elke gebeurtenis"
 
 #: src/lib/coach-marks/copy.svelte.ts
 msgid "This table shows the median results for each cohort after its events, for example the peak rise and the time to the peak."
-msgstr ""
+msgstr "Deze tabel toont de mediane resultaten van elke groep na de gebeurtenissen, bijvoorbeeld de hoogste stijging en de tijd tot de piek."
 
 #: src/lib/coach-marks/copy.svelte.ts
 msgid "All the events"
-msgstr ""
+msgstr "Alle gebeurtenissen"
 
 #~ msgid "This list shows each event in the cohorts. Select a column heading to sort the events. Select an event to open it in Day in Review."
 #~ msgstr ""
@@ -27292,47 +27292,47 @@ msgstr ""
 #: src/lib/coach-marks/copy.svelte.ts
 #: src/lib/components/reports/loop-analysis/PredictionAccuracyBody.svelte
 msgid "Error by horizon"
-msgstr ""
+msgstr "Fout per horizon"
 
 #: src/lib/coach-marks/copy.svelte.ts
 msgid "Each chart compares one prediction curve with the readings that followed it. The bold line is the bias. A positive bias means that the predictions were too high. If a horizon is marked Settings signal, only the bias at that horizon gives information about your settings."
-msgstr ""
+msgstr "Elke grafiek vergelijkt één voorspellingscurve met de metingen die erop volgden. De dikke lijn is de bias. Een positieve bias betekent dat de voorspellingen te hoog waren. Staat er bij een horizon Settings signal, dan zegt alleen de bias op die horizon iets over je instellingen."
 
 #: src/lib/coach-marks/copy.svelte.ts
 msgid "Bias by hour"
-msgstr ""
+msgstr "Bias per uur"
 
 #~ msgid "Each row is one hour of the day. Each column is one horizon. The colour of a cell shows if the predictions from that hour were too high or too low. If there is more than one curve, select a curve at the top of By hour and context."
 #~ msgstr ""
 
 #: src/lib/coach-marks/copy.svelte.ts
 msgid "Bias by context"
-msgstr ""
+msgstr "Bias per situatie"
 
 #: src/lib/coach-marks/copy.svelte.ts
 msgid "This table divides the predictions into groups by the events in the three hours before them, for example a meal. The bias does not include interrupted predictions."
-msgstr ""
+msgstr "Deze tabel verdeelt de voorspellingen in groepen naar de gebeurtenissen in de drie uur ervoor, bijvoorbeeld een maaltijd. Onderbroken voorspellingen tellen niet mee in de bias."
 
 #: src/lib/coach-marks/copy.svelte.ts
 msgid "How the loop operated"
-msgstr ""
+msgstr "Hoe de loop werkte"
 
 #: src/lib/coach-marks/copy.svelte.ts
 msgid "These figures show the percentage of time that the loop was closed and that the CGM and pump were active. They also show how the loop changed basal. They also show the limits that your settings put on the loop. When the data cannot give a figure, the tile shows Unknown and the reason."
-msgstr ""
+msgstr "Deze cijfers tonen welk deel van de tijd de loop gesloten was en de CGM en pomp actief waren. Ze tonen ook hoe de loop het basaal veranderde en welke grenzen je instellingen aan de loop stellen. Als de gegevens geen cijfer geven, toont de tegel Unknown met de reden."
 
 #: src/lib/coach-marks/copy.svelte.ts
 msgid "Each hour of the day"
-msgstr ""
+msgstr "Elk uur van de dag"
 
 #: src/lib/coach-marks/copy.svelte.ts
 msgid "Each chart shows a value for each hour of the day. Use these charts to find the hours when the loop stops or limits insulin. Select an hour to show only the gaps that started in that hour."
-msgstr ""
+msgstr "Elke grafiek toont een waarde voor elk uur van de dag. Gebruik deze grafieken om de uren te vinden waarin de loop insuline stopt of beperkt. Kies een uur om alleen de onderbrekingen te tonen die in dat uur begonnen."
 
 #: src/lib/coach-marks/copy.svelte.ts
 #: src/lib/help/reports.svelte.ts
 msgid "Gaps"
-msgstr ""
+msgstr "Onderbrekingen"
 
 #~ msgid "This list shows the gaps in the loop, with the longest gap first. Select a gap to open it in Day in Review."
 #~ msgstr ""
@@ -27340,27 +27340,27 @@ msgstr ""
 #: src/lib/coach-marks/copy.svelte.ts
 #: src/lib/components/reports/loop-analysis/SettingsEvidenceBody.svelte
 msgid "Observations, not advice"
-msgstr ""
+msgstr "Waarnemingen, geen advies"
 
 #: src/lib/coach-marks/copy.svelte.ts
 msgid "This page compares your profile settings with observations from your data. The figures are observations. They are not settings to change. Speak to your diabetes care team before you change a setting."
-msgstr ""
+msgstr "Deze pagina vergelijkt je profielinstellingen met waarnemingen uit je gegevens. De cijfers zijn waarnemingen, geen instellingen om over te nemen. Overleg met je diabetesteam voordat je een instelling verandert."
 
 #: src/lib/coach-marks/copy.svelte.ts
 msgid "Profile and observed values"
-msgstr ""
+msgstr "Profiel en waargenomen waarden"
 
 #: src/lib/coach-marks/copy.svelte.ts
 msgid "The chart shows your profile setting as a line. The dots show the observed values for each block of the day. Compare the two values for each block."
-msgstr ""
+msgstr "De grafiek toont je profielinstelling als lijn. De stippen tonen de waargenomen waarden per blok van de dag. Vergelijk de twee waarden per blok."
 
 #: src/lib/coach-marks/copy.svelte.ts
 msgid "One row for each block"
-msgstr ""
+msgstr "Eén rij per blok"
 
 #: src/lib/coach-marks/copy.svelte.ts
 msgid "Each row shows the observed value, the profile value, the number of days or events and the confidence. Select a row to see the days or events for that figure."
-msgstr ""
+msgstr "Elke rij toont de waargenomen waarde, de profielwaarde, het aantal dagen of gebeurtenissen en de betrouwbaarheid. Kies een rij om de dagen of gebeurtenissen achter dat cijfer te zien."
 
 #~ msgid "Send the link"
 #~ msgstr ""
@@ -27370,11 +27370,11 @@ msgstr ""
 
 #: src/lib/coach-marks/copy.svelte.ts
 msgid "Show the tour for this page"
-msgstr ""
+msgstr "Toon de rondleiding voor deze pagina"
 
 #: src/lib/coach-marks/copy.svelte.ts
 msgid "Show tip"
-msgstr ""
+msgstr "Toon tip"
 
 #~ msgid "Loop Analysis"
 #~ msgstr ""
@@ -29963,11 +29963,11 @@ msgstr ""
 
 #: src/lib/coach-marks/copy.svelte.ts
 msgid "Tracker events appear on your calendar, colored by urgency."
-msgstr ""
+msgstr "Trackergebeurtenissen staan in je kalender, gekleurd naar urgentie."
 
 #: src/lib/coach-marks/copy.svelte.ts
 msgid "Nocturne suggests food matches based on your history. Review them here."
-msgstr ""
+msgstr "Nocturne stelt voedselkoppelingen voor op basis van je geschiedenis. Bekijk ze hier."
 
 #~ msgid "It combines your key metrics into a single page. Use it for clinic visits or to share with your endo."
 #~ msgstr ""
@@ -29980,11 +29980,11 @@ msgstr ""
 
 #: src/lib/coach-marks/copy.svelte.ts
 msgid "The charts align all the events of a cohort at 0. The dashed line at 0 is the time of the event. Each color is one cohort. The line is the median of its events."
-msgstr ""
+msgstr "De grafieken lijnen alle gebeurtenissen van een groep uit op 0. De stippellijn op 0 is het moment van de gebeurtenis. Elke kleur is één groep. De lijn is de mediaan van de gebeurtenissen."
 
 #: src/lib/coach-marks/copy.svelte.ts
 msgid "Each row is one hour of the day. Each column is one horizon. The color of a cell shows if the predictions from that hour were too high or too low. If there is more than one curve, select a curve at the top of By hour and context."
-msgstr ""
+msgstr "Elke rij is één uur van de dag. Elke kolom is één horizon. De kleur van een vak toont of de voorspellingen uit dat uur te hoog of te laag waren. Is er meer dan één curve, kies dan een curve bovenaan By hour and context."
 
 #~ msgid "The link expires in {0}. They must sign in or create an account to accept."
 #~ msgstr ""
@@ -33388,27 +33388,27 @@ msgstr ""
 
 #: src/lib/coach-marks/copy.svelte.ts
 msgid "Drag to pan, pinch or scroll to zoom. Select any point to see the exact reading and time."
-msgstr ""
+msgstr "Sleep om te verschuiven, knijp of scrol om te zoomen. Kies een punt om de precieze meting en tijd te zien."
 
 #: src/lib/coach-marks/copy.svelte.ts
 msgid "Switch between time in range and profile views to see different patterns."
-msgstr ""
+msgstr "Wissel tussen de weergave tijd in bereik en de profielweergave om andere patronen te zien."
 
 #: src/lib/coach-marks/copy.svelte.ts
 msgid "Select a page name to open that page. Select Filters (the funnel icon) at the top of the report to choose the data that the report uses. All the Loop analysis pages use the same filters."
-msgstr ""
+msgstr "Kies een paginanaam om die pagina te openen. Kies Filters (het trechtericoon) bovenaan het rapport om te bepalen welke gegevens het rapport gebruikt. Alle Loop analysis-pagina's gebruiken dezelfde filters."
 
 #: src/lib/coach-marks/copy.svelte.ts
 msgid "Select a time on a chart to see the days for that time. Select a day to open it in Day in review. Faded areas have too few days to show a pattern."
-msgstr ""
+msgstr "Kies een tijdstip in een grafiek om de dagen voor dat tijdstip te zien. Kies een dag om die te openen in Day in review. Vervaagde delen hebben te weinig dagen voor een patroon."
 
 #: src/lib/coach-marks/copy.svelte.ts
 msgid "This list shows each event in the cohorts. Select a column heading to sort the events. Select an event to open it in Day in review."
-msgstr ""
+msgstr "Deze lijst toont elke gebeurtenis in de groepen. Kies een kolomkop om de gebeurtenissen te sorteren. Kies een gebeurtenis om die te openen in Day in review."
 
 #: src/lib/coach-marks/copy.svelte.ts
 msgid "This list shows the gaps in the loop, with the longest gap first. Select a gap to open it in Day in review."
-msgstr ""
+msgstr "Deze lijst toont de onderbrekingen in de loop, de langste eerst. Kies een onderbreking om die te openen in Day in review."
 
 #: src/lib/constants/scope-labels.svelte.ts
 msgid "Device status"
@@ -37714,7 +37714,7 @@ msgstr ""
 #: src/lib/components/status-pills/StatusRail.svelte
 #: src/lib/help/dashboard-guide.svelte.ts
 msgid "Status pills"
-msgstr ""
+msgstr "Statuspillen"
 
 #: src/lib/components/settings/DashboardRailConfigurator.svelte
 msgid "The owner turned off tracker pills."
@@ -38076,31 +38076,31 @@ msgstr ""
 
 #: src/lib/coach-marks/copy.svelte.ts
 msgid "Tracker pill"
-msgstr ""
+msgstr "Trackerpil"
 
 #: src/lib/coach-marks/copy.svelte.ts
 msgid "The pill shows the time since the last change. Its color changes when the tracker reaches a notification threshold. To change the order of the pills, go to Settings > Appearance."
-msgstr ""
+msgstr "De pil toont de tijd sinds de laatste wissel. De kleur verandert als de tracker een meldingsdrempel bereikt. De volgorde van de pillen verander je in Settings > Weergave."
 
 #: src/lib/coach-marks/copy.svelte.ts
 msgid "Record a change"
-msgstr ""
+msgstr "Een wissel vastleggen"
 
 #: src/lib/coach-marks/copy.svelte.ts
 msgid "When you change the item, select its pill. Then select Complete tracker. To start a new tracker from the change, select the Start another option in the Complete dialog. To change the lifespan and the alerts, go to Settings > Notifications & trackers."
-msgstr ""
+msgstr "Kies de pil als je het onderdeel wisselt. Kies daarna Complete tracker. Wil je vanaf die wissel een nieuwe tracker starten, kies dan Start another in het venster Complete. De levensduur en de meldingen verander je in Settings > Notifications & trackers."
 
 #: src/lib/coach-marks/copy.svelte.ts
 msgid "Lifespan and thresholds"
-msgstr ""
+msgstr "Levensduur en drempels"
 
 #: src/lib/coach-marks/copy.svelte.ts
 msgid "Select Definitions. Then select the pencil icon of a tracker to edit it. The expected lifespan is the usual time between changes. Warning and Hazard alerts come from the notification thresholds."
-msgstr ""
+msgstr "Kies Definitions. Kies daarna het potloodicoon van een tracker om die te bewerken. De verwachte levensduur is de gewone tijd tussen twee wissels. Warning- en Hazard-meldingen komen van de meldingsdrempels."
 
 #: src/lib/coach-marks/copy.svelte.ts
 msgid "Use this list to change the order of the status pills or to hide a pill. If you hid a legacy age from the dashboard, that age shows under Hidden legacy ages. Select Show to show the age on the dashboard again."
-msgstr ""
+msgstr "Met deze lijst verander je de volgorde van de statuspillen of verberg je een pil. Heb je een oude leeftijdsweergave van het dashboard verborgen, dan staat die onder Hidden legacy ages. Kies Show om die weer op het dashboard te tonen."
 
 #. 0: relative
 #: src/lib/components/members/GuestLinksSection.svelte
@@ -43130,8 +43130,8 @@ msgid "Changing a patient detail does not rewrite device measurements. Use the c
 msgstr ""
 
 #: src/lib/help/settings.svelte.ts
-msgid "Open and close help with the book next to Nocturne, the close button, or Escape. Your original page and inputs stay in place. Navigation drawer and Replace page use the existing menu for help. Right drawer uses a panel. Side by side keeps the page usable on wide screens. Hidden help can always be enabled here. Documentation appearance is saved in this browser."
-msgstr ""
+msgid "Open help with the book next to Nocturne, or press I, D or H when you are not typing in a field. Close it with the book, the close button, or Escape. Your original page and inputs stay in place. Navigation drawer and Replace page use the existing menu for help. Right drawer uses a panel. Side by side keeps the page usable on wide screens. Hidden help can always be enabled here. Documentation appearance is saved in this browser."
+msgstr "Open de hulp met het boekje naast Nocturne, of druk op I, D of H als je niet in een veld typt. Sluit de hulp met het boekje, de sluitknop of Escape. Je oorspronkelijke pagina en invoer blijven staan. Navigation drawer en Replace page gebruiken het bestaande menu voor de hulp. Right drawer gebruikt een paneel. Side by side houdt de pagina bruikbaar op brede schermen. Verborgen hulp kun je hier altijd weer aanzetten. De weergave van de documentatie wordt in deze browser bewaard."
 
 #: src/lib/help/settings.svelte.ts
 msgid "Choose the default profile here and inspect target, basal, carb-ratio, and sensitivity schedules. Correct the source profile in the originating app/device when this page only offers a read-only schedule."
@@ -43426,8 +43426,8 @@ msgid "The selected tenant, saved display preferences and records received from 
 msgstr "De geselecteerde tenant, opgeslagen weergavevoorkeuren en records ontvangen van je geconfigureerde uploaders en connectoren."
 
 #: src/lib/help/workflows.svelte.ts
-msgid "Open help with the book beside Nocturne. Close it with the close button or Escape to return to your original page and inputs. Appearance controls units, theme, language and help display."
-msgstr "Open de hulp met het boekje naast Nocturne. Gebruik de sluitknop of Escape om terug te keren naar je oorspronkelijke pagina en invoer. Onder Weergave stel je eenheden, thema, taal en de weergave van de hulp in."
+msgid "Open help with the book beside Nocturne, or press I, D or H when you are not typing in a field. Close it with the close button or Escape to return to your original page and inputs. Appearance controls units, theme, language and help display."
+msgstr "Open de hulp met het boekje naast Nocturne, of druk op I, D of H als je niet in een veld typt. Gebruik de sluitknop of Escape om terug te keren naar je oorspronkelijke pagina en invoer. Onder Weergave stel je eenheden, thema, taal en de weergave van de hulp in."
 
 #: src/lib/help/workflows.svelte.ts
 msgid "After connecting a source, use Dashboard to check freshness and Reports to review the selected period. Therapy shows imported schedules. Sharing & Privacy manages access."

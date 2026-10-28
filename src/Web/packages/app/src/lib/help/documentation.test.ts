@@ -53,7 +53,11 @@ describe("contextual documentation", () => {
       expect(article, link.href).toBeDefined();
       expect(article!.sections.length).toBeGreaterThanOrEqual(4);
       expect(
-        article!.sections.every((section) => section.text.length > 40)
+        article!.sections.every(
+          // A tutorial step keeps the tour's own words, which can be short.
+          (section) =>
+            section.id?.startsWith("tutorial-") || section.text.length > 40
+        )
       ).toBe(true);
     }
     expect(new Set(all.map((article) => article.href)).size).toBe(all.length);

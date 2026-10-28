@@ -3,14 +3,16 @@ using Microsoft.EntityFrameworkCore;
 using Nocturne.Infrastructure.Data.Entities;
 using Nocturne.Core.Models;
 using Nocturne.Infrastructure.Data.Entities.V4;
+using Nocturne.Infrastructure.Data.Mappers;
 
 namespace Nocturne.Infrastructure.Data.Extensions;
 
 /// <summary>
 /// Soft-delete dedup helpers for the re-import guard. Blocking is decided from the
 /// <c>deleted_by_user</c> flag carried on each soft-deletable row (maintained by the
-/// audit interceptor and the bulk-delete helpers), so it is a single index seek with
-/// no audit-log scan or per-entity group-by. The rule itself is
+/// audit interceptor and the bulk-delete helpers), so it needs no audit-log scan or per-entity
+/// group-by. Its OR stays an index lookup only where each key has a live partial index and a
+/// <c>deleted_by_user</c> companion for the planner to combine. The rule itself is
 /// <see cref="SoftDeleteDedupExtensions.WhereBlocksRecreation{TEntity}"/>.
 /// </summary>
 public static class SoftDeleteDedupExtensions
@@ -36,6 +38,14 @@ public static class SoftDeleteDedupExtensions
     public static IQueryable<TEntity> WhereBlocksRecreation<TEntity>(this IQueryable<TEntity> source)
         where TEntity : class, ISoftDeletable
         => source.Where(e => e.DeletedAt == null || EF.Property<bool>(e, DeletedByUserProperty));
+
+    /// <summary>
+    /// <see cref="WhereBlocksRecreation{TEntity}"/> for state spans. A span whose category is not
+    /// current (<see cref="StateSpanMapper.WhereCategoryIsCurrent"/>) is retired and blocks nothing,
+    /// even when the user deleted it, so a re-upload of its <c>OriginalId</c> writes a new span.
+    /// </summary>
+    public static IQueryable<StateSpanEntity> WhereBlocksSpanRecreation(this IQueryable<StateSpanEntity> source)
+        => source.WhereCategoryIsCurrent().WhereBlocksRecreation();
 
     /// <summary>
     /// The rows of <typeparamref name="TEntity"/> in the context's tenant whose latest delete was the

@@ -3,7 +3,7 @@ title: Quick Start
 ---
 
 <script>
-  import Screenshot from '$lib/components/docs/Screenshot.svelte';
+  import Screenshot from '#lib/components/docs/Screenshot.svelte';
 </script>
 
 # Quick Start
@@ -47,7 +47,7 @@ to it, is offered as a tile you pick from:
 
 <Screenshot id="connect-data-source" />
 
-The same choices are there later, under **Settings > Connectors & Apps**.
+The same choices are there later, under **Site settings > Connectors & Apps**.
 
 Pick the one your readings come from, and Nocturne asks for whatever that
 service needs to sign in. For Dexcom that is the account you already use with

@@ -27,8 +27,9 @@ public class MyLifeConnectorService(
     IMyLifeSessionCache sessionCache,
     ITenantAccessor tenantAccessor,
     MyLifeSyncService syncService,
-    IConnectorPublisher? publisher = null
-) : BaseConnectorService<MyLifeConnectorConfiguration>(httpClient, serverResolver, logger, publisher)
+    IConnectorPublisher? publisher = null,
+    TimeProvider? timeProvider = null
+) : BaseConnectorService<MyLifeConnectorConfiguration>(httpClient, serverResolver, logger, publisher, timeProvider)
 {
 
     public override string ServiceName => "MyLife";

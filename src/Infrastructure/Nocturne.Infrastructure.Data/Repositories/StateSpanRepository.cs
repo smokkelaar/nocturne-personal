@@ -44,6 +44,12 @@ public class StateSpanRepository : IStateSpanRepository
         ActivityStateSpanMapper.ActivityCategories.Select(c => c.ToString()).ToList();
 
     /// <summary>
+    /// Every <see cref="StateSpanCategory"/> name outside <see cref="ActivityCategories"/>.
+    /// </summary>
+    private static readonly List<string> NonActivityCategories =
+        StateSpanMapper.CategoryNames.Except(ActivityCategories).ToList();
+
+    /// <summary>
     /// Open spans per non-exclusive category that <see cref="GetByCategories"/> returns from
     /// before its window.
     /// </summary>
@@ -392,7 +398,7 @@ public class StateSpanRepository : IStateSpanRepository
 
         return await db.StateSpans.IgnoreQueryFilters()
             .Where(s => s.TenantId == db.TenantId && originalIds.Contains(s.OriginalId))
-            .WhereBlocksRecreation()
+            .WhereBlocksSpanRecreation()
             .OrderByDescending(s => s.DeletedAt)
             .ToListAsync(cancellationToken);
     }
@@ -639,6 +645,7 @@ public class StateSpanRepository : IStateSpanRepository
         await using var db = await _contexts.CreateAsync(cancellationToken);
         var rowIds = ids.Select(id => Guid.TryParse(id, out var rowId) ? rowId : (Guid?)null).ToList();
         var deleted = await db.StateSpans.IgnoreQueryFilters().AsNoTracking()
+            .WhereCategoryIsCurrent()
             .Where(s => s.TenantId == db.TenantId
                         && s.DeletedAt != null
                         && ((s.OriginalId != null && ids.Contains(s.OriginalId)) || rowIds.Contains(s.Id)))
@@ -841,16 +848,8 @@ public class StateSpanRepository : IStateSpanRepository
         // Group results by category
         var result = categories.ToDictionary(c => c, c => new List<StateSpan>());
 
-        foreach (var entity in entities)
-        {
-            if (
-                Enum.TryParse<StateSpanCategory>(entity.Category, true, out var category)
-                && result.ContainsKey(category)
-            )
-            {
-                result[category].Add(StateSpanMapper.ToDomainModel(entity));
-            }
-        }
+        foreach (var span in entities.Select(StateSpanMapper.ToDomainModel))
+            result[span.Category].Add(span);
 
         return result;
     }
@@ -895,29 +894,39 @@ public class StateSpanRepository : IStateSpanRepository
     }
 
     /// <inheritdoc />
-    public async Task<DateTime?> GetLatestActivityTimestampAsync(
+    public Task<DateTime?> GetLatestActivityTimestampAsync(
         string source,
         CancellationToken cancellationToken = default
-    )
-    {
-        await using var db = await _contexts.CreateAsync(cancellationToken);
-        return await db.StateSpans
-            .AsNoTracking()
-            .Where(s => ActivityCategories.Contains(s.Category) && s.Source == source)
-            .MaxAsync(s => (DateTime?)s.StartTimestamp, cancellationToken);
-    }
+    ) => GetLatestStartAsync(source, ActivityCategories, cancellationToken);
 
     /// <inheritdoc />
-    public async Task<DateTime?> GetLatestNonActivityTimestampAsync(
+    public Task<DateTime?> GetLatestNonActivityTimestampAsync(
         string source,
         CancellationToken cancellationToken = default
+    ) => GetLatestStartAsync(source, NonActivityCategories, cancellationToken);
+
+    /// <summary>
+    /// One <c>max</c> probe per category, because an <c>IN</c> list cannot use the min/max index
+    /// transform on <c>(tenant_id, source, category, start_timestamp DESC)</c> and would walk every
+    /// span of the source. The categories are a closed set, so the greatest probe is the answer.
+    /// </summary>
+    private async Task<DateTime?> GetLatestStartAsync(
+        string source,
+        IReadOnlyList<string> categories,
+        CancellationToken cancellationToken
     )
     {
-        await using var db = await _contexts.CreateAsync(cancellationToken);
-        return await db.StateSpans
-            .AsNoTracking()
-            .Where(s => !ActivityCategories.Contains(s.Category) && s.Source == source)
-            .MaxAsync(s => (DateTime?)s.StartTimestamp, cancellationToken);
+        await using var ctx = await _contexts.CreateAsync(cancellationToken);
+        var arms = categories.Select((_, i) => $$"""
+            SELECT max(s.start_timestamp) AS v FROM state_spans s
+            WHERE s.tenant_id = {0} AND s.deleted_at IS NULL
+              AND s.source = {1} AND s.category = {{{i + 2}}}
+            """);
+        var sql = $"SELECT max(p.v) AS \"Value\" FROM ({string.Join(" UNION ALL ", arms)}) p";
+        object[] parameters = [ctx.TenantId, source, .. categories];
+        return await ctx.Database
+            .SqlQueryRaw<DateTime?>(sql, parameters)
+            .SingleAsync(cancellationToken);
     }
 
     /// <summary>

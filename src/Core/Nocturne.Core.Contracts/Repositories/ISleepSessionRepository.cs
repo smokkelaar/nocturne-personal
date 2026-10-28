@@ -55,6 +55,16 @@ public interface ISleepSessionRepository
         CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// The live session stored under the (<paramref name="source"/>, <paramref name="originalId"/>)
+    /// key <see cref="UpsertSessionAsync"/> deduplicates on.
+    /// </summary>
+    /// <returns>The <see cref="SleepSession"/> if found, or <c>null</c>.</returns>
+    Task<SleepSession?> GetSessionBySourceRecordAsync(
+        SleepSource source,
+        string originalId,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Creates or updates a sleep session, matched by its identifier or original ID.
     /// </summary>
     /// <param name="session">The <see cref="SleepSession"/> to upsert.</param>

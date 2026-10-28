@@ -82,6 +82,7 @@ public class SampleDataSeeder
     private readonly ICompressionLowDetectionService _compressionLowDetectionService;
     private readonly ICompressionLowService _compressionLowService;
     private readonly ICompressionLowRepository _compressionLowRepository;
+    private readonly TimeProvider _time;
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger<SampleDataSeeder> _logger;
 
@@ -122,6 +123,7 @@ public class SampleDataSeeder
         ICompressionLowDetectionService compressionLowDetectionService,
         ICompressionLowService compressionLowService,
         ICompressionLowRepository compressionLowRepository,
+        TimeProvider time,
         ILoggerFactory loggerFactory,
         ILogger<SampleDataSeeder> logger)
     {
@@ -141,6 +143,7 @@ public class SampleDataSeeder
         _compressionLowDetectionService = compressionLowDetectionService;
         _compressionLowService = compressionLowService;
         _compressionLowRepository = compressionLowRepository;
+        _time = time;
         _loggerFactory = loggerFactory;
         _logger = logger;
     }
@@ -190,19 +193,23 @@ public class SampleDataSeeder
                 $"Seed {tenant.Slug} from a scope of its own; see {nameof(SeedInTenantScopeAsync)}.");
 
         var config = ConfigurationFor(days);
-        // One end for every stream, so the loop and the pump mode spans agree on the quiet end
-        // (DemoLoopInterruptions.QuietBeforeEnd).
-        var seedEnd = DateTime.Now;
+        var clock = SeedingClock.Resolve(
+            await db.PatientRecords.AsNoTracking().Select(r => r.Timezone).FirstOrDefaultAsync(ct), _time);
+        // The generator reads wall-clock values as host-local until the generator takes a zone, so
+        // what it is given or must agree with is in the host frame; the seeder's own rows use the
+        // tenant frame. One end for every generated stream, so the loop and the pump mode spans
+        // agree on the quiet end (DemoLoopInterruptions.QuietBeforeEnd).
+        var seedEnd = clock.HostNow;
 
         // The episode tracker rides along with the glucose stream so alarm
         // history matches the lows/highs actually visible on the chart.
         var episodeTracker = new DemoAlertSeeds.GlucoseEpisodeTracker(DemoAlertSeeds.Defaults);
 
-        await SeedPatientProfileAsync(db, ct);
+        await SeedPatientProfileAsync(db, clock, ct);
 
         // Seed the therapy profile before glucose so scheduled-basal context
         // exists from the first record.
-        var profilesCreated = await SeedProfileAsync(db, config, ct);
+        var profilesCreated = await SeedProfileAsync(db, config, clock.UtcNow, ct);
 
         var entryCount = 0;
         var treatmentCount = 0;
@@ -304,13 +311,13 @@ public class SampleDataSeeder
             await FlushStatusesAsync();
             await _treatmentCache.InvalidateAsync(ct);
 
-            await StampTempBasalScheduledRatesAsync(db, dataSource, config.BasalRate, ct);
+            await StampTempBasalScheduledRatesAsync(db, clock, dataSource, config.BasalRate, ct);
         }
         else
         {
             // Replay the stored stream so seeded alarm history matches the
             // chart exactly.
-            var since = DateTime.UtcNow.AddDays(-days);
+            var since = clock.UtcNow.AddDays(-days);
             var stored = db.SensorGlucose
                 .AsNoTracking()
                 .Where(e => e.Timestamp >= since && e.DataSource == dataSource)
@@ -322,7 +329,7 @@ public class SampleDataSeeder
         }
         episodeTracker.Flush();
 
-        var localToday = seedEnd.Date;
+        var localToday = clock.HostToday;
 
         // Device changes as treatments: the decomposer turns them into
         // DeviceEvents, which drive the dashboard age pills (SAGE/CAGE/…).
@@ -343,8 +350,8 @@ public class SampleDataSeeder
         if (deviceTreatments.Count > 0)
             await _treatmentService.CreateTreatmentsAsync(deviceTreatments, ct);
 
-        var sleepCount = await SeedSleepAsync(localToday, days, dataSource, ct);
-        var (heartRateCount, stepCount) = await SeedActivityAsync(localToday, days, dataSource, ct);
+        var sleepCount = await SeedSleepAsync(localToday, clock.UtcNow, days, dataSource, ct);
+        var (heartRateCount, stepCount) = await SeedActivityAsync(localToday, clock.UtcNow, days, dataSource, ct);
         var (trackerDefinitions, trackerInstances) =
             await SeedTrackersAsync(db, deviceSchedule, ownerSubjectId, ct);
         var (alertRules, alertExcursions) =
@@ -353,15 +360,15 @@ public class SampleDataSeeder
             await SeedCompressionLowReviewsAsync(localToday, days, ct);
 
         var foodCount = await SeedFoodsAsync(db, mealCarbLinks, ownerSubjectId, ct);
-        var stateSpanCount = await SeedStateSpansAsync(db, localToday, seedEnd, days, dataSource, ct);
-        await SeedBodyWeightAsync(db, localToday, days, dataSource, ct);
-        await SeedTimezoneTimelineAsync(db, localToday, days, ct);
-        await SeedDndWindowAsync(db, localToday, ct);
+        var stateSpanCount = await SeedStateSpansAsync(db, clock, days, dataSource, ct);
+        await SeedBodyWeightAsync(db, clock, days, dataSource, ct);
+        await SeedTimezoneTimelineAsync(db, clock, days, ct);
+        await SeedDndWindowAsync(db, clock, ct);
         var clockFaces = await SeedClockFacesAsync(db, ownerSubjectId, ct);
         var notificationCount = await SeedNotificationsAsync(
             db,
             ownerSubjectId, tenant.TenantId, episodeTracker.Episodes, ct);
-        await SeedLabHbA1cAsync(db, localToday, dataSource, ct);
+        await SeedLabHbA1cAsync(db, clock, dataSource, ct);
 
         _logger.LogInformation(
             "Seeded tenant {Slug} ({Days} days): {Entries} entries, {Treatments} treatments, "
@@ -391,7 +398,8 @@ public class SampleDataSeeder
     /// (which decomposes it into TherapySettings plus the basal/carb-ratio/
     /// sensitivity/target schedules), unless the demo profile already exists.
     /// </summary>
-    private async Task<int> SeedProfileAsync(NocturneDbContext db, DemoModeConfiguration config, CancellationToken ct)
+    private async Task<int> SeedProfileAsync(
+        NocturneDbContext db, DemoModeConfiguration config, DateTime nowUtc, CancellationToken ct)
     {
         var exists = await db.TherapySettings
             .AnyAsync(t => t.ProfileName == DemoTherapyProfile.ProfileName, ct);
@@ -399,7 +407,7 @@ public class SampleDataSeeder
             return 0;
 
         await _profileWriteService.CreateProfilesAsync(
-            [DemoTherapyProfile.BuildProfile(config, DateTime.UtcNow)], ct);
+            [DemoTherapyProfile.BuildProfile(config, nowUtc)], ct);
         return 1;
     }
 
@@ -412,7 +420,7 @@ public class SampleDataSeeder
     /// the same machine); stored as UTC.
     /// </summary>
     private async Task<int> SeedSleepAsync(
-        DateTime localToday, int days, string sourceApp, CancellationToken ct)
+        DateTime localToday, DateTime nowUtc, int days, string sourceApp, CancellationToken ct)
     {
         var count = 0;
         for (var d = 1; d <= days; d++)
@@ -423,7 +431,7 @@ public class SampleDataSeeder
 
             // Seeding before ~08:00 local would otherwise write last night's
             // session with an EndTime still in the future.
-            if (session.EndTime > DateTime.UtcNow)
+            if (session.EndTime > nowUtc)
                 continue;
 
             await _sleepService.UpsertSessionAsync(session, ct);
@@ -439,9 +447,8 @@ public class SampleDataSeeder
     /// Deterministic sync identifiers make re-seeding update in place.
     /// </summary>
     private async Task<(int HeartRates, int Steps)> SeedActivityAsync(
-        DateTime localToday, int days, string dataSource, CancellationToken ct)
+        DateTime localToday, DateTime now, int days, string dataSource, CancellationToken ct)
     {
-        var now = DateTime.UtcNow;
         var heartRates = new List<HeartRate>();
         var stepCounts = new List<StepCount>();
 
@@ -762,6 +769,7 @@ public class SampleDataSeeder
     /// </summary>
     private async Task StampTempBasalScheduledRatesAsync(
         NocturneDbContext db,
+        SeedingClock clock,
         string dataSource, double baseRate, CancellationToken ct)
     {
         var scheduled = Nocturne.Core.Models.V4.TempBasalOrigin.Scheduled.ToString();
@@ -770,7 +778,7 @@ public class SampleDataSeeder
             .ToListAsync(ct);
         foreach (var temp in temps)
         {
-            var local = DateTime.SpecifyKind(temp.Timestamp, DateTimeKind.Utc).ToLocalTime();
+            var local = clock.UtcToHost(temp.Timestamp);
             temp.ScheduledRate = DemoTherapyProfile.ScheduledRateAt(local, baseRate);
         }
         await db.SaveChangesAsync(ct);
@@ -784,8 +792,9 @@ public class SampleDataSeeder
     /// </summary>
     private async Task<int> SeedStateSpansAsync(
         NocturneDbContext db,
-        DateTime localToday, DateTime seedEnd, int days, string dataSource, CancellationToken ct)
+        SeedingClock clock, int days, string dataSource, CancellationToken ct)
     {
+        var localToday = clock.HostToday;
         await db.StateSpans.PurgeAsync(s => s.Source == dataSource, ct);
         await db.ProfileActivations.PurgeAsync(a => a.DataSource == dataSource, ct);
 
@@ -793,14 +802,14 @@ public class SampleDataSeeder
         {
             Id = Guid.CreateVersion7(),
             TenantId = db.TenantId,
-            Timestamp = localToday.AddDays(-days).ToUniversalTime(),
+            Timestamp = clock.HostToUtc(localToday.AddDays(-days)),
             Phase = nameof(Nocturne.Core.Models.V4.ProfileActivationPhase.Requested),
             Origin = nameof(Nocturne.Core.Models.V4.ProfileActivationOrigin.User),
             BaseProfileName = DemoTherapyProfile.ProfileName,
             DataSource = dataSource,
         });
 
-        var spans = DemoLifestyleSeeds.BuildSpans(localToday, days, seedEnd);
+        var spans = DemoLifestyleSeeds.BuildSpans(localToday, days, clock.HostNow);
         foreach (var seed in spans)
         {
             db.StateSpans.Add(new StateSpanEntity
@@ -809,8 +818,8 @@ public class SampleDataSeeder
                 TenantId = db.TenantId,
                 Category = seed.Category.ToString(),
                 State = seed.State,
-                StartTimestamp = seed.StartLocal.ToUniversalTime(),
-                EndTimestamp = seed.EndLocal?.ToUniversalTime(),
+                StartTimestamp = clock.HostToUtc(seed.StartLocal),
+                EndTimestamp = seed.EndLocal is { } end ? clock.HostToUtc(end) : null,
                 Source = dataSource,
                 MetadataJson = seed.Metadata is null ? null : JsonSerializer.Serialize(seed.Metadata),
             });
@@ -820,6 +829,35 @@ public class SampleDataSeeder
         return spans.Count;
     }
 
+    internal sealed record DeviceSeed(
+        Nocturne.Core.Models.V4.DeviceCategory Category,
+        string Manufacturer,
+        string Model,
+        Nocturne.Core.Models.V4.AidAlgorithm? Aid,
+        string? Serial);
+
+    internal static readonly DeviceSeed[] DeviceRoster =
+    [
+        new(Nocturne.Core.Models.V4.DeviceCategory.CGM, "Dexcom", "G7", null, DemoCoverageSeeds.PrimaryCgmSerial),
+        new(Nocturne.Core.Models.V4.DeviceCategory.CGM, "Dexcom", "G6", null, DemoCoverageSeeds.ComparisonCgmSerial),
+        new(Nocturne.Core.Models.V4.DeviceCategory.InsulinPump, "Insulet", "Omnipod DASH",
+            Nocturne.Core.Models.V4.AidAlgorithm.Trio, null),
+        new(Nocturne.Core.Models.V4.DeviceCategory.GlucoseMeter, "Ascensia", "Contour Next One", null, null),
+    ];
+
+    internal static PatientDeviceEntity BuildDevice(DeviceSeed seed, Guid tenantId, DateOnly today) => new()
+    {
+        Id = Guid.CreateVersion7(),
+        TenantId = tenantId,
+        DeviceCategory = seed.Category.ToString(),
+        Manufacturer = seed.Manufacturer,
+        Model = seed.Model,
+        SerialNumber = seed.Serial,
+        AidAlgorithm = seed.Aid?.ToString(),
+        StartDate = today.AddMonths(-8),
+        IsCurrent = true,
+    };
+
     /// <summary>
     /// The patient record singleton, the device roster (CGM, pod, meter), and
     /// the current insulin — the /settings/patient page and device attribution
@@ -827,7 +865,7 @@ public class SampleDataSeeder
     /// creates an empty record through the API's get-or-create, and a re-seed
     /// must not overwrite the user's own edits.
     /// </summary>
-    private async Task SeedPatientProfileAsync(NocturneDbContext db, CancellationToken ct)
+    private async Task SeedPatientProfileAsync(NocturneDbContext db, SeedingClock clock, CancellationToken ct)
     {
         var record = await db.PatientRecords.FirstOrDefaultAsync(ct);
         if (record is null)
@@ -839,36 +877,16 @@ public class SampleDataSeeder
         record.DiabetesType ??= "type1";
         record.DiagnosisDate ??= new DateOnly(2014, 3, 12);
         record.DateOfBirth ??= new DateOnly(1992, 4, 17);
-        record.Timezone ??= DemoTherapyProfile.LocalIanaTimezone();
+        record.Timezone ??= clock.ZoneId;
 
-        var deviceSeeds = new (string Category, string Manufacturer, string Model, string? Aid, string? Serial)[]
-        {
-            ("cgm", "Dexcom", "G7", null, DemoCoverageSeeds.PrimaryCgmSerial),
-            ("cgm", "Dexcom", "G6", null, DemoCoverageSeeds.ComparisonCgmSerial),
-            ("pump", "Insulet", "Omnipod DASH", DemoDeviceStatusGenerator.DeviceName, null),
-            ("meter", "Ascensia", "Contour Next One", null, null),
-        };
-        foreach (var (category, manufacturer, model, aid, serial) in deviceSeeds)
+        foreach (var seed in DeviceRoster)
         {
             var existing = await db.PatientDevices
-                .FirstOrDefaultAsync(d => d.Manufacturer == manufacturer && d.Model == model, ct);
+                .FirstOrDefaultAsync(d => d.Manufacturer == seed.Manufacturer && d.Model == seed.Model, ct);
             if (existing is null)
-            {
-                db.PatientDevices.Add(new PatientDeviceEntity
-                {
-                    Id = Guid.CreateVersion7(),
-                    TenantId = db.TenantId,
-                    DeviceCategory = category,
-                    Manufacturer = manufacturer,
-                    Model = model,
-                    SerialNumber = serial,
-                    AidAlgorithm = aid,
-                    StartDate = DateOnly.FromDateTime(DateTime.Today.AddMonths(-8)),
-                    IsCurrent = true,
-                });
-            }
-            else if (existing.SerialNumber is null && serial is not null)
-                existing.SerialNumber = serial;
+                db.PatientDevices.Add(BuildDevice(seed, db.TenantId, DateOnly.FromDateTime(clock.LocalToday)));
+            else if (existing.SerialNumber is null && seed.Serial is not null)
+                existing.SerialNumber = seed.Serial;
         }
 
         if (!await db.PatientInsulins.AnyAsync(ct))
@@ -962,8 +980,9 @@ public class SampleDataSeeder
         }
     }
 
-    private async Task SeedLabHbA1cAsync(NocturneDbContext db, DateTime localToday, string dataSource, CancellationToken ct)
+    private async Task SeedLabHbA1cAsync(NocturneDbContext db, SeedingClock clock, string dataSource, CancellationToken ct)
     {
+        var localToday = clock.LocalToday;
         if (dataSource != Nocturne.Core.Constants.DataSources.DemoService)
             return;
 
@@ -980,17 +999,18 @@ public class SampleDataSeeder
                 MeasuredAt = DateTime.SpecifyKind(localToday.AddMonths(-monthsAgo), DateTimeKind.Utc),
                 ValuePercent = value,
                 Note = note,
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = clock.UtcNow,
             });
         }
         await db.SaveChangesAsync(ct);
     }
 
     /// <summary>Weekly Sunday-morning weigh-ins with a deterministic sync key.</summary>
-    private async Task SeedBodyWeightAsync(
+    internal static async Task SeedBodyWeightAsync(
         NocturneDbContext db,
-        DateTime localToday, int days, string dataSource, CancellationToken ct)
+        SeedingClock clock, int days, string dataSource, CancellationToken ct)
     {
+        var localToday = clock.LocalToday;
         var existing = (await db.BodyWeights
                 .AsNoTracking()
                 .Where(w => w.DataSource == dataSource)
@@ -1009,14 +1029,14 @@ public class SampleDataSeeder
                 continue;
 
             var weighIn = day.AddHours(7).AddMinutes(DayScenarios.Roll(day, "weigh-in", 40));
-            if (weighIn > DateTime.Now)
+            if (weighIn > clock.LocalNow)
                 continue;
 
             db.BodyWeights.Add(new BodyWeightEntity
             {
                 Id = Guid.CreateVersion7(),
                 TenantId = db.TenantId,
-                Mills = new DateTimeOffset(weighIn).ToUnixTimeMilliseconds(),
+                Mills = new DateTimeOffset(clock.ToUtc(weighIn)).ToUnixTimeMilliseconds(),
                 WeightKg = (decimal)DemoLifestyleSeeds.WeightKgOn(day),
                 Device = "Demo Scale",
                 DataSource = dataSource,
@@ -1033,12 +1053,13 @@ public class SampleDataSeeder
     /// EffectiveFrom is a local wall-clock value (Kind=Unspecified), matching
     /// <c>TimezoneTimelineService</c>. Created only when the timeline is empty.
     /// </summary>
-    private async Task SeedTimezoneTimelineAsync(NocturneDbContext db, DateTime localToday, int days, CancellationToken ct)
+    internal static async Task SeedTimezoneTimelineAsync(NocturneDbContext db, SeedingClock clock, int days, CancellationToken ct)
     {
+        var localToday = clock.LocalToday;
         if (await db.TimezoneTimeline.AnyAsync(ct))
             return;
 
-        var home = DemoTherapyProfile.LocalIanaTimezone();
+        var home = clock.ZoneId;
         var windowStart = localToday.AddDays(-days);
         var tripStart = localToday.AddDays(-DemoLifestyleSeeds.TripStartDaysAgo).AddHours(14);
         var tripEnd = tripStart.AddDays(DemoLifestyleSeeds.TripLengthDays).AddHours(-4);
@@ -1051,7 +1072,7 @@ public class SampleDataSeeder
             Timezone = home,
         });
 
-        if (tripStart > windowStart && tripEnd < DateTime.Now)
+        if (tripStart > windowStart && tripEnd < clock.LocalNow)
         {
             db.TimezoneTimeline.Add(new TimezoneTimelineEntity
             {
@@ -1076,20 +1097,20 @@ public class SampleDataSeeder
     /// One historical, already-cleared DND window so the alerts pages show a
     /// worked example without suppressing the demo's live alerts.
     /// </summary>
-    private async Task SeedDndWindowAsync(NocturneDbContext db, DateTime localToday, CancellationToken ct)
+    internal static async Task SeedDndWindowAsync(NocturneDbContext db, SeedingClock clock, CancellationToken ct)
     {
         if (await db.DndWindows.AnyAsync(ct))
             return;
 
-        var start = localToday.AddDays(-1).AddHours(22.5);
+        var start = clock.LocalToday.AddDays(-1).AddHours(22.5);
         db.DndWindows.Add(new DndWindowEntity
         {
             Id = Guid.CreateVersion7(),
             TenantId = db.TenantId,
             Scope = DndScope.All,
-            StartedAt = start.ToUniversalTime(),
-            EndsAt = start.AddHours(8.5).ToUniversalTime(),
-            ClearedAt = start.AddHours(8.2).ToUniversalTime(),
+            StartedAt = clock.ToUtc(start),
+            EndsAt = clock.ToUtc(start.AddHours(8.5)),
+            ClearedAt = clock.ToUtc(start.AddHours(8.2)),
             ClearedBy = "demo",
             Source = "web",
         });

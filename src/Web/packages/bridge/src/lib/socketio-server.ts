@@ -26,8 +26,8 @@ interface BridgeSocketData {
   handshakeToken?: string;
   /**
    * Whether the socket's credential may join the tenant-wide room. The room
-   * carries live payloads of more than one category, so a guest link or
-   * anonymous share that holds single categories stays out of it.
+   * carries live payloads of more than one category, so a guest link that
+   * holds single categories stays out of it and joins only its category rooms.
    */
   tenantRelay?: boolean;
   /**
@@ -115,13 +115,18 @@ function storageCategories(grant: RealtimeGrant): string[] {
   return grant.historyClamped ? [] : grant.categories;
 }
 
-/** The default-namespace rooms a socket's admission entitles it to. */
+/**
+ * The default-namespace rooms a socket's admission entitles it to. A restricted socket joins only
+ * its category rooms, as a guest reaches only its categories through the API hub's `Subscribe`.
+ */
 function grantedRooms(data: BridgeSocketData): string[] {
   const { tenantSlug, tenantRelay, subjectId, categories = [] } = data;
-  if (!tenantSlug || tenantRelay !== true) return [];
+  if (!tenantSlug) return [];
+  const rooms = categories.map((category) => categoryRoom(tenantSlug, category));
+  if (tenantRelay !== true) return rooms;
   return [
     `tenant:${tenantSlug}`,
-    ...categories.map((category) => categoryRoom(tenantSlug, category)),
+    ...rooms,
     ...(subjectId ? [subjectRoom(tenantSlug, subjectId)] : []),
   ];
 }
@@ -484,23 +489,13 @@ class SocketIOServer {
     });
   }
 
-  /** Join an authorized socket to its tenant room, the category rooms it was granted and, when its
-   *  credential owns a subject, that subject's room. A restricted socket stays authorized and joins
-   *  nothing, category rooms included, so a guest link or share receives no storage events. A socket
-   *  with no subject receives no per-subject notifications. */
+  /** Join an authorized socket to the rooms its admission grants (see {@link grantedRooms}). */
   private joinTenantRoom(socket: BridgeSocket): void {
-    const { tenantSlug, tenantRelay } = socket.data;
-    if (!tenantSlug) return;
-
-    if (tenantRelay !== true) {
-      logger.info(`Client ${socket.id} is restricted; not joining tenant room: ${tenantSlug}`);
-      return;
-    }
-
-    for (const room of grantedRooms(socket.data)) {
+    const rooms = grantedRooms(socket.data);
+    for (const room of rooms) {
       socket.join(room);
     }
-    logger.info(`Client ${socket.id} joined tenant room: ${tenantSlug}`);
+    if (rooms.length > 0) logger.info(`Client ${socket.id} joined ${rooms.length} rooms of tenant ${socket.data.tenantSlug}`);
   }
 
   /** Records an admission on the socket, for the rooms it joins. */

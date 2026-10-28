@@ -229,6 +229,22 @@ public class V4ReadLimitClampTests
         VerifyTherapySettingsFetched(repo, Ceiling, 0);
     }
 
+    [Fact]
+    public async Task TherapySettings_FullPageWithoutIncludeTotal_LeavesTotalNullWithoutCounting()
+    {
+        var repo = new Mock<ITherapySettingsRepository>();
+        repo.Setup(r => r.GetAsync(
+                It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), It.IsAny<string?>(), It.IsAny<string?>(),
+                It.IsAny<int>(), It.IsAny<int>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([new TherapySettings()]);
+
+        var result = await CreateProfileController(repo).GetTherapySettings(null, null, 1, 0);
+
+        var response = ((OkObjectResult)result.Result!).Value.Should().BeOfType<PaginatedResponse<TherapySettings>>().Subject;
+        response.Pagination.Total.Should().BeNull();
+        repo.Verify(r => r.CountAsync(It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
     private static ProfileController CreateProfileController(Mock<ITherapySettingsRepository> repo) =>
         new(
             repo.Object,
@@ -573,6 +589,10 @@ public class V4ReadLimitClampTests
             Mock.Of<IAlertRepository>(),
             Mock.Of<ITenantAccessor>(),
             Mock.Of<IAlertAcknowledgementService>(),
+            new TrackerDeviceEventWriter(
+                Mock.Of<IDeviceEventRepository>(),
+                Mock.Of<IPatientDeviceStamper>(),
+                Mock.Of<ILogger<TrackerDeviceEventWriter>>()),
             Mock.Of<ILogger<TrackersController>>())
         {
             ControllerContext = new ControllerContext

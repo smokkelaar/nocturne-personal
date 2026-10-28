@@ -691,6 +691,7 @@ public class MemberScopeMiddlewareTests
             };
             context.Items["GrantedScopes"] = Scope.Normalize([]);
             context.Items["PermissionTrie"] = new PermissionTrie();
+            await StoreMembershipAsync(context, request.ServiceProvider.GetRequiredService<INocturneDbContextFactory>(), subjectId);
 
             await middleware.InvokeAsync(context);
 
@@ -785,6 +786,7 @@ public class MemberScopeMiddlewareTests
         };
         context.Items["GrantedScopes"] = Scope.Normalize(tokenScopes);
         context.Items["PermissionTrie"] = new PermissionTrie();
+        await StoreMembershipAsync(context, db.ContextFactory.AsNocturneFactory(), subjectId);
 
         var middleware = new MemberScopeMiddleware(
             _ => Task.CompletedTask, db.ContextFactory.AsNocturneFactory(), NullLogger<MemberScopeMiddleware>.Instance);
@@ -834,12 +836,22 @@ public class MemberScopeMiddlewareTests
         };
         context.Items["GrantedScopes"] = Scope.Normalize(tokenScopes);
         context.Items["PermissionTrie"] = new PermissionTrie();
+        await StoreMembershipAsync(context, db.ContextFactory.AsNocturneFactory(), subjectId);
 
         var middleware = new MemberScopeMiddleware(
             _ => Task.CompletedTask, db.ContextFactory.AsNocturneFactory(), NullLogger<MemberScopeMiddleware>.Instance);
         await middleware.InvokeAsync(context);
 
         return context;
+    }
+
+    /// <summary>Reads the subject's membership as <see cref="AuthenticationMiddleware"/> does and leaves it on the request.</summary>
+    private static async Task StoreMembershipAsync(
+        HttpContext context, INocturneDbContextFactory contexts, Guid subjectId)
+    {
+        var (membership, _) = await RequestMembership.ReadAsync(
+            contexts, subjectId, TestDatabaseSeeder.TenantId, CancellationToken.None);
+        membership.StoreOn(context);
     }
 
     /// <summary>The owner seed role's permissions (the "*" wildcard).</summary>

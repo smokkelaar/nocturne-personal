@@ -188,6 +188,11 @@ public static class DataSources
     /// </summary>
     public const string SensorSessionInference = "sensor-session-inference";
 
+    /// <summary>
+    /// Device events Nocturne records when a tracker is started or completed by hand.
+    /// </summary>
+    public const string Tracker = "tracker";
+
     // ============================================================================
     // AID/Loop System Sources
     // ============================================================================

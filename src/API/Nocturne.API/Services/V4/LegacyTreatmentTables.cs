@@ -902,17 +902,13 @@ internal static class LegacyTreatmentTables
 
         foreach (var key in boluses.Select(g => g.Key).Union(carbs.Select(g => g.Key)))
         {
-            var bolus = boluses[key]
-                .OrderByDescending(b => b.Record.Insulin)
-                .ThenBy(b => b.Record.Id)
-                .FirstOrDefault();
-            var carb = carbs[key]
-                .OrderByDescending(c => c.Record.Carbs)
-                .ThenBy(c => c.Record.Id)
-                .FirstOrDefault();
-
-            if (bolus.Record is null || carb.Record is null)
+            var mealBolus = MealHalf(boluses[key].Select(b => b.Record));
+            var mealCarb = MealHalf(carbs[key].Select(c => c.Record));
+            if (mealBolus is null || mealCarb is null)
                 continue;
+
+            var bolus = boluses[key].First(b => ReferenceEquals(b.Record, mealBolus));
+            var carb = carbs[key].First(c => ReferenceEquals(c.Record, mealCarb));
 
             paired.Add(bolus.Record);
             paired.Add(carb.Record);
@@ -932,6 +928,21 @@ internal static class LegacyTreatmentTables
 
         return paired;
     }
+
+    /// <summary>
+    /// The bolus or carb intake of one correlation that <see cref="PairMeals"/> serves as half of its
+    /// Meal Bolus: the largest dose, the lowest id on a tie.
+    /// </summary>
+    internal static T? MealHalf<T>(IEnumerable<T> correlated) where T : class, IV4Record =>
+        correlated
+            .OrderByDescending(record => record switch
+            {
+                Bolus bolus => bolus.Insulin,
+                CarbIntake carb => carb.Carbs,
+                _ => 0,
+            })
+            .ThenBy(record => record.Id)
+            .FirstOrDefault();
 
     private static ILookup<(Guid CorrelationId, bool Deleted), (T Record, DateTime Modified)> Correlated<T>(
         IReadOnlyList<FetchedRecord> records

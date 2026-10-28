@@ -1576,6 +1576,14 @@ public class DeduplicationService : IDeduplicationService
     }
 
     /// <inheritdoc />
+    /// <remarks>
+    /// The prune walks the tenant's primary links on a keyset cursor of its own, one page per
+    /// transaction, so a tick reads only the links aged in since the last one. A link that becomes a
+    /// singleton after the cursor passed it, when the rest of its group is deleted, is not read again
+    /// until the cursor restarts from the first link, which it does once per
+    /// <see cref="SingletonLinkRetention"/>. Such a link keeps its row for up to a day longer, and
+    /// rereading every link each tick to catch it sooner would cost far more than the row.
+    /// </remarks>
     public async Task<int> PruneSingletonLinksAsync(
         int batchSize,
         int maxBatches,
@@ -1593,13 +1601,11 @@ public class DeduplicationService : IDeduplicationService
         var pruned = 0;
         for (var batchNo = 0; batchNo < maxBatches; batchNo++)
         {
-            var deleted = await UnderWriteLockAsync(
-                db,
-                token => PrunableSingletons(db, createdBefore).Take(batchSize).ExecuteDeleteAsync(token),
-                cancellationToken);
+            var (deleted, examined) = await UnderWriteLockAsync(
+                db, token => PruneNextPageAsync(db, batchSize, createdBefore, token), cancellationToken);
             pruned += deleted;
 
-            if (deleted < batchSize)
+            if (examined < batchSize)
                 break;
         }
 
@@ -1607,15 +1613,59 @@ public class DeduplicationService : IDeduplicationService
     }
 
     /// <summary>
-    /// The tenant's primary links created before <paramref name="createdBefore"/> that no other link
-    /// shares a group with. A lone non-primary link is kept: it hides its record from every read, and
-    /// with the link gone the record would show.
+    /// Deletes the singletons among the page of primary links after the tenant's prune cursor and
+    /// advances the cursor to the page's last link.
     /// </summary>
-    internal static IQueryable<LinkedRecordEntity> PrunableSingletons(NocturneDbContext db, DateTime createdBefore) =>
-        db.LinkedRecords
-            .Where(lr => lr.IsPrimary && lr.SysCreatedAt < createdBefore
-                && !db.LinkedRecords.Any(other => other.CanonicalId == lr.CanonicalId && other.Id != lr.Id))
-            .OrderBy(lr => lr.SysCreatedAt);
+    /// <returns>The links deleted and the links on the page.</returns>
+    private static async Task<(int Deleted, int Examined)> PruneNextPageAsync(
+        NocturneDbContext db, int batchSize, DateTime createdBefore, CancellationToken ct)
+    {
+        var state = await db.DedupReconcileState.AsNoTracking().SingleAsync(s => s.TenantId == db.TenantId, ct);
+
+        var now = DateTime.UtcNow;
+        var restart = state.PruneCursorResetAt is not { } lastReset || lastReset <= now - SingletonLinkRetention;
+        ReconcileCursor? after = !restart && state.PruneCursorCreatedAt is { } at
+            ? new ReconcileCursor(at, state.PruneCursorId ?? Guid.Empty)
+            : null;
+
+        var page = await LinksAfter(db, after, createdBefore)
+            .Where(lr => lr.IsPrimary)
+            .Take(batchSize)
+            .Select(lr => new ReconcileCursor(lr.SysCreatedAt, lr.Id))
+            .ToListAsync(ct);
+
+        var deleted = page.Count > 0
+            ? await SingletonsAmong(db, page.Select(p => p.Id)).ExecuteDeleteAsync(ct)
+            : 0;
+
+        if (page.Count > 0 || restart)
+        {
+            DateTime? cursorAt = page.Count > 0 ? page[^1].CreatedAt : null;
+            Guid? cursorId = page.Count > 0 ? page[^1].Id : null;
+            var resetAt = restart ? now : state.PruneCursorResetAt;
+            await db.DedupReconcileState
+                .Where(s => s.TenantId == db.TenantId)
+                .ExecuteUpdateAsync(s => s
+                    .SetProperty(e => e.PruneCursorCreatedAt, cursorAt)
+                    .SetProperty(e => e.PruneCursorId, cursorId)
+                    .SetProperty(e => e.PruneCursorResetAt, resetAt), ct);
+        }
+
+        return (deleted, page.Count);
+    }
+
+    /// <summary>
+    /// The primary links among <paramref name="ids"/> that no other link shares a group with. A lone
+    /// non-primary link is kept: it hides its record from every read, and with the link gone the
+    /// record would show. The ids bind as one array, as <see cref="PrimariesOf"/> explains.
+    /// </summary>
+    internal static IQueryable<LinkedRecordEntity> SingletonsAmong(NocturneDbContext db, IEnumerable<Guid> ids)
+    {
+        var page = ids.ToArray();
+        return db.LinkedRecords
+            .Where(lr => page.Contains(lr.Id) && lr.IsPrimary
+                && !db.LinkedRecords.Any(other => other.CanonicalId == lr.CanonicalId && other.Id != lr.Id));
+    }
 
     /// <summary>
     /// The tenant's links in (SysCreatedAt, Id) order, strictly after <paramref name="after"/> and
@@ -2517,7 +2567,8 @@ public class DeduplicationService : IDeduplicationService
 }
 
 /// <summary>
-/// Keyset position of <see cref="DeduplicationService.ReconcileNewLinksAsync"/> in the tenant's
-/// links: the <c>sys_created_at</c> and id of the last link reconciled.
+/// Keyset position in the tenant's links: the <c>sys_created_at</c> and id of the last link
+/// <see cref="DeduplicationService.ReconcileNewLinksAsync"/> reconciled or
+/// <see cref="DeduplicationService.PruneSingletonLinksAsync"/> examined.
 /// </summary>
 internal readonly record struct ReconcileCursor(DateTime CreatedAt, Guid Id);

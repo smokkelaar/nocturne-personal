@@ -59,8 +59,9 @@ public class BolusController(
         [FromQuery] int limit = 100, [FromQuery] int offset = 0,
         [FromQuery] string sort = "timestamp_desc",
         [FromQuery] string? device = null, [FromQuery] string? source = null,
+        [FromQuery] bool includeTotal = false,
         CancellationToken ct = default)
-        => base.GetAll(from, to, limit, offset, sort, device, source, ct);
+        => base.GetAll(from, to, limit, offset, sort, device, source, includeTotal, ct);
 
     /// <inheritdoc/>
     /// <remarks>

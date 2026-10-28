@@ -14,8 +14,7 @@ public class BodyWeightEntity
     [Column("tenant_id")]
     public Guid TenantId { get; set; }
 
-    /// <summary>Primary key (UUID v7).</summary>
-    [Key]
+    /// <summary>Row id, unique within its tenant: the primary key is <c>(TenantId, Id)</c>.</summary>
     public Guid Id { get; set; }
 
     /// <summary>Legacy MongoDB ObjectId preserved during migration.</summary>

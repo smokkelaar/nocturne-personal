@@ -2,6 +2,7 @@ using System.Net;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Time.Testing;
 using Moq;
 using Nocturne.Connectors.Core.Interfaces;
 using Nocturne.Connectors.Core.Models;
@@ -18,10 +19,11 @@ public class BaseConnectorServiceTests
         public TestConnectorService(
             HttpClient httpClient,
             ILogger<TestConnectorService> logger,
-            IConnectorPublisher? publisher = null)
+            IConnectorPublisher? publisher = null,
+            TimeProvider? timeProvider = null)
             : base(httpClient,
                 new ConnectorServerResolver<TestConfig>(null, null, null),
-                logger, publisher)
+                logger, publisher, timeProvider)
         {
         }
 
@@ -51,11 +53,34 @@ public class BaseConnectorServiceTests
         public Task<WriteOrigin> CallGlucoseOrigin() => GlucosePublishOriginAsync();
         public Task<WriteOrigin> CallTreatmentOrigin() => TreatmentPublishOriginAsync();
         public Task<WriteOrigin> CallDeviceOrigin() => DevicePublishOriginAsync();
+        public DateTime CallDefaultInitialSyncFloor() => DefaultInitialSyncFloor();
+        public DateTime? CallInitialSyncFloor() => InitialSyncFloor;
     }
 
     public class TestConfig : BaseConnectorConfiguration
     {
         protected override void ValidateSourceSpecificConfiguration() { }
+    }
+
+    [Fact]
+    public void DefaultInitialSyncFloor_IsSixMonthsBeforeTheInjectedClock()
+    {
+        var clock = new FakeTimeProvider(new DateTimeOffset(2026, 8, 31, 9, 30, 0, TimeSpan.Zero));
+        var service = new TestConnectorService(new HttpClient(), NullLogger<TestConnectorService>.Instance, timeProvider: clock);
+
+        service.CallDefaultInitialSyncFloor().Should().Be(new DateTime(2026, 2, 28, 9, 30, 0, DateTimeKind.Utc));
+        service.CallInitialSyncFloor().Should().Be(service.CallDefaultInitialSyncFloor());
+    }
+
+    [Fact]
+    public void DefaultInitialSyncFloor_FollowsTheClockAsItAdvances()
+    {
+        var clock = new FakeTimeProvider(new DateTimeOffset(2026, 3, 1, 0, 0, 0, TimeSpan.Zero));
+        var service = new TestConnectorService(new HttpClient(), NullLogger<TestConnectorService>.Instance, timeProvider: clock);
+
+        clock.Advance(TimeSpan.FromDays(31));
+
+        service.CallDefaultInitialSyncFloor().Should().Be(new DateTime(2025, 10, 1, 0, 0, 0, DateTimeKind.Utc));
     }
 
     /// <summary>A connector whose run is <paramref name="run"/>, so a test can script what the run does.</summary>

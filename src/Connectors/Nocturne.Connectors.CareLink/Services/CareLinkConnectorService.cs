@@ -39,9 +39,10 @@ public class CareLinkConnectorService : BaseConnectorService<CareLinkConnectorCo
         IConnectorConfigurationService configService,
         ILogger<CareLinkConnectorService> logger,
         IConnectorPublisher? publisher = null,
-        ITimezoneTimelineService? timezoneTimelineService = null
+        ITimezoneTimelineService? timezoneTimelineService = null,
+        TimeProvider? timeProvider = null
     )
-        : base(httpClient, serverResolver, logger, publisher)
+        : base(httpClient, serverResolver, logger, publisher, timeProvider)
     {
         _tokenProvider = tokenProvider ?? throw new ArgumentNullException(nameof(tokenProvider));
         _configService = configService ?? throw new ArgumentNullException(nameof(configService));

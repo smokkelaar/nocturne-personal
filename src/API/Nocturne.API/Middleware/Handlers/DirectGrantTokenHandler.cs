@@ -75,21 +75,25 @@ public class DirectGrantTokenHandler : IAuthHandler
             return AuthResult.Skip();
         }
 
-        var grant = await FindActiveGrantAsync(
-            _dbContextFactory, token, tenantCtx.TenantId, _timeProvider.GetUtcNow().UtcDateTime,
-            context.RequestAborted, rawToken);
-
-        if (grant == null)
+        var now = _timeProvider.GetUtcNow().UtcDateTime;
+        if (await FindActiveGrantAsync(
+                _dbContextFactory, token, tenantCtx.TenantId, now, context.RequestAborted, rawToken)
+            is not var (grant, membership))
         {
             _logger.LogDebug("No matching direct grant found for token");
             return AuthResult.Skip();
         }
 
+        new RequestMembership(grant.SubjectId, tenantCtx.TenantId, membership).StoreOn(context);
+
         // Update last used metadata (fire and forget via separate context)
-        var ipAddress = context.Connection.RemoteIpAddress?.ToString();
-        var userAgent = context.Request.Headers.UserAgent.FirstOrDefault();
-        _ = RecordLastUsedAsync(
-            _dbContextFactory, _logger, grant.Id, tenantCtx.TenantId, ipAddress, userAgent);
+        if (LastUsedStamp.IsDue(grant.LastUsedAt, now))
+        {
+            _ = RecordLastUsedAsync(
+                _dbContextFactory, _logger, grant.Id, tenantCtx.TenantId,
+                context.Connection.RemoteIpAddress?.ToString(),
+                context.Request.Headers.UserAgent.FirstOrDefault());
+        }
 
         _logger.LogDebug("Direct grant authentication successful for grant {GrantId}, subject {SubjectId}",
             grant.Id, grant.SubjectId);
@@ -108,7 +112,8 @@ public class DirectGrantTokenHandler : IAuthHandler
 
     /// <summary>
     /// Finds the active direct grant <paramref name="token"/> identifies on
-    /// <paramref name="tenantId"/>, or null when there is none.
+    /// <paramref name="tenantId"/>, with its subject's membership of that tenant read in the same
+    /// statement, or null when there is none.
     /// </summary>
     /// <remarks>
     /// Runs on its own context pinned to <paramref name="tenantId"/>: callers hold a scope whose
@@ -128,7 +133,7 @@ public class DirectGrantTokenHandler : IAuthHandler
     /// <paramref name="token"/> because a dashless Nightscout token, which is a bare digest, stops
     /// parsing as one once a prefix is prepended.
     /// </param>
-    internal static async Task<OAuthGrantEntity?> FindActiveGrantAsync(
+    internal static async Task<(OAuthGrantEntity Grant, MembershipFacts? Membership)?> FindActiveGrantAsync(
         INocturneDbContextFactory dbContextFactory,
         string token,
         Guid tenantId,
@@ -159,15 +164,22 @@ public class DirectGrantTokenHandler : IAuthHandler
         // Two lookups rather than one OR'd predicate. The hash match is what almost every request
         // takes; the digest match is a filtered-index range scan only an imported Nightscout token
         // can satisfy, and OR-ing the two would deny the planner the digest index on every request.
-        var byHash = await grants.FirstOrDefaultAsync(
-            g => g.TokenHash != null && candidateHashes.Contains(g.TokenHash), ct);
+        var byHash = await FirstWithMembershipAsync(
+            grants.Where(g => g.TokenHash != null && candidateHashes.Contains(g.TokenHash)));
         if (byHash != null || digestPrefix == null)
         {
             return byHash;
         }
 
-        return await grants.FirstOrDefaultAsync(
-            g => g.LegacyTokenDigest != null && g.LegacyTokenDigest.StartsWith(digestPrefix), ct);
+        return await FirstWithMembershipAsync(
+            grants.Where(g => g.LegacyTokenDigest != null && g.LegacyTokenDigest.StartsWith(digestPrefix)));
+
+        async Task<(OAuthGrantEntity, MembershipFacts?)?> FirstWithMembershipAsync(IQueryable<OAuthGrantEntity> matching)
+        {
+            var row = await RequestMembership.WithMembership(matching, g => g.SubjectId, dbContext, tenantId)
+                .FirstOrDefaultAsync(ct);
+            return row is null ? null : (row.Outer, row.Member.ToFacts());
+        }
     }
 
     /// <summary>

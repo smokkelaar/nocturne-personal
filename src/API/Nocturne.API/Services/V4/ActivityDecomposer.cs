@@ -16,10 +16,8 @@ namespace Nocturne.API.Services.V4;
 
 /// <summary>
 /// Decomposes legacy <see cref="Activity"/> records into typed v4 models (<see cref="HeartRate"/> or
-/// <see cref="StepCount"/>). Detection is based on the presence of specific keys in
-/// <see cref="Activity.AdditionalProperties"/>: <c>bpm</c> indicates heart-rate data, and
-/// <see cref="IsStepCount"/> identifies step-count data. Supports idempotent create-or-update via
-/// <c>OriginalId</c> matching.
+/// <see cref="StepCount"/>) as <see cref="Classify"/> routes them. Supports idempotent
+/// create-or-update via <c>OriginalId</c> matching.
 /// </summary>
 /// <seealso cref="IActivityDecomposer"/>
 /// <seealso cref="IDecomposer{T}"/>
@@ -43,25 +41,20 @@ public class ActivityDecomposer : IActivityDecomposer, IDecomposer<Activity>
         _logger = logger;
     }
 
-    /// <summary>
-    /// Returns <see langword="true"/> if the activity carries heart-rate data (identified by the
-    /// presence of a <c>bpm</c> key in <see cref="Activity.AdditionalProperties"/>).
-    /// </summary>
-    /// <param name="activity">The activity to inspect.</param>
-    /// <returns><see langword="true"/> when the activity has a <c>bpm</c> property; otherwise <see langword="false"/>.</returns>
-    public bool IsHeartRate(Activity activity)
-    {
-        return activity.AdditionalProperties != null
-            && activity.AdditionalProperties.ContainsKey("bpm");
-    }
-
     /// <inheritdoc />
-    public bool IsStepCount(Activity activity)
+    public ActivityDestination Classify(Activity activity)
     {
-        return activity.AdditionalProperties != null
-            && (activity.AdditionalProperties.ContainsKey("metric")
-                || (activity.AdditionalProperties.ContainsKey("steps")
-                    && string.Equals(activity.Type, "steps-total", StringComparison.OrdinalIgnoreCase)));
+        var props = activity.AdditionalProperties;
+        if (props != null && props.ContainsKey("bpm"))
+            return ActivityDestination.HeartRate;
+        if (props != null
+            && (props.ContainsKey("metric")
+                || (props.ContainsKey("steps")
+                    && string.Equals(activity.Type, "steps-total", StringComparison.OrdinalIgnoreCase))))
+            return ActivityDestination.StepCount;
+        if (ActivityStateSpanMapper.IsSleepType(activity.Type))
+            return ActivityDestination.SleepSession;
+        return ActivityDestination.StateSpan;
     }
 
     /// <summary>
@@ -98,53 +91,25 @@ public class ActivityDecomposer : IActivityDecomposer, IDecomposer<Activity>
         return true;
     }
 
-    /// <summary>
-    /// Returns <see langword="true"/> if the activity represents sensor-derived physiological data,
-    /// i.e. it is either a heart-rate or step-count record.
-    /// </summary>
-    /// <param name="activity">The activity to inspect.</param>
-    /// <returns><see langword="true"/> when the activity is either heart-rate or step-count data.</returns>
-    public bool IsSensorData(Activity activity)
+    /// <inheritdoc />
+    public string RequiredWriteScope(Activity activity) => Classify(activity) switch
     {
-        return IsHeartRate(activity) || IsStepCount(activity);
-    }
-
-    /// <summary>
-    /// Returns the OAuth write scope required to persist this activity, based on the dedicated
-    /// table it routes to: heart-rate data needs <c>heartrate.readwrite</c>, step-count data
-    /// <c>stepcount.readwrite</c>, and sleep-typed activities <c>sleep.readwrite</c>. Regular
-    /// activities (exercise, illness, travel) route to StateSpans and carry no category scope,
-    /// so this returns <see langword="null"/>. Uses the same predicates as the create/update
-    /// routing so the scope gate and the storage destination cannot drift apart.
-    /// </summary>
-    /// <param name="activity">The activity to classify.</param>
-    public string? RequiredWriteScope(Activity activity)
-    {
-        if (IsHeartRate(activity))
-            return Scope.HeartRateReadWrite;
-        if (IsStepCount(activity))
-            return Scope.StepCountReadWrite;
-        if (ActivityStateSpanMapper.IsSleepType(activity.Type))
-            return Scope.SleepReadWrite;
-        return null;
-    }
+        ActivityDestination.HeartRate => Scope.HeartRateReadWrite,
+        ActivityDestination.StepCount => Scope.StepCountReadWrite,
+        ActivityDestination.SleepSession => Scope.SleepReadWrite,
+        _ => Scope.TreatmentsReadWrite,
+    };
 
     /// <summary>
     /// Returns the OAuth read scope required to see this activity. Derived from
     /// <see cref="RequiredWriteScope"/> so the read gate and the storage destination cannot drift
-    /// apart. A regular activity reads under <c>treatments.read</c>, which is the scope the legacy
-    /// activity read plane has always required for StateSpan-backed activities. A dedicated
-    /// destination with no read counterpart falls back to <see cref="Scope.FullAccess"/>,
+    /// apart. A destination with no read counterpart falls back to <see cref="Scope.FullAccess"/>,
     /// which only an admin grant holds.
     /// </summary>
     /// <param name="activity">The activity to classify.</param>
     public string RequiredReadScope(Activity activity)
     {
-        var writeScope = RequiredWriteScope(activity);
-        if (writeScope is null)
-            return Scope.TreatmentsRead;
-
-        return Scope.ImpliedReadScope(writeScope) ?? Scope.FullAccess;
+        return Scope.ImpliedReadScope(RequiredWriteScope(activity)) ?? Scope.FullAccess;
     }
 
     /// <inheritdoc/>
@@ -157,26 +122,26 @@ public class ActivityDecomposer : IActivityDecomposer, IDecomposer<Activity>
         var result = new DecompositionResult { CorrelationId = Guid.CreateVersion7() };
         NormalizeMills(activity);
 
-        if (IsHeartRate(activity))
+        switch (Classify(activity))
         {
-            await UpsertByOriginalIdAsync(
-                db,
-                db.HeartRates, MapToHeartRate(activity), HeartRateMapper.ToEntity,
-                HeartRateMapper.UpdateEntity, HeartRateMapper.ToDomainModel, result, ct);
-        }
-        else if (IsStepCount(activity))
-        {
-            await UpsertByOriginalIdAsync(
-                db,
-                db.StepCounts, MapToStepCount(activity), StepCountMapper.ToEntity,
-                StepCountMapper.UpdateEntity, StepCountMapper.ToDomainModel, result, ct);
-        }
-        else
-        {
-            _logger.LogDebug(
-                "Activity {Id} is a regular activity, skipping decomposition",
-                activity.Id
-            );
+            case ActivityDestination.HeartRate:
+                await UpsertByOriginalIdAsync(
+                    db,
+                    db.HeartRates, MapToHeartRate(activity), HeartRateMapper.ToEntity,
+                    HeartRateMapper.UpdateEntity, HeartRateMapper.ToDomainModel, result, ct);
+                break;
+            case ActivityDestination.StepCount:
+                await UpsertByOriginalIdAsync(
+                    db,
+                    db.StepCounts, MapToStepCount(activity), StepCountMapper.ToEntity,
+                    StepCountMapper.UpdateEntity, StepCountMapper.ToDomainModel, result, ct);
+                break;
+            default:
+                _logger.LogDebug(
+                    "Activity {Id} is a regular activity, skipping decomposition",
+                    activity.Id
+                );
+                break;
         }
 
         return result;
@@ -200,12 +165,18 @@ public class ActivityDecomposer : IActivityDecomposer, IDecomposer<Activity>
         {
             NormalizeMills(activity);
 
-            if (IsHeartRate(activity))
-                heartRateList.Add(MapToHeartRate(activity));
-            else if (IsStepCount(activity))
-                stepCountList.Add(MapToStepCount(activity));
-            else
-                regularActivities.Add(activity);
+            switch (Classify(activity))
+            {
+                case ActivityDestination.HeartRate:
+                    heartRateList.Add(MapToHeartRate(activity));
+                    break;
+                case ActivityDestination.StepCount:
+                    stepCountList.Add(MapToStepCount(activity));
+                    break;
+                default:
+                    regularActivities.Add(activity);
+                    break;
+            }
         }
 
         await BulkUpsertByOriginalIdAsync(
@@ -433,7 +404,7 @@ public class ActivityDecomposer : IActivityDecomposer, IDecomposer<Activity>
     /// The row each of <paramref name="originalIds"/> is written to, soft-deleted rows included: the
     /// live row, or else a system-swept tombstone, which the write revives in place because the primary
     /// key is derived from the id (<see cref="MapperHelpers.ParseIdToGuid"/>) and a fresh insert would
-    /// collide with it. An id only a user tombstone holds is returned in <c>UserDeleted</c> and must
+    /// collide with it within the tenant. An id only a user tombstone holds is returned in <c>UserDeleted</c> and must
     /// not be written (<see cref="SoftDeleteDedupExtensions.WhereBlocksRecreation{TEntity}"/>).
     /// </summary>
     private async Task<(Dictionary<string, TEntity> Rows, HashSet<string> UserDeleted)> ResolveByOriginalIdAsync<TEntity>(

@@ -154,7 +154,21 @@ public static class ConnectorServiceCollectionExtensions
                     options.AddResilience
                 );
 
+            services.AddHttpClient(CredentialVerificationTokenProvider<TTokenProvider>.ClientName)
+                .ConfigureConnectorClient(
+                    null,
+                    options.AdditionalHeaders,
+                    options.UserAgent,
+                    CredentialVerificationTokenProvider<TTokenProvider>.Timeout,
+                    options.ConnectTimeout
+                );
+
             services.AddConnectorTokenProvider<TTokenProvider>();
+            services.AddScoped(sp => new CredentialVerificationTokenProvider<TTokenProvider>(
+                ActivatorUtilities.CreateInstance<TTokenProvider>(
+                    sp,
+                    sp.GetRequiredService<IHttpClientFactory>()
+                        .CreateClient(CredentialVerificationTokenProvider<TTokenProvider>.ClientName))));
             services.AddConnectorSyncExecutor<ConnectorSyncExecutor<TService, TConfig>>();
 
             return config;

@@ -71,8 +71,8 @@ public interface IEntryService
     /// query per entry. Other types are probed one at a time.
     /// </remarks>
     /// <param name="probes">Entries to classify, in submission order</param>
-    /// <returns>One result per probe in the order given: the existing entry, or null</returns>
-    Task<IReadOnlyList<Entry?>> CheckForDuplicateEntriesAsync(
+    /// <returns>One result per probe in the order given: the stored reading, or null</returns>
+    Task<IReadOnlyList<StoredEntryMatch?>> CheckForDuplicateEntriesAsync(
         IReadOnlyList<EntryDuplicateProbe> probes,
         CancellationToken cancellationToken = default
     );

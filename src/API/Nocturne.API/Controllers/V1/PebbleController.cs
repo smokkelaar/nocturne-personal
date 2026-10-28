@@ -142,9 +142,8 @@ public class PebbleController : ControllerBase
                     );
 
                     bg.Battery = battery;
-                    bg.Iob = iobCob is null ? null : IobResult.FormatDisplay(iobCob.Iob.Iob);
-                    // Nightscout's pebble shows COB to one decimal.
-                    bg.Cob = iobCob?.Cob is null ? null : Math.Round(iobCob.Cob.Cob, 1);
+                    bg.Iob = iobCob?.Iob.Display;
+                    bg.Cob = iobCob?.Cob?.Display;
                 }
 
                 bgs.Add(bg);

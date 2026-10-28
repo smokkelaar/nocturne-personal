@@ -86,6 +86,48 @@ public class SensitivityResolverTests : IDisposable
     }
 
     [Fact]
+    public async Task FindReturnsNullWhenNoScheduleExists()
+    {
+        _repo.Setup(r => r.GetByProfileNameAsync("Default", default))
+            .ReturnsAsync(Array.Empty<SensitivitySchedule>());
+
+        (await _sut.FindSensitivityAsync(NoonMills)).Should().BeNull();
+    }
+
+    [Fact]
+    public async Task FindReturnsNullWhenTheScheduleHasNoEntries()
+    {
+        _repo.Setup(r => r.GetByProfileNameAsync("Default", default))
+            .ReturnsAsync(new[] { MakeSchedule() });
+
+        (await _sut.FindSensitivityAsync(NoonMills)).Should().BeNull();
+        (await _sut.GetSensitivityAsync(NoonMills)).Should().Be(50.0);
+    }
+
+    [Fact]
+    public async Task GetScalesTheDefaultByCcpWhenTheScheduleHasNoEntries()
+    {
+        _repo.Setup(r => r.GetByProfileNameAsync("Default", default))
+            .ReturnsAsync(new[] { MakeSchedule() });
+        _activeProfileResolver.Setup(r => r.GetCircadianAdjustmentAsync(NoonMills, default))
+            .ReturnsAsync(new CircadianAdjustment(200, 0));
+
+        (await _sut.GetSensitivityAsync(NoonMills)).Should().Be(25.0);
+        (await _sut.FindSensitivityAsync(NoonMills)).Should().BeNull();
+    }
+
+    [Fact]
+    public async Task FindAppliesInverseCcpPercentageScaling()
+    {
+        _repo.Setup(r => r.GetByProfileNameAsync("Default", default))
+            .ReturnsAsync(new[] { MakeSchedule((0, 50.0)) });
+        _activeProfileResolver.Setup(r => r.GetCircadianAdjustmentAsync(NoonMills, default))
+            .ReturnsAsync(new CircadianAdjustment(200, 0));
+
+        (await _sut.FindSensitivityAsync(NoonMills)).Should().Be(25.0);
+    }
+
+    [Fact]
     public async Task UsesActiveProfileNameWhenSpecProfileIsNull()
     {
         _activeProfileResolver.Setup(r => r.GetActiveProfileNameAsync(NoonMills, default))

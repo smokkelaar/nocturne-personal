@@ -31,9 +31,10 @@ public class DexcomConnectorService : BaseConnectorService<DexcomConnectorConfig
         IRetryDelayStrategy retryDelayStrategy,
         IRateLimitingStrategy rateLimitingStrategy,
         DexcomAuthTokenProvider tokenProvider,
-        IConnectorPublisher? publisher = null
+        IConnectorPublisher? publisher = null,
+        TimeProvider? timeProvider = null
     )
-        : base(httpClient, serverResolver, logger, publisher)
+        : base(httpClient, serverResolver, logger, publisher, timeProvider)
     {
         _retryDelayStrategy =
             retryDelayStrategy ?? throw new ArgumentNullException(nameof(retryDelayStrategy));

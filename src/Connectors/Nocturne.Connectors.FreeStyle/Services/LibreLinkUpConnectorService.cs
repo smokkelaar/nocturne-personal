@@ -24,13 +24,15 @@ public class LibreConnectorService(
     IRetryDelayStrategy retryDelayStrategy,
     IRateLimitingStrategy rateLimitingStrategy,
     LibreLinkAuthTokenProvider tokenProvider,
-    IConnectorPublisher? publisher = null
+    IConnectorPublisher? publisher = null,
+    TimeProvider? timeProvider = null
 )
     : BaseConnectorService<LibreLinkUpConnectorConfiguration>(
         httpClient,
         serverResolver,
         logger,
-        publisher
+        publisher,
+        timeProvider
     )
 {
     private readonly LibreSensorGlucoseMapper _sensorGlucoseMapper = new(logger);

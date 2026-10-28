@@ -42,7 +42,6 @@ internal sealed class MetadataPublisher : ConnectorPublisherBase, IMetadataPubli
     private readonly IStepCountService _stepCountService;
     private readonly IHeartRateService _heartRateService;
     private readonly ITenantOwnerResolver _tenantOwnerResolver;
-    private readonly ITenantAccessor _tenantAccessor;
     private readonly INocturneDbContextFactory _contexts;
     private readonly IProfileActivationRepository _profileActivations;
     private readonly ProfileActivationWriter _profileActivationWriter;
@@ -66,7 +65,7 @@ internal sealed class MetadataPublisher : ConnectorPublisherBase, IMetadataPubli
         IAuditContext auditContext,
         PublishSkipTally skips,
         ILogger<MetadataPublisher> logger)
-        : base(auditContext, skips, logger)
+        : base(auditContext, skips, tenantAccessor, logger)
     {
         _profileActivations = profileActivations ?? throw new ArgumentNullException(nameof(profileActivations));
         _profileActivationWriter = profileActivationWriter ?? throw new ArgumentNullException(nameof(profileActivationWriter));
@@ -81,7 +80,6 @@ internal sealed class MetadataPublisher : ConnectorPublisherBase, IMetadataPubli
         _stepCountService = stepCountService ?? throw new ArgumentNullException(nameof(stepCountService));
         _heartRateService = heartRateService ?? throw new ArgumentNullException(nameof(heartRateService));
         _tenantOwnerResolver = tenantOwnerResolver ?? throw new ArgumentNullException(nameof(tenantOwnerResolver));
-        _tenantAccessor = tenantAccessor ?? throw new ArgumentNullException(nameof(tenantAccessor));
         _contexts = contexts ?? throw new ArgumentNullException(nameof(contexts));
     }
 
@@ -93,7 +91,7 @@ internal sealed class MetadataPublisher : ConnectorPublisherBase, IMetadataPubli
         string source,
         CancellationToken cancellationToken)
     {
-        if (!_tenantAccessor.IsResolved)
+        if (!TenantAccessor.IsResolved)
         {
             Logger.LogWarning(
                 "No tenant resolved while publishing for {Source}; cannot attribute its notifications",
@@ -102,13 +100,13 @@ internal sealed class MetadataPublisher : ConnectorPublisherBase, IMetadataPubli
         }
 
         var subjectId = await _tenantOwnerResolver.GetOwnerSubjectIdAsync(
-            _tenantAccessor.TenantId, cancellationToken);
+            TenantAccessor.TenantId, cancellationToken);
 
         if (subjectId == null)
         {
             Logger.LogWarning(
                 "Tenant {TenantId} has no owner; {Source} food entries will import without match suggestions",
-                _tenantAccessor.TenantId,
+                TenantAccessor.TenantId,
                 source);
         }
 
@@ -120,15 +118,16 @@ internal sealed class MetadataPublisher : ConnectorPublisherBase, IMetadataPubli
         string source,
         WriteOrigin origin, CancellationToken cancellationToken = default)
     {
+        var profileList = profiles.ToList();
         try
         {
-            await _profileWriteService.CreateProfilesAsync(profiles, cancellationToken);
+            await _profileWriteService.CreateProfilesAsync(profileList, cancellationToken);
             return true;
         }
         catch (OperationCanceledException) { throw; }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Failed to publish profiles for {Source}", source);
+            LogPublishFailure(ex, profileList, source);
             return false;
         }
     }
@@ -138,15 +137,16 @@ internal sealed class MetadataPublisher : ConnectorPublisherBase, IMetadataPubli
         string source,
         WriteOrigin origin, CancellationToken cancellationToken = default)
     {
+        var foodList = foods.ToList();
         try
         {
-            await _foodService.CreateFoodAsync(foods, cancellationToken);
+            await _foodService.CreateFoodAsync(foodList, cancellationToken);
             return true;
         }
         catch (OperationCanceledException) { throw; }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Failed to publish food for {Source}", source);
+            LogPublishFailure(ex, foodList, source);
             return false;
         }
     }
@@ -156,18 +156,19 @@ internal sealed class MetadataPublisher : ConnectorPublisherBase, IMetadataPubli
         string source,
         WriteOrigin origin, CancellationToken cancellationToken = default)
     {
+        var entryList = entries.ToList();
         try
         {
             var subject = await ResolveNotificationSubjectAsync(source, cancellationToken);
             using (PushSystemAudit())
             {
-                return await _connectorFoodEntryService.ImportAsync(subject, entries, cancellationToken);
+                return await _connectorFoodEntryService.ImportAsync(subject, entryList, cancellationToken);
             }
         }
         catch (OperationCanceledException) { throw; }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Failed to publish connector food entries for {Source}", source);
+            LogPublishFailure(ex, entryList, source);
             return null;
         }
     }
@@ -208,11 +209,11 @@ internal sealed class MetadataPublisher : ConnectorPublisherBase, IMetadataPubli
         string source,
         CancellationToken cancellationToken)
     {
+        var activityList = activities.ToList();
         try
         {
             // Stamp the publishing connector so every decomposed destination (state spans, heart
             // rates, step counts) resolves to this connector's watermark.
-            var activityList = activities.ToList();
             foreach (var activity in activityList)
                 activity.DataSource = source;
 
@@ -222,7 +223,7 @@ internal sealed class MetadataPublisher : ConnectorPublisherBase, IMetadataPubli
         catch (OperationCanceledException) { throw; }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Failed to publish activities for {Source}", source);
+            LogPublishFailure(ex, activityList, source);
             return null;
         }
     }
@@ -244,7 +245,7 @@ internal sealed class MetadataPublisher : ConnectorPublisherBase, IMetadataPubli
             ids => HeldAsync(db => db.GetHeldOriginalIdsAsync<HeartRateEntity>(ids, cancellationToken), cancellationToken),
             ids => HeldAsync(db => db.GetHeldOriginalIdsAsync<StepCountEntity>(ids, cancellationToken), cancellationToken),
             ids => HeldAsync(db => db.GetHeldOriginalIdsAsync<SleepSessionEntity>(
-                ids, s => s.Source == ActivityStateSpanMapper.SleepSessionSource, cancellationToken), cancellationToken));
+                ids, s => s.Source == ActivityStateSpanMapper.StoredSleepSessionSource, cancellationToken), cancellationToken));
 
     private async Task<IReadOnlySet<string>> HeldAsync(
         Func<NocturneDbContext, Task<IReadOnlySet<string>>> held, CancellationToken ct)
@@ -291,7 +292,7 @@ internal sealed class MetadataPublisher : ConnectorPublisherBase, IMetadataPubli
         catch (OperationCanceledException) { throw; }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Failed to publish state spans for {Source}", source);
+            LogPublishFailure(ex, spans, source);
             return false;
         }
     }
@@ -305,9 +306,10 @@ internal sealed class MetadataPublisher : ConnectorPublisherBase, IMetadataPubli
         string source,
         WriteOrigin origin, CancellationToken cancellationToken = default)
     {
+        var activationList = activations.OrderBy(a => a.StartTimestamp).ToList();
         try
         {
-            foreach (var activation in activations.OrderBy(a => a.StartTimestamp))
+            foreach (var activation in activationList)
             {
                 activation.DataSource = source;
                 activation.Phase = ProfileActivationPhase.Effective;
@@ -332,7 +334,7 @@ internal sealed class MetadataPublisher : ConnectorPublisherBase, IMetadataPubli
         }
         catch (DbUpdateException ex)
         {
-            Logger.LogError(ex, "Failed to publish profile activations for {Source}", source);
+            LogPublishFailure(ex, activationList, source);
             return false;
         }
     }
@@ -342,15 +344,16 @@ internal sealed class MetadataPublisher : ConnectorPublisherBase, IMetadataPubli
         string source,
         WriteOrigin origin, CancellationToken cancellationToken = default)
     {
+        var systemEventList = systemEvents.ToList();
         try
         {
-            await _systemEventRepository.BulkUpsertAsync(systemEvents, cancellationToken);
+            await _systemEventRepository.BulkUpsertAsync(systemEventList, cancellationToken);
             return true;
         }
         catch (OperationCanceledException) { throw; }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Failed to publish system events for {Source}", source);
+            LogPublishFailure(ex, systemEventList, source);
             return false;
         }
     }
@@ -366,9 +369,9 @@ internal sealed class MetadataPublisher : ConnectorPublisherBase, IMetadataPubli
         string source,
         CancellationToken cancellationToken = default)
     {
+        var list = records.ToList();
         try
         {
-            var list = records.ToList();
             if (list.Count == 0) return true;
 
             await _bodyWeightService.CreateBodyWeightsAsync(list, cancellationToken);
@@ -379,7 +382,7 @@ internal sealed class MetadataPublisher : ConnectorPublisherBase, IMetadataPubli
         catch (OperationCanceledException) { throw; }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Failed to publish BodyWeight records for {Source}", source);
+            LogPublishFailure(ex, list, source);
             return false;
         }
     }
@@ -389,9 +392,9 @@ internal sealed class MetadataPublisher : ConnectorPublisherBase, IMetadataPubli
         string source,
         CancellationToken cancellationToken = default)
     {
+        var list = records.ToList();
         try
         {
-            var list = records.ToList();
             if (list.Count == 0) return true;
 
             await _stepCountService.CreateStepCountsAsync(list, cancellationToken);
@@ -402,7 +405,7 @@ internal sealed class MetadataPublisher : ConnectorPublisherBase, IMetadataPubli
         catch (OperationCanceledException) { throw; }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Failed to publish StepCount records for {Source}", source);
+            LogPublishFailure(ex, list, source);
             return false;
         }
     }
@@ -412,9 +415,9 @@ internal sealed class MetadataPublisher : ConnectorPublisherBase, IMetadataPubli
         string source,
         CancellationToken cancellationToken = default)
     {
+        var list = records.ToList();
         try
         {
-            var list = records.ToList();
             if (list.Count == 0) return true;
 
             await _heartRateService.CreateHeartRatesAsync(list, cancellationToken);
@@ -425,7 +428,7 @@ internal sealed class MetadataPublisher : ConnectorPublisherBase, IMetadataPubli
         catch (OperationCanceledException) { throw; }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Failed to publish HeartRate records for {Source}", source);
+            LogPublishFailure(ex, list, source);
             return false;
         }
     }

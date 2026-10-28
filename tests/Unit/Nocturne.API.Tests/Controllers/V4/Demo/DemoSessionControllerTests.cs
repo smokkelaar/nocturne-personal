@@ -38,7 +38,7 @@ public class DemoSessionControllerTests : IDisposable
         _sessionService
             .Setup(s => s.IssueSessionAsync(
                 It.IsAny<Guid>(), It.IsAny<SessionContext>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new SessionTokenPair("access", "refresh", 3600));
+            .ReturnsAsync(new SessionTokenPair("access", "refresh", 3600, Guid.Empty));
     }
 
     [Fact]
@@ -220,6 +220,7 @@ public class DemoSessionControllerTests : IDisposable
             new Mock<ITenantService>().Object,
             TestPublicAccessCache.Create(),
             Mock.Of<ITenantCache>(),
+            TimeProvider.System,
             new Mock<ILogger<DemoTenantService>>().Object);
 
         var controller = new DemoSessionController(

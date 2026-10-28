@@ -240,9 +240,6 @@ public class PumpStatus
     [JsonPropertyName("reservoir_display_override")]
     public string? ReservoirDisplayOverride { get; set; }
 
-    [JsonPropertyName("reservoir_level_override")]
-    public PumpAlertLevel? ReservoirLevelOverride { get; set; }
-
     /// <summary>
     /// Pump manufacturer (e.g., "Insulet", "Medtronic", "Tandem")
     /// </summary>

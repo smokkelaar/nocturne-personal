@@ -220,6 +220,23 @@ public class NutritionControllerTests : IDisposable
         VerifyCarbIntakesFetched(V4ReadLimits.MaxPageSize, 0);
     }
 
+    [Fact]
+    public async Task GetCarbIntakes_FullPageWithoutIncludeTotal_LeavesTotalNullWithoutCounting()
+    {
+        _repoMock
+            .Setup(r => r.GetAsync(
+                It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), It.IsAny<string?>(), It.IsAny<string?>(),
+                It.IsAny<int>(), It.IsAny<int>(), It.IsAny<bool>(), It.IsAny<DateTime?>(), It.IsAny<Guid?>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync([new CarbIntake()]);
+
+        var result = await CreateController().GetCarbIntakes(null, null, 1, 0);
+
+        var response = ((OkObjectResult)result.Result!).Value.Should().BeOfType<PaginatedResponse<CarbIntake>>().Subject;
+        response.Pagination.Total.Should().BeNull();
+        _repoMock.Verify(r => r.CountAsync(It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
     private void VerifyCarbIntakesFetched(int limit, int offset) =>
         _repoMock.Verify(r => r.GetAsync(
             null, null, null, null, limit, offset, true, null, null, It.IsAny<CancellationToken>()), Times.Once);

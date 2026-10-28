@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Time.Testing;
 using Moq;
 using Nocturne.API.Services.Demo;
 using Nocturne.API.Tests.Infrastructure;
@@ -26,6 +27,7 @@ public class DemoTenantServiceResetTests : IDisposable
 
     private readonly SqliteTestDatabase _db;
     private readonly Mock<ITenantService> _tenantService = new();
+    private readonly FakeTimeProvider _time = new(new DateTimeOffset(2031, 5, 6, 7, 8, 9, TimeSpan.Zero));
     private readonly DemoTenantService _service;
 
     public DemoTenantServiceResetTests()
@@ -47,6 +49,7 @@ public class DemoTenantServiceResetTests : IDisposable
             _tenantService.Object,
             TestPublicAccessCache.Create(),
             Mock.Of<ITenantCache>(),
+            _time,
             new Mock<ILogger<DemoTenantService>>().Object);
     }
 
@@ -80,6 +83,20 @@ public class DemoTenantServiceResetTests : IDisposable
         await using var db = _db.CreateContext();
         var tenant = await db.Tenants.SingleAsync(t => t.Id == tenantId);
         tenant.AllowPublicDocs.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task ResetAsync_StampsTheResetAndOnboardingFromTheClock()
+    {
+        var tenantId = SeedDemoTenant();
+
+        await _service.ResetAsync();
+
+        await using var db = _db.CreateContext();
+        var config = await db.Set<TenantDemoConfigEntity>().SingleAsync(c => c.TenantId == tenantId);
+        config.LastResetAt.Should().Be(_time.GetUtcNow().UtcDateTime);
+        var tenant = await db.Tenants.SingleAsync(t => t.Id == tenantId);
+        tenant.OnboardingCompletedAt.Should().Be(_time.GetUtcNow().UtcDateTime);
     }
 
     [Fact]

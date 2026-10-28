@@ -69,12 +69,12 @@ public class RecentActivityPublishTests : IDisposable
         _context.StepCounts.Add(new StepCountEntity { Id = Guid.CreateVersion7(), TenantId = TenantId, OriginalId = "act-steps", Timestamp = now, Metric = 500 });
         _context.SleepSessions.Add(new SleepSessionEntity
         {
-            Id = Guid.CreateVersion7(), TenantId = TenantId, OriginalId = "act-sleep", Source = ActivityStateSpanMapper.SleepSessionSource,
+            Id = Guid.CreateVersion7(), TenantId = TenantId, OriginalId = "act-sleep", Source = ActivityStateSpanMapper.StoredSleepSessionSource,
             StartTime = now.AddHours(-8), EndTime = now, Type = "sleep", DetectionMethod = "manual",
         });
         _context.SleepSessions.Add(new SleepSessionEntity
         {
-            Id = Guid.CreateVersion7(), TenantId = TenantId, OriginalId = "act-sleep-deleted", Source = ActivityStateSpanMapper.SleepSessionSource,
+            Id = Guid.CreateVersion7(), TenantId = TenantId, OriginalId = "act-sleep-deleted", Source = ActivityStateSpanMapper.StoredSleepSessionSource,
             StartTime = now.AddHours(-8), EndTime = now, Type = "sleep", DetectionMethod = "manual", DeletedAt = now,
         });
         await _context.SaveChangesAsync();

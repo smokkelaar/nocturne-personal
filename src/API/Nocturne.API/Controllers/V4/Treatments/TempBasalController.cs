@@ -42,6 +42,7 @@ public class TempBasalController(
     /// Never cached, per <see cref="Profiles.ProfileController.GetProfileSummary"/>: a just-started
     /// or just-cancelled span must not be invisible until a cached list body expires.
     /// </remarks>
+    /// <param name="includeTotal">Count every record in the range and return it as `pagination.total`. Defaults to `false`.</param>
     [HttpGet]
     [RequireScope(Scope.TreatmentsRead)]
     [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
@@ -52,6 +53,7 @@ public class TempBasalController(
         [FromQuery] int limit = 100, [FromQuery] int offset = 0,
         [FromQuery] string sort = "timestamp_desc",
         [FromQuery] string? device = null, [FromQuery] string? source = null,
+        [FromQuery] bool includeTotal = false,
         CancellationToken ct = default)
     {
         if (sort is not "timestamp_desc" and not "timestamp_asc")
@@ -61,9 +63,9 @@ public class TempBasalController(
         offset = V4ReadLimits.ClampOffset(offset);
 
         var descending = sort == "timestamp_desc";
-        var data = await repo.GetAsync(from, to, device, source, limit, offset, descending, ct);
-        var total = await repo.CountAsync(from, to, ct);
-        return Ok(new PaginatedResponse<TempBasal> { Data = data, Pagination = new PaginationInfo(limit, offset, total) });
+        var data = (await repo.GetAsync(from, to, device, source, limit, offset, descending, ct)).ToList();
+        var pagination = await PaginationInfo.ForPageAsync(limit, offset, data.Count, includeTotal, () => repo.CountAsync(from, to, ct));
+        return Ok(new PaginatedResponse<TempBasal> { Data = data, Pagination = pagination });
     }
 
     /// <summary>

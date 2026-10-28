@@ -52,11 +52,25 @@ public class UniqueIndexDeduplicationGuardTests
         "20260817064038_AddTenantScopedLegacyIdIndexesToMeterGlucoseAndCalibrations",
     };
 
+    /// <summary>
+    /// Migrations whose only unique builds replace a table's primary key with a wider one that
+    /// contains it, so there is no loser to clean up. The guard cannot read the old key off the
+    /// migration, so <see cref="AWidenedPrimaryKeyMigrationBuildsNoUniqueIndexItDoesNotPromote"/>
+    /// holds each entry to building no other unique index. The rationale is on
+    /// <c>NocturneDbContext.ScopeKeyToTenant</c>.
+    /// </summary>
+    private static readonly IReadOnlySet<string> WidenedPrimaryKeyMigrations = new HashSet<string>(StringComparer.Ordinal)
+    {
+        "20261027134107_ScopeClientIdKeysToTenant",
+        "20261027160711_ScopeReferencedClientIdKeysToTenant",
+    };
+
     [Fact]
     public void NoNewMigrationCreatesAUniqueIndexOverPreExistingDataWithoutDeduplicating()
     {
         var offenders = MigrationSourceFiles.All()
-            .Where(f => !GrandfatheredMigrations.Contains(MigrationSourceFiles.Name(f)))
+            .Where(f => !GrandfatheredMigrations.Contains(MigrationSourceFiles.Name(f))
+                && !WidenedPrimaryKeyMigrations.Contains(MigrationSourceFiles.Name(f)))
             .Select(f => (Migration: MigrationSourceFiles.Name(f), Tables: UndeduplicatedTables(f)))
             .Where(x => x.Tables.Count > 0)
             .Select(x => $"{x.Migration} -> {string.Join(", ", x.Tables)}")
@@ -91,6 +105,37 @@ public class UniqueIndexDeduplicationGuardTests
     }
 
     [Fact]
+    public void AWidenedPrimaryKeyMigrationBuildsNoUniqueIndexItDoesNotPromote()
+    {
+        foreach (var migration in WidenedPrimaryKeyMigrations)
+        {
+            var file = MigrationSourceFiles.All().Single(f => MigrationSourceFiles.Name(f) == migration);
+
+            UnpromotedUniqueBuilds(MigrationSourceFiles.UpBody(file)).Should().BeEmpty(
+                $"{migration} is exempt from the cleanup rule only while every unique index it builds "
+                + "becomes a primary key, so a stray unique index cannot hide behind the allowlist");
+        }
+    }
+
+    [Fact]
+    public void TheGuardSeesAUniqueBuildThatIsNotPromoted()
+    {
+        const string up = """
+            ConcurrentIndexBuilder.BuildUnique(migrationBuilder, $"pk_{table}_tenant_id_id", $"ON {table} (tenant_id, id)");
+            migrationBuilder.Sql($"ALTER TABLE {table} ADD CONSTRAINT PK_{table} PRIMARY KEY USING INDEX pk_{table}_tenant_id_id;");
+            ConcurrentIndexBuilder.BuildUnique(migrationBuilder, "ix_stray", "ON notes (sync_identifier)");
+            """;
+
+        UnpromotedUniqueBuilds(up).Should().Equal("ix_stray");
+    }
+
+    private static IReadOnlyList<string> UnpromotedUniqueBuilds(string up) =>
+        BuiltUniqueIndexName.Matches(up)
+            .Select(m => m.Groups[1].Value)
+            .Where(name => !up.Contains($"PRIMARY KEY USING INDEX {name}", StringComparison.Ordinal))
+            .ToList();
+
+    [Fact]
     public void EveryGrandfatheredMigrationStillExistsAndStillLacksDeduplication()
     {
         // Also the discovery check: a moved directory, a changed glob or a detection regex that
@@ -100,7 +145,7 @@ public class UniqueIndexDeduplicationGuardTests
             .Select(MigrationSourceFiles.Name)
             .ToHashSet(StringComparer.Ordinal);
 
-        stillOffending.Should().BeEquivalentTo(GrandfatheredMigrations,
+        stillOffending.Should().BeEquivalentTo(GrandfatheredMigrations.Union(WidenedPrimaryKeyMigrations),
             "an allowlist entry that no longer matches is stale and hides a regression");
     }
 
@@ -210,6 +255,9 @@ public class UniqueIndexDeduplicationGuardTests
     /// </summary>
     private static readonly Regex BuilderUniqueIndex = new(
         @"ConcurrentIndexBuilder\.BuildUnique\s*\([^;]*?""ON\s+(?:ONLY\s+)?([^\s""]+)", Sql);
+
+    private static readonly Regex BuiltUniqueIndexName = new(
+        @"ConcurrentIndexBuilder\.BuildUnique\s*\(\s*migrationBuilder\s*,\s*\$?""([^""]+)""", Sql);
 
     private static readonly Regex SqlUniqueConstraint = new(
         @"ALTER\s+TABLE\s+(?:ONLY\s+)?(\S+)[^;]*?\bADD\s+CONSTRAINT\b[^;]*?\bUNIQUE\b", Sql);

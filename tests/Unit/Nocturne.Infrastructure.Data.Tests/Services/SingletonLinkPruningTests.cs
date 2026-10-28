@@ -80,6 +80,80 @@ public class SingletonLinkPruningTests
     }
 
     [Fact]
+    public async Task Prune_DeletesTheSingletonsOnItsPage_AndAdvancesTheCursorToThePageEnd()
+    {
+        using var world = new World();
+        var first = await world.IngestBolus(Guid.CreateVersion7(), Event, "mylife-connector", 2.5);
+        var pairA = await world.IngestBolus(Guid.CreateVersion7(), Event.AddHours(1), "mylife-connector", 1.0);
+        var pairB = await world.IngestBolus(Guid.CreateVersion7(), Event.AddHours(1).AddSeconds(5), "glooko-connector", 1.0);
+        var second = await world.IngestBolus(Guid.CreateVersion7(), Event.AddHours(2), "mylife-connector", 3.0);
+        var beyond = await world.IngestBolus(Guid.CreateVersion7(), Event.AddHours(3), "mylife-connector", 4.0);
+        await world.Age();
+        await world.StampLinks([first, pairA, pairB, second, beyond], DateTime.UtcNow.AddDays(-2));
+        var secondLink = await world.Link(second);
+
+        (await world.Service.PruneSingletonLinksAsync(3, 1)).Should().Be(2);
+
+        var linked = await world.Ctx.LinkedRecords.Select(l => l.RecordId).ToListAsync();
+        linked.Should().BeEquivalentTo([pairA, pairB, beyond],
+            "the page holds the pair's primary and both singles before it, and the single after it waits");
+        var state = await world.PruneState();
+        state.PruneCursorCreatedAt.Should().Be(secondLink.SysCreatedAt);
+        state.PruneCursorId.Should().Be(secondLink.Id);
+    }
+
+    [Fact]
+    public async Task Prune_OnATenantWhoseCursorIsAtTheEnd_DeletesNothingBehindIt()
+    {
+        using var world = new World();
+        var pairA = await world.IngestBolus(Guid.CreateVersion7(), Event, "mylife-connector", 1.0);
+        var pairB = await world.IngestBolus(Guid.CreateVersion7(), Event.AddSeconds(5), "glooko-connector", 1.0);
+        await world.IngestBolus(Guid.CreateVersion7(), Event.AddHours(1), "mylife-connector", 2.0);
+        await world.Age();
+        (await world.Service.PruneSingletonLinksAsync(100, 10)).Should().Be(1);
+        var before = await world.PruneState();
+
+        await world.Ctx.LinkedRecords.Where(l => !l.IsPrimary).ExecuteDeleteAsync();
+
+        (await world.Service.PruneSingletonLinksAsync(100, 10)).Should().Be(0,
+            "the pair's primary became a singleton after the cursor passed it");
+        (await world.Ctx.LinkedRecords.Select(l => l.RecordId).ToListAsync()).Should().ContainSingle()
+            .And.BeSubsetOf([pairA, pairB]);
+        (await world.PruneState()).Should().BeEquivalentTo(before, "a tick with nothing past the cursor writes nothing");
+    }
+
+    [Fact]
+    public async Task Prune_RestartsOncePerRetention_AndDeletesALateSingletonOnThatPass()
+    {
+        using var world = new World();
+        await world.IngestBolus(Guid.CreateVersion7(), Event, "mylife-connector", 1.0);
+        await world.IngestBolus(Guid.CreateVersion7(), Event.AddSeconds(5), "glooko-connector", 1.0);
+        await world.IngestBolus(Guid.CreateVersion7(), Event.AddHours(1), "mylife-connector", 2.0);
+        await world.Age();
+        (await world.Service.PruneSingletonLinksAsync(100, 10)).Should().Be(1);
+        await world.Ctx.LinkedRecords.Where(l => !l.IsPrimary).ExecuteDeleteAsync();
+
+        var lastReset = DateTime.UtcNow - DeduplicationService.SingletonLinkRetention - TimeSpan.FromMinutes(1);
+        await world.Ctx.DedupReconcileState.ExecuteUpdateAsync(s => s.SetProperty(e => e.PruneCursorResetAt, lastReset));
+        var restartedAfter = DateTime.UtcNow;
+
+        (await world.Service.PruneSingletonLinksAsync(100, 10)).Should().Be(1);
+        (await world.Ctx.LinkedRecords.AnyAsync()).Should().BeFalse();
+        (await world.PruneState()).PruneCursorResetAt.Should().BeOnOrAfter(restartedAfter);
+    }
+
+    [Fact]
+    public void SingletonsAmong_OnPostgres_BindsThePageAsOneArray()
+    {
+        using var context = OfflineDbContext.Create();
+
+        var sql = DeduplicationService.SingletonsAmong(context, [Guid.NewGuid(), Guid.NewGuid()]).ToQueryString();
+
+        sql.Should().MatchRegex(@"l\.id = ANY \(@\w+\)", "one uuid[] parameter keeps one statement for every page size");
+        sql.Should().Contain("NOT EXISTS (");
+    }
+
+    [Fact]
     public async Task Ingest_ASecondSourceJoinsAPrunedReading_WhichStaysPrimary()
     {
         var reading = Guid.CreateVersion7();
@@ -348,6 +422,23 @@ public class SingletonLinkPruningTests
             }
             Ctx.ChangeTracker.Clear();
         }
+
+        /// <summary>Stamps the links of <paramref name="recordIds"/> a second apart from <paramref name="from"/>, in order.</summary>
+        public async Task StampLinks(IReadOnlyList<Guid> recordIds, DateTime from)
+        {
+            for (var i = 0; i < recordIds.Count; i++)
+            {
+                var recordId = recordIds[i];
+                await Ctx.LinkedRecords.Where(l => l.RecordId == recordId)
+                    .ExecuteUpdateAsync(s => s.SetProperty(l => l.SysCreatedAt, from.AddSeconds(i)));
+            }
+        }
+
+        public Task<LinkedRecordEntity> Link(Guid recordId) =>
+            Ctx.LinkedRecords.AsNoTracking().SingleAsync(l => l.RecordId == recordId);
+
+        public Task<DedupReconcileStateEntity> PruneState() =>
+            Ctx.DedupReconcileState.AsNoTracking().SingleAsync();
 
         public async Task<List<string>> Groups()
         {

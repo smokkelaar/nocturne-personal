@@ -31,15 +31,18 @@ public class DemoAdminController : ControllerBase
     private readonly ITenantService _tenantService;
     private readonly DemoTenantService _demoTenantService;
     private readonly INocturneDbContextFactory _factory;
+    private readonly TimeProvider _time;
 
     public DemoAdminController(
         ITenantService tenantService,
         DemoTenantService demoTenantService,
-        INocturneDbContextFactory factory)
+        INocturneDbContextFactory factory,
+        TimeProvider time)
     {
         _tenantService = tenantService;
         _demoTenantService = demoTenantService;
         _factory = factory;
+        _time = time;
     }
 
     /// <summary>
@@ -62,7 +65,7 @@ public class DemoAdminController : ControllerBase
             // Re-apply the tenant defaults and the access grants: this runs on every demo
             // service start, so it repairs a tenant left without roles or a demo member by a
             // reset that failed between wiping and re-seeding.
-            DemoTenantService.ApplyTenantDefaults(existing);
+            _demoTenantService.ApplyTenantDefaults(existing);
             await db.SaveChangesAsync(ct);
             await _demoTenantService.ConfigureAccessAsync(existing.Id, ct);
             return Ok(ToDto(existing, alreadyExisted: true));
@@ -74,7 +77,7 @@ public class DemoAdminController : ControllerBase
             .FirstAsync(t => t.Id == created.Id, ct);
 
         tenant.IsDemo = true;
-        DemoTenantService.ApplyTenantDefaults(tenant);
+        _demoTenantService.ApplyTenantDefaults(tenant);
 
         var config = new TenantDemoConfigEntity { TenantId = tenant.Id };
         db.Set<TenantDemoConfigEntity>().Add(config);
@@ -192,7 +195,7 @@ public class DemoAdminController : ControllerBase
 
         await using var db = await _factory.CreateForTenantAsync(tenant.Id, ct);
 
-        var deleted = await DemoDataPurge.PurgeTreatmentsAsync(db, ct)
+        var deleted = await DemoDataPurge.PurgeTreatmentsAsync(db, _time, ct)
             + await DemoDataPurge.PurgeDeviceStatusAsync(db, ct);
 
         return Ok(new DemoDeleteResultDto(deleted));

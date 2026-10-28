@@ -41,9 +41,10 @@ public class MyFitnessPalConnectorService : BaseConnectorService<MyFitnessPalCon
         IRetryDelayStrategy retryDelayStrategy,
         MyFitnessPalAuthTokenProvider tokenProvider,
         IConnectorConfigurationService configService,
-        IConnectorPublisher? publisher = null
+        IConnectorPublisher? publisher = null,
+        TimeProvider? timeProvider = null
     )
-        : base(httpClient, serverResolver, logger, publisher)
+        : base(httpClient, serverResolver, logger, publisher, timeProvider)
     {
         _retryDelayStrategy =
             retryDelayStrategy ?? throw new ArgumentNullException(nameof(retryDelayStrategy));

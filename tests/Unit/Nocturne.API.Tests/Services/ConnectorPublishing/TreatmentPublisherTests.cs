@@ -1,3 +1,4 @@
+using Nocturne.Core.Contracts.Multitenancy;
 using Nocturne.Connectors.Core.Models;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
@@ -103,7 +104,7 @@ public class TreatmentPublisherTests
             Mock.Of<IPatientDeviceStamper>(),
             auditContext,
             new PublishSkipTally(),
-            NullLogger<TreatmentPublisher>.Instance
+            Mock.Of<ITenantAccessor>(), NullLogger<TreatmentPublisher>.Instance
         );
     }
 

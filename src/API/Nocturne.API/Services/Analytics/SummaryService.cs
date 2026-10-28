@@ -301,6 +301,15 @@ public class SummaryService : ISummaryService
         }
     }
 
+    /// <summary>
+    /// Whether the IOB/COB read windows hold a bolus, temp basal or carb intake. With a profile, this
+    /// stands in for Nightscout's COB plugin having any treatment to read, so a profile with only
+    /// insulin gives a COB of zero rather than none. Nightscout counts any treatment in about two
+    /// days of data, so a site change alone gives zero there and none here.
+    /// </summary>
+    private static bool HasTreatments(IobCobInputs inputs) =>
+        inputs.Boluses.Count > 0 || inputs.TempBasals.Count > 0 || inputs.CarbIntakes.Count > 0;
+
     /// <inheritdoc />
     public async Task<SummaryState> ConstructStateAsync(
         CancellationToken cancellationToken = default
@@ -313,10 +322,11 @@ public class SummaryService : ISummaryService
             var state = new SummaryState();
 
             var reading = await ReadIobCobAsync(cancellationToken);
+            // Nightscout's summary uses Math.round, not the display's toFixed: 0.015 is 0.02 here and "0.01" there.
             if (reading?.HasIob == true)
                 state.Iob = Math.Floor(reading.Iob.Iob * 100 + 0.5) / 100;
-            if (reading?.HasCob == true)
-                state.Cob = (int)Math.Floor(reading.Cob!.Cob + 0.5);
+            if (reading?.Cob is { } cob && (reading.HasCob || (properties.ContainsKey("profile") && HasTreatments(reading.Inputs))))
+                state.Cob = (int)Math.Floor(cob.Cob + 0.5);
 
             // Extract BWP (Bolus Wizard Preview)
             if (
@@ -329,7 +339,7 @@ public class SummaryService : ISummaryService
                     && double.TryParse(bwpValue?.ToString(), out var bwp)
                 )
                 {
-                    state.Bwp = Math.Round(bwp * 100) / 100;
+                    state.Bwp = Math.Floor(bwp * 100 + 0.5) / 100;
                 }
             }
 

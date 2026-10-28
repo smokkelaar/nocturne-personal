@@ -33,10 +33,39 @@ public static class StateSpanMapper
     }
 
     /// <summary>
-    /// The category a stored value names, or <see cref="StateSpanCategory.PumpMode"/> when it names none.
+    /// Every stored value <see cref="ParseCategory"/> reads. Rows with any other value are retired and
+    /// only ever soft-deleted, so a read that includes deleted rows filters on this
+    /// (<see cref="WhereCategoryIsCurrent"/>).
     /// </summary>
+    public static readonly IReadOnlyList<string> CategoryNames = Enum.GetNames<StateSpanCategory>();
+
+    /// <summary>
+    /// A name lookup rather than <see cref="Enum.TryParse{TEnum}(string, out TEnum)"/>, which also
+    /// accepts the numeric form and would read a column holding "3" as a real category.
+    /// </summary>
+    private static readonly Dictionary<string, StateSpanCategory> CategoriesByName =
+        Enum.GetValues<StateSpanCategory>().ToDictionary(c => c.ToString(), StringComparer.Ordinal);
+
+    /// <summary>
+    /// Whether a stored value is one of <see cref="CategoryNames"/>, and the category it names.
+    /// </summary>
+    public static bool TryParseCategory(string category, out StateSpanCategory parsed) =>
+        CategoriesByName.TryGetValue(category, out parsed);
+
+    /// <summary>
+    /// The category a stored value names.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">The value is not one of <see cref="CategoryNames"/>.</exception>
     public static StateSpanCategory ParseCategory(string category) =>
-        Enum.TryParse<StateSpanCategory>(category, out var parsed) ? parsed : StateSpanCategory.PumpMode;
+        TryParseCategory(category, out var parsed)
+            ? parsed
+            : throw new InvalidOperationException($"Stored state span category '{category}' is not a {nameof(StateSpanCategory)}.");
+
+    /// <summary>
+    /// Narrows <paramref name="spans"/> to the rows whose category is one of <see cref="CategoryNames"/>.
+    /// </summary>
+    public static IQueryable<StateSpanEntity> WhereCategoryIsCurrent(this IQueryable<StateSpanEntity> spans) =>
+        spans.Where(s => CategoryNames.Contains(s.Category));
 
     /// <summary>
     /// Convert database entity to domain model

@@ -39,7 +39,7 @@ public class EntryUploadDuplicateRuleTests : GoldenFileTestBase
     [Theory]
     [InlineData(120)]
     [InlineData(125)]
-    public async Task V1_SameDeviceAndTimestamp_IsADuplicateAndEchoesTheStoredRow(double sgv)
+    public async Task V1_SameDeviceAndTimestamp_ReplacesTheStoredRow(double sgv)
     {
         await SeedStoredSgv(120, Device);
 
@@ -47,9 +47,11 @@ public class EntryUploadDuplicateRuleTests : GoldenFileTestBase
 
         response.IsSuccessStatusCode.Should().BeTrue();
         var echoed = (await ReadArray(response)).Single();
+        echoed.GetProperty("_id").GetString().Should().Be("aaaaaaaaaaaaaaaaaaaaa001");
         echoed.GetProperty("date").GetInt64().Should().Be(StoredMills);
-        echoed.GetProperty("sgv").GetDouble().Should().Be(120);
+        echoed.GetProperty("sgv").GetDouble().Should().Be(sgv);
         SensorGlucoseRows().Should().Be(1);
+        StoredMgdl().Should().Be(sgv);
     }
 
     [Fact]
@@ -150,6 +152,13 @@ public class EntryUploadDuplicateRuleTests : GoldenFileTestBase
         (await ReadArray(response)).Select(e => e.GetProperty("date").GetInt64()).ToList();
 
     private long SensorGlucoseRows() => Count("sensor_glucose");
+
+    private double StoredMgdl()
+    {
+        using var cmd = Factory.Connection.CreateCommand();
+        cmd.CommandText = "SELECT mgdl FROM sensor_glucose";
+        return Convert.ToDouble(cmd.ExecuteScalar());
+    }
 
     private long Count(string table)
     {

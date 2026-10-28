@@ -1,3 +1,4 @@
+using Nocturne.Core.Contracts.Multitenancy;
 using Nocturne.API.Tests.Infrastructure;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
@@ -198,6 +199,6 @@ public class RecentTreatmentRepublishTests : IDisposable
             bolus, carbs, bgChecks, calculations, Mock.Of<ITempBasalRepository>(),
             Mock.Of<IBasalInjectionRepository>(), notes, deviceEvents,
             Mock.Of<IPatientInsulinRepository>(), Mock.Of<IBasalRateResolver>(), Mock.Of<ITherapySettingsResolver>(),
-            Mock.Of<IPatientDeviceStamper>(), audit, _tally, NullLogger<TreatmentPublisher>.Instance);
+            Mock.Of<IPatientDeviceStamper>(), audit, _tally, Mock.Of<ITenantAccessor>(), NullLogger<TreatmentPublisher>.Instance);
     }
 }

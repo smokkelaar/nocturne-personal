@@ -89,11 +89,6 @@ public sealed class AuthenticationMiddlewareInviteIdentityTests
         bool markEndpoint = true,
         bool withTokenRouteValue = true)
     {
-        var memberService = new Mock<ITenantMemberService>();
-        memberService
-            .Setup(s => s.IsMemberAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(false);
-
         var inviteService = new Mock<IMemberInviteService>();
         inviteService
             .Setup(s => s.GetInviteByTokenAsync(It.IsAny<string>(), TenantId))
@@ -101,7 +96,6 @@ public sealed class AuthenticationMiddlewareInviteIdentityTests
 
         var services = new ServiceCollection();
         services.AddScoped<ICategoryReadContext>(_ => new CategoryReadContext());
-        services.AddSingleton(memberService.Object);
         services.AddSingleton(inviteService.Object);
         services.AddScoped(_ => TestDbContextFactory.CreateInMemoryContext($"invite_identity_{Guid.NewGuid()}").AsFactory());
         var provider = services.BuildServiceProvider();

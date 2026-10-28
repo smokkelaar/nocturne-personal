@@ -1,3 +1,4 @@
+using Nocturne.Core.Contracts.Multitenancy;
 using Nocturne.Connectors.Core.Interfaces;
 using Nocturne.Connectors.Core.Models;
 using Nocturne.Core.Contracts.Audit;
@@ -59,8 +60,9 @@ internal sealed class TreatmentPublisher : ConnectorPublisherBase, ITreatmentPub
         IPatientDeviceStamper patientDeviceStamper,
         IAuditContext auditContext,
         PublishSkipTally skips,
+        ITenantAccessor tenantAccessor,
         ILogger<TreatmentPublisher> logger)
-        : base(auditContext, skips, logger)
+        : base(auditContext, skips, tenantAccessor, logger)
     {
         _contextFactory = contextFactory ?? throw new ArgumentNullException(nameof(contextFactory));
         _treatmentService = treatmentService ?? throw new ArgumentNullException(nameof(treatmentService));

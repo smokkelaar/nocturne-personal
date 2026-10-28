@@ -30,9 +30,10 @@ public class TidepoolConnectorService : BaseConnectorService<TidepoolConnectorCo
         IRetryDelayStrategy retryDelayStrategy,
         IRateLimitingStrategy rateLimitingStrategy,
         TidepoolAuthTokenProvider tokenProvider,
-        IConnectorPublisher? publisher = null
+        IConnectorPublisher? publisher = null,
+        TimeProvider? timeProvider = null
     )
-        : base(httpClient, serverResolver, logger, publisher)
+        : base(httpClient, serverResolver, logger, publisher, timeProvider)
     {
         _retryDelayStrategy =
             retryDelayStrategy ?? throw new ArgumentNullException(nameof(retryDelayStrategy));

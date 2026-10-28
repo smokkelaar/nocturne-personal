@@ -34,8 +34,9 @@ public class TwiistConnectorService : BaseConnectorService<TwiistConnectorConfig
         IRetryDelayStrategy retryDelayStrategy,
         IRateLimitingStrategy rateLimitingStrategy,
         TwiistAuthTokenProvider tokenProvider,
-        IConnectorPublisher? publisher = null)
-        : base(httpClient, serverResolver, logger, publisher)
+        IConnectorPublisher? publisher = null,
+        TimeProvider? timeProvider = null)
+        : base(httpClient, serverResolver, logger, publisher, timeProvider)
     {
         _retryDelayStrategy = retryDelayStrategy ?? throw new ArgumentNullException(nameof(retryDelayStrategy));
         _rateLimitingStrategy = rateLimitingStrategy ?? throw new ArgumentNullException(nameof(rateLimitingStrategy));

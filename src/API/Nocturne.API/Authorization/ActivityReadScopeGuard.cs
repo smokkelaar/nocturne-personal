@@ -85,6 +85,22 @@ internal static class ActivityReadScopeGuard
     }
 
     /// <summary>
+    /// The first of <paramref name="stored"/> the caller may read, or <see langword="null"/>. One id
+    /// can name a record in several storages, so a record the caller may not read must not hide one
+    /// it may.
+    /// </summary>
+    /// <param name="stored">The records an id names, as <c>IActivityService.GetStoredActivitiesAsync</c> returns them.</param>
+    /// <param name="decomposer">Classifier that maps each activity to its required read scope.</param>
+    /// <param name="grantedScopes">The caller's normalized granted scopes.</param>
+    public static Activity? FirstReadable(
+        IEnumerable<Activity> stored,
+        IActivityDecomposer decomposer,
+        IReadOnlySet<string> grantedScopes)
+    {
+        return stored.FirstOrDefault(activity => CanRead(activity, decomposer, grantedScopes));
+    }
+
+    /// <summary>
     /// Drops every activity whose storage category the caller lacks the read scope for.
     /// </summary>
     /// <param name="activities">The activities about to be returned.</param>

@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Time.Testing;
 using Moq;
 using Nocturne.Connectors.Core.Interfaces;
 using Nocturne.Connectors.Core.Models;
@@ -26,10 +27,11 @@ public class SyncTerminalPhaseTests
     {
         private readonly Func<SyncResult, Task> _syncBody;
 
-        public TestConnectorService(Func<SyncResult, Task> syncBody)
+        public TestConnectorService(Func<SyncResult, Task> syncBody, TimeProvider? timeProvider = null)
             : base(new HttpClient(),
                 new ConnectorServerResolver<TestConfig>(null, null, null),
-                NullLogger<TestConnectorService>.Instance)
+                NullLogger<TestConnectorService>.Instance,
+                timeProvider: timeProvider)
         {
             _syncBody = syncBody;
         }
@@ -115,6 +117,23 @@ public class SyncTerminalPhaseTests
         reported[0].Phase.Should().Be(SyncPhase.Completed);
         reported[0].ErrorMessage.Should().BeNull();
         reported[0].ConnectorId.Should().Be("test");
+    }
+
+    [Fact]
+    public async Task ProgressEvents_AreStampedWithTheInjectedClock()
+    {
+        var now = new DateTimeOffset(2026, 3, 1, 12, 0, 0, TimeSpan.Zero);
+        var (reporter, reported) = BuildReporter();
+
+        await new TestConnectorService(_ => Task.CompletedTask, new FakeTimeProvider(now))
+            .SyncDataAsync(
+                new SyncRequest { DataTypes = [SyncDataType.Glucose] },
+                new TestConfig(),
+                CancellationToken.None,
+                reporter.Object);
+
+        reported.Should().NotBeEmpty();
+        reported.Should().OnlyContain(e => e.Timestamp == now);
     }
 
     [Fact]

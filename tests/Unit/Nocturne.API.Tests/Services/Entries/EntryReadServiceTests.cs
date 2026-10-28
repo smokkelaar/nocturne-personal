@@ -525,7 +525,7 @@ public class EntryReadServiceTests
 
         Assert.Null(results[0]);
         Assert.NotNull(results[1]);
-        Assert.Equal(stored.Mills, results[1]!.Mills);
+        Assert.Equal(stored.Mills, results[1]!.Entry.Mills);
     }
 
     [Fact]

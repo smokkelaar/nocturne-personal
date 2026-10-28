@@ -68,6 +68,7 @@ public class DataSourceServiceDiscoveryTests : IDisposable
         Nocturne.API.Tests.Infrastructure.ProfileActivationTestDeps.Writer(context),
         [],
         [],
+        TimeProvider.System,
         NullLogger<DataSourceService>.Instance);
 
     private async Task<List<DataSourceInfo>> DiscoverAsync()

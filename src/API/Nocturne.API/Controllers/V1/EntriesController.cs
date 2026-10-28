@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Nocturne.API.Attributes;
@@ -9,7 +10,9 @@ using Nocturne.API.Services.Alerts;
 using Nocturne.Core.Models.Authorization;
 using Nocturne.API.Extensions;
 using Nocturne.API.Helpers;
+using Nocturne.API.Services.Glucose;
 using Nocturne.API.Services.Legacy;
+using Nocturne.API.Services.V4;
 using Nocturne.Core.Contracts.Glucose;
 using Nocturne.Core.Contracts.Legacy;
 using Nocturne.Core.Contracts.Alerts;
@@ -440,30 +443,18 @@ public class EntriesController : ControllerBase
             var processedEntries = _documentProcessingService.ProcessDocuments(validEntries);
             var processedArray = processedEntries.ToArray();
 
-            // Filter out duplicates using database-backed detection. Duplicates are
-            // excluded from the write but must still be echoed in the response: v1
-            // uploaders (Loop's NightscoutKit) require one response object per
-            // submitted entry, and treat a shorter array as a failed upload — the
-            // batch is then retried forever and the client never uploads anything
-            // newer. Legacy cgm-remote-monitor echoed dedup hits back with their _id.
-            var (uniqueEntries, responseEntries) = await PartitionStoredEntriesAsync(
-                processedArray,
-                cancellationToken
-            );
+            var partition = await PartitionStoredEntriesAsync(processedArray, cancellationToken);
 
-            // Create entries in database
-            var createdEntries = await _entryService.CreateEntriesAsync(
-                uniqueEntries,
+            var written = await _entryService.CreateEntriesAsync(
+                partition.ToWrite,
                 cancellationToken: cancellationToken
             );
-            var createdArray = createdEntries.ToArray();
 
-            _logger.LogDebug("Created {Count} entries", createdArray.Length);
+            _logger.LogDebug("Wrote {Count} entries", written.Count);
 
-            // Evaluate alert rules against the latest created entry
-            await _alertEvaluator.EvaluateForEntriesAsync(createdArray, cancellationToken);
+            await _alertEvaluator.EvaluateForEntriesAsync(partition.GlucoseMoved, cancellationToken);
 
-            var echo = BuildSubmittedOrderEcho(entriesToCreate, acceptedIndices, responseEntries);
+            var echo = BuildSubmittedOrderEcho(entriesToCreate, acceptedIndices, partition.Response);
 
             return Ok(echo.ToV1Responses());
         }
@@ -500,8 +491,8 @@ public class EntriesController : ControllerBase
                 $"Echo has {acceptedResponses.Count} entries for {acceptedIndices.Count} accepted entries");
         }
 
-        // Refused entries are already in place; accepted ones are replaced by what the write path
-        // resolved them to (the submitted entry, or the stored row it duplicated).
+        // Refused entries are already in place; accepted ones are replaced by what the partition
+        // echoes for them.
         var echo = submitted.ToArray();
         for (var i = 0; i < acceptedIndices.Count; i++)
         {
@@ -531,15 +522,29 @@ public class EntriesController : ControllerBase
     }
 
     /// <summary>
-    /// Splits a processed upload batch into the entries to write and the entries to echo, using
-    /// one duplicate query per entry type for the whole batch instead of one per entry.
+    /// What a processed upload batch writes, echoes and alerts on.
+    /// </summary>
+    /// <param name="ToWrite">Every new entry, and every re-send of a stored reading merged onto it.</param>
+    /// <param name="Response">One element per accepted entry, in order.</param>
+    /// <param name="GlucoseMoved">The entries whose glucose value was not stored before.</param>
+    private sealed record StoredEntryPartition(List<Entry> ToWrite, List<Entry> Response, List<Entry> GlucoseMoved);
+
+    /// <summary>
+    /// Splits a processed upload batch into <see cref="StoredEntryPartition"/>, using one duplicate
+    /// query per entry type for the whole batch instead of one per entry.
     /// </summary>
     /// <remarks>
-    /// The echo list carries the stored entry for every duplicate and the submitted entry
-    /// otherwise, so it always has one element per submitted entry — the response shape v1
-    /// uploaders require.
+    /// A re-send of a stored reading updates it, as Nightscout's upsert on <c>{sysTime, type}</c>
+    /// does: xDrip+ re-sends the reading paired with a calibration at its original time, with no
+    /// <c>_id</c> and the recalculated value. Like that upsert's <c>$set</c>, it changes only the
+    /// fields the re-send carries. It is written under the stored row's legacy id, so the legacy-id
+    /// upsert updates that row and its material-change gate keeps an identical re-send silent. A
+    /// stored row with no legacy id is out of that upsert's reach, so a re-send of it is echoed as
+    /// stored and not written.
+    /// Every re-send is echoed: v1 uploaders (Loop's NightscoutKit) treat a response shorter than the
+    /// upload as a failed upload and retry the batch forever.
     /// </remarks>
-    private async Task<(List<Entry> Unique, List<Entry> Response)> PartitionStoredEntriesAsync(
+    private async Task<StoredEntryPartition> PartitionStoredEntriesAsync(
         Entry[] processedArray,
         CancellationToken cancellationToken
     )
@@ -557,41 +562,61 @@ public class EntriesController : ControllerBase
                 $"Duplicate check returned {duplicates.Count} results for {processedArray.Length} entries");
         }
 
-        var uniqueEntries = new List<Entry>();
-        var responseEntries = new List<Entry>(processedArray.Length);
+        var partition = new StoredEntryPartition([], new List<Entry>(processedArray.Length), []);
+        var stored = 0;
 
         for (var i = 0; i < processedArray.Length; i++)
         {
             var entry = processedArray[i];
-            var duplicate = duplicates[i];
+            var match = duplicates[i];
 
-            if (duplicate != null)
+            if (match is null)
             {
-                _logger.LogDebug(
-                    "Skipping duplicate entry: device={Device}, type={Type}, sgv={Sgv}, mills={Mills}",
-                    entry.Device,
-                    entry.Type,
-                    entry.Sgv,
-                    entry.Mills
-                );
-                responseEntries.Add(duplicate);
+                partition.ToWrite.Add(entry);
+                partition.Response.Add(entry);
+                partition.GlucoseMoved.Add(entry);
                 continue;
             }
 
-            uniqueEntries.Add(entry);
-            responseEntries.Add(entry);
+            stored++;
+
+            if (match.LegacyId is null)
+            {
+                partition.Response.Add(match.Entry);
+                continue;
+            }
+
+            var storedMgdl = EntryDecomposer.WrittenMgdl(match.Entry);
+            var merged = MergeOntoStored(match.Entry, entry);
+            merged.Id = match.LegacyId;
+            partition.ToWrite.Add(merged);
+            partition.Response.Add(merged);
+            if (EntryDecomposer.WrittenMgdl(merged) != storedMgdl)
+                partition.GlucoseMoved.Add(merged);
         }
 
-        _logger.LogDebug(
-            "Filtered {Original} entries to {Unique} unique entries",
-            processedArray.Length,
-            uniqueEntries.Count
-        );
+        LogReuploadLoop(processedArray.Length, stored);
 
-        LogReuploadLoop(processedArray.Length, processedArray.Length - uniqueEntries.Count);
-
-        return (uniqueEntries, responseEntries);
+        return partition;
     }
+
+    /// <summary>
+    /// Overlays the fields <paramref name="resent"/> carries onto <paramref name="stored"/> in place.
+    /// A nullable field left null, and an <c>mgdl</c> of 0, is one the re-send did not carry.
+    /// Computed and non-nullable members are always carried.
+    /// </summary>
+    private static Entry MergeOntoStored(Entry stored, Entry resent)
+    {
+        var carried = JsonSerializer.SerializeToNode(resent, CarriedFields)!.AsObject();
+        if (resent.Mgdl == 0)
+            carried.Remove("mgdl");
+
+        JsonMergePatch.ApplyInPlace(stored, JsonSerializer.SerializeToElement(carried), EntryService.CarrySgvAndMgdl);
+        return stored;
+    }
+
+    private static readonly JsonSerializerOptions CarriedFields =
+        new() { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull };
 
     /// <summary>
     /// Records one line when a large upload is almost entirely already stored, which is what a

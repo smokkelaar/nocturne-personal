@@ -731,7 +731,7 @@ public class PasskeyControllerTests : IDisposable
         _recoveryCodeService.Setup(s => s.GenerateCodesAsync(inviteeId)).ReturnsAsync(["code-1"]);
         _sessionService
             .Setup(s => s.IssueSessionAsync(inviteeId, It.IsAny<SessionContext>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new SessionTokenPair("access", "refresh", 900));
+            .ReturnsAsync(new SessionTokenPair("access", "refresh", 900, inviteeId));
 
         var result = await _controller.InviteComplete(
             new InviteCompleteRequest
@@ -934,7 +934,7 @@ public class PasskeyControllerTests : IDisposable
         _recoveryCodeService.Setup(s => s.GenerateCodesAsync(shell)).ReturnsAsync(["code-1"]);
         _sessionService
             .Setup(s => s.IssueSessionAsync(shell, It.IsAny<SessionContext>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new SessionTokenPair("access", "refresh", 900));
+            .ReturnsAsync(new SessionTokenPair("access", "refresh", 900, shell));
 
         var result = await _controller.InviteComplete(
             new InviteCompleteRequest
@@ -971,7 +971,7 @@ public class PasskeyControllerTests : IDisposable
         _recoveryCodeService.Setup(s => s.GenerateCodesAsync(newest)).ReturnsAsync(["code-1"]);
         _sessionService
             .Setup(s => s.IssueSessionAsync(newest, It.IsAny<SessionContext>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new SessionTokenPair("access", "refresh", 900));
+            .ReturnsAsync(new SessionTokenPair("access", "refresh", 900, newest));
 
         var result = await _controller.InviteComplete(
             new InviteCompleteRequest
@@ -1017,7 +1017,7 @@ public class PasskeyControllerTests : IDisposable
         _recoveryCodeService.Setup(s => s.GenerateCodesAsync(subjects[0].Id)).ReturnsAsync(["code-1"]);
         _sessionService
             .Setup(s => s.IssueSessionAsync(subjects[0].Id, It.IsAny<SessionContext>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new SessionTokenPair("access", "refresh", 900));
+            .ReturnsAsync(new SessionTokenPair("access", "refresh", 900, subjects[0].Id));
 
         var result = await _controller.InviteComplete(
             new InviteCompleteRequest
@@ -1316,7 +1316,7 @@ public class PasskeyControllerTests : IDisposable
         _totpService.Setup(s => s.GetCredentialCountAsync(subjectId)).ReturnsAsync(0);
         _sessionService
             .Setup(s => s.IssueSessionAsync(subjectId, It.IsAny<SessionContext>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new SessionTokenPair("access", "refresh", 900));
+            .ReturnsAsync(new SessionTokenPair("access", "refresh", 900, subjectId));
 
         var result = await LoginCompleteAsync();
 

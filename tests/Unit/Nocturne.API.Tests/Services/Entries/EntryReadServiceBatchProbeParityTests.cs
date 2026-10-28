@@ -114,7 +114,7 @@ public class EntryReadServiceBatchProbeParityTests : IDisposable
 
         var batch = await _sut.CheckDuplicatesAsync(probes);
 
-        batch.Select(e => e?.Id).Should().Equal(expected);
+        batch.Select(e => e?.Entry.Id).Should().Equal(expected);
         // Not a vacuous comparison: the batch really did find duplicates and really did miss some.
         expected.Should().Contain(id => id != null).And.Contain(id => id == null);
     }
@@ -151,7 +151,7 @@ public class EntryReadServiceBatchProbeParityTests : IDisposable
         var single = await _sut.CheckDuplicateAsync(device, type, at.ToMills());
 
         (batch.Single() != null).Should().Be(expectDuplicate);
-        batch.Single()?.Id.Should().Be(single?.Id);
+        batch.Single()?.Entry.Id.Should().Be(single?.Id);
     }
 
     [Theory]
@@ -170,7 +170,7 @@ public class EntryReadServiceBatchProbeParityTests : IDisposable
         var batch = await _sut.CheckDuplicatesAsync([Probe("Dexcom G6", type, Start)]);
         var single = await _sut.CheckDuplicateAsync("Dexcom G6", type, Start.ToMills());
 
-        batch.Single()!.Mills.Should().Be(Start.ToMills());
+        batch.Single()!.Entry.Mills.Should().Be(Start.ToMills());
         single!.Mills.Should().Be(Start.ToMills());
     }
 
@@ -200,8 +200,8 @@ public class EntryReadServiceBatchProbeParityTests : IDisposable
         var batch = await _sut.CheckDuplicatesAsync([Probe("Dexcom G6", "sgv", Start)]);
         var single = await _sut.CheckDuplicateAsync("Dexcom G6", "sgv", Start.ToMills());
 
-        batch.Single()!.Id.Should().Be(single!.Id);
-        batch.Single()!.Id.Should().Be(higher.ToString());
+        batch.Single()!.Entry.Id.Should().Be(single!.Id);
+        batch.Single()!.Entry.Id.Should().Be(higher.ToString());
     }
 
     [Fact]
@@ -215,8 +215,8 @@ public class EntryReadServiceBatchProbeParityTests : IDisposable
         var batch = await _sut.CheckDuplicatesAsync([probe]);
         var single = await _sut.CheckDuplicateAsync("Contour", "mbg", probe.Mills);
 
-        batch.Single()!.Mills.Should().Be(probe.Mills);
-        batch.Single()!.Id.Should().Be(single?.Id);
+        batch.Single()!.Entry.Mills.Should().Be(probe.Mills);
+        batch.Single()!.Entry.Id.Should().Be(single?.Id);
         _statements.Count("SELECT", s => s.Contains("sensor_glucose", StringComparison.OrdinalIgnoreCase)).Should().Be(0);
     }
 

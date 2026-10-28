@@ -135,6 +135,18 @@ public class DeviceSetupServiceTests
     }
 
     [Fact]
+    public async Task AnAbbottConnector_NamesTheMaker_SoTheGuessIsLibre3_Unconfirmed()
+    {
+        Connector("LibreLinkUp");
+        await _db.SaveChangesAsync();
+
+        var cgm = Slot(await Setup(), DeviceCategory.CGM);
+
+        cgm.Guess!.Id.Should().Be("libre-3");
+        cgm.ModelKnown.Should().BeFalse();
+    }
+
+    [Fact]
     public async Task ADisabledConnector_IsNotEvidence()
     {
         Connector("Dexcom", """{"enabled":false}""");
@@ -199,6 +211,11 @@ public class DeviceSetupServiceTests
     [InlineData("xDrip-LibreReceiver FreeStyle Libre 2+", "libre-2-plus")]
     [InlineData("xDrip-DexcomG7", "dexcom-g7")]
     [InlineData("Trio G7CGMManager", "dexcom-g7")]
+    [InlineData("Dexcom G7 15 Day", "dexcom-g7-15-day")]
+    [InlineData("FreeStyle Libre 3 Plus", "libre-3-plus")]
+    [InlineData("FreeStyle Libre 3+", "libre-3-plus")]
+    [InlineData("FreeStyle Libre 3", "libre-3")]
+    [InlineData("xDrip-LibreReceiver FreeStyle Libre 2", "libre-2")]
     public async Task XDripAndTrioReadingLabels_NameTheSensor(string label, string expected)
     {
         Reading(label);

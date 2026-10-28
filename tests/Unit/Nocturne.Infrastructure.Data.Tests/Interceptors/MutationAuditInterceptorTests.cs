@@ -425,12 +425,12 @@ public class MutationAuditInterceptorTests : IDisposable
         await context.SaveChangesAsync();
 
         using var userContext = CreateContext();
-        var trackedByUser = await userContext.HeartRates.FindAsync(userDeleted.Id);
+        var trackedByUser = await userContext.HeartRates.FindAsync(_tenantId, userDeleted.Id);
         trackedByUser!.DeletedAt = DateTime.UtcNow;
         await InvokeSavingChanges(userContext);
 
         using var systemContext = CreateContext(new StubAuditContext { IsSystem = true });
-        var trackedBySystem = await systemContext.HeartRates.FindAsync(systemDeleted.Id);
+        var trackedBySystem = await systemContext.HeartRates.FindAsync(_tenantId, systemDeleted.Id);
         trackedBySystem!.DeletedAt = DateTime.UtcNow;
         await InvokeSavingChanges(systemContext);
 

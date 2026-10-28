@@ -112,7 +112,7 @@ public class IobCobReaderTests
         var current = await Live(NewReader());
 
         current.Iob.Iob.Should().Be(1.254);
-        IobResult.FormatDisplay(current.Iob.Iob).Should().Be("1.25");
+        current.Iob.Display.Should().Be("1.25");
         current.Iob.Source.Should().Be("OpenAPS");
         current.Cob.Cob.Should().Be(23);
         current.Cob.Source.Should().Be("OpenAPS");
@@ -205,7 +205,7 @@ public class IobCobReaderTests
         var current = await Live(NewReader());
 
         current.Iob.Iob.Should().Be(0);
-        IobResult.FormatDisplay(current.Iob.Iob).Should().Be("0");
+        current.Iob.Display.Should().Be("0");
         current.Cob.Cob.Should().Be(0);
         current.HasIob.Should().BeFalse();
         current.HasCob.Should().BeFalse();
@@ -242,7 +242,7 @@ public class IobCobReaderTests
         var read = await NewReader(out var iobCalculator).ReadTotalAsync(at, live: false);
 
         var snapshot = new TherapySnapshot(
-            dia: 4.0, peakMinutes: 75, carbsPerHour: 30.0, timezone: null, ccpPercentage: null, ccpTimeshiftMs: 0,
+            dia: 4.0, carbsPerHour: 30.0, timezone: null, ccpPercentage: null, ccpTimeshiftMs: 0,
             sensitivityEntries: [new ScheduleEntry { TimeAsSeconds = 0, Value = 50.0 }],
             carbRatioEntries: [new ScheduleEntry { TimeAsSeconds = 0, Value = 10.0 }],
             basalEntries: [new ScheduleEntry { TimeAsSeconds = 0, Value = 1.0 }]);

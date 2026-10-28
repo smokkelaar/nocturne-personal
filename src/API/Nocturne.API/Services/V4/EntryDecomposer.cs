@@ -330,6 +330,18 @@ public class EntryDecomposer : DecomposerBase, IEntryDecomposer, IDecomposer<Ent
         return total;
     }
 
+    /// <summary>The mg/dL value an entry is stored with, or 0 for a type that stores none.</summary>
+    /// <remarks>
+    /// <c>sgv</c> and <c>mbg</c> are the fields a legacy client edits; a PATCH or GET-edit-PUT carries a
+    /// stale <c>mgdl</c> beside them.
+    /// </remarks>
+    internal static double WrittenMgdl(Entry entry) => entry.Type?.ToLowerInvariant() switch
+    {
+        "mbg" => entry.Mbg ?? entry.Mgdl,
+        "cal" => 0,
+        _ => entry.Sgv ?? entry.Mgdl,
+    };
+
     /// <summary>Maps a legacy <see cref="Entry"/> of type <c>sgv</c> to a <see cref="SensorGlucose"/> model.</summary>
     /// <param name="entry">The legacy entry to map.</param>
     /// <param name="correlationId">Optional correlation identifier linking records created in the same decomposition pass.</param>
@@ -340,8 +352,7 @@ public class EntryDecomposer : DecomposerBase, IEntryDecomposer, IDecomposer<Ent
         {
             LegacyId = entry.Id,
             Timestamp = DateTimeOffset.FromUnixTimeMilliseconds(entry.Mills).UtcDateTime,
-            // sgv is the field a legacy client edits; a PATCH or GET-edit-PUT carries a stale mgdl beside it.
-            Mgdl = entry.Sgv ?? entry.Mgdl,
+            Mgdl = WrittenMgdl(entry),
             Direction = MapDirection(entry.Direction),
             TrendRate = entry.TrendRate,
             Noise = entry.Noise,
@@ -367,7 +378,7 @@ public class EntryDecomposer : DecomposerBase, IEntryDecomposer, IDecomposer<Ent
         {
             LegacyId = entry.Id,
             Timestamp = DateTimeOffset.FromUnixTimeMilliseconds(entry.Mills).UtcDateTime,
-            Mgdl = entry.Mbg ?? entry.Mgdl,
+            Mgdl = WrittenMgdl(entry),
             Device = entry.Device,
             App = entry.App,
             DataSource = entry.DataSource,

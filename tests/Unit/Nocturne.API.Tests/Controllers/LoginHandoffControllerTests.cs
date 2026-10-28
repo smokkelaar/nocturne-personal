@@ -46,7 +46,7 @@ public class LoginHandoffControllerTests : IDisposable
         _sessionService
             .Setup(s => s.IssueSessionAsync(
                 It.IsAny<Guid>(), It.IsAny<SessionContext>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new SessionTokenPair("access-token", "refresh-token", 900));
+            .ReturnsAsync(new SessionTokenPair("access-token", "refresh-token", 900, Guid.Empty));
 
         _auditContext = _db.CreateContext();
         var loginCodeService = new LoginCodeService(

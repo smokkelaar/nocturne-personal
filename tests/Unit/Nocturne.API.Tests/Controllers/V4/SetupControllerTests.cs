@@ -705,7 +705,7 @@ public class SetupControllerTests : IDisposable
             .ReturnsAsync(["code-1"]);
         _sessionService
             .Setup(s => s.IssueSessionAsync(ownerSubjectId, It.IsAny<SessionContext>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new SessionTokenPair("access", "refresh", 900));
+            .ReturnsAsync(new SessionTokenPair("access", "refresh", 900, ownerSubjectId));
 
         var result = await _controller.OwnerComplete(
             new SetupOwnerCompleteRequest
@@ -988,7 +988,7 @@ public class SetupControllerTests : IDisposable
             .ReturnsAsync(["code-1", "code-2"]);
         _sessionService
             .Setup(s => s.IssueSessionAsync(subjectId, It.IsAny<SessionContext>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new SessionTokenPair("access", "refresh", 3600));
+            .ReturnsAsync(new SessionTokenPair("access", "refresh", 3600, subjectId));
     }
 
     private void SetOidcStateCookieOnRequest(string state) =>

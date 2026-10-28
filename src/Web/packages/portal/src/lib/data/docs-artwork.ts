@@ -56,6 +56,7 @@ export const DOCS_HERO: Record<string, DocsHero> = {
   // Devices, data and operations
   'connecting-apps': { artwork: 'connected-shores', palette: 'water' },
   'connecting-apps/device-flow': { artwork: 'blood-drop', palette: 'ember' },
+  'connecting-apps/aid-app-keys': { artwork: 'key', palette: 'dusk' },
   'alerts/email': { artwork: 'alarm-bell', palette: 'moonlight' },
   configuration: { artwork: 'spanner', palette: 'slate', wrap: false },
   observability: { artwork: 'distant-mountains', palette: 'slate' },

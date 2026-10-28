@@ -76,7 +76,7 @@ public static class MatchCriteriaMapper
     /// </summary>
     public static MatchCriteria From(StateSpanEntity entity)
     {
-        StateSpanCategory? category = CategoriesByName.TryGetValue(entity.Category, out var parsed) ? parsed : null;
+        StateSpanCategory? category = StateSpanMapper.TryParseCategory(entity.Category, out var parsed) ? parsed : null;
         return new()
         {
             Category = category,
@@ -86,13 +86,6 @@ public static class MatchCriteriaMapper
                 : null
         };
     }
-
-    /// <summary>
-    /// Categories keyed by name. A name lookup rather than <see cref="Enum.TryParse{TEnum}(string, bool, out TEnum)"/>,
-    /// which also accepts the numeric form and would read a column holding "3" as a real category.
-    /// </summary>
-    private static readonly Dictionary<string, StateSpanCategory> CategoriesByName =
-        Enum.GetValues<StateSpanCategory>().ToDictionary(c => c.ToString(), StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     /// Criteria for a note. Whitespace runs collapse so a copy re-wrapped by another source still

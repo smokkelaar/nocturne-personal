@@ -384,23 +384,80 @@ describe('SocketIOServer.authorizeHandshake', () => {
     ['a restricted ticket', () => signHandshakeTicket(SECRET, 'rhys.nocturne.run', TENANT_ID, grant(false))],
     ['a ticket carrying no admission', () => ticketWithoutAdmission('rhys.nocturne.run')],
     [
-      'a restricted ticket granted categories',
-      () => signHandshakeTicket(SECRET, 'rhys.nocturne.run', TENANT_ID, grant(false, { categories: ['entries', 'care'] })),
-    ],
-    [
       'a restricted ticket naming a subject',
       () =>
         signHandshakeTicket(SECRET, 'rhys.nocturne.run', TENANT_ID, grant(false, { subjectId: '0a5f2c1e-1111-4222-8333-444455556666' })),
     ],
-  ])('admits %s but keeps it out of every tenant room', async (_case, mint) => {
+    [
+      'a restricted ticket whose grant is history-clamped',
+      () =>
+        signHandshakeTicket(SECRET, 'rhys.nocturne.run', TENANT_ID, grant(false, { categories: ['entries'], historyClamped: true })),
+    ],
+  ])('admits %s but keeps it out of every room', async (_case, mint) => {
     // The tenant room carries every category and every member's in-app
-    // notifications; a guest link or anonymous share holds single categories.
+    // notifications; a guest link holds single categories.
     const server = makeServer();
     const socket = fakeSocket({ 'x-forwarded-host': 'rhys.nocturne.run' }, { token: mint() });
 
     const next = await connect(server, socket);
 
     expect(next).toHaveBeenCalledWith();
+    expect(socket.data.tenantSlug).toBe('rhys');
+    expect(socket.join).not.toHaveBeenCalled();
+  });
+
+  it('joins a restricted ticket to exactly the category rooms it was granted', async () => {
+    const server = makeServer();
+    const socket = fakeSocket(
+      { 'x-forwarded-host': 'rhys.nocturne.run' },
+      {
+        token: signHandshakeTicket(
+          SECRET,
+          'rhys.nocturne.run',
+          TENANT_ID,
+          grant(false, { categories: ['entries', 'glucose'], subjectId: '0a5f2c1e-1111-4222-8333-444455556666' }),
+        ),
+      },
+    );
+
+    await connect(server, socket);
+
+    expect(socket.join.mock.calls.map(([room]) => room)).toEqual([
+      'tenant:rhys:category:entries',
+      'tenant:rhys:category:glucose',
+    ]);
+  });
+
+  it('refuses a restricted ticket whose categories were widened after signing', async () => {
+    const server = makeServer();
+    const next = vi.fn();
+    const ticket = signHandshakeTicket(SECRET, 'rhys.nocturne.run', TENANT_ID, grant(false, { categories: ['entries'] }));
+    const [payloadB64, sig] = ticket.split('.');
+    const payload = JSON.parse(Buffer.from(payloadB64, 'base64url').toString('utf-8'));
+    const widened = Buffer.from(JSON.stringify({ ...payload, categories: ['entries', 'care', 'devicestatus'] }), 'utf-8')
+      .toString('base64url');
+    const socket = fakeSocket({ 'x-forwarded-host': 'rhys.nocturne.run' }, { token: `${widened}.${sig}` });
+
+    await server.authorizeHandshake(socket as never, next);
+
+    expect(next.mock.calls[0][0].message).toBe('unauthorized');
+    expect(socket.data.tenantSlug).toBeUndefined();
+    expect(socket.data.categories).toBeUndefined();
+  });
+
+  it('joins no room for a signed restricted ticket missing its categories', async () => {
+    const server = makeServer();
+    const payload = Buffer.from(
+      JSON.stringify({ h: 'rhys.nocturne.run', t: TENANT_ID, exp: Date.now() + 60_000, tenantRelay: false, historyClamped: false }),
+      'utf-8',
+    ).toString('base64url');
+    const socket = fakeSocket(
+      { 'x-forwarded-host': 'rhys.nocturne.run' },
+      { token: `${payload}.${createHmac('sha256', SECRET).update(payload).digest('hex')}` },
+    );
+
+    await connect(server, socket);
+
     expect(socket.data.tenantSlug).toBe('rhys');
     expect(socket.join).not.toHaveBeenCalled();
   });
@@ -653,6 +710,25 @@ describe('SocketIOServer.handleAuthorize', () => {
 
     expect(socket.data.tenantSlug).toBe('rhys');
     expect(socket.join).not.toHaveBeenCalled();
+  });
+
+  it('joins a restricted credential to only the category rooms the admission grants', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        admission({ tenantRelay: false, subjectId: SUBJECT, categories: ['entries', 'glucose'], historyClamped: false }),
+      ),
+    );
+
+    const server = makeApiServer();
+    const socket = pendingSocket('rhys');
+
+    await server.handleAuthorize(socket as never, { token: 'guest-token' });
+
+    expect(socket.join.mock.calls.map(([room]) => room)).toEqual([
+      'tenant:rhys:category:entries',
+      'tenant:rhys:category:glucose',
+    ]);
   });
 
   it('joins no subject room for a subject id not in canonical form', async () => {
@@ -1200,7 +1276,7 @@ describe('SocketIOServer storage category fan-out', () => {
     return { server, port: (http.address() as AddressInfo).port };
   }
 
-  /** A browser socket admitted with `ticket`, recording every storage event it receives. */
+  /** A browser socket admitted with `ticket`, recording every data event it receives. */
   async function browser(port: number, ticket: RealtimeGrant) {
     const client = connectClient(`http://127.0.0.1:${port}`, {
       transports: ['websocket'],
@@ -1209,9 +1285,9 @@ describe('SocketIOServer storage category fan-out', () => {
     });
     clients.push(client);
     const received: { event: string; payload: unknown }[] = [];
-    for (const event of ['create', 'update', 'delete']) {
-      client.on(event, (payload: unknown) => received.push({ event, payload }));
-    }
+    client.onAny((event: string, payload: unknown) => {
+      if (event !== 'connect_ack') received.push({ event, payload });
+    });
     await new Promise<void>((resolve) => client.once('connect_ack', () => resolve()));
     return received;
   }
@@ -1237,17 +1313,77 @@ describe('SocketIOServer storage category fan-out', () => {
     }
   });
 
-  it('delivers no storage event to a restricted or history-clamped socket, whatever its grant names', async () => {
+  /** Every event the bridge relays to a tenant, storage events of each category and the tenant-wide ones. */
+  function broadcastEverything(server: SocketIOServer) {
+    server.broadcastStorageEvent('create', bolus, 'rhys');
+    server.broadcastStorageEvent('create', { colName: 'treatments', doc: { _id: 't1' } }, 'rhys');
+    server.broadcastStorageEvent('create', { colName: 'devicestatus', doc: { _id: 'd1' } }, 'rhys');
+    server.broadcastStorageEvent('create', { colName: 'device', recordType: 'apsSnapshot', doc: { id: 'a1' } }, 'rhys');
+    server.broadcastStorageEvent('create', { colName: 'profiles', doc: { _id: 'p1' } }, 'rhys');
+    server.broadcastDataUpdate({ data: [{ sgv: 120 }] }, 'rhys');
+    server.broadcastTrackerUpdate({ id: 'tr1' }, 'rhys');
+    server.broadcastTrackerDefinitionUpdate({ id: 'td1' }, 'rhys');
+    server.broadcastStatusUpdate({ status: 'ok' }, 'rhys');
+    server.broadcastAnnouncement({ title: 'hi' }, 'rhys');
+    server.broadcastAlarm('alarm', { level: 1 } as never, 'rhys');
+    server.broadcastNotification({ title: 'n' }, 'rhys');
+    server.broadcastSyncProgress({ step: 1 }, 'rhys');
+    server.broadcastConfigChanged({ key: 'k' }, 'rhys');
+  }
+
+  it('delivers a guest holding only glucose read its live glucose events and nothing else', async () => {
     const { server, port } = await listening();
     try {
-      const share = await browser(port, grant(false, { categories: ['entries', 'care'] }));
+      const guest = await browser(port, grant(false, { categories: ['entries', 'glucose'] }));
+      const entry = { colName: 'entries', doc: { sgv: 120 } };
+      const sensorGlucose = { colName: 'glucose', recordType: 'sensorGlucose', doc: { id: 'g1', mgdl: 120 } };
+
+      broadcastEverything(server);
+      server.broadcastStorageEvent('create', entry, 'rhys');
+      server.broadcastStorageEvent('update', sensorGlucose, 'rhys');
+
+      await vi.waitFor(() => expect(guest).toHaveLength(2));
+      await settle();
+      expect(guest).toEqual([
+        { event: 'create', payload: entry },
+        { event: 'update', payload: sensorGlucose },
+      ]);
+    } finally {
+      await server.stop();
+    }
+  });
+
+  it('delivers a member every tenant-wide event and only its granted categories, as before', async () => {
+    const { server, port } = await listening();
+    try {
+      const member = await browser(port, grant(true, { categories: ['entries', 'care'] }));
+      const guest = await browser(port, grant(false, { categories: ['entries', 'care'] }));
+
+      broadcastEverything(server);
+
+      const tenantWide = ['dataUpdate', 'trackerUpdate', 'trackerDefinitionUpdate', 'status', 'announcement',
+        'alarm', 'notification', 'syncProgress', 'configChanged'];
+      await vi.waitFor(() => expect(member).toHaveLength(tenantWide.length + 1));
+      await settle();
+      expect(member.map(({ event }) => event).sort()).toEqual([...tenantWide, 'create'].sort());
+      expect(member.find(({ event }) => event === 'create')?.payload).toEqual(bolus);
+      expect(guest).toEqual([{ event: 'create', payload: bolus }]);
+    } finally {
+      await server.stop();
+    }
+  });
+
+  it('delivers no storage event to a history-clamped socket, whatever its grant names', async () => {
+    const { server, port } = await listening();
+    try {
+      const clampedGuest = await browser(port, grant(false, { categories: ['entries', 'care'], historyClamped: true }));
       const clamped = await browser(port, grant(true, { categories: ['entries', 'care'], historyClamped: true }));
 
       server.broadcastStorageEvent('create', bolus, 'rhys');
       server.broadcastStorageEvent('create', { colName: 'entries', doc: { sgv: 120 } }, 'rhys');
 
       await settle();
-      expect(share).toEqual([]);
+      expect(clampedGuest).toEqual([]);
       expect(clamped).toEqual([]);
     } finally {
       await server.stop();

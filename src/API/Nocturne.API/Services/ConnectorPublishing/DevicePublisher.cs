@@ -1,3 +1,4 @@
+using Nocturne.Core.Contracts.Multitenancy;
 using Nocturne.Connectors.Core.Interfaces;
 using Nocturne.Connectors.Core.Models;
 using Nocturne.Core.Contracts.Audit;
@@ -35,8 +36,9 @@ internal sealed class DevicePublisher : ConnectorPublisherBase, IDevicePublisher
         IPumpSnapshotRepository pumpSnapshotRepository,
         IUploaderSnapshotRepository uploaderSnapshotRepository,
         PublishSkipTally skips,
+        ITenantAccessor tenantAccessor,
         ILogger<DevicePublisher> logger)
-        : base(auditContext, skips, logger)
+        : base(auditContext, skips, tenantAccessor, logger)
     {
         _decomposer = decomposer ?? throw new ArgumentNullException(nameof(decomposer));
         _deviceEventRepository = deviceEventRepository ?? throw new ArgumentNullException(nameof(deviceEventRepository));

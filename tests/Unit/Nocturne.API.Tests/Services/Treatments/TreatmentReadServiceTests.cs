@@ -523,6 +523,65 @@ public class TreatmentReadServiceTests
         created.Should().ContainSingle().Which.Id.Should().Be("override-1");
     }
 
+    private readonly List<string?> _decomposedIds = [];
+
+    private Treatment CarbsDecomposedUnder(string id)
+    {
+        var treatment = new Treatment { Id = id, Mills = 1000, EventType = "Carb Correction", Carbs = 20 };
+        var result = new DecompositionResult { CorrelationId = Guid.NewGuid() };
+        result.CreatedRecords.Add(new CarbIntake { Id = Guid.CreateVersion7(), LegacyId = id });
+        _decomposer
+            .Setup(d => d.DecomposeAsync(treatment, It.IsAny<WriteOrigin>(), It.IsAny<CancellationToken>()))
+            .Callback((Treatment decomposed, WriteOrigin _, CancellationToken _) => _decomposedIds.Add(decomposed.Id))
+            .ReturnsAsync(result);
+        return treatment;
+    }
+
+    [Fact]
+    public async Task CreateAsync_FreshIdShapedLikeAServedOne_KeepsItWithoutScanningLegacyIdHashes()
+    {
+        var id = MongoObjectId.FromGuid(Guid.CreateVersion7());
+        var treatment = CarbsDecomposedUnder(id);
+
+        await _service.CreateAsync([treatment]);
+
+        _decomposedIds.Should().Equal(id);
+        _carbIntakeRepo.Verify(r => r.GetByGuidRangeAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Once);
+        _bolusRepo.Verify(r => r.GetByLegacyIdHashAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+        _carbIntakeRepo.Verify(r => r.GetByLegacyIdHashAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+        _bgCheckRepo.Verify(r => r.GetByLegacyIdHashAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+        _noteRepo.Verify(r => r.GetByLegacyIdHashAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+        _deviceEventRepo.Verify(r => r.GetByLegacyIdHashAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+        _bolusCalcRepo.Verify(r => r.GetByLegacyIdHashAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+        _tempBasalRepo.Verify(r => r.GetByLegacyIdHashAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task CreateAsync_ObjectIdNoServedIdCouldBe_LooksNothingUp()
+    {
+        var treatment = CarbsDecomposedUnder(MongoObjectId.NewObjectId());
+
+        await _service.CreateAsync([treatment]);
+
+        _carbIntakeRepo.Verify(r => r.GetByLegacyIdAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+        _carbIntakeRepo.Verify(r => r.GetByGuidRangeAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task CreateAsync_IdServedForAStoredRecord_DecomposesUnderItsLegacyId()
+    {
+        var carb = new CarbIntake { Id = Guid.CreateVersion7(), LegacyId = "loop-sync-id" };
+        var served = MongoObjectId.FromGuid(carb.Id);
+        _carbIntakeRepo
+            .Setup(r => r.GetByGuidRangeAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(carb);
+        var treatment = CarbsDecomposedUnder(served);
+
+        await _service.CreateAsync([treatment]);
+
+        _decomposedIds.Should().Equal("loop-sync-id");
+    }
+
     [Fact]
     public async Task GetByIdAsync_GuidStoredOnlyAsALegacyId_ResolvesIt()
     {

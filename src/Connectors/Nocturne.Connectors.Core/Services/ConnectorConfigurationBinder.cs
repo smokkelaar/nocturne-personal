@@ -67,6 +67,15 @@ public static class ConnectorConfigurationBinder
         }
     }
 
+    /// <summary>
+    ///     The keys under which <paramref name="configType"/>'s secret properties are stored.
+    /// </summary>
+    public static IReadOnlySet<string> SecretKeyNames(Type configType) =>
+        configType.GetProperties(BindingFlags.Public | BindingFlags.Instance)
+            .Where(p => p.GetCustomAttribute<ConnectorPropertyAttribute>()?.Secret == true)
+            .Select(GetBoundKeyName)
+            .ToHashSet(StringComparer.Ordinal);
+
     private static string GetBoundKeyName(PropertyInfo property)
     {
         var keyName = property.GetCustomAttribute<ConnectorPropertyAttribute>()?.GetKeyName()

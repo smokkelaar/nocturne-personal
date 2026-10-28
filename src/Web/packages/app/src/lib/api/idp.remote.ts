@@ -5,7 +5,7 @@
  */
 import { getRequestEvent, query } from "$app/server";
 import { DateRangeSchema, resolveReportRange } from "./report-range";
-import { readable } from "$lib/server/patient-timezone";
+import { readable } from "#lib/server/patient-timezone.js";
 
 export type { DateRangeInput } from "./report-range";
 
@@ -19,7 +19,7 @@ export const getIdpData = query(DateRangeSchema.optional(), async (input) => {
   // total stand in for them. Every read is independent of the others.
   const [readings, bolusResult, insulinDeliveryStats, activeSchedules, rangeAnalytics, aidSystemMetrics] =
     await Promise.all([
-      apiClient.sensorGlucose.getAll(startDate, endDate, 1, 0),
+      apiClient.sensorGlucose.getAll(startDate, endDate, 1, 0, undefined, undefined, undefined, true),
       apiClient.bolus.getAll(startDate, endDate, 10000),
       apiClient.statistics.getInsulinDeliveryStatistics(startDate, endDate),
       // Therapy settings need therapy.read; without it the report renders

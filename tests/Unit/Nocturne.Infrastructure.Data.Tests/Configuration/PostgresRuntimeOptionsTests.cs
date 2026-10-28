@@ -51,6 +51,69 @@ public class PostgresRuntimeOptionsTests
     }
 
     [Fact]
+    public void RuntimePool_ClosesIdleConnectionsAfterAMinute_WithNoFloor()
+    {
+        var pool = RegisteredPool();
+
+        pool.ConnectionIdleLifetime.Should().Be(60);
+        pool.MinPoolSize.Should().Be(0);
+    }
+
+    [Fact]
+    public void ConfigurationSection_ReachesThePoolFloorAndIdleLifetime()
+    {
+        var pool = RegisteredPool(PostgreSqlSection.With(
+            ("MinPoolSize", "5"),
+            ("ConnectionIdleLifetimeSeconds", "120")));
+
+        pool.MinPoolSize.Should().Be(5);
+        pool.ConnectionIdleLifetime.Should().Be(120);
+    }
+
+    [Theory]
+    [InlineData("MinPoolSize", "-1")]
+    [InlineData("MinPoolSize", "101")]
+    [InlineData("ConnectionIdleLifetimeSeconds", "0")]
+    [InlineData("ConnectionIdleLifetimeSeconds", "-5")]
+    [InlineData("ConnectionIdleLifetimeSeconds", "5")]
+    public void OutOfRangePoolSetting_FailsAtStartup(string key, string value)
+    {
+        var register = () => RegisteredPool(PostgreSqlSection.With((key, value)));
+
+        register.Should().Throw<InvalidOperationException>().WithMessage($"*{key}*");
+    }
+
+    [Fact]
+    public void RuntimePool_KeepsTheConnectionStringsOwnPoolFloorAndIdleLifetime()
+    {
+        var pool = RegisteredPool(
+            PostgreSqlSection.With(("MinPoolSize", "5"), ("ConnectionIdleLifetimeSeconds", "120")),
+            connectionString: PostgreSqlSection.AppConnectionString
+                + ";Minimum Pool Size=7;Connection Idle Lifetime=300");
+
+        pool.MinPoolSize.Should().Be(7);
+        pool.ConnectionIdleLifetime.Should().Be(300);
+    }
+
+    [Fact]
+    public void IdleLifetimeBelowTheConnectionStringsPruningInterval_FailsNamingTheKey()
+    {
+        var register = () => RegisteredPool(
+            connectionString: PostgreSqlSection.AppConnectionString + ";Connection Pruning Interval=90");
+
+        register.Should().Throw<InvalidOperationException>()
+            .WithMessage("*PostgreSql:ConnectionIdleLifetimeSeconds*90*");
+    }
+
+    [Fact]
+    public void MinPoolSizeAboveAConfiguredMaxPoolSize_FailsAtStartup()
+    {
+        var register = () => RegisteredPool(PostgreSqlSection.With(("MaxPoolSize", "10"), ("MinPoolSize", "11")));
+
+        register.Should().Throw<InvalidOperationException>().WithMessage("*MinPoolSize*");
+    }
+
+    [Fact]
     public void RuntimePool_PreparesItsMostUsedStatements_AndConfigurationCanTurnItOff()
     {
         RegisteredPool().MaxAutoPrepare.Should().BePositive(

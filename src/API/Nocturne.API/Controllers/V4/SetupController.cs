@@ -399,7 +399,8 @@ public partial class SetupController : ControllerBase
         var sessionPair = new SessionTokenPair(
             result.Tokens!.AccessToken,
             result.Tokens.RefreshToken,
-            result.Tokens.ExpiresIn);
+            result.Tokens.ExpiresIn,
+            result.Tokens.SubjectId);
         Response.SetSessionCookies(sessionPair, _oidcOptions);
 
         return Redirect(result.ReturnUrl ?? "/setup");

@@ -47,6 +47,7 @@ public class DataSourceService : IDataSourceService
     private readonly ProfileActivationWriter _profileActivationWriter;
     private readonly IEnumerable<IConnectorPurgeGuard> _purgeGuards;
     private readonly IEnumerable<IConnectorDataPurge> _dataPurges;
+    private readonly TimeProvider _time;
     private readonly ILogger<DataSourceService> _logger;
 
     public DataSourceService(
@@ -59,6 +60,7 @@ public class DataSourceService : IDataSourceService
         ProfileActivationWriter profileActivationWriter,
         IEnumerable<IConnectorPurgeGuard> purgeGuards,
         IEnumerable<IConnectorDataPurge> dataPurges,
+        TimeProvider time,
         ILogger<DataSourceService> logger
     )
     {
@@ -71,6 +73,7 @@ public class DataSourceService : IDataSourceService
         _connectorConfiguration = connectorConfiguration;
         _purgeGuards = purgeGuards;
         _dataPurges = dataPurges;
+        _time = time;
         _logger = logger;
     }
 
@@ -1298,7 +1301,7 @@ public class DataSourceService : IDataSourceService
 
         try
         {
-            var treatmentsDeleted = await DemoDataPurge.PurgeTreatmentsAsync(db, cancellationToken);
+            var treatmentsDeleted = await DemoDataPurge.PurgeTreatmentsAsync(db, _time, cancellationToken);
             var glucoseDeleted = await DemoDataPurge.PurgeEntriesAsync(db, cancellationToken);
             var deviceStatusDeleted = await DemoDataPurge.PurgeDeviceStatusAsync(db, cancellationToken);
 

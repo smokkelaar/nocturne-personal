@@ -86,6 +86,7 @@ public class NutritionController : ControllerBase, IWriteScopedController
     /// <summary>
     /// Get carb intakes with optional filtering
     /// </summary>
+    /// <param name="includeTotal">Count every record in the range and return it as `pagination.total`. Defaults to `false`.</param>
     [HttpGet("carbs")]
     [RemoteQuery]
     [ProducesResponseType(typeof(PaginatedResponse<CarbIntake>), StatusCodes.Status200OK)]
@@ -95,6 +96,7 @@ public class NutritionController : ControllerBase, IWriteScopedController
         [FromQuery] int limit = 100, [FromQuery] int offset = 0,
         [FromQuery] string sort = "timestamp_desc",
         [FromQuery] string? device = null, [FromQuery] string? source = null,
+        [FromQuery] bool includeTotal = false,
         CancellationToken ct = default)
     {
         if (sort is not "timestamp_desc" and not "timestamp_asc")
@@ -104,9 +106,9 @@ public class NutritionController : ControllerBase, IWriteScopedController
         offset = V4ReadLimits.ClampOffset(offset);
 
         var descending = sort == "timestamp_desc";
-        var data = await _carbIntakeRepo.GetAsync(from, to, device, source, limit, offset, descending, ct: ct);
-        var total = await _carbIntakeRepo.CountAsync(from, to, ct);
-        return Ok(new PaginatedResponse<CarbIntake> { Data = data, Pagination = new(limit, offset, total) });
+        var data = (await _carbIntakeRepo.GetAsync(from, to, device, source, limit, offset, descending, ct: ct)).ToList();
+        var pagination = await PaginationInfo.ForPageAsync(limit, offset, data.Count, includeTotal, () => _carbIntakeRepo.CountAsync(from, to, ct));
+        return Ok(new PaginatedResponse<CarbIntake> { Data = data, Pagination = pagination });
     }
 
     /// <summary>

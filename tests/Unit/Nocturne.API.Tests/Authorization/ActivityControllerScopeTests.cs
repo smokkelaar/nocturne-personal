@@ -61,11 +61,11 @@ public class ActivityControllerScopeTests
     }
 
     [Fact]
-    public async Task CreateActivities_AllowsARecordThatNeedsNoCategoryScope()
+    public async Task CreateActivities_AllowsARecordThatNeedsOnlyTreatmentsScope()
     {
-        // A plain activity has no dedicated destination table, so the decomposer returns null and
-        // the guard must not invent a requirement.
-        var (controller, service) = Build(requiredScope: null, grantedScopes: []);
+        var (controller, service) = Build(
+            requiredScope: Scope.TreatmentsReadWrite,
+            grantedScopes: [Scope.TreatmentsReadWrite]);
         service.Setup(s => s.CreateActivitiesAsync(It.IsAny<List<Activity>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync([]);
 
@@ -152,8 +152,8 @@ public class ActivityControllerScopeTests
     public async Task GetActivity_HidesARecordWhoseCategoryScopeIsMissing()
     {
         var (controller, service) = BuildRead(grantedScopes: [Scope.HeartRateRead]);
-        service.Setup(s => s.GetActivityByIdAsync("sleep", It.IsAny<CancellationToken>()))
-            .ReturnsAsync(ActivityWithId("sleep"));
+        service.Setup(s => s.GetStoredActivitiesAsync("sleep", It.IsAny<CancellationToken>()))
+            .ReturnsAsync([ActivityWithId("sleep")]);
 
         var result = await controller.GetActivity("sleep");
 
@@ -164,8 +164,8 @@ public class ActivityControllerScopeTests
     public async Task GetActivity_ReturnsARecordWhoseCategoryScopeIsHeld()
     {
         var (controller, service) = BuildRead(grantedScopes: [Scope.SleepRead]);
-        service.Setup(s => s.GetActivityByIdAsync("sleep", It.IsAny<CancellationToken>()))
-            .ReturnsAsync(ActivityWithId("sleep"));
+        service.Setup(s => s.GetStoredActivitiesAsync("sleep", It.IsAny<CancellationToken>()))
+            .ReturnsAsync([ActivityWithId("sleep")]);
 
         var result = await controller.GetActivity("sleep");
 
@@ -246,10 +246,10 @@ public class ActivityControllerScopeTests
 
     private static (ActivityController Controller, Mock<IActivityService> Service) BuildRead(
         string[] grantedScopes) =>
-        Build(requiredScope: null, grantedScopes, a => CategoryScopes[a.Id!]);
+        Build(requiredScope: Scope.TreatmentsReadWrite, grantedScopes, a => CategoryScopes[a.Id!]);
 
     private static (ActivityController Controller, Mock<IActivityService> Service) Build(
-        string? requiredScope,
+        string requiredScope,
         string[] grantedScopes,
         Func<Activity, string>? requiredReadScope = null)
     {

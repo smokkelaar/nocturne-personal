@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using Nocturne.Core.Clinical.Schedules;
 using Nocturne.Core.Contracts.Profiles.Resolvers;
 using Nocturne.Core.Contracts.V4.Repositories;
+using Nocturne.Core.Models.V4;
 
 namespace Nocturne.API.Services.Profiles.Resolvers;
 
@@ -41,20 +42,32 @@ internal sealed class SensitivityResolver : ISensitivityResolver
 
     public async Task<double> GetSensitivityAsync(long timeMills, string? specProfile = null, CancellationToken ct = default)
     {
-        var schedule = await ActiveSchedule.ResolveAsync(
-            timeMills, specProfile, _activeProfileResolver, _repo, _versions,
-            s => s.Entries, s => s.Sensitivity, _therapyRepo, _patientRecordRepo, ct);
+        var schedule = await ResolveScheduleAsync(timeMills, specProfile, ct);
         if (schedule is null)
             return DefaultSensitivity;
 
-        var value = ScheduleResolution.FindValueAtTime(schedule.Entries, schedule.SecondsFromMidnight)
-            ?? DefaultSensitivity;
-
-        if (schedule.Adjustment is { } adjustment)
-            value = value * 100.0 / adjustment.Percentage;
-
-        return value;
+        return Scaled(
+            ScheduleResolution.FindValueAtTime(schedule.Entries, schedule.SecondsFromMidnight) ?? DefaultSensitivity,
+            schedule);
     }
+
+    public async Task<double?> FindSensitivityAsync(long timeMills, string? specProfile = null, CancellationToken ct = default)
+    {
+        var schedule = await ResolveScheduleAsync(timeMills, specProfile, ct);
+        return schedule is not null
+            && ScheduleResolution.FindValueAtTime(schedule.Entries, schedule.SecondsFromMidnight) is { } value
+                ? Scaled(value, schedule)
+                : null;
+    }
+
+    private Task<ActiveSchedule.At<ScheduleEntry>?> ResolveScheduleAsync(
+        long timeMills, string? specProfile, CancellationToken ct) =>
+        ActiveSchedule.ResolveAsync(
+            timeMills, specProfile, _activeProfileResolver, _repo, _versions,
+            s => s.Entries, s => s.Sensitivity, _therapyRepo, _patientRecordRepo, ct);
+
+    private static double Scaled(double value, ActiveSchedule.At<ScheduleEntry> schedule) =>
+        schedule.Adjustment is { } adjustment ? value * 100.0 / adjustment.Percentage : value;
 
     /// <remarks>
     /// Read off the activation itself, which carries its percentage whether or not its schedules

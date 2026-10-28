@@ -85,7 +85,8 @@ public static class ConsumableTrackerSpecs
         {
             specs.Add(new($"{entry.Name} sensor", TrackerCategory.Sensor, "radio",
                 cgm.SensorDurationDays * 24,
-                [TreatmentTypes.SensorStart, TreatmentTypes.SensorChange]));
+                [TreatmentTypes.SensorStart, TreatmentTypes.SensorChange],
+                GraceHours: cgm.GraceHours));
 
             if (cgm is { HasSeparateTransmitter: true, TransmitterDurationDays: { } transmitterDays })
                 specs.Add(new($"{entry.Name} transmitter", TrackerCategory.Battery, "battery",

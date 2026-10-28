@@ -178,4 +178,11 @@ public class VerifyConnectorCredentialsRequest
     /// The secret values (passwords, tokens), keyed by camelCase property name.
     /// </summary>
     public Dictionary<string, string>? Secrets { get; set; }
+
+    /// <summary>
+    /// The camelCase secret keys to verify from the tenant's stored secrets, so a masked secret
+    /// need not be typed again. Verifies the stored configuration; a submitted configuration must
+    /// match it.
+    /// </summary>
+    public List<string>? StoredSecrets { get; set; }
 }

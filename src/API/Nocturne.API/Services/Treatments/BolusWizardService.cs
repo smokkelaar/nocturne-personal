@@ -22,9 +22,9 @@ public class BolusWizardResult
     public bool BelowLowTarget { get; set; }
     public TempBasalAdjustment? TempBasalAdjustment { get; set; }
     public string BolusEstimateDisplay { get; set; } = "0";
-    public string OutcomeDisplay { get; set; } = "0";
+    public double OutcomeDisplay { get; set; }
     public string DisplayIOB { get; set; } = "0";
-    public string EffectDisplay { get; set; } = "0";
+    public double EffectDisplay { get; set; }
     public string DisplayLine { get; set; } = "BWP: 0U";
 }
 
@@ -48,13 +48,11 @@ public interface IBwpSandbox
     double? LastScaledSGV();
     bool IsCurrent(Entry entry);
     List<CarbIntake> GetCarbIntakes();
-    List<DeviceStatus> GetDeviceStatus();
     IBwpProfile? GetProfile();
     long Time { get; }
-    string Units { get; }
     IobResult? Iob { get; }
     string RoundInsulinForDisplayFormat(double insulin);
-    string RoundBGToDisplayFormat(double bg);
+    double RoundBGToDisplayFormat(double bg);
 }
 
 /// <summary>
@@ -67,9 +65,10 @@ public interface IBwpProfile
     double GetSensitivity(long time, string? specProfile = null);
     double GetHighBGTarget(long time, string? specProfile = null);
     double GetLowBGTarget(long time, string? specProfile = null);
-    double GetCarbRatio(long time, string? specProfile = null);
-    double GetBasal(long time, string? specProfile = null);
-    double GetDIA(long time, string? specProfile = null);
+
+    /// <summary>The <c>totalbasal</c> of Nightscout's <c>getTempBasal</c>: the scheduled rate with
+    /// any temp basal and combo bolus applied.</summary>
+    double GetTotalBasal(long time, string? specProfile = null);
 }
 
 /// <summary>
@@ -113,17 +112,7 @@ public class BolusWizardService : IBolusWizardService
     /// </summary>
     public BolusWizardResult Calculate(IBwpSandbox sandbox)
     {
-        var result = new BolusWizardResult
-        {
-            Effect = 0,
-            Outcome = 0,
-            BolusEstimate = 0.0,
-            BolusEstimateDisplay = "0",
-            OutcomeDisplay = "0",
-            DisplayIOB = "0",
-            EffectDisplay = "0",
-            DisplayLine = "BWP: 0U",
-        };
+        var result = new BolusWizardResult();
 
         var scaled = sandbox.LastScaledSGV();
         result.ScaledSGV = scaled;
@@ -196,13 +185,13 @@ public class BolusWizardService : IBolusWizardService
         // Calculate temp basal adjustments if needed
         if (result.BolusEstimate != 0)
         {
-            var basal = profile.GetBasal(sandbox.Time);
+            var basal = profile.GetTotalBasal(sandbox.Time);
             if (basal > 0)
             {
-                var thirtyMinAdjustment = Math.Round(
-                    (basal / 2 + result.BolusEstimate) / (basal / 2) * 100
+                var thirtyMinAdjustment = Math.Floor(
+                    (basal / 2 + result.BolusEstimate) / (basal / 2) * 100 + 0.5
                 );
-                var oneHourAdjustment = Math.Round((basal + result.BolusEstimate) / basal * 100);
+                var oneHourAdjustment = Math.Floor((basal + result.BolusEstimate) / basal * 100 + 0.5);
 
                 result.TempBasalAdjustment = new TempBasalAdjustment
                 {
@@ -298,6 +287,6 @@ public class BolusWizardService : IBolusWizardService
     private bool IsSGVOk(IBwpSandbox sandbox)
     {
         var lastSGVEntry = sandbox.LastSGVEntry();
-        return lastSGVEntry != null && lastSGVEntry.Mgdl >= 39 && sandbox.IsCurrent(lastSGVEntry);
+        return lastSGVEntry != null && lastSGVEntry.GlucoseMgdl() >= 39 && sandbox.IsCurrent(lastSGVEntry);
     }
 }

@@ -309,10 +309,10 @@ public class EntriesControllerTests
     }
 
     [Fact]
-    public async Task CreateEntries_AllDuplicates_EchoesStoredEntriesWithSameCount()
+    public async Task CreateEntries_AllDuplicates_EchoesAndWritesThemUnderTheStoredIds()
     {
         // v1 uploaders (Loop's NightscoutKit) require one response object per submitted
-        // entry; an all-duplicate batch must echo the stored entries, not return [].
+        // entry; an all-duplicate batch must echo every entry, not return [].
         var submitted = new[]
         {
             new Entry { Sgv = 164, Mills = 1000, Device = "Dexcom G7" },
@@ -351,9 +351,148 @@ public class EntriesControllerTests
         body[0].Id.Should().Be("stored-1");
         body[1].Id.Should().Be("stored-2");
 
-        // Nothing new is written for an all-duplicate batch
         createInput.Should().NotBeNull();
+        createInput!.Select(e => e.Id).Should().Equal("stored-1", "stored-2");
+    }
+
+    [Fact]
+    public async Task CreateEntries_ResendOfAReadingWithNoLegacyId_EchoesTheStoredRowWithoutWriting()
+    {
+        var stored = new Entry { Id = Guid.CreateVersion7().ToString(), Sgv = 164, Mills = 1000, Device = "Dexcom G7", Type = "sgv" };
+
+        _mockDocumentProcessingService
+            .Setup(x => x.ProcessDocuments(It.IsAny<IEnumerable<Entry>>()))
+            .Returns<IEnumerable<Entry>>(entries => entries);
+
+        StubMatchesAt((1000L, new StoredEntryMatch(stored, LegacyId: null)));
+
+        List<Entry>? createInput = null;
+        _mockEntryService
+            .Setup(x =>
+                x.CreateEntriesAsync(It.IsAny<IEnumerable<Entry>>(), It.IsAny<WriteOrigin>(), It.IsAny<CancellationToken>())
+            )
+            .Callback<IEnumerable<Entry>, WriteOrigin, CancellationToken>((entries, _, _) => createInput = entries.ToList())
+            .ReturnsAsync([]);
+
+        var result = await _controller.CreateEntries(new[] { new Entry { Sgv = 170, Mills = 1000, Device = "Dexcom G7" } });
+
+        var body = result.Result.Should().BeOfType<OkObjectResult>()
+            .Subject.Value.Should().BeAssignableTo<IEnumerable<object>>()
+            .Subject.Cast<EntryV1Response>().ToList();
+        body.Should().ContainSingle().Which.Sgv.Should().Be(164);
         createInput.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task CreateEntries_ResendOfAReadingStoredUnderAUuidLegacyId_WritesItUnderThatId()
+    {
+        var legacyId = Guid.NewGuid().ToString().ToUpperInvariant();
+        var stored = new Entry { Id = legacyId, Sgv = 164, Mgdl = 164, Mills = 1000, Device = "Trio", Type = "sgv" };
+
+        _mockDocumentProcessingService
+            .Setup(x => x.ProcessDocuments(It.IsAny<IEnumerable<Entry>>()))
+            .Returns<IEnumerable<Entry>>(entries => entries);
+
+        StubMatchesAt((1000L, new StoredEntryMatch(stored, legacyId)));
+
+        List<Entry>? createInput = null;
+        _mockEntryService
+            .Setup(x =>
+                x.CreateEntriesAsync(It.IsAny<IEnumerable<Entry>>(), It.IsAny<WriteOrigin>(), It.IsAny<CancellationToken>())
+            )
+            .Callback<IEnumerable<Entry>, WriteOrigin, CancellationToken>((entries, _, _) => createInput = entries.ToList())
+            .ReturnsAsync([]);
+
+        var result = await _controller.CreateEntries(new[] { new Entry { Sgv = 170, Mills = 1000, Device = "Trio" } });
+
+        var echoed = result.Result.Should().BeOfType<OkObjectResult>()
+            .Subject.Value.Should().BeAssignableTo<IEnumerable<object>>()
+            .Subject.Cast<EntryV1Response>().Should().ContainSingle().Subject;
+        echoed.Sgv.Should().Be(170);
+        echoed.Id.Should().Be(legacyId);
+        createInput.Should().ContainSingle().Which.Id.Should().Be(legacyId);
+    }
+
+    [Fact]
+    public async Task CreateEntries_Resend_KeepsTheStoredFieldsItLeavesOut()
+    {
+        var stored = new Entry
+        {
+            Id = "stored-1", Sgv = 164, Mgdl = 164, Mills = 1000, Device = "xDrip-DexcomG6", Type = "sgv",
+            Direction = "Flat", Noise = 1, Filtered = 164000, Unfiltered = 166000, Rssi = 100,
+        };
+
+        _mockDocumentProcessingService
+            .Setup(x => x.ProcessDocuments(It.IsAny<IEnumerable<Entry>>()))
+            .Returns<IEnumerable<Entry>>(entries => entries);
+
+        StubStoredAt((1000L, stored));
+
+        List<Entry>? createInput = null;
+        _mockEntryService
+            .Setup(x =>
+                x.CreateEntriesAsync(It.IsAny<IEnumerable<Entry>>(), It.IsAny<WriteOrigin>(), It.IsAny<CancellationToken>())
+            )
+            .Callback<IEnumerable<Entry>, WriteOrigin, CancellationToken>((entries, _, _) => createInput = entries.ToList())
+            .ReturnsAsync([]);
+
+        await _controller.CreateEntries(new[] { new Entry { Sgv = 170, Mills = 1000, Direction = "FortyFiveUp" } });
+
+        var written = createInput.Should().ContainSingle().Subject;
+        written.Sgv.Should().Be(170);
+        written.Mgdl.Should().Be(170);
+        written.Direction.Should().Be("FortyFiveUp");
+        written.Device.Should().Be("xDrip-DexcomG6");
+        written.Noise.Should().Be(1);
+        written.Filtered.Should().Be(164000);
+        written.Unfiltered.Should().Be(166000);
+        written.Rssi.Should().Be(100);
+    }
+
+    [Fact]
+    public async Task CreateEntries_ResendWithANewSgvBesideAStaleMgdl_EvaluatesAlerts()
+    {
+        var stored = new Entry { Id = "stored-1", Sgv = 164, Mgdl = 164, Mills = 1000, Device = "Dexcom G7", Type = "sgv" };
+
+        _mockDocumentProcessingService
+            .Setup(x => x.ProcessDocuments(It.IsAny<IEnumerable<Entry>>()))
+            .Returns<IEnumerable<Entry>>(entries => entries);
+
+        StubStoredAt((1000L, stored));
+
+        _mockEntryService
+            .Setup(x =>
+                x.CreateEntriesAsync(It.IsAny<IEnumerable<Entry>>(), It.IsAny<WriteOrigin>(), It.IsAny<CancellationToken>())
+            )
+            .ReturnsAsync((IEnumerable<Entry> entries, WriteOrigin _, CancellationToken _) => [.. entries]);
+
+        await _controller.CreateEntries(new[] { new Entry { Sgv = 170, Mgdl = 164, Mills = 1000, Device = "Dexcom G7" } });
+
+        _mockAlertEvaluator.Verify(x => x.EvaluateAsync(It.IsAny<CancellationToken>()), Times.Once());
+    }
+
+    [Theory]
+    [InlineData(164, 0)]
+    [InlineData(170, 1)]
+    public async Task CreateEntries_Resend_EvaluatesAlertsOnlyWhenTheGlucoseMoved(double sgv, int evaluations)
+    {
+        var stored = new Entry { Id = "stored-1", Sgv = 164, Mgdl = 164, Mills = 1000, Device = "Dexcom G7", Type = "sgv" };
+
+        _mockDocumentProcessingService
+            .Setup(x => x.ProcessDocuments(It.IsAny<IEnumerable<Entry>>()))
+            .Returns<IEnumerable<Entry>>(entries => entries);
+
+        StubStoredAt((1000L, stored));
+
+        _mockEntryService
+            .Setup(x =>
+                x.CreateEntriesAsync(It.IsAny<IEnumerable<Entry>>(), It.IsAny<WriteOrigin>(), It.IsAny<CancellationToken>())
+            )
+            .ReturnsAsync((IEnumerable<Entry> entries, WriteOrigin _, CancellationToken _) => [.. entries]);
+
+        await _controller.CreateEntries(new[] { new Entry { Sgv = sgv, Mgdl = sgv, Mills = 1000, Device = "Dexcom G7" } });
+
+        _mockAlertEvaluator.Verify(x => x.EvaluateAsync(It.IsAny<CancellationToken>()), Times.Exactly(evaluations));
     }
 
     [Fact]
@@ -590,8 +729,8 @@ public class EntriesControllerTests
             .Subject.Cast<EntryV1Response>()
             .ToList();
 
-        // One response object per submitted entry, in submission order; the duplicate
-        // slot carries the stored entry's _id, not the resubmitted copy's.
+        // One response object per submitted entry, in submission order; the re-send slot
+        // carries the stored entry's _id, not a fresh one.
         body.Should().HaveCount(3);
         body[0].Mills.Should().Be(1000);
         body[1].Id.Should().Be("stored-dup");
@@ -599,9 +738,9 @@ public class EntriesControllerTests
         body[0].Id.Should().NotBeNullOrEmpty();
         body[2].Id.Should().NotBeNullOrEmpty();
 
-        // Only the two non-duplicates are written
         createInput.Should().NotBeNull();
-        createInput!.Select(e => e.Mills).Should().Equal(1000, 3000);
+        createInput!.Select(e => e.Mills).Should().Equal(1000, 2000, 3000);
+        createInput[1].Id.Should().Be("stored-dup");
     }
 
     [Fact]
@@ -701,11 +840,11 @@ public class EntriesControllerTests
 
         body.Should().HaveCount(3);
         body[0].Mills.Should().Be(0); // refused, echoed
-        body[1].Id.Should().Be("stored-dup"); // duplicate, echoed as the stored row
+        body[1].Id.Should().Be("stored-dup"); // re-send, echoed under the stored id
         body[2].Mills.Should().Be(3000); // written
 
         createInput.Should().NotBeNull();
-        createInput!.Select(e => e.Mills).Should().Equal(3000);
+        createInput!.Select(e => e.Id).Should().Equal("stored-dup", body[2].Id);
     }
 
     [Fact]
@@ -953,13 +1092,20 @@ public class EntriesControllerTests
     private void StubNothingStored() => StubStoredAt();
 
     /// <summary>
-    /// The duplicate check reports the given entries as already stored, keyed by the submitted
-    /// entry's <see cref="Entry.Mills"/>, and finds nothing for every other entry. Results are
-    /// aligned with the submitted batch, as the batch probe the controller uses returns them.
+    /// The duplicate check reports the given entries as already stored under their own ids as
+    /// legacy ids. See <see cref="StubMatchesAt"/>.
     /// </summary>
-    private void StubStoredAt(params (long Mills, Entry Stored)[] stored)
+    private void StubStoredAt(params (long Mills, Entry Stored)[] stored) =>
+        StubMatchesAt(stored.Select(x => (x.Mills, new StoredEntryMatch(x.Stored, x.Stored.Id))).ToArray());
+
+    /// <summary>
+    /// The duplicate check reports the given matches, keyed by the submitted entry's
+    /// <see cref="Entry.Mills"/>, and finds nothing for every other entry. Results are aligned with
+    /// the submitted batch, as the batch probe the controller uses returns them.
+    /// </summary>
+    private void StubMatchesAt(params (long Mills, StoredEntryMatch Match)[] stored)
     {
-        var byMills = stored.ToDictionary(x => x.Mills, x => x.Stored);
+        var byMills = stored.ToDictionary(x => x.Mills, x => x.Match);
         _mockEntryService
             .Setup(x =>
                 x.CheckForDuplicateEntriesAsync(

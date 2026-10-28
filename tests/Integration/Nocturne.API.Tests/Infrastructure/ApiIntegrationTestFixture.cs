@@ -193,7 +193,10 @@ public class ApiIntegrationTestFixture : IAsyncLifetime
             builder.UseSetting("BASE_DOMAIN", $"localhost:{port}");
             builder.UseSetting("DemoService:Enabled", "false");
             builder.ConfigureTestServices(services =>
-                services.AddSingleton<IDemoModeService>(DemoModeService));
+            {
+                services.AddSingleton<IDemoModeService>(DemoModeService);
+                ContextOpenLog.Register(services);
+            });
         });
         _factory.UseKestrel(options => options.ListenLocalhost(port));
         _factory.StartServer();

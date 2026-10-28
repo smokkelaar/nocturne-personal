@@ -94,7 +94,12 @@ internal static class UISettingsControllerHarness
         return new UISettingsController(
             NullLogger<UISettingsController>.Instance,
             demoMode,
-            httpClientFactory,
+            new DemoUISettingsProxy(
+                demoMode,
+                httpClientFactory,
+                TimeProvider.System,
+                NullLogger<DemoUISettingsProxy>.Instance
+            ),
             settingsService
         )
         {

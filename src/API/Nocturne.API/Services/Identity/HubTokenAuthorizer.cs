@@ -223,10 +223,9 @@ public class HubTokenAuthorizer : IHubTokenAuthorizer
     private async Task<HubAuthorization?> AuthorizeDirectGrantAsync(
         string token, Guid connectionTenantId, string requiredScope)
     {
-        var grant = await DirectGrantTokenHandler.FindActiveGrantAsync(
-            _dbContextFactory, token, connectionTenantId, _timeProvider.GetUtcNow().UtcDateTime);
-
-        if (grant is null)
+        if (await DirectGrantTokenHandler.FindActiveGrantAsync(
+                _dbContextFactory, token, connectionTenantId, _timeProvider.GetUtcNow().UtcDateTime)
+            is not var (grant, facts))
         {
             _logger.LogDebug(
                 "No active direct grant on tenant {ConnectionTenant} matches the hub token",
@@ -234,10 +233,7 @@ public class HubTokenAuthorizer : IHubTokenAuthorizer
             return null;
         }
 
-        var membership = await _memberService.GetMemberAccessAsync(
-            grant.SubjectId, connectionTenantId);
-
-        if (membership is null)
+        if (facts?.Access is not { } membership)
         {
             _logger.LogWarning(
                 "Hub direct grant {GrantId} belongs to subject {SubjectId}, who is not a member of connection tenant {ConnectionTenant}",

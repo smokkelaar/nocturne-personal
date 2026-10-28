@@ -53,6 +53,7 @@ public sealed class DemoTenantService
     private readonly ITenantService _tenantService;
     private readonly PublicAccessCacheService _publicAccessCache;
     private readonly ITenantCache _cache;
+    private readonly TimeProvider _time;
     private readonly ILogger<DemoTenantService> _logger;
 
     public DemoTenantService(
@@ -60,12 +61,14 @@ public sealed class DemoTenantService
         ITenantService tenantService,
         PublicAccessCacheService publicAccessCache,
         ITenantCache cache,
+        TimeProvider time,
         ILogger<DemoTenantService> logger)
     {
         _factory = factory;
         _tenantService = tenantService;
         _publicAccessCache = publicAccessCache;
         _cache = cache;
+        _time = time;
         _logger = logger;
     }
 
@@ -221,7 +224,7 @@ public sealed class DemoTenantService
     }
 
     /// <summary>Tenant state that survives a reset: identity, plus the demo defaults.</summary>
-    private static TenantEntity SnapshotTenant(TenantEntity tenant)
+    private TenantEntity SnapshotTenant(TenantEntity tenant)
     {
         var preserved = new TenantEntity
         {
@@ -239,14 +242,14 @@ public sealed class DemoTenantService
         return preserved;
     }
 
-    private static TenantDemoConfigEntity SnapshotDemoConfig(TenantEntity tenant)
+    private TenantDemoConfigEntity SnapshotDemoConfig(TenantEntity tenant)
     {
         var config = tenant.DemoConfig;
         return new TenantDemoConfigEntity
         {
             TenantId = tenant.Id,
             NextResetAt = config?.NextResetAt,
-            LastResetAt = DateTime.UtcNow,
+            LastResetAt = _time.GetUtcNow().UtcDateTime,
             AccessMode = config?.AccessMode ?? "open",
             BackfillDays = config?.BackfillDays ?? 90,
             IntervalMinutes = config?.IntervalMinutes ?? 5,
@@ -258,11 +261,11 @@ public sealed class DemoTenantService
     /// The tenant-row state a demo tenant is expected to hold. Applied at provisioning and
     /// re-applied by every reset, so a demo that predates one of these defaults picks it up.
     /// </summary>
-    internal static void ApplyTenantDefaults(TenantEntity tenant)
+    internal void ApplyTenantDefaults(TenantEntity tenant)
     {
         // The web app's authenticated layout bounces a tenant whose onboarding is
         // incomplete to /setup, which would strand a signed-in demo visitor.
-        tenant.OnboardingCompletedAt ??= DateTime.UtcNow;
+        tenant.OnboardingCompletedAt ??= _time.GetUtcNow().UtcDateTime;
         // A demo tenant has no owner to review access requests.
         tenant.AllowAccessRequests = false;
         // The demo's Scalar page prefills a working token, which needs the docs served on the
@@ -349,7 +352,7 @@ public sealed class DemoTenantService
     /// effective set, so holding either is the ability to grant oneself <c>*</c>. Anyone can
     /// get a session for the demo member, so it must not hold an escalation primitive.
     /// </remarks>
-    private static async Task<TenantRoleEntity> EnsureDemoRoleAsync(
+    private async Task<TenantRoleEntity> EnsureDemoRoleAsync(
         NocturneDbContext db, Guid tenantId, CancellationToken ct)
     {
         var role = await db.TenantRoles
@@ -372,7 +375,7 @@ public sealed class DemoTenantService
         }
 
         role.Permissions = new List<string>(Scope.DemoVisitorPermissions);
-        role.SysUpdatedAt = DateTime.UtcNow;
+        role.SysUpdatedAt = _time.GetUtcNow().UtcDateTime;
         return role;
     }
 

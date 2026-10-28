@@ -3,6 +3,7 @@ using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Nocturne.API.Helpers;
 using Nocturne.API.Services.Platform;
+using Nocturne.API.Services.V4;
 using Nocturne.Core.Contracts;
 using Nocturne.Core.Contracts.Glucose;
 using Nocturne.Core.Contracts.Treatments;
@@ -227,6 +228,7 @@ public class TreatmentReadService : ITreatmentStore
             DecompositionResult? result = null;
             try
             {
+                await KeyToServedRecordAsync(treatment, ct);
                 result = await _decomposer.DecomposeAsync(treatment, WriteOrigin.Live, ct);
                 skippedDeleted += result.SkippedDeleted;
                 var created = await ToCreatedAsync(treatment, result, ct);
@@ -323,9 +325,17 @@ public class TreatmentReadService : ITreatmentStore
 
         var served = await ProjectAsync(stored.Record, ct);
 
-        // Every record one treatment decomposed into (a meal bolus's carb, a bolus wizard's
-        // calculation, a correction's note) shares its legacy id, so deleting by it leaves no sibling
-        // behind as a phantom treatment of its own.
+        TreatmentDeletion? deletion = null;
+        foreach (var record in await ServedTogetherAsync(stored, ct))
+            deletion = await DeleteRecordAsync(record, served, ct) ?? deletion;
+        return deletion;
+    }
+
+    private async Task<TreatmentDeletion?> DeleteRecordAsync(StoredRecord stored, Treatment? served, CancellationToken ct)
+    {
+        // A record written beside another under one legacy id (a bolus wizard's calculation, a
+        // correction's note) is deleted by it, so no sibling is left behind as a phantom treatment of
+        // its own. The halves of a meal need not share one, so each is deleted by its own.
         if (stored.Record.LegacyId is { Length: > 0 } legacyId)
         {
             var records = await _pipeline.DeleteByLegacyIdAsync<Treatment>(legacyId, WriteOrigin.Live, ct);
@@ -437,7 +447,7 @@ public class TreatmentReadService : ITreatmentStore
     /// <summary>
     /// The stored record a client-sent treatment id names, or none and the id to look a state span up
     /// by. A Note a treatment wrote beside another record is served as part of that record, so it
-    /// resolves to it; see <see cref="Nocturne.API.Services.V4.LegacyTreatmentTables.NotesServedWithAnotherRecord"/>.
+    /// resolves to it; see <see cref="LegacyTreatmentTables.NotesServedWithAnotherRecord"/>.
     /// </summary>
     private async Task<(StoredRecord? Stored, string SpanId)> ResolveAsync(string id, CancellationToken ct)
     {
@@ -468,9 +478,12 @@ public class TreatmentReadService : ITreatmentStore
     /// <see cref="ToCreatedAsync"/> names a treatment by: a legacy id resolves to the record the create
     /// returned, not to the note a record treatment with notes also writes.
     /// </summary>
-    private async Task<StoredRecord?> FindStoredRecordAsync(string id, CancellationToken ct)
+    private Task<StoredRecord?> FindStoredRecordAsync(string id, CancellationToken ct) =>
+        FindStoredRecordAsync(RecordKeysFor(id), ct);
+
+    private async Task<StoredRecord?> FindStoredRecordAsync(IEnumerable<RecordKey> keys, CancellationToken ct)
     {
-        foreach (var key in RecordKeysFor(id))
+        foreach (var key in keys)
         {
             var stored = await FindServingRecordAsync(key, ct) ?? await FindAsync(_noteRepo, key, ct);
             if (stored is not null)
@@ -527,12 +540,54 @@ public class TreatmentReadService : ITreatmentStore
             _ => throw new ArgumentOutOfRangeException(nameof(key)),
         };
 
-        return record is null
-            ? null
-            : new StoredRecord(
-                record,
-                c => repo.DeleteAsync(record.Id, WriteOrigin.Live, c),
-                c => repo.UpdateAsync(record.Id, record, WriteOrigin.Live, c));
+        return record is null ? null : Stored(repo, record);
+    }
+
+    private static StoredRecord Stored<T>(ILegacyKeyedRepository<T> repo, T record) where T : class, IV4Record =>
+        new(
+            record,
+            c => repo.DeleteAsync(record.Id, WriteOrigin.Live, c),
+            c => repo.UpdateAsync(record.Id, record, WriteOrigin.Live, c));
+
+    /// <summary>
+    /// The stored records served as one treatment with <paramref name="stored"/>: the bolus and the
+    /// carb intake of a Meal Bolus, bolus first, which need not share a legacy id (a meal entered in
+    /// Nocturne has none, a connector's carries one per half); else the record alone.
+    /// </summary>
+    private async Task<IReadOnlyList<StoredRecord>> ServedTogetherAsync(StoredRecord stored, CancellationToken ct)
+    {
+        if (stored.Record is not (Bolus or CarbIntake) || stored.Record.CorrelationId is not { } correlationId)
+            return [stored];
+
+        var bolus = LegacyTreatmentTables.MealHalf(await _bolusRepo.GetByCorrelationIdAsync(correlationId, ct));
+        var carbs = LegacyTreatmentTables.MealHalf(await _carbIntakeRepo.GetByCorrelationIdAsync(correlationId, ct));
+        return bolus is not null && carbs is not null && (bolus.Id == stored.Record.Id || carbs.Id == stored.Record.Id)
+            ? [Stored(_bolusRepo, bolus), Stored(_carbIntakeRepo, carbs)]
+            : [stored];
+    }
+
+    /// <summary>
+    /// Keys a created treatment whose id Nocturne served for a stored record or state span to its
+    /// upsert key, so a client re-sending a document it read back replaces it, as Nightscout's upsert
+    /// on <c>_id</c> does. Only an id shaped like a served one is looked up, and never by
+    /// <see cref="RecordKey.LegacyIdHash"/>, which scans every legacy id: a fresh client ObjectId
+    /// costs indexed lookups at most.
+    /// </summary>
+    private async Task KeyToServedRecordAsync(Treatment treatment, CancellationToken ct)
+    {
+        if (!MongoObjectId.IsGuidPrefixShaped(treatment.Id))
+            return;
+
+        var keys = RecordKeysFor(treatment.Id!).Where(key => key is not RecordKey.LegacyIdHash);
+        if (await FindStoredRecordAsync(keys, ct) is { } stored)
+        {
+            if (stored.Record.LegacyId != treatment.Id)
+                treatment.Id = await UpsertKeyAsync(stored, ct);
+        }
+        else if (await _projection.GetStateSpanTreatmentIdAsync(treatment.Id!, ct) is { } spanKey)
+        {
+            treatment.Id = spanKey;
+        }
     }
 
     private async Task<Treatment?> ProjectAsync(IV4Record record, CancellationToken ct)
@@ -542,7 +597,7 @@ public class TreatmentReadService : ITreatmentStore
 
         // A carb intake paired into a Meal Bolus is served under the bolus's id.
         if (record is CarbIntake { CorrelationId: { } correlationId }
-            && (await _bolusRepo.GetByCorrelationIdAsync(correlationId, ct)).FirstOrDefault() is { } pairedBolus)
+            && LegacyTreatmentTables.MealHalf(await _bolusRepo.GetByCorrelationIdAsync(correlationId, ct)) is { } pairedBolus)
             return await FindProjectedTreatmentAsync(pairedBolus.Mills, pairedBolus.Id.ToString(), ct);
 
         return await FindProjectedTreatmentAsync(record.Mills, record.Id.ToString(), ct);
@@ -573,18 +628,25 @@ public class TreatmentReadService : ITreatmentStore
     }
 
     /// <summary>
-    /// The LegacyId the decomposer upserts a stored record on. A native V4 row has none, so the
-    /// decomposer could not match it and would insert a duplicate; it is given the id the wire
-    /// already shows for it.
+    /// The LegacyId the decomposer upserts a stored record on, with every record served beside it
+    /// (<see cref="ServedTogetherAsync"/>). A native V4 row has none, so the decomposer could not
+    /// match it and would insert a duplicate; the records without one are given the first one held,
+    /// else the id the wire already shows. A record that holds another keeps it: its source re-syncs
+    /// it by that id, and the decomposer finds a meal's carbs through their bolus.
     /// </summary>
-    private static async Task<string> UpsertKeyAsync(StoredRecord stored, CancellationToken ct)
+    private async Task<string> UpsertKeyAsync(StoredRecord stored, CancellationToken ct)
     {
-        if (!string.IsNullOrEmpty(stored.Record.LegacyId))
-            return stored.Record.LegacyId;
+        var records = await ServedTogetherAsync(stored, ct);
+        var key = records.Select(r => r.Record.LegacyId).FirstOrDefault(id => !string.IsNullOrEmpty(id))
+            ?? MongoObjectId.FromGuid(records[0].Record.Id);
 
-        stored.Record.LegacyId = MongoObjectId.FromGuid(stored.Record.Id);
-        await stored.SaveAsync(ct);
-        return stored.Record.LegacyId;
+        foreach (var record in records.Where(r => string.IsNullOrEmpty(r.Record.LegacyId)))
+        {
+            record.Record.LegacyId = key;
+            await record.SaveAsync(ct);
+        }
+
+        return key;
     }
 
     private sealed record StoredRecord(

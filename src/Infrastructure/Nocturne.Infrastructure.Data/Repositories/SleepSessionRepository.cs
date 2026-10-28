@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using Nocturne.Core.Contracts.Repositories;
 using Nocturne.Core.Contracts.V4.Repositories;
@@ -53,11 +54,24 @@ public class SleepSessionRepository : ISleepSessionRepository
     }
 
     /// <inheritdoc />
+    public Task<SleepSession?> GetSessionByIdAsync(Guid id, CancellationToken cancellationToken = default) =>
+        GetSessionAsync(s => s.Id == id, cancellationToken);
+
+    /// <inheritdoc />
+    public Task<SleepSession?> GetSessionBySourceRecordAsync(
+        SleepSource source, string originalId, CancellationToken cancellationToken = default)
+    {
+        var storedSource = source.ToString();
+        return GetSessionAsync(s => s.Source == storedSource && s.OriginalId == originalId, cancellationToken);
+    }
+
     /// <remarks>
     /// Stages and samples are sibling collections, so a single query joins them into
     /// stages x samples rows (80 x 480 = 38,400 for one overnight); the load is split.
     /// </remarks>
-    public async Task<SleepSession?> GetSessionByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    private async Task<SleepSession?> GetSessionAsync(
+        Expression<Func<SleepSessionEntity, bool>> predicate,
+        CancellationToken cancellationToken)
     {
         await using var ctx = await _contextFactory.CreateAsync(cancellationToken);
         var entity = await ctx.SleepSessions
@@ -65,7 +79,7 @@ public class SleepSessionRepository : ISleepSessionRepository
             .Include(s => s.BiometricSamples)
             .AsSplitQuery()
             .AsNoTracking()
-            .FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
+            .FirstOrDefaultAsync(predicate, cancellationToken);
         return entity is null ? null : SleepSessionMapper.ToDomainModel(entity, includeChildren: true);
     }
 

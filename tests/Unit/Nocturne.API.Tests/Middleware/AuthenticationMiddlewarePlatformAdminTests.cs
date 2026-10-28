@@ -54,15 +54,9 @@ public class AuthenticationMiddlewarePlatformAdminTests
     /// </summary>
     private static async Task<DefaultHttpContext> RunAsync(AuthType authType)
     {
-        var memberService = new Mock<ITenantMemberService>();
-        memberService
-            .Setup(s => s.IsMemberAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(true);
-
         var dbName = $"auth_platform_admin_{Guid.NewGuid()}";
         var services = new ServiceCollection();
         services.AddScoped<ICategoryReadContext>(_ => new CategoryReadContext());
-        services.AddSingleton(memberService.Object);
         services.AddScoped(_ => TestDbContextFactory.CreateInMemoryContext(dbName).AsFactory());
         var provider = services.BuildServiceProvider();
 
@@ -76,6 +70,10 @@ public class AuthenticationMiddlewarePlatformAdminTests
                 IsActive = true,
                 IsPlatformAdmin = true,
                 ApprovalStatus = "Approved",
+            });
+            db.TenantMembers.Add(new TenantMemberEntity
+            {
+                Id = Guid.CreateVersion7(), TenantId = TenantId, SubjectId = SubjectId,
             });
             await db.SaveChangesAsync();
         }

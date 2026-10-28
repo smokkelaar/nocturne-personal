@@ -4,9 +4,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Nocturne.Infrastructure.Data.Entities;
 
 /// <summary>
-/// PostgreSQL entity recording how far dedup reconciliation has processed for a tenant.
-/// One row per tenant, holding the last reconciled link as a
-/// (<c>sys_created_at</c>, <c>id</c>) keyset cursor.
+/// PostgreSQL entity recording how far dedup reconciliation and the singleton prune have processed
+/// for a tenant. One row per tenant, holding each as a (<c>sys_created_at</c>, <c>id</c>) keyset cursor.
 /// </summary>
 [Table("dedup_reconcile_state")]
 public class DedupReconcileStateEntity : ITenantScoped
@@ -31,4 +30,21 @@ public class DedupReconcileStateEntity : ITenantScoped
     /// </summary>
     [Column("last_reconciled_link_id")]
     public Guid? LastReconciledLinkId { get; set; }
+
+    /// <summary>
+    /// Ingestion time of the last primary link the singleton prune examined. Null before the
+    /// prune's first page, and after a restart that found no links.
+    /// </summary>
+    [Column("prune_cursor_created_at")]
+    public DateTime? PruneCursorCreatedAt { get; set; }
+
+    /// <summary>Id of the last primary link the singleton prune examined.</summary>
+    [Column("prune_cursor_id")]
+    public Guid? PruneCursorId { get; set; }
+
+    /// <summary>
+    /// When the singleton prune last restarted from the tenant's first link. Null until its first pass.
+    /// </summary>
+    [Column("prune_cursor_reset_at")]
+    public DateTime? PruneCursorResetAt { get; set; }
 }

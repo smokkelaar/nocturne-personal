@@ -1,16 +1,16 @@
 <script lang="ts">
-  import { lazyComponent } from "$lib/utils/lazy-component.svelte";
+  import { lazyComponent } from "#lib/utils/lazy-component.svelte.js";
   import { findNearbyEntries } from "./engine/nearby-entries";
-  import type { EntryRecord } from "$lib/constants/entry-categories";
+  import type { EntryRecord } from "#lib/constants/entry-categories.js";
   import {
     Card,
     CardContent,
     CardHeader,
     CardTitle,
-  } from "$lib/components/ui/card";
-  import { Badge } from "$lib/components/ui/badge";
-  import { IsMobile } from "$lib/hooks/is-mobile.svelte";
-  import { getRealtimeStore } from "$lib/stores/realtime-store.svelte";
+  } from "#lib/components/ui/card/index.js";
+  import { Badge } from "#lib/components/ui/badge/index.js";
+  import { IsMobile } from "#lib/hooks/is-mobile.svelte.js";
+  import { getRealtimeStore } from "#lib/stores/realtime-store.svelte.js";
   import {
     predictionEnabled,
     predictionDisplayMode,
@@ -22,9 +22,9 @@
     chartShowPoints,
     chartAreaMode,
     chartAreaOpacity,
-  } from "$lib/stores/appearance-store.svelte";
-  import type { PredictionDisplayMode } from "$lib/stores/appearance-store.svelte";
-  import { BasalDeliveryOrigin, type SystemEventType } from "$lib/api";
+  } from "#lib/stores/appearance-store.svelte.js";
+  import type { PredictionDisplayMode } from "#lib/stores/appearance-store.svelte.js";
+  import { BasalDeliveryOrigin, type SystemEventType } from "#lib/api/index.js";
   import PredictionSettings from "../PredictionSettings.svelte";
   import MiniOverviewChart from "../MiniOverviewChart.svelte";
   import GlucoseChartShell from "./GlucoseChartShell.svelte";
@@ -32,11 +32,11 @@
   import ZoomIndicator from "./ZoomIndicator.svelte";
   import { createChartDataEngine } from "./engine/chart-data-engine.svelte";
   import { createPointInspection, syncInspectionDialogs } from "./engine/point-inspection.svelte";
-  import { getEntryByTreatmentId } from "$api/entries.remote";
+  import { getEntryByTreatmentId } from "#lib/api/entries.remote.js";
   import type { LegendState } from "./chart-context.svelte";
-  import type { TransformedChartData } from "$lib/utils/chart-data-transform";
-  import type { PredictionData } from "$api/predictions.remote";
-  import { PrintMode } from "$lib/components/charts/print/print-mode.svelte";
+  import type { TransformedChartData } from "#lib/utils/chart-data-transform.js";
+  import type { PredictionData } from "#lib/api/predictions.remote.js";
+  import { PrintMode } from "#lib/components/charts/print/print-mode.svelte.js";
 
   // Tracks
   import BasalTrack from "./tracks/BasalTrack.svelte";
@@ -55,8 +55,11 @@
   import PointInspectionPicker from "./dialogs/PointInspectionPicker.svelte";
   import BasalInjectionMarkers from "./markers/BasalInjectionMarkers.svelte";
   import BgCheckMarkers from "./markers/BgCheckMarkers.svelte";
-  import type { GlucoseUnits } from "$lib/stores/appearance-store.svelte";
-  import { afterNextPaint } from "$lib/utils/after-next-paint";
+  import type { GlucoseUnits } from "#lib/stores/appearance-store.svelte.js";
+  import { afterNextPaint } from "#lib/utils/after-next-paint.js";
+  import { fresh } from "#lib/api/fresh-query.js";
+  import { plotPadding } from "./plot-padding";
+  import { writePlotSize } from "./plot-size";
 
   interface Props {
     dateRange?: { from: Date | string; to: Date | string };
@@ -65,6 +68,8 @@
     streamedHistoricalData?: Promise<TransformedChartData | null>;
     externalPredictionData?: PredictionData | null;
     showPredictions?: boolean;
+    /** Whether forecasts can be made, as the server found when it rendered the page. */
+    initialPredictionsAvailable?: boolean | null;
     defaultFocusHours?: number;
     heightClass?: string;
     demoMode?: boolean;
@@ -76,6 +81,13 @@
      */
     deferDrawing?: boolean;
     glucoseUnits?: GlucoseUnits;
+    /**
+     * The server's rendering of the plot (`#lib/server/plot-snapshot.js`), shown until the live plot
+     * is drawn.
+     */
+    plotSnapshot?: string | null;
+    /** Keep the plot's size where the server reads it, to render the next document's snapshot. */
+    recordsPlotSize?: boolean;
   }
 
   let {
@@ -85,11 +97,14 @@
     streamedHistoricalData,
     externalPredictionData,
     showPredictions = true,
+    initialPredictionsAvailable,
     defaultFocusHours,
     heightClass,
     demoMode,
     deferDrawing = false,
     glucoseUnits,
+    plotSnapshot,
+    recordsPlotSize = false,
   }: Props = $props();
 
   const realtimeStore = getRealtimeStore();
@@ -103,6 +118,9 @@
   });
   const displayDemoMode = $derived(demoMode ?? realtimeStore.demoMode);
 
+  let plotWidth = $state(0);
+  let plotHeight = $state(0);
+
   // Narrower than 672px (@2xl), the card drops its chrome (container queries, so the chart is
   // never remounted) and the axis gutters narrow, so the chart can use the full width. Until
   // the card is measured, the viewport stands in for its width.
@@ -111,19 +129,12 @@
   const compact = $derived(cardWidth > 0 ? cardWidth < 672 : isMobile.current);
   const print = new PrintMode();
 
-  // Axis gutters. The desktop 48px each side is a quarter of a phone's width,
-  // so a phone gets only what the tick labels need. Left: a three-digit or
-  // one-decimal glucose value at 12px. Right: a one- or two-character
-  // basal/IOB tick at 9px plus its 4px tick mark. The overview strip shares
-  // the horizontal values so its brush lines up with the main plot. Paper
-  // widens the left gutter, where the track names print.
-  const chartPadding = $derived(
-    print.active
-      ? { left: 56, right: 48, top: 8, bottom: 30 }
-      : compact
-        ? { left: 36, right: 22, top: 8, bottom: 28 }
-        : { left: 48, right: 48, top: 8, bottom: 30 }
-  );
+  const chartPadding = $derived(plotPadding(compact, print.active));
+
+  $effect(() => {
+    if (!recordsPlotSize || print.active || plotWidth === 0 || plotHeight === 0 || cardWidth === 0) return;
+    writePlotSize({ width: plotWidth, height: plotHeight, compact });
+  });
 
   // ===== ENGINE =====
   const engine = createChartDataEngine({
@@ -134,6 +145,7 @@
     get streamedHistoricalData() { return streamedHistoricalData; },
     get externalPredictionData() { return externalPredictionData; },
     get enablePredictions() { return showPredictions; },
+    get initialPredictionsAvailable() { return initialPredictionsAvailable; },
     get demoMode() { return demoMode; },
   });
 
@@ -264,7 +276,7 @@
       realtimeStore.findEntryByTreatmentId(treatmentId) ?? null;
 
     if (!entry) {
-      const result = await getEntryByTreatmentId({ treatmentId }).run();
+      const result = await fresh(getEntryByTreatmentId({ treatmentId }));
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- generated entry shape bridged to the app EntryRecord union
       entry = result as EntryRecord | null;
     }
@@ -337,7 +349,7 @@
   );
 
   const entryEditDialog = lazyComponent(
-    () => import("$lib/components/entries/EntryEditDialog.svelte"),
+    () => import("#lib/components/entries/EntryEditDialog.svelte"),
   );
   const disambiguationDialog = lazyComponent(
     () => import("./dialogs/TreatmentDisambiguationDialog.svelte"),
@@ -398,7 +410,12 @@
     <!-- The basal, mode and IOB/COB tracks take fixed shares of the height, so
          a 320px chart left them 38px, 13px and 58px tall on a phone: too little
          for their labels. 400px is what a portrait phone shows above the fold. -->
-    <div class={heightClass ?? "h-[400px] @md:h-[450px]"} data-testid="glucose-plot">
+    <div
+      class={heightClass ?? "h-[400px] @md:h-[450px]"}
+      data-testid="glucose-plot"
+      bind:clientWidth={plotWidth}
+      bind:clientHeight={plotHeight}
+    >
       {#if plotDrawn}
         <GlucoseChartShell
           {engine}
@@ -436,6 +453,11 @@
             <ChartTooltip onTimeClick={openDayInReview} />
           {/snippet}
         </GlucoseChartShell>
+      {:else if plotSnapshot}
+        <div class="h-full w-full overflow-hidden" data-testid="plot-snapshot" aria-hidden="true">
+          <!-- eslint-disable-next-line svelte/no-at-html-tags -- the server's own render of this chart's components, no user input -->
+          {@html plotSnapshot}
+        </div>
       {/if}
     </div>
 

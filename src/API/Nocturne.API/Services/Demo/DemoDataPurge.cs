@@ -35,7 +35,8 @@ internal static class DemoDataPurge
     /// <summary>
     /// Treatments and compression-low review data the demo service wrote.
     /// </summary>
-    public static async Task<long> PurgeTreatmentsAsync(NocturneDbContext db, CancellationToken ct)
+    public static async Task<long> PurgeTreatmentsAsync(
+        NocturneDbContext db, TimeProvider time, CancellationToken ct)
     {
         long deleted = await db.Boluses.PurgeAsync(SourceFilter.For<BolusEntity>(DataSources.DemoService), ct);
         deleted += await db.CarbIntakes.PurgeAsync(SourceFilter.For<CarbIntakeEntity>(DataSources.DemoService), ct);
@@ -59,7 +60,7 @@ internal static class DemoDataPurge
         deleted += await db.LabHbA1cResults
             .Where(result => result.Note == "Demo lab result")
             .ExecuteUpdateAsync(update => update.SetProperty(
-                result => result.DeletedAt, DateTime.UtcNow), ct);
+                result => result.DeletedAt, time.GetUtcNow().UtcDateTime), ct);
         return deleted;
     }
 

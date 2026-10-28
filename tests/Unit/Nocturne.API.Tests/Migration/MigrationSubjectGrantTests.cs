@@ -361,7 +361,7 @@ public class MigrationSubjectGrantTests
             factory.AsNocturneFactory(), ReaderToken, tenantId, DateTime.UtcNow);
 
         byIssuedToken.Should().NotBeNull();
-        byIssuedToken!.Label.Should().Be("Reader");
+        byIssuedToken!.Value.Grant.Label.Should().Be("Reader");
 
         // The name in front of the dash is cosmetic, and a longer prefix of the same digest is the
         // same credential; both are Nightscout's rule, not ours.

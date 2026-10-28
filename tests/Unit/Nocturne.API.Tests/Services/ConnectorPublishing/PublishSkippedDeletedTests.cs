@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using Npgsql;
+using Nocturne.Core.Contracts.Multitenancy;
 using Nocturne.API.Services.ConnectorPublishing;
 using Nocturne.API.Services.Glucose;
 using Nocturne.API.Services.Treatments;
@@ -93,7 +94,7 @@ public class PublishSkippedDeletedTests : IDisposable
             Mock.Of<IBasalInjectionRepository>(), Mock.Of<INoteRepository>(), Mock.Of<IDeviceEventRepository>(),
             Mock.Of<IPatientInsulinRepository>(), Mock.Of<IBasalRateResolver>(), Mock.Of<ITherapySettingsResolver>(),
             Mock.Of<IPatientDeviceStamper>(), Mock.Of<IAuditContext>(), _tally,
-            NullLogger<TreatmentPublisher>.Instance);
+            Mock.Of<ITenantAccessor>(), NullLogger<TreatmentPublisher>.Instance);
 
         var published = await publisher.PublishTreatmentsAsync(
             [new Treatment { Id = "t-1", EventType = "Note" }, new Treatment { Id = "t-2", EventType = "Note" }],
@@ -161,7 +162,7 @@ public class PublishSkippedDeletedTests : IDisposable
             Mock.Of<IBasalInjectionRepository>(), Mock.Of<INoteRepository>(), Mock.Of<IDeviceEventRepository>(),
             Mock.Of<IPatientInsulinRepository>(), Mock.Of<IBasalRateResolver>(), Mock.Of<ITherapySettingsResolver>(),
             Mock.Of<IPatientDeviceStamper>(), Mock.Of<IAuditContext>(), _tally,
-            NullLogger<TreatmentPublisher>.Instance);
+            Mock.Of<ITenantAccessor>(), NullLogger<TreatmentPublisher>.Instance);
     }
 
     [Fact]
@@ -176,7 +177,7 @@ public class PublishSkippedDeletedTests : IDisposable
             decomposer.Object, Mock.Of<IDeviceEventRepository>(), Mock.Of<IPatientDeviceStamper>(),
             Mock.Of<IAuditContext>(), Mock.Of<IApsSnapshotRepository>(), Mock.Of<IPatientDeviceRepository>(),
             Mock.Of<IPumpSnapshotRepository>(), Mock.Of<IUploaderSnapshotRepository>(), _tally,
-            NullLogger<DevicePublisher>.Instance);
+            Mock.Of<ITenantAccessor>(), NullLogger<DevicePublisher>.Instance);
 
         var published = await publisher.PublishDeviceStatusAsync(
             [new DeviceStatus { Id = "ds-1" }, new DeviceStatus { Id = "ds-2" }], "nightscout", WriteOrigin.Backfill);
@@ -209,6 +210,6 @@ public class PublishSkippedDeletedTests : IDisposable
 
         return new GlucosePublisher(
             entryService, sensorGlucose, meterGlucose, calibration, Mock.Of<IPatientDeviceStamper>(),
-            Mock.Of<ICanonicalAlertEvaluator>(), audit, _tally, NullLogger<GlucosePublisher>.Instance);
+            Mock.Of<ICanonicalAlertEvaluator>(), audit, _tally, Mock.Of<ITenantAccessor>(), NullLogger<GlucosePublisher>.Instance);
     }
 }

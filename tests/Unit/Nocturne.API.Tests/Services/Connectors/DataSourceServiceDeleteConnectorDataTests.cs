@@ -99,6 +99,7 @@ public class DataSourceServiceDeleteConnectorDataTests : IDisposable
         Nocturne.API.Tests.Infrastructure.ProfileActivationTestDeps.Writer(context),
         purgeGuards,
         dataPurges,
+        TimeProvider.System,
         NullLogger<DataSourceService>.Instance);
 
     private static string GoogleHealthDataSourceId =>
@@ -402,7 +403,7 @@ public class DataSourceServiceDeleteConnectorDataTests : IDisposable
                 ProfileActivationTestDeps.Repository(ctx), TestTenantCache.Create(), reresolver.Object);
             var service = new DataSourceService(
                 ctx.AsFactory(), _sensorGlucose.Object, _meterGlucose.Object, _calibrations.Object, _auditContext,
-                _connectorConfig.Object, writer, [], [], NullLogger<DataSourceService>.Instance);
+                _connectorConfig.Object, writer, [], [], TimeProvider.System, NullLogger<DataSourceService>.Instance);
             (await service.DeleteConnectorDataAsync(ConnectorId)).Success.Should().BeTrue();
         }
 

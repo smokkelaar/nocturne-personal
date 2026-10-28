@@ -1491,7 +1491,7 @@ public class DeduplicationServiceTests : IDisposable
 
     [Theory]
     [InlineData("Exercise", true)]
-    [InlineData("exercise", true)]
+    [InlineData("exercise", false)]
     [InlineData("NotACategory", false)]
     [InlineData("3", false)]
     [InlineData("", false)]

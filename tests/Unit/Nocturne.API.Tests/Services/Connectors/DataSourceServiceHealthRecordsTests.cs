@@ -62,6 +62,7 @@ public class DataSourceServiceHealthRecordsTests : IDisposable
         Nocturne.API.Tests.Infrastructure.ProfileActivationTestDeps.Writer(context),
         [],
         dataPurges,
+        TimeProvider.System,
         NullLogger<DataSourceService>.Instance);
 
     private void SeedHeartRate(string dataSource, DateTime at)

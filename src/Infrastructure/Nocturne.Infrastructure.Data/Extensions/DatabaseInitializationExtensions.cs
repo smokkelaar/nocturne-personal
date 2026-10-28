@@ -293,27 +293,32 @@ public static class DatabaseInitializationExtensions
 
         await using var connection = await dataSource.OpenConnectionAsync(cancellationToken);
 
-        var drifted = new List<string>();
+        var drifted = new List<(string Table, List<TenantTableStorageParameters.Parameter> Parameters)>();
         await using (var query = connection.CreateCommand())
         {
             query.CommandText = TenantTableStorageParameters.DriftQuerySql;
             query.Parameters.AddWithValue(tables.ToArray());
-            query.Parameters.AddWithValue(TenantTableStorageParameters.AnalyzeScaleFactorName);
-            query.Parameters.AddWithValue(TenantTableStorageParameters.AnalyzeScaleFactor);
+            query.Parameters.AddWithValue(TenantTableStorageParameters.All.Select(p => p.Name).ToArray());
+            query.Parameters.AddWithValue(TenantTableStorageParameters.All.Select(p => p.Ceiling).ToArray());
             await using var reader = await query.ExecuteReaderAsync(cancellationToken);
             while (await reader.ReadAsync(cancellationToken))
-                drifted.Add(reader.GetString(0));
+            {
+                var names = reader.GetFieldValue<string[]>(1);
+                drifted.Add((
+                    reader.GetString(0),
+                    TenantTableStorageParameters.All.Where(p => names.Contains(p.Name)).ToList()));
+            }
         }
 
         var altered = 0;
-        foreach (var table in drifted)
+        foreach (var (table, parameters) in drifted)
         {
             await using var transaction = await connection.BeginTransactionAsync(cancellationToken);
             try
             {
                 await using var command = connection.CreateCommand();
                 command.Transaction = transaction;
-                command.CommandText = TenantTableStorageParameters.BuildSetSql(table);
+                command.CommandText = TenantTableStorageParameters.BuildSetSql(table, parameters);
                 await command.ExecuteNonQueryAsync(cancellationToken);
                 await transaction.CommitAsync(cancellationToken);
                 altered++;
@@ -322,18 +327,14 @@ public static class DatabaseInitializationExtensions
             {
                 await transaction.RollbackAsync(cancellationToken);
                 logger.LogWarning(
-                    "Skipped setting {Parameter} on {Table}: {Message}. It will be retried on the next startup.",
-                    TenantTableStorageParameters.AnalyzeScaleFactorName, table, ex.MessageText);
+                    "Skipped setting {Parameters} on {Table}: {Message}. It will be retried on the next startup.",
+                    string.Join(", ", parameters.Select(p => p.Name)), table, ex.MessageText);
             }
         }
 
         if (altered > 0)
         {
-            logger.LogInformation(
-                "Set {Parameter} = {Value} on {Count} tenant-scoped tables.",
-                TenantTableStorageParameters.AnalyzeScaleFactorName,
-                TenantTableStorageParameters.AnalyzeScaleFactor,
-                altered);
+            logger.LogInformation("Pinned storage parameters on {Count} tenant-scoped tables.", altered);
         }
 
         return altered;

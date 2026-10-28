@@ -112,7 +112,7 @@ public class EntryService : IEntryService
     }
 
     /// <inheritdoc />
-    public async Task<IReadOnlyList<Entry?>> CheckForDuplicateEntriesAsync(
+    public async Task<IReadOnlyList<StoredEntryMatch?>> CheckForDuplicateEntriesAsync(
         IReadOnlyList<EntryDuplicateProbe> probes,
         CancellationToken cancellationToken = default)
     {
@@ -219,7 +219,7 @@ public class EntryService : IEntryService
         entry.Id = originalId;
     }
 
-    private static void CarrySgvAndMgdl(Entry patched, JsonElement patchData)
+    internal static void CarrySgvAndMgdl(Entry patched, JsonElement patchData)
     {
         // The existing entry's sgv and mgdl are one stored value, so a patch that moves only one of them carries the other.
         var patchesSgv = patchData.TryGetProperty("sgv", out _);

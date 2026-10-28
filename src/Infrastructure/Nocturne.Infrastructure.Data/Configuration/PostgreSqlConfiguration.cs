@@ -64,6 +64,23 @@ public class PostgreSqlConfiguration
     public int MaxPoolSize { get; set; } = 100;
 
     /// <summary>
+    /// Physical connections the pool keeps open even when idle. Raise it to the steady load of a
+    /// busy instance to skip reconnects; above that floor it holds backends that do nothing.
+    /// Must not exceed <see cref="MaxPoolSize"/>. A <c>Minimum Pool Size</c> in the connection
+    /// string wins over this.
+    /// </summary>
+    public int MinPoolSize { get; set; } = 0;
+
+    /// <summary>
+    /// How long, in seconds, a pooled connection above <see cref="MinPoolSize"/> may sit idle
+    /// before the pool closes it. A shorter time returns backends sooner after a burst but costs a
+    /// new connection (TLS and role setup) when load returns. Must be at least the pool's pruning
+    /// interval (10 s by default), and is approximate: the pool closes surplus connections on that
+    /// interval. A <c>Connection Idle Lifetime</c> in the connection string wins over this.
+    /// </summary>
+    public int ConnectionIdleLifetimeSeconds { get; set; } = 60;
+
+    /// <summary>
     /// How many of its most-used statements each runtime-pool connection keeps prepared on the
     /// server (Npgsql <c>Max Auto Prepare</c>), so PostgreSQL reuses their plans instead of parsing
     /// and planning every execution; under load that work was over a third of the database's time.

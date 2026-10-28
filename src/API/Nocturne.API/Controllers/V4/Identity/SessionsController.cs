@@ -61,7 +61,7 @@ public class SessionsController : ControllerBase
         var result = sessions
             .Select(s => new SessionDto
             {
-                SessionId = s.OidcSessionId ?? s.Id.ToString(),
+                SessionId = s.OidcSessionId!,
                 DeviceDescription = s.DeviceDescription,
                 IpAddress = s.IpAddress,
                 LastActiveAt = s.LastUsedAt ?? s.IssuedAt,
@@ -163,7 +163,7 @@ public class SessionsController : ControllerBase
             return null;
         }
 
-        return await _refreshTokenService.GetSessionIdForTokenAsync(refreshToken);
+        return (await _refreshTokenService.FindOwnerAsync(refreshToken))?.SessionId;
     }
 }
 

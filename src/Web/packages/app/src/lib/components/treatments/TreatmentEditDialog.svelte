@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { uniqueBy } from "$lib/utils/collections";
+  import { uniqueBy } from "#lib/utils/collections.js";
   import type {
     BolusType,
     GlucoseType,
@@ -8,25 +8,25 @@
     PatientInsulin,
     InsulinFormulation,
     CreateBasalInjectionRequest,
-  } from "$lib/api";
-  import { InsulinCategory as InsulinCategoryEnum, InsulinRole } from "$lib/api";
-  import type { EntryRecord } from "$lib/constants/entry-categories";
+  } from "#lib/api/index.js";
+  import { InsulinCategory as InsulinCategoryEnum, InsulinRole } from "#lib/api/index.js";
+  import type { EntryRecord } from "#lib/constants/entry-categories.js";
   import {
     ENTRY_CATEGORIES,
     getEntryStyle,
-  } from "$lib/constants/entry-categories";
-  import * as Dialog from "$lib/components/ui/dialog";
-  import * as Sheet from "$lib/components/ui/sheet";
-  import { IsMobile } from "$lib/hooks/is-mobile.svelte";
+  } from "#lib/constants/entry-categories.js";
+  import * as Dialog from "#lib/components/ui/dialog/index.js";
+  import * as Sheet from "#lib/components/ui/sheet/index.js";
+  import { IsMobile } from "#lib/hooks/is-mobile.svelte.js";
   import { untrack } from "svelte";
   import {
     useDialogHistory,
     type DialogHistoryParam,
-  } from "$lib/hooks/dialog-history.svelte";
-  import { Button } from "$lib/components/ui/button";
-  import { Input } from "$lib/components/ui/input";
-  import { Label } from "$lib/components/ui/label";
-  import { Badge } from "$lib/components/ui/badge";
+  } from "#lib/hooks/dialog-history.svelte.js";
+  import { Button } from "#lib/components/ui/button/index.js";
+  import { Input } from "#lib/components/ui/input/index.js";
+  import { Label } from "#lib/components/ui/label/index.js";
+  import { Badge } from "#lib/components/ui/badge/index.js";
   import Syringe from "@lucide/svelte/icons/syringe";
   import Apple from "@lucide/svelte/icons/apple";
   import Droplet from "@lucide/svelte/icons/droplet";
@@ -36,9 +36,9 @@
   import Database from "@lucide/svelte/icons/database";
   import Trash2 from "@lucide/svelte/icons/trash-2";
   import WandSparkles from "@lucide/svelte/icons/wand-sparkles";
-  import { formatDateForInput, formatDateTimeCompact } from "$lib/utils/formatting";
-  import * as patientRemote from "$api/generated/patientRecords.generated.remote";
-  import { getCatalog } from "$api/generated/insulinCatalogs.generated.remote";
+  import { formatDateForInput, formatDateTimeCompact } from "#lib/utils/formatting.js";
+  import * as patientRemote from "#lib/api/generated/patientRecords.generated.remote.js";
+  import { getCatalog } from "#lib/api/generated/insulinCatalogs.generated.remote.js";
   import BolusFormFields from "./edit-dialog/BolusFormFields.svelte";
   import CarbsFormFields from "./edit-dialog/CarbsFormFields.svelte";
   import BGCheckFormFields from "./edit-dialog/BGCheckFormFields.svelte";
@@ -46,7 +46,8 @@
   import DeviceEventFormFields from "./edit-dialog/DeviceEventFormFields.svelte";
   import BasalInjectionFormFields from "./edit-dialog/BasalInjectionFormFields.svelte";
   import LinkedRecordsPanel from "./edit-dialog/LinkedRecordsPanel.svelte";
-  import InsulinFormFields from "$lib/components/patient/InsulinFormFields.svelte";
+  import InsulinFormFields from "#lib/components/patient/InsulinFormFields.svelte";
+  import { FormError, useSubmission } from "#lib/forms/index.js";
 
   interface Props {
     open: boolean;
@@ -213,6 +214,7 @@
 
   function resetAddForm() {
     showAddInsulin = false;
+    addInsulinSubmission.clear();
     addCategory = "";
     addFormulationId = "";
     addName = "";
@@ -224,6 +226,7 @@
   }
 
   const addInsulinForm = patientRemote.createInsulin;
+  const addInsulinSubmission = useSubmission();
 
   function isBasalFlag(value: unknown): boolean {
     return typeof value === "boolean" ? value : false;
@@ -510,7 +513,10 @@
           <BolusFormFields
             bind:form={bolusForm}
             {patientInsulins}
-            onAddInsulin={() => showAddInsulin = !showAddInsulin}
+            onAddInsulin={() => {
+              addInsulinSubmission.clear();
+              showAddInsulin = !showAddInsulin;
+            }}
           />
         {:else if activeRecord.kind === "carbs"}
           <CarbsFormFields bind:form={carbsForm} />
@@ -585,25 +591,28 @@
         <form
           class="border rounded-lg p-4 space-y-4 bg-muted/30 mt-4"
           {...addInsulinForm.enhance(async ({ submit }) => {
-            await submit();
-            if (addInsulinForm.result) {
-              const created: PatientInsulin = addInsulinForm.result;
-              if (created?.id) {
-                bolusForm.patientInsulinId = created.id;
-                bolusForm.insulinType = created.name ?? "";
-                if (created.role === InsulinRole.Basal || created.role === InsulinRole.Both) {
-                  bolusForm.isBasalInsulin = true;
+            await addInsulinSubmission.run(submit, () => {
+              if (addInsulinForm.result) {
+                const created: PatientInsulin = addInsulinForm.result;
+                if (created?.id) {
+                  bolusForm.patientInsulinId = created.id;
+                  bolusForm.insulinType = created.name ?? "";
+                  if (created.role === InsulinRole.Basal || created.role === InsulinRole.Both) {
+                    bolusForm.isBasalInsulin = true;
+                  }
                 }
+                resetAddForm();
               }
-              resetAddForm();
-            }
+            });
           })}
         >
           <div class="flex items-center justify-between">
             <h4 class="text-sm font-medium">Add new insulin</h4>
           </div>
+          <FormError issues={addInsulinSubmission.error} />
           <div class="space-y-4">
             <InsulinFormFields
+              fields={addInsulinForm.fields}
               bind:category={addCategory}
               bind:formulationId={addFormulationId}
               bind:name={addName}
@@ -615,13 +624,19 @@
             />
 
             <!-- Hidden fields for form submission -->
-            <input type="hidden" name="b:isCurrent" value="on" />
-            <input type="hidden" name="n:dia" value={addDia} />
-            <input type="hidden" name="n:peak" value={addPeak} />
-            <input type="hidden" name="curve" value={addCurve} />
-            <input type="hidden" name="n:concentration" value={addConcentration} />
+            <input {...addInsulinForm.fields.isCurrent.as("hidden", true)} />
+            {#if addDia != null}
+              <input {...addInsulinForm.fields.dia.as("hidden", addDia)} />
+            {/if}
+            {#if addPeak != null}
+              <input {...addInsulinForm.fields.peak.as("hidden", addPeak)} />
+            {/if}
+            <input {...addInsulinForm.fields.curve.as("hidden", addCurve)} />
+            {#if addConcentration != null}
+              <input {...addInsulinForm.fields.concentration.as("hidden", addConcentration)} />
+            {/if}
             {#if addFormulationId}
-              <input type="hidden" name="formulationId" value={addFormulationId} />
+              <input {...addInsulinForm.fields.formulationId.as("hidden", addFormulationId)} />
             {/if}
           </div>
 

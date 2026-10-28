@@ -66,8 +66,8 @@ public interface IEntryStore
     /// and plan. Other types are probed one at a time.
     /// </remarks>
     /// <param name="probes">The entries to classify, in submission order.</param>
-    /// <returns>Positionally aligned results: the stored <see cref="Entry"/>, or <c>null</c>.</returns>
-    Task<IReadOnlyList<Entry?>> CheckDuplicatesAsync(
+    /// <returns>Positionally aligned results: the stored reading, or <c>null</c>.</returns>
+    Task<IReadOnlyList<StoredEntryMatch?>> CheckDuplicatesAsync(
         IReadOnlyList<EntryDuplicateProbe> probes, CancellationToken ct = default);
 
     /// <summary>

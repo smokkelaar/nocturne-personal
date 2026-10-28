@@ -29,6 +29,7 @@ using Nocturne.Core.Contracts.Multitenancy;
 using Nocturne.Core.Contracts.Entries;
 using Nocturne.Core.Contracts.Glucose;
 using Nocturne.Core.Contracts.Notifications;
+using Nocturne.Core.Contracts.Profiles;
 using Nocturne.Core.Contracts.Profiles.Resolvers;
 using Nocturne.Core.Contracts.Repositories;
 using Nocturne.Core.Contracts.Sleep;
@@ -56,8 +57,9 @@ namespace Nocturne.API.Tests.Services.Treatments;
 /// itself. The bolus keeps 0.5 * 0.922216 = 0.461 U. The suspend withheld six 1/12 U chunks, 5 to 30
 /// minutes old: (0.996296 + 0.988888 + 0.977776 + 0.96296 + 0.94444 + 0.922216) / 12 = 0.483 U. The
 /// total is 0.461 - 0.483 = -0.022 U, below the bolus IOB alone. The widget and <c>/properties</c> read
-/// at the wall clock and report two decimals, -0.02; every other reader is asked for a fixed instant
-/// on the five-minute grid, which the Retrospective timeline samples.
+/// at the wall clock; the widget reports two decimals, -0.02, and <c>/properties</c> three, as
+/// Nightscout does. Every other reader is asked for a fixed instant on the five-minute grid, which
+/// the Retrospective timeline samples.
 /// </remarks>
 [Trait("Category", "Unit")]
 public class TotalIobAgreementTests
@@ -115,7 +117,7 @@ public class TotalIobAgreementTests
             .ReturnsAsync([]);
 
         var snapshot = new TherapySnapshot(
-            3.0, 75, 30.0, null, null, 0,
+            3.0, 30.0, null, null, 0,
             [new ScheduleEntry { TimeAsSeconds = 0, Value = 95.0 }], null,
             [new ScheduleEntry { TimeAsSeconds = 0, Value = 1.0 }]);
         _timelines
@@ -183,7 +185,7 @@ public class TotalIobAgreementTests
         (await ChartAsync()).Should().BeApproximately(Total, 1e-9);
         (await AlertsAsync()).Should().Be((decimal)Total);
         (await WidgetAsync()).Should().Be(-0.02);
-        (await PropertiesAsync()).Should().Be(-0.02);
+        (await PropertiesAsync()).Should().Be(Total);
         (await PebbleAsync()).Should().Be("-0.02");
         v1.Iob.Should().Be(Total);
         v1Hourly.TotalIOB.Should().BeApproximately(Total, 1e-9);
@@ -243,7 +245,7 @@ public class TotalIobAgreementTests
         (await ChartAsync()).Should().Be(total);
         (await AlertsAsync()).Should().Be((decimal)total);
         (await WidgetAsync()).Should().Be(twoDecimals);
-        (await PropertiesAsync()).Should().Be(twoDecimals);
+        (await PropertiesAsync()).Should().Be(total);
         (await PebbleAsync()).Should().Be(display);
         v1.Iob.Should().Be(total);
         v1Hourly.TotalIOB.Should().Be(total);
@@ -407,6 +409,34 @@ public class TotalIobAgreementTests
         properties["displayLine"].Should().Be("IOB: -0.02U");
     }
 
+    [Fact]
+    public async Task ADeviceTotal_IsRoundedOnce_SoPropertiesSummaryAndPebbleShowTheSameValue()
+    {
+        _noTreatments = true;
+        ApsReports(iob: 0.1246, cob: 0, minutesBefore: 2);
+
+        var properties = await PropertiesIobAsync();
+
+        properties["iob"].Should().Be(0.125);
+        properties["display"].Should().Be("0.13");
+        properties["displayLine"].Should().Be("IOB: 0.13U");
+        (await SummaryIobAsync()).Should().Be(0.13);
+        (await PebbleAsync()).Should().Be("0.13");
+    }
+
+    private async Task<double?> SummaryIobAsync()
+    {
+        var properties = new Mock<IPropertiesService>();
+        properties.Setup(p => p.GetAllPropertiesAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Dictionary<string, object>());
+        var service = new SummaryService(
+            Mock.Of<IDDataService>(), properties.Object, Reader(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()),
+            Mock.Of<IActiveProfileResolver>(), Mock.Of<ITherapySettingsRepository>(),
+            Mock.Of<IProfileProjectionService>(), NullLogger<SummaryService>.Instance);
+
+        return (await service.ConstructStateAsync()).Iob;
+    }
+
     private async Task<object?> PropertiesAsync() => (await PropertiesIobAsync())["iob"];
 
     private async Task<Dictionary<string, object?>> PropertiesIobAsync()
@@ -416,7 +446,8 @@ public class TotalIobAgreementTests
         ddata.Setup(d => d.GetDDataAsync(It.IsAny<long>(), It.IsAny<CancellationToken>())).ReturnsAsync(new DData());
         var service = new PropertiesService(
             ddata.Object, NullLogger<PropertiesService>.Instance, Reader(now),
-            Mock.Of<IAr2Service>(), Mock.Of<IDeviceAgeService>(), Mock.Of<ITherapySettingsResolver>(), TimeProvider.System,
+            Mock.Of<IAr2Service>(), Mock.Of<IDeviceAgeService>(), Mock.Of<ITherapySettingsResolver>(),
+            Mock.Of<ISensitivityResolver>(), Mock.Of<ITargetRangeResolver>(), new BolusWizardService(), new OpenApsService(), TimeProvider.System,
             Options.Create(new DbSizeOptions()));
 
         var properties = await service.GetPropertiesAsync(["iob"], CancellationToken.None);

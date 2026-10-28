@@ -46,9 +46,10 @@ public class GlookoConnectorService : BaseConnectorService<GlookoConnectorConfig
         IMealMatchingService? mealMatchingService = null,
         ITimezoneTimelineService? timezoneTimelineService = null,
         IDeviceClockService? deviceClockService = null,
-        IConnectorSyncCursorStore? cursorStore = null
+        IConnectorSyncCursorStore? cursorStore = null,
+        TimeProvider? timeProvider = null
     )
-        : base(httpClient, serverResolver, logger, publisher)
+        : base(httpClient, serverResolver, logger, publisher, timeProvider)
     {
         _connectorPublisher = publisher;
         _mealMatchingService = mealMatchingService;

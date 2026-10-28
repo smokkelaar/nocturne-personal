@@ -30,6 +30,7 @@ public abstract class V4ReadOnlyControllerBase<TModel, TRepository>(TRepository 
     /// <param name="sort">Sort order for results by timestamp. Defaults to `timestamp_desc`.</param>
     /// <param name="device">Optional filter to restrict results to a specific device.</param>
     /// <param name="source">Optional filter to restrict results to a specific data source.</param>
+    /// <param name="includeTotal">Count every record in the range and return it as `pagination.total`. Defaults to `false`.</param>
     /// <param name="ct">Cancellation token.</param>
     /// <remarks>
     /// The `sort` parameter accepts exactly two values:
@@ -39,6 +40,11 @@ public abstract class V4ReadOnlyControllerBase<TModel, TRepository>(TRepository 
     /// Use `limit` and `offset` together for paginated access to large result sets. `limit` is
     /// capped at <see cref="V4ReadLimits.MaxPageSize"/>, and a `from`/`to` range wider than
     /// <see cref="V4ReadLimits.MaxDateSpanDays"/> days is rejected with `400 Bad Request`.
+    ///
+    /// Counting the range is costly, so `pagination.total` is returned only when `includeTotal` is `true`.
+    /// A first page shorter than `limit` carries its own length as the total without a count. Otherwise
+    /// the field is absent. `includeTotal` counts the date range only, not `device`, `source` or `patientDeviceId`,
+    /// while a short first page's total is the length of the filtered page.
     /// </remarks>
     [HttpGet]
     [RemoteQuery]
@@ -49,14 +55,15 @@ public abstract class V4ReadOnlyControllerBase<TModel, TRepository>(TRepository 
         [FromQuery] int limit = 100, [FromQuery] int offset = 0,
         [FromQuery] string sort = "timestamp_desc",
         [FromQuery] string? device = null, [FromQuery] string? source = null,
+        [FromQuery] bool includeTotal = false,
         CancellationToken ct = default)
     {
         if (PrepareListQuery(from, to, sort, ref limit, ref offset, out var descending) is { } error)
             return error;
 
-        var data = await Repository.GetAsync(from, to, device, source, limit, offset, descending, ct);
-        var total = await Repository.CountAsync(from, to, ct);
-        return Ok(new PaginatedResponse<TModel> { Data = data, Pagination = new PaginationInfo(limit, offset, total) });
+        var data = (await Repository.GetAsync(from, to, device, source, limit, offset, descending, ct)).ToList();
+        var pagination = await PaginationInfo.ForPageAsync(limit, offset, data.Count, includeTotal, () => Repository.CountAsync(from, to, ct));
+        return Ok(new PaginatedResponse<TModel> { Data = data, Pagination = pagination });
     }
 
     /// <summary>

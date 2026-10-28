@@ -689,6 +689,76 @@ public class StateSpanTreatmentReadsIntegrationTests : ApiIntegrationTestBase
         served.Select(t => t!["duration"]!.GetValue<double>()).Should().AllSatisfy(d => d.Should().Be(0));
     }
 
+    [Theory]
+    [MemberData(nameof(EventTypes))]
+    public async Task A_v3_delete_is_served_once_by_history_as_invalid(string eventType)
+    {
+        var client = CreateAuthenticatedClient();
+        await PostAsync(client, Upload(eventType));
+        var synced = (await GetV3ResultAsync(client, "/api/v3/treatments/history/0")).Single()!;
+        var cursor = synced["srvModified"]!.GetValue<long>();
+
+        var delete = await client.DeleteAsync($"/api/v3/treatments/{synced["identifier"]!.GetValue<string>()}");
+        delete.StatusCode.Should().Be(HttpStatusCode.OK, await delete.Content.ReadAsStringAsync());
+
+        var tombstone = (await GetV3ResultAsync(client, $"/api/v3/treatments/history/{cursor}")).Should()
+            .ContainSingle().Subject!;
+        tombstone["eventType"]!.GetValue<string>().Should().Be(eventType);
+        tombstone["isValid"]!.GetValue<bool>().Should().BeFalse();
+        var deletedAt = tombstone["srvModified"]!.GetValue<long>();
+        deletedAt.Should().BeGreaterThan(cursor);
+        (await GetV3ResultAsync(client, $"/api/v3/treatments/history/{deletedAt}")).Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task A_permanent_profile_switch_applies_again_once_a_temporary_one_over_it_ends()
+    {
+        var client = CreateAuthenticatedClient();
+        var startDate = DateTimeOffset.UtcNow.AddDays(-1);
+        var profile = await client.PostAsJsonAsync("/api/v1/profile", new
+        {
+            defaultProfile = "Default",
+            startDate = startDate.UtcDateTime.ToString("yyyy-MM-ddTHH:mm:ss.fffZ"),
+            mills = startDate.ToUnixTimeMilliseconds(),
+            store = new Dictionary<string, object>
+            {
+                ["Default"] = ProfileStore(carbRatio: 10, basal: 1.0, sens: 50, low: 100, high: 120),
+                ["A"] = ProfileStore(carbRatio: 7, basal: 1.6, sens: 35, low: 90, high: 110),
+                ["B"] = ProfileStore(carbRatio: 15, basal: 0.4, sens: 80, low: 140, high: 160),
+            },
+        });
+        profile.StatusCode.Should().Be(HttpStatusCode.OK, await profile.Content.ReadAsStringAsync());
+        await PostAsync(client, new
+        {
+            eventType = "Profile Switch", created_at = MinutesAgo(180), enteredBy = "AndroidAPS", profile = "A", duration = 0,
+        });
+        await PostAsync(client, new
+        {
+            eventType = "Profile Switch", created_at = MinutesAgo(120), enteredBy = "AndroidAPS", profile = "B", duration = 60,
+        });
+
+        var now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        var resolved = await WithScopeAsync(async sp => (
+            Profile: await sp.GetRequiredService<IActiveProfileResolver>().GetActiveProfileNameAsync(now),
+            Basal: await sp.GetRequiredService<IBasalRateResolver>().GetBasalRateAsync(now),
+            CarbRatio: await sp.GetRequiredService<ICarbRatioResolver>().GetCarbRatioAsync(now),
+            Sensitivity: await sp.GetRequiredService<ISensitivityResolver>().GetSensitivityAsync(now),
+            Targets: await sp.GetRequiredService<ITargetRangeResolver>().GetBGTargetRangeAsync(now)));
+
+        resolved.Profile.Should().Be("A");
+        resolved.Basal.Should().BeApproximately(1.6, 0.001);
+        resolved.CarbRatio.Should().BeApproximately(7, 0.001);
+        resolved.Sensitivity.Should().BeApproximately(35, 0.001);
+        resolved.Targets.Should().Be((90d, 110d));
+
+        var served = await GetArrayAsync(client, "/api/v1/treatments?find[eventType]=Profile%20Switch");
+        served.ToDictionary(t => t!["profile"]!.GetValue<string>(), t => t!["duration"]!.GetValue<double>())
+            .Should().BeEquivalentTo(new Dictionary<string, double> { ["A"] = 0, ["B"] = 60 });
+        (await GetV3ResultAsync(client, "/api/v3/treatments?eventType$eq=Profile%20Switch"))
+            .ToDictionary(t => t!["profile"]!.GetValue<string>(), t => t!["duration"]!.GetValue<double>())
+            .Should().BeEquivalentTo(new Dictionary<string, double> { ["A"] = 0, ["B"] = 60 });
+    }
+
     [Fact]
     public async Task Connector_profile_activations_are_not_served_or_deleted_as_treatments()
     {
@@ -979,14 +1049,15 @@ public class StateSpanTreatmentReadsIntegrationTests : ApiIntegrationTestBase
         (await GetV3ResultAsync(clamped, "/api/v3/treatments?limit=100")).Should().HaveCount(3);
     }
 
-    private static object ProfileStore(double carbRatio, double basal) => new
+    private static object ProfileStore(
+        double carbRatio, double basal, double sens = 50, double low = 100, double high = 120) => new
     {
         dia = 5,
         carbratio = new[] { new { time = "00:00", value = carbRatio, timeAsSeconds = 0 } },
-        sens = new[] { new { time = "00:00", value = 50, timeAsSeconds = 0 } },
+        sens = new[] { new { time = "00:00", value = sens, timeAsSeconds = 0 } },
         basal = new[] { new { time = "00:00", value = basal, timeAsSeconds = 0 } },
-        target_low = new[] { new { time = "00:00", value = 100, timeAsSeconds = 0 } },
-        target_high = new[] { new { time = "00:00", value = 120, timeAsSeconds = 0 } },
+        target_low = new[] { new { time = "00:00", value = low, timeAsSeconds = 0 } },
+        target_high = new[] { new { time = "00:00", value = high, timeAsSeconds = 0 } },
         units = "mg/dl",
         timezone = "UTC",
     };

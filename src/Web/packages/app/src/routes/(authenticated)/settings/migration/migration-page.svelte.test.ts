@@ -1,8 +1,8 @@
 import { render } from "vitest-browser-svelte";
 import { page } from "vitest/browser";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { MigrationJobState, MigrationMode } from "$api";
-import type { MigrationJobInfo } from "$api";
+import { MigrationJobState, MigrationMode } from "#lib/api/index.js";
+import type { MigrationJobInfo } from "#lib/api/index.js";
 
 let history: MigrationJobInfo[] = [];
 /** What a status poll answers; the history it leaves behind stands in for the server's. */
@@ -20,29 +20,29 @@ const remote = vi.hoisted(() => ({
 
 // The factory is hoisted above every declaration in this file, so anything it evaluates eagerly
 // has to be built inside it; only the lazy `history` read may reach out.
-vi.mock("$api/generated/migrations.generated.remote", () => {
-  const inertForm = { enhance: () => ({}), pending: 0, result: undefined };
+vi.mock("#lib/api/generated/migrations.generated.remote.js", async () => {
+  const { remoteFormFields } = await import("#lib/test-stubs/remote-resource.js");
+  const inertForm = { enhance: () => ({}), pending: 0, result: undefined, fields: remoteFormFields() };
 
   return {
-    getPendingConfig: () => ({ run: () => Promise.resolve({ hasPendingConfig: false }) }),
-    getSources: () => ({ run: () => Promise.resolve([]) }),
-    getHistory: () => ({
-      run: () => {
+    getPendingConfig: () => createQueryResource(() => Promise.resolve({ hasPendingConfig: false })),
+    getSources: () => createQueryResource(() => Promise.resolve([])),
+    getHistory: () =>
+      createQueryResource(() => {
         remote.historyCalls += 1;
         return remote.historyGate ? remote.historyGate.then(() => history) : Promise.resolve(history);
-      },
-    }),
-    getStatus: () => ({
-      run: () => {
+      }),
+    getStatus: () =>
+      createQueryResource(() => {
         remote.statusCalls += 1;
         if (remote.statusError) return Promise.reject(remote.statusError);
         if (!polled) return Promise.resolve(remote.status);
         history = polled.history;
         return Promise.resolve(polled.status);
-      },
-    }),
+      }),
     testConnection: inertForm,
     startMigration: {
+      fields: remoteFormFields(),
       pending: 0,
       get result() {
         return remote.startResult;
@@ -56,7 +56,22 @@ vi.mock("$api/generated/migrations.generated.remote", () => {
   };
 });
 
+const transition = vi.hoisted(() => ({
+  status: undefined as object | undefined,
+}));
+
+vi.mock("#lib/api/generated/nightscoutTransitions.generated.remote.js", () => ({
+  getTransitionStatus: () => ({
+    get current() {
+      return transition.status;
+    },
+    loading: false,
+    error: undefined,
+  }),
+}));
+
 import MigrationPage from "./+page.svelte";
+import { createQueryResource } from "#lib/test-stubs/remote-resource.js";
 
 const entry = (overrides: Partial<MigrationJobInfo>): MigrationJobInfo =>
   ({
@@ -216,6 +231,19 @@ describe("settings/migration running job", () => {
     await expect.element(page.getByText("Copying entries")).toBeVisible();
   });
 
+  it("shows why the server refused to start the import", async () => {
+    history = [];
+
+    render(MigrationPage, {});
+    await expect.element(page.getByRole("tab", { name: /History/ })).toBeVisible();
+
+    await remote.enhanceCallback!({
+      submit: () => Promise.reject({ status: 400, body: { message: "The Nightscout address is not reachable" } }),
+    });
+
+    await expect.element(page.getByText("The Nightscout address is not reachable")).toBeVisible();
+  });
+
   it("stops polling when the page is unmounted", async () => {
     history = [
       entry({
@@ -266,5 +294,28 @@ describe("settings/migration running job", () => {
     render(MigrationPage, {});
 
     await expect.element(page.getByText("Failed to read migration status")).toBeVisible();
+  });
+});
+
+describe("settings/migration status", () => {
+  beforeEach(() => {
+    history = [];
+    polled = null;
+    transition.status = {
+      migration: { isComplete: true, recordCounts: { entries: 1200 } },
+      writeBack: { circuitBreakerOpen: false, requestsLast24h: 3 },
+      recommendation: { status: "almost-ready", stabilityDaysRemaining: 2, blockers: [] },
+    };
+  });
+
+  it("shows disconnect readiness on the Status tab", async () => {
+    render(MigrationPage, {});
+
+    const tab = page.getByRole("tab", { name: /Status/ });
+    await expect.element(tab).toBeVisible();
+    await tab.click();
+
+    await expect.element(page.getByText("Almost ready")).toBeVisible();
+    await expect.element(page.getByText("entries", { exact: true })).toBeVisible();
   });
 });

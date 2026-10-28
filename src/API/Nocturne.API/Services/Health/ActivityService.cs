@@ -9,6 +9,7 @@ using Nocturne.Core.Contracts.V4;
 using Nocturne.Core.Models;
 using Nocturne.Core.Models.Authorization;
 using Nocturne.Core.Models.Queries;
+using Nocturne.Core.Models.V4;
 using Nocturne.API.Services.Realtime;
 using Nocturne.Infrastructure.Data.Mappers;
 
@@ -214,39 +215,49 @@ public class ActivityService : IActivityService
     }
 
     /// <inheritdoc />
-    public async Task<Activity?> GetActivityByIdAsync(
+    public async Task<IReadOnlyList<Activity>> GetStoredActivitiesAsync(
         string id,
         CancellationToken cancellationToken = default
     )
     {
+        return (await ResolveStoredAsync(id, cancellationToken)).Select(s => s.Record).ToList();
+    }
+
+    /// <summary>
+    /// The records <see cref="GetStoredActivitiesAsync"/> returns, with the storage each came from.
+    /// Each storage is looked up the way its own update and delete find a row: a state span by
+    /// client id then primary key, a sleep session by primary key or by the (Source, OriginalId)
+    /// key <see cref="ActivityStateSpanMapper.ToSleepSession"/> writes, and a heart rate or step
+    /// count by primary key for a Guid and by client id otherwise.
+    /// </summary>
+    private async Task<List<(ActivityDestination Storage, Activity Record)>> ResolveStoredAsync(
+        string id,
+        CancellationToken cancellationToken
+    )
+    {
         try
         {
-            _logger.LogDebug("Getting activity record by ID: {Id}", id);
+            _logger.LogDebug("Resolving stored activity records for ID: {Id}", id);
+            var stored = new List<(ActivityDestination Storage, Activity Record)>();
 
-            // Try StateSpan first
-            var activity = await _stateSpanService.GetActivityByIdAsync(id, cancellationToken);
-            if (activity != null)
-                return activity;
+            if (await _stateSpanService.GetActivityByIdAsync(id, cancellationToken) is { } stateSpan)
+                stored.Add((ActivityDestination.StateSpan, stateSpan));
 
-            // Try sleep session
-            if (Guid.TryParse(id, out var sleepGuid))
-            {
-                var sleepSession = await _sleepService.GetSessionByIdAsync(sleepGuid, cancellationToken);
-                if (sleepSession != null)
-                    return ActivityStateSpanMapper.SleepSessionToActivity(sleepSession);
-            }
+            var byKey = Guid.TryParse(id, out var sessionId)
+                ? await _sleepService.GetSessionByIdAsync(sessionId, cancellationToken)
+                : null;
+            var byRecord = await _sleepService.GetSessionBySourceRecordAsync(
+                ActivityStateSpanMapper.SleepSessionSource, id, cancellationToken);
+            foreach (var session in new[] { byKey, byRecord }.OfType<SleepSession>().DistinctBy(s => s.Id))
+                stored.Add((ActivityDestination.SleepSession, ActivityStateSpanMapper.SleepSessionToActivity(session)));
 
-            // Try heart rate
-            var heartRate = await _heartRateService.GetHeartRateByIdAsync(id, cancellationToken);
-            if (heartRate != null)
-                return ActivityDecomposer.HeartRateToActivity(heartRate);
+            if (await _heartRateService.GetHeartRateByIdAsync(id, cancellationToken) is { } heartRate)
+                stored.Add((ActivityDestination.HeartRate, ActivityDecomposer.HeartRateToActivity(heartRate)));
 
-            // Try step count
-            var stepCount = await _stepCountService.GetStepCountByIdAsync(id, cancellationToken);
-            if (stepCount != null)
-                return ActivityDecomposer.StepCountToActivity(stepCount);
+            if (await _stepCountService.GetStepCountByIdAsync(id, cancellationToken) is { } stepCount)
+                stored.Add((ActivityDestination.StepCount, ActivityDecomposer.StepCountToActivity(stepCount)));
 
-            return null;
+            return stored;
         }
         catch (Exception ex)
         {
@@ -266,19 +277,24 @@ public class ActivityService : IActivityService
             var processedList = PrepareForStorage(activities);
             _logger.LogDebug("Creating {Count} activity records", processedList.Count);
 
-            // Separate sensor data, sleep activities, and regular activities
             var regularActivities = new List<Activity>();
             var sensorDataActivities = new List<Activity>();
             var sleepActivities = new List<Activity>();
 
             foreach (var activity in processedList)
             {
-                if (_activityDecomposer.IsSensorData(activity))
-                    sensorDataActivities.Add(activity);
-                else if (ActivityStateSpanMapper.IsSleepType(activity.Type))
-                    sleepActivities.Add(activity);
-                else
-                    regularActivities.Add(activity);
+                switch (_activityDecomposer.Classify(activity))
+                {
+                    case ActivityDestination.HeartRate or ActivityDestination.StepCount:
+                        sensorDataActivities.Add(activity);
+                        break;
+                    case ActivityDestination.SleepSession:
+                        sleepActivities.Add(activity);
+                        break;
+                    default:
+                        regularActivities.Add(activity);
+                        break;
+                }
             }
 
             var results = new List<Activity>();
@@ -386,7 +402,7 @@ public class ActivityService : IActivityService
             // Sleep-typed payloads whose id is not a session Guid are upserted by
             // OriginalId, matching the row created by CreateActivitiesAsync. Falling
             // through to the StateSpan path would recategorize the record as Exercise.
-            if (ActivityStateSpanMapper.IsSleepType(activity.Type))
+            if (_activityDecomposer.Classify(activity) == ActivityDestination.SleepSession)
             {
                 var sleepSession = ActivityStateSpanMapper.ToSleepSession(activity);
                 sleepSession.OriginalId = id;
@@ -470,56 +486,52 @@ public class ActivityService : IActivityService
         {
             _logger.LogDebug("Deleting activity record with ID: {Id}", id);
 
-            // Attempt to delete decomposed records (heart rate / step count)
-            var decomposedDeleted = 0;
+            var deletedIds = new List<string>();
             try
             {
-                decomposedDeleted = await _activityDecomposer.DeleteByLegacyIdAsync(id, WriteOrigin.Live, cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(
-                    ex,
-                    "Failed to delete decomposed records for legacy activity {Id}",
-                    id
-                );
-            }
-
-            // Try deleting from sleep sessions
-            if (Guid.TryParse(id, out var sleepGuid))
-            {
-                var sleepDeleted = await _sleepService.DeleteSessionAsync(sleepGuid, cancellationToken);
-                if (sleepDeleted)
+                foreach (var (storage, record) in await ResolveStoredAsync(id, cancellationToken))
                 {
-                    await _signalRBroadcastService.BroadcastStorageDeleteAsync(
-                        "activity",
-                        new StorageDeleteEvent("activity", id)
-                    );
-                    await _events.OnDeletedAsync(null, cancellationToken);
-                    _logger.LogDebug("Successfully deleted sleep session for activity ID: {Id}", id);
-                    return true;
+                    switch (storage)
+                    {
+                        case ActivityDestination.StateSpan:
+                            deletedIds.AddRange(await _stateSpanService.DeleteActivityAsync(id, cancellationToken));
+                            break;
+                        case ActivityDestination.SleepSession:
+                            if (await _sleepService.DeleteSessionAsync(Guid.Parse(record.Id!), cancellationToken))
+                                deletedIds.Add(record.Id!);
+                            break;
+                        case ActivityDestination.HeartRate:
+                            if (await _heartRateService.DeleteHeartRateAsync(id, cancellationToken))
+                                deletedIds.Add(id);
+                            break;
+                        case ActivityDestination.StepCount:
+                            if (await _stepCountService.DeleteStepCountAsync(id, cancellationToken))
+                                deletedIds.Add(id);
+                            break;
+                    }
                 }
             }
+            catch (Exception) when (deletedIds.Count > 0)
+            {
+                // Each storage commits on its own, so a later storage failing leaves the earlier
+                // deletes committed. They are announced anyway, and a broadcast failure here must not
+                // replace the storage failure that is rethrown.
+                try
+                {
+                    await BroadcastDeletedAsync(deletedIds);
+                }
+                catch (Exception broadcastFailure) when (broadcastFailure is not OperationCanceledException)
+                {
+                    _logger.LogWarning(broadcastFailure, "Could not announce the activity deletes for ID: {Id}", id);
+                }
 
-            var deletedIds = (await _stateSpanService.DeleteActivityAsync(id, cancellationToken)).ToList();
-            if (decomposedDeleted > 0 && !deletedIds.Contains(id))
-                deletedIds.Add(id);
+                throw;
+            }
 
             if (deletedIds.Count > 0)
-            {
-                foreach (var deletedId in deletedIds)
-                {
-                    await _signalRBroadcastService.BroadcastStorageDeleteAsync(
-                        "activity",
-                        new StorageDeleteEvent("activity", deletedId)
-                    );
-                }
+                await BroadcastDeletedAsync(deletedIds);
 
-                await _events.OnDeletedAsync(null, cancellationToken);
-
-                _logger.LogDebug("Successfully deleted activity record with ID: {Id}", id);
-            }
-
+            _logger.LogDebug("Deleted {Count} activity records for ID: {Id}", deletedIds.Count, id);
             return deletedIds.Count > 0;
         }
         catch (Exception ex)
@@ -527,6 +539,19 @@ public class ActivityService : IActivityService
             _logger.LogError(ex, "Error deleting activity record with ID: {Id}", id);
             throw;
         }
+    }
+
+    private async Task BroadcastDeletedAsync(IEnumerable<string> deletedIds)
+    {
+        foreach (var deletedId in deletedIds.Distinct())
+        {
+            await _signalRBroadcastService.BroadcastStorageDeleteAsync(
+                "activity",
+                new StorageDeleteEvent("activity", deletedId)
+            );
+        }
+
+        await _events.OnDeletedAsync(null, CancellationToken.None);
     }
 
     /// <inheritdoc />

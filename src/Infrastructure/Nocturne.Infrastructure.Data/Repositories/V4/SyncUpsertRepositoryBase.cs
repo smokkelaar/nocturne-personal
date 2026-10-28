@@ -186,9 +186,9 @@ public abstract class SyncUpsertRepositoryBase<TModel, TEntity> : SyncKeyedRepos
         var sources = syncKeyed.Select(e => e.DataSource!).Distinct().ToList();
         var syncIds = syncKeyed.Select(e => e.SyncIdentifier!).Distinct().ToList();
 
-        // Over-fetches by a Cartesian amount; the partial unique index on
-        // (tenant_id, data_source, sync_identifier) keeps this cheap. Tombstones follow
-        // WhereBlocksRecreation: a user delete holds the key, a system sweep does not.
+        // Over-fetches by a Cartesian amount. The live partial unique index and its user-tombstone
+        // companion on (tenant_id, data_source, sync_identifier) answer the WhereBlocksRecreation OR
+        // together: a user delete holds the key, a system sweep does not.
         var existingRows = await ctx.Set<TEntity>().IgnoreQueryFilters()
             .Where(e => e.TenantId == ctx.TenantId)
             .WhereBlocksRecreation()

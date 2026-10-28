@@ -20,6 +20,9 @@ public abstract class BaseConnectorService<TConfig> : IConnectorService<TConfig>
     protected readonly ILogger _logger;
     private readonly IConnectorPublisher? _publisher;
 
+    /// <summary>The only clock derived connectors read, so a test can drive it.</summary>
+    protected TimeProvider Clock { get; }
+
     /// <summary>The API publisher, or <c>null</c> when running detached (e.g. dry-run tooling).</summary>
     protected IConnectorPublisher? Publisher => _publisher;
 
@@ -42,13 +45,15 @@ public abstract class BaseConnectorService<TConfig> : IConnectorService<TConfig>
         HttpClient httpClient,
         IConnectorServerResolver<TConfig> serverResolver,
         ILogger logger,
-        IConnectorPublisher? publisher = null
+        IConnectorPublisher? publisher = null,
+        TimeProvider? timeProvider = null
     )
     {
         _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
         _serverResolver = serverResolver ?? throw new ArgumentNullException(nameof(serverResolver));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _publisher = publisher;
+        Clock = timeProvider ?? TimeProvider.System;
     }
 
     protected abstract string ConnectorSource { get; }
@@ -523,7 +528,7 @@ public abstract class BaseConnectorService<TConfig> : IConnectorService<TConfig>
     protected virtual DateTime? InitialSyncFloor => DefaultInitialSyncFloor();
 
     /// <summary>The default initial backfill window: six months before now.</summary>
-    protected static DateTime DefaultInitialSyncFloor() => DateTime.UtcNow.AddMonths(-6);
+    protected DateTime DefaultInitialSyncFloor() => Clock.GetUtcNow().UtcDateTime.AddMonths(-6);
 
     /// <summary>
     ///     Core synchronization logic: fetches and publishes the data types
@@ -973,6 +978,7 @@ public abstract class BaseConnectorService<TConfig> : IConnectorService<TConfig>
             ErrorMessage = errorMessage,
             MessageType = messageType,
             MessageParams = messageParams,
+            Timestamp = Clock.GetUtcNow(),
         }, cancellationToken);
     }
 

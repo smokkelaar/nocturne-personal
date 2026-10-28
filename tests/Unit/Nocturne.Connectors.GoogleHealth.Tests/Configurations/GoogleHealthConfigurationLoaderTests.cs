@@ -83,6 +83,7 @@ public class GoogleHealthConfigurationLoaderTests
             new ConnectorConfigurationLoader<GoogleHealthConnectorConfiguration>(
                 new ConnectorRegistration<GoogleHealthConnectorConfiguration>(new(), "GoogleHealth"),
                 configurations.Object,
-                NullLogger<ConnectorConfigurationLoader<GoogleHealthConnectorConfiguration>>.Instance),
+                NullLogger<ConnectorConfigurationLoader<GoogleHealthConnectorConfiguration>>.Instance,
+                TimeProvider.System),
             platformConfigured ? TestPlatform.Options() : Options.Create(new GoogleHealthPlatformOptions()));
 }

@@ -571,24 +571,26 @@ public class AlexaService : IAlexaService
 
     private string? IobUnits(Dictionary<string, object> properties, string locale)
     {
-        if (NumberOf(properties, "iob", "iob") is not { } iob)
+        if (
+            !properties.TryGetValue("iob", out var value)
+            || value is not Dictionary<string, object?> iob
+            || !iob.TryGetValue("display", out var displayValue)
+            || displayValue is not string display
+        )
         {
             return null;
         }
 
-        return iob == 0
+        return display == "0"
             ? Translate("virtAsstNoInsulin", locale)
-            : Translate(
-                "virtAsstIobUnits",
-                locale,
-                iob.ToString("F2", CultureInfo.InvariantCulture)
-            );
+            : Translate("virtAsstIobUnits", locale, display);
     }
 
     private async Task<string?> SpeakCobAsync(SpeechRequest request)
     {
         var properties = await _properties.GetPropertiesAsync(["cob"], request.CancellationToken);
-        var cob = NumberOf(properties, "cob", "cob") ?? 0;
+        // NIGHTSCOUT-COMPAT: Nightscout speaks the unrounded cob.cob; Nocturne speaks cob.display, one decimal.
+        var cob = NumberOf(properties, "cob", "display") ?? 0;
 
         return request.Pwd is { } pwd
             ? Translate("virtAsstCob3person", request.Locale, pwd.Replace("'s", string.Empty), cob)

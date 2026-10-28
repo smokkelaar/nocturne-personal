@@ -369,6 +369,9 @@ public class MemberScopeFilterPipelineTests
         // As AuthenticationMiddleware leaves it.
         httpContext.Items["GrantedScopes"] = Scope.Normalize(credentialScopes);
         httpContext.Items["PermissionTrie"] = new PermissionTrie();
+        (await RequestMembership.ReadAsync(
+                db.ContextFactory.AsNocturneFactory(), subjectId, TestDatabaseSeeder.TenantId, CancellationToken.None))
+            .Membership.StoreOn(httpContext);
 
         var middleware = new MemberScopeMiddleware(
             _ => Task.CompletedTask, db.ContextFactory.AsNocturneFactory(), NullLogger<MemberScopeMiddleware>.Instance);

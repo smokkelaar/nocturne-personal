@@ -35,8 +35,9 @@ public class TandemConnectorService : BaseConnectorService<TandemConnectorConfig
         IRetryDelayStrategy retryDelayStrategy,
         TandemAuthTokenProvider tokenProvider,
         IConnectorPublisher? publisher = null,
-        IConnectorSyncCursorStore? cursorStore = null)
-        : base(httpClient, serverResolver, logger, publisher)
+        IConnectorSyncCursorStore? cursorStore = null,
+        TimeProvider? timeProvider = null)
+        : base(httpClient, serverResolver, logger, publisher, timeProvider)
     {
         _cursorStore = cursorStore;
         _tokenProvider = tokenProvider ?? throw new ArgumentNullException(nameof(tokenProvider));

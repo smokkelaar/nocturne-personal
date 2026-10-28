@@ -11,32 +11,69 @@ internal static class PostgresRuntimeOptions
 {
     /// <summary>
     /// Builds the runtime app <see cref="NpgsqlDataSource"/> — the singleton that owns the
-    /// connection pool — with the pool cap, statement preparation and statement timeout from
-    /// <paramref name="config"/> applied.
+    /// connection pool — with the pool bounds, idle lifetime, statement preparation and
+    /// statement timeout from <paramref name="config"/> applied.
     /// </summary>
     /// <param name="config">Runtime PostgreSQL configuration.</param>
     /// <returns>A data source configured for the runtime app pool.</returns>
     internal static NpgsqlDataSource BuildRuntimeDataSource(PostgreSqlConfiguration config)
     {
+        if (config.MinPoolSize < 0)
+        {
+            throw new InvalidOperationException(
+                $"PostgreSql:MinPoolSize must not be negative, but is {config.MinPoolSize}.");
+        }
+
+        if (config.ConnectionIdleLifetimeSeconds <= 0)
+        {
+            throw new InvalidOperationException(
+                "PostgreSql:ConnectionIdleLifetimeSeconds must be greater than 0, "
+                + $"but is {config.ConnectionIdleLifetimeSeconds}.");
+        }
+
         var builder = new NpgsqlDataSourceBuilder(config.ConnectionString);
-        builder.ConnectionStringBuilder.MaxPoolSize = config.MaxPoolSize;
-        if (!NamesMaxAutoPrepare(config.ConnectionString))
-            builder.ConnectionStringBuilder.MaxAutoPrepare = Math.Max(0, config.MaxAutoPrepare);
-        ApplyStatementTimeout(builder.ConnectionStringBuilder, config.StatementTimeoutSeconds);
-        ApplyIdleInTransactionTimeout(builder.ConnectionStringBuilder, config.IdleInTransactionTimeoutSeconds);
+        var pool = builder.ConnectionStringBuilder;
+        var named = ParseKeywords(config.ConnectionString);
+        pool.MaxPoolSize = config.MaxPoolSize;
+        if (!Names(named, "Minimum Pool Size", "Min Pool Size", "MinPoolSize"))
+            pool.MinPoolSize = config.MinPoolSize;
+        if (!Names(named, "Connection Idle Lifetime", "ConnectionIdleLifetime"))
+            pool.ConnectionIdleLifetime = config.ConnectionIdleLifetimeSeconds;
+        if (!Names(named, "Max Auto Prepare", "MaxAutoPrepare"))
+            pool.MaxAutoPrepare = Math.Max(0, config.MaxAutoPrepare);
+        ValidatePool(pool);
+        ApplyStatementTimeout(pool, config.StatementTimeoutSeconds);
+        ApplyIdleInTransactionTimeout(pool, config.IdleInTransactionTimeoutSeconds);
         return builder.Build();
     }
 
-    /// <summary>
-    /// Whether the operator's connection string sets <c>Max Auto Prepare</c> itself, zero included,
-    /// which then wins over <see cref="PostgreSqlConfiguration.MaxAutoPrepare"/>. Npgsql's own
-    /// builder reports every keyword it knows as present, so only a plain parse can tell.
-    /// </summary>
-    private static bool NamesMaxAutoPrepare(string? connectionString)
+    private static void ValidatePool(NpgsqlConnectionStringBuilder pool)
     {
-        var parsed = new DbConnectionStringBuilder { ConnectionString = connectionString ?? "" };
-        return parsed.ContainsKey("Max Auto Prepare") || parsed.ContainsKey("MaxAutoPrepare");
+        if (pool.MinPoolSize > pool.MaxPoolSize)
+        {
+            throw new InvalidOperationException(
+                $"PostgreSql:MinPoolSize must not exceed MaxPoolSize ({pool.MaxPoolSize}), "
+                + $"but is {pool.MinPoolSize}.");
+        }
+
+        if (pool.ConnectionIdleLifetime < pool.ConnectionPruningInterval)
+        {
+            throw new InvalidOperationException(
+                $"PostgreSql:ConnectionIdleLifetimeSeconds must be at least the connection pruning "
+                + $"interval ({pool.ConnectionPruningInterval} s), but is {pool.ConnectionIdleLifetime}.");
+        }
     }
+
+    /// <summary>
+    /// The keywords the operator's connection string sets itself, zero values included, which then
+    /// win over the matching <see cref="PostgreSqlConfiguration"/> setting. Npgsql's own builder
+    /// reports every keyword it knows as present, so only a plain parse can tell.
+    /// </summary>
+    private static DbConnectionStringBuilder ParseKeywords(string? connectionString)
+        => new() { ConnectionString = connectionString ?? "" };
+
+    private static bool Names(DbConnectionStringBuilder parsed, params string[] keywords)
+        => keywords.Any(parsed.ContainsKey);
 
     /// <summary>
     /// Appends a server-side <c>idle_in_transaction_session_timeout</c> to the runtime pool's

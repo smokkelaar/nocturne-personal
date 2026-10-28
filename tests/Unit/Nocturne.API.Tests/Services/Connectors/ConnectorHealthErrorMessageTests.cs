@@ -28,7 +28,7 @@ public class ConnectorHealthErrorMessageTests : IDisposable
 
     private readonly SqliteTestDatabase _db;
     private readonly NocturneDbContext _dbContext;
-    private readonly List<NocturneDbContext> _serviceContexts = [];
+    private readonly List<ConnectorConfigurationEntity> _saved = [];
     private readonly Guid _tenantId = Guid.CreateVersion7();
     private readonly ConnectorConfigurationService _service;
 
@@ -58,7 +58,10 @@ public class ConnectorHealthErrorMessageTests : IDisposable
         encryptionService.Setup(e => e.IsConfigured).Returns(true);
 
         _service = new ConnectorConfigurationService(
-            new TestNocturneDbContextFactory(_dbContext) { Prepare = _serviceContexts.Add },
+            new TestNocturneDbContextFactory(_dbContext)
+            {
+                Prepare = c => c.SavingChanges += (_, _) => _saved.AddRange(c.ConnectorConfigurations.Local),
+            },
             encryptionService.Object,
             Mock.Of<ISignalRBroadcastService>(),
             Mock.Of<IAuditContext>(),
@@ -105,10 +108,9 @@ public class ConnectorHealthErrorMessageTests : IDisposable
 
         await _service.UpdateHealthStateAsync(ConnectorName, lastErrorMessage: message, isHealthy: false);
 
-        // The entity the service's context tracked, not a re-read: SQLite substitutes a replacement
+        // The entity the service's context saved, not a re-read: SQLite substitutes a replacement
         // character on the way out, which would hide the lone surrogate the driver has to encode.
-        var stored = _serviceContexts.Last(c => c.ConnectorConfigurations.Local.Count > 0)
-            .ConnectorConfigurations.Local.Single().LastErrorMessage!;
+        var stored = _saved.Last().LastErrorMessage!;
         stored.Length.Should().BeLessThanOrEqualTo(ConnectorConfigurationEntity.LastErrorMessageMaxLength);
         stored.Should().EndWith(TruncationMarker);
         stored.Should().NotContainAny("\uD83D", "\uDE00");

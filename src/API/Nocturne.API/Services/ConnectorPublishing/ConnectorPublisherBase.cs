@@ -2,6 +2,7 @@ using Nocturne.API.Services.Audit;
 using Nocturne.Connectors.Core.Models;
 using Nocturne.Core.Contracts.Audit;
 using Nocturne.Core.Contracts.V4;
+using Nocturne.Core.Contracts.Multitenancy;
 using Nocturne.Core.Contracts.V4.Repositories;
 
 namespace Nocturne.API.Services.ConnectorPublishing;
@@ -16,14 +17,17 @@ internal abstract class ConnectorPublisherBase
     private readonly IAuditContext _auditContext;
     private readonly PublishSkipTally _skips;
 
-    protected ConnectorPublisherBase(IAuditContext auditContext, PublishSkipTally skips, ILogger logger)
+    protected ConnectorPublisherBase(IAuditContext auditContext, PublishSkipTally skips, ITenantAccessor tenantAccessor, ILogger logger)
     {
         _auditContext = auditContext ?? throw new ArgumentNullException(nameof(auditContext));
         _skips = skips ?? throw new ArgumentNullException(nameof(skips));
+        TenantAccessor = tenantAccessor ?? throw new ArgumentNullException(nameof(tenantAccessor));
         Logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     protected ILogger Logger { get; }
+
+    protected ITenantAccessor TenantAccessor { get; }
 
     /// <summary>
     /// System attribution for a write this base does not itself perform — an upsert loop rather
@@ -41,6 +45,19 @@ internal abstract class ConnectorPublisherBase
     protected void RecordRefused(int count) => _skips.AddRefused(count);
 
     /// <summary>
+    /// A failed publish reaches the connector only as <c>false</c>, so this is the one place the cause,
+    /// and the tenant whose records did not land, are recorded.
+    /// </summary>
+    protected void LogPublishFailure<TRecord>(Exception ex, IReadOnlyCollection<TRecord> records, string source) =>
+        Logger.LogError(
+            ex,
+            "Failed to publish {Count} {RecordType} records for {Source} in tenant {TenantId}",
+            records.Count,
+            typeof(TRecord).Name,
+            source,
+            TenantAccessor.IsResolved ? TenantAccessor.TenantId : null);
+
+    /// <summary>
     /// <paramref name="beforeWrite"/> runs inside the system audit scope: a preparation step that
     /// writes (an auto-created insulin, a reconcile of the source's window) is attributed to the sync,
     /// and a user-attributed delete would permanently block re-import. <paramref name="afterWrite"/>
@@ -56,9 +73,9 @@ internal abstract class ConnectorPublisherBase
         Func<List<TRecord>, Task>? afterWrite = null)
     {
         var recordType = typeof(TRecord).Name;
+        var recordList = records.ToList();
         try
         {
-            var recordList = records.ToList();
             if (recordList.Count == 0) return true;
 
             using (SystemAuditScope.Push(_auditContext))
@@ -80,7 +97,7 @@ internal abstract class ConnectorPublisherBase
         catch (OperationCanceledException) { throw; }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Failed to publish {RecordType} records for {Source}", recordType, source);
+            LogPublishFailure(ex, recordList, source);
             return false;
         }
     }

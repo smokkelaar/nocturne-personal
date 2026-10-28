@@ -1,4 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using Nocturne.Infrastructure.Data;
+using Nocturne.Infrastructure.Data.Entities;
+using Nocturne.Infrastructure.Data.Extensions;
 using Nocturne.Infrastructure.Data.Services;
 
 namespace Nocturne.API.Services.BackgroundServices;
@@ -8,24 +11,43 @@ namespace Nocturne.API.Services.BackgroundServices;
 /// <see cref="ApsSnapshotCurvesRewriter"/>, after startup.
 /// </summary>
 /// <remarks>
-/// Safe to run on every startup: a rewritten table is read once and nothing is written. Per
+/// The decomposer writes the new shape, so once a tenant's pass has walked every page the tenant
+/// is recorded in <c>backfill_completions</c> and later startups do not walk it again. Per
 /// tenant because <c>aps_snapshots</c> is RLS-scoped and the policy is fail-closed, and a tenant
-/// that fails is logged and skipped so the rest are still rewritten; the next startup retries it.
+/// that fails is logged and left unrecorded so the rest are still rewritten; the next startup
+/// retries it.
 /// </remarks>
 internal sealed class ApsSnapshotCurvesBackfillService(
     IServiceProvider serviceProvider,
-    ILogger<ApsSnapshotCurvesBackfillService> logger) : BackgroundService
+    ILogger<ApsSnapshotCurvesBackfillService> logger,
+    Func<NocturneDbContext, Guid, CancellationToken, Task<int>>? rewrite = null) : BackgroundService
 {
-    internal const int PageSize = 500;
+    internal const string BackfillName = "aps-snapshot-curves";
 
-    /// <summary>The pause after a page that wrote, which leaves the database to live traffic.</summary>
-    internal static readonly TimeSpan PauseAfterWrite = TimeSpan.FromMilliseconds(250);
+    private readonly Func<NocturneDbContext, Guid, CancellationToken, Task<int>> _rewrite = rewrite
+        ?? ((db, tenantId, ct) => ApsSnapshotCurvesRewriter.RewriteTenantAsync(
+            db, tenantId, TenantSweepPaging.PageSize, TenantSweepPaging.PauseAfterWrite, TenantSweepPaging.PauseAfterRead, ct));
 
     /// <summary>
-    /// The pause after a page that wrote nothing, which keeps a rewritten table's read on each
-    /// startup to a fraction of one backend.
+    /// Records the tenant as complete. A second instance that finishes the same tenant first has
+    /// already written the row, so a unique violation is the row existing, not a failure.
     /// </summary>
-    internal static readonly TimeSpan PauseAfterRead = TimeSpan.FromMilliseconds(50);
+    internal static async Task RecordCompletionAsync(NocturneDbContext db, Guid tenantId, CancellationToken ct)
+    {
+        db.BackfillCompletions.Add(new BackfillCompletionEntity
+        {
+            Backfill = BackfillName,
+            TenantId = tenantId,
+            CompletedAt = DateTime.UtcNow,
+        });
+        try
+        {
+            await db.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateException ex) when (ex.IsUniqueViolation())
+        {
+        }
+    }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -39,21 +61,42 @@ internal sealed class ApsSnapshotCurvesBackfillService(
 
             // Tenants are not RLS-scoped, so this list read is safe without a tenant context.
             List<Guid> tenantIds;
+            HashSet<Guid> completed;
             await using (var lookup = await factory.CreatePlatformAsync(stoppingToken))
             {
                 tenantIds = await lookup.Tenants.AsNoTracking().Select(t => t.Id).ToListAsync(stoppingToken);
+                completed = (await lookup.BackfillCompletions.AsNoTracking()
+                    .Where(c => c.Backfill == BackfillName)
+                    .Select(c => c.TenantId)
+                    .ToListAsync(stoppingToken)).ToHashSet();
             }
 
             var changedTotal = 0;
             var failed = 0;
+            var skipped = 0;
             foreach (var tenantId in tenantIds)
             {
+                if (completed.Contains(tenantId))
+                {
+                    skipped++;
+                    continue;
+                }
+
                 try
                 {
-                    await using var db = await factory.CreateForTenantAsync(tenantId, stoppingToken);
-                    var changed = await ApsSnapshotCurvesRewriter.RewriteTenantAsync(
-                        db, tenantId, PageSize, PauseAfterWrite, PauseAfterRead, stoppingToken);
+                    int changed;
+                    await using (var db = await factory.CreateForTenantAsync(tenantId, stoppingToken))
+                    {
+                        changed = await _rewrite(db, tenantId, stoppingToken);
+                    }
+
                     changedTotal += changed;
+
+                    await using (var platform = await factory.CreatePlatformAsync(stoppingToken))
+                    {
+                        await RecordCompletionAsync(platform, tenantId, stoppingToken);
+                    }
+
                     if (changed > 0)
                     {
                         logger.LogInformation(
@@ -68,9 +111,10 @@ internal sealed class ApsSnapshotCurvesBackfillService(
             }
 
             logger.LogInformation(
-                "APS snapshot curve rewrite finished: {Changed} snapshot(s) rewritten across {Tenants} tenant(s), {Failed} failed",
+                "APS snapshot curve rewrite finished: {Changed} snapshot(s) rewritten across {Tenants} tenant(s), {Skipped} already complete, {Failed} failed",
                 changedTotal,
                 tenantIds.Count,
+                skipped,
                 failed);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)

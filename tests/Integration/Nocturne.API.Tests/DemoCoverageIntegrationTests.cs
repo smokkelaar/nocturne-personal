@@ -9,6 +9,7 @@ using Nocturne.Core.Constants;
 using Nocturne.Core.Contracts.Multitenancy;
 using Nocturne.Core.Contracts.Profiles;
 using Nocturne.Core.Models.Configuration;
+using Nocturne.Core.Models.V4;
 using Nocturne.Infrastructure.Data.Entities;
 using Nocturne.Infrastructure.Data.Entities.V4;
 using Nocturne.Infrastructure.Data.Services;
@@ -75,7 +76,7 @@ public sealed class DemoCoverageIntegrationTests(
                 .SeedAsync(tenant, 14, Fixture.OwnerSubjectId, DataSources.DemoService);
 
             var devices = await dbContext.PatientDevices.AsNoTracking()
-                .Where(d => d.DeviceCategory == "cgm")
+                .Where(d => d.DeviceCategory == nameof(DeviceCategory.CGM))
                 .ToListAsync();
             devices.Should().HaveCountGreaterThanOrEqualTo(2);
             var deviceIds = devices.Select(d => d.Id).ToArray();
@@ -137,7 +138,7 @@ public sealed class DemoCoverageIntegrationTests(
             await dbContext.SaveChangesAsync();
 
             await Nocturne.API.Services.Demo.DemoDataPurge.PurgeEntriesAsync(dbContext, CancellationToken.None);
-            await Nocturne.API.Services.Demo.DemoDataPurge.PurgeTreatmentsAsync(dbContext, CancellationToken.None);
+            await Nocturne.API.Services.Demo.DemoDataPurge.PurgeTreatmentsAsync(dbContext, TimeProvider.System, CancellationToken.None);
             (await dbContext.SensorGlucose.IgnoreQueryFilters().AnyAsync(r => r.Id == realReading.Id)).Should().BeTrue();
             (await dbContext.CompressionLowSuggestions.IgnoreQueryFilters()
                 .AnyAsync(s => s.Id == realSuggestion.Id)).Should().BeTrue();

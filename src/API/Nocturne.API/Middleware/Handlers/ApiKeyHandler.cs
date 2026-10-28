@@ -87,26 +87,36 @@ public class ApiKeyHandler : IAuthHandler
         // 5. Query for matching grant
         await using var dbContext = await _dbContextFactory.CreateForTenantAsync(tenantCtx.TenantId);
 
+        var now = _timeProvider.GetUtcNow().UtcDateTime;
         var activeGrants = DirectGrantTokenHandler.ActiveDirectGrants(
-            dbContext.OAuthGrants.AsNoTracking(),
-            tenantCtx.TenantId,
-            _timeProvider.GetUtcNow().UtcDateTime);
+            dbContext.OAuthGrants.AsNoTracking(), tenantCtx.TenantId, now);
 
-        var grant = tokenHash != null
-            ? await activeGrants.FirstOrDefaultAsync(g => g.TokenHash == tokenHash)
-            : await activeGrants.FirstOrDefaultAsync(g => g.LegacySecretHash == legacySecretHash);
+        var row = await RequestMembership.WithMembership(
+                tokenHash != null
+                    ? activeGrants.Where(g => g.TokenHash == tokenHash)
+                    : activeGrants.Where(g => g.LegacySecretHash == legacySecretHash),
+                g => g.SubjectId,
+                dbContext,
+                tenantCtx.TenantId)
+            .FirstOrDefaultAsync();
 
-        if (grant == null)
+        if (row == null)
         {
             _logger.LogDebug("No matching API key grant found");
             return AuthResult.Failure("Invalid API key");
         }
 
+        var grant = row.Outer;
+        new RequestMembership(grant.SubjectId, tenantCtx.TenantId, row.Member.ToFacts()).StoreOn(context);
+
         // 6. Fire-and-forget last-used stamp
-        var ipAddress = context.Connection.RemoteIpAddress?.ToString();
-        var userAgent = context.Request.Headers.UserAgent.FirstOrDefault();
-        _ = DirectGrantTokenHandler.RecordLastUsedAsync(
-            _dbContextFactory, _logger, grant.Id, tenantCtx.TenantId, ipAddress, userAgent);
+        if (LastUsedStamp.IsDue(grant.LastUsedAt, now))
+        {
+            _ = DirectGrantTokenHandler.RecordLastUsedAsync(
+                _dbContextFactory, _logger, grant.Id, tenantCtx.TenantId,
+                context.Connection.RemoteIpAddress?.ToString(),
+                context.Request.Headers.UserAgent.FirstOrDefault());
+        }
 
         // 7. If this is a migrated full-access secret's first use, nudge rotation to scoped keys.
         //    Minted noc_ tokens also carry a LegacySecretHash (for pre-hashing clients), so the

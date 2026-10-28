@@ -10,6 +10,7 @@ using Nocturne.Connectors.Core.Utilities;
 using OpenApi.Remote.Attributes;
 using Nocturne.Connectors.Core.Interfaces;
 using Nocturne.Connectors.Core.Models;
+using Nocturne.Connectors.Core.Services;
 using Nocturne.Core.Contracts.Connectors;
 using Nocturne.Core.Models.Authorization;
 
@@ -412,7 +413,9 @@ public class ConfigurationController : ControllerBase
     /// Accepts the combined configuration and secrets payload (the same field shapes the
     /// configuration and secrets PUT endpoints take) and attempts a live authentication.
     /// Connectors that do not support verification return <c>supported = false</c>.
-    /// The submitted values are never stored, logged, or echoed back.
+    /// The submitted values are never stored, logged, or echoed back. A secret named in
+    /// <c>storedSecrets</c> is read from the tenant's stored secrets and verified against the
+    /// stored configuration, with the same outcome a submitted secret would give.
     /// </summary>
     /// <param name="connectorName">The connector name</param>
     /// <param name="request">The configuration and secrets to verify</param>
@@ -450,9 +453,19 @@ public class ConfigurationController : ControllerBase
                 return BadRequest(new { message = "Configuration validation failed", errors = validationErrors });
         }
 
-        var result = await verifier.VerifyAsync(
-            request.Configuration, request.Secrets ?? new Dictionary<string, string>(), ct);
-        return Ok(result);
+        try
+        {
+            var result = await verifier.VerifyAsync(
+                request.Configuration,
+                request.Secrets ?? new Dictionary<string, string>(),
+                request.StoredSecrets ?? [],
+                ct);
+            return Ok(result);
+        }
+        catch (InvalidVerificationRequestException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     /// <summary>

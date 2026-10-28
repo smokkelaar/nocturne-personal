@@ -61,6 +61,7 @@ public class DataSourceServiceDeleteDemoDataTests : IDisposable
         Nocturne.API.Tests.Infrastructure.ProfileActivationTestDeps.Writer(context),
         [],
         [],
+        TimeProvider.System,
         NullLogger<DataSourceService>.Instance);
 
     /// <summary>One already-soft-deleted demo record of every type the purge covers.</summary>

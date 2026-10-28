@@ -1,10 +1,10 @@
-import { a1cLabel } from "$lib/utils/a1c-formatting";
+import { a1cLabel } from "#lib/utils/a1c-formatting.js";
 import {
 	estimatedA1cTitle,
 	reportTitle,
 	visibleReportCategories,
 	type ReportViewer,
-} from "$lib/navigation/report-navigation.svelte";
+} from "#lib/navigation/report-navigation.svelte.js";
 import type { Component } from "svelte";
 import Activity from "@lucide/svelte/icons/activity";
 import Apple from "@lucide/svelte/icons/apple";
@@ -25,6 +25,8 @@ import Plug from "@lucide/svelte/icons/plug";
 import Plus from "@lucide/svelte/icons/plus";
 import RefreshCw from "@lucide/svelte/icons/refresh-cw";
 import Ruler from "@lucide/svelte/icons/ruler";
+import HeartHandshake from "@lucide/svelte/icons/heart-handshake";
+import Languages from "@lucide/svelte/icons/languages";
 import Shield from "@lucide/svelte/icons/shield";
 import Stethoscope from "@lucide/svelte/icons/stethoscope";
 import Sun from "@lucide/svelte/icons/sun";
@@ -37,7 +39,7 @@ import Users from "@lucide/svelte/icons/users";
 import UtensilsCrossed from "@lucide/svelte/icons/utensils-crossed";
 import Wrench from "@lucide/svelte/icons/wrench";
 import ZoomIn from "@lucide/svelte/icons/zoom-in";
-import { filterTenantlessNav } from "$lib/navigation/tenantless-navigation";
+import { filterTenantlessNav } from "#lib/navigation/tenantless-navigation.js";
 
 export type CommandPaletteGroup =
 	| "stats"
@@ -187,12 +189,30 @@ export const items: CommandPaletteItem[] = [
 		href: "/time-spans",
 	},
 	{
+		id: "page-trackers",
+		label: "Trackers",
+		group: "pages",
+		keywords: ["trackers", "consumables", "sensor", "site change", "reminders", "appointments"],
+		icon: Timer,
+		href: "/trackers",
+		scope: "alerts.read",
+	},
+	{
 		id: "page-tenants",
-		label: "Tenant management",
+		label: "All tenants",
 		group: "settings",
 		keywords: ["tenants", "organizations", "accounts", "platform admin"],
 		icon: Building,
 		href: "/settings/admin/tenants",
+		platformAdmin: true,
+	},
+	{
+		id: "page-administration",
+		label: "Administration",
+		group: "settings",
+		keywords: ["administration", "identity providers", "oidc", "sso", "bots", "telegram"],
+		icon: Shield,
+		href: "/settings/admin",
 		platformAdmin: true,
 	},
 	{
@@ -255,6 +275,24 @@ export const items: CommandPaletteItem[] = [
 		keywords: ["connectors", "dexcom", "libre", "glooko"],
 		icon: Plug,
 		href: "/settings/connectors",
+	},
+	{
+		id: "settings-migration",
+		label: "Move from Nightscout",
+		group: "settings",
+		keywords: ["nightscout", "migration", "import", "transition", "mongodb"],
+		icon: RefreshCw,
+		href: "/settings/migration",
+		scope: "*",
+	},
+	{
+		id: "settings-site",
+		label: "Site details",
+		group: "settings",
+		keywords: ["site", "tenant", "name", "display name", "address"],
+		icon: Building,
+		href: "/settings/site",
+		scope: "tenant.settings",
 	},
 	{
 		// Kept while the label and href moved on: pinned and recent ids persist in local storage,
@@ -327,6 +365,22 @@ export const items: CommandPaletteItem[] = [
 		keywords: ["support", "help", "contact"],
 		icon: LifeBuoy,
 		href: "/settings/support",
+	},
+	{
+		id: "page-community",
+		label: "Community",
+		group: "pages",
+		keywords: ["community", "github", "discord", "documentation", "foundation"],
+		icon: HeartHandshake,
+		href: "/community",
+	},
+	{
+		id: "page-translations",
+		label: "Translations",
+		group: "pages",
+		keywords: ["translations", "translate", "language", "locale"],
+		icon: Languages,
+		href: "/community",
 	},
 
 	// ─── Quick Settings ──────────────────────────────────────────────────

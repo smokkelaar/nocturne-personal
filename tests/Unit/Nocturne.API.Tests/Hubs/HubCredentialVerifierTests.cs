@@ -300,6 +300,25 @@ public class HubCredentialVerifierTests
     }
 
     [Fact]
+    public async Task A_legacy_session_login_lasts_while_its_untagged_token_is_live()
+    {
+        await SeedAsync(sessions: "phone");
+        var legacyToken = Guid.NewGuid();
+        await UpdateAsync(db => db.RefreshTokens.Add(new RefreshTokenEntity
+        {
+            Id = legacyToken, SubjectId = _subject, OidcSessionId = null, TokenHash = "hash-legacy",
+            ExpiresAt = DateTime.UtcNow.AddDays(1),
+        }));
+        var admitted = await AdmittedAsync(
+            Credential(AuthType.SessionCookie, null, sessionId: legacyToken.ToString()));
+        (await StillCoveredAsync(admitted)).Should().BeTrue();
+
+        await UpdateAsync(db => db.RefreshTokens.Single(t => t.Id == legacyToken).RevokedAt = DateTime.UtcNow);
+
+        (await StillCoveredAsync(admitted)).Should().BeFalse();
+    }
+
+    [Fact]
     public async Task A_session_login_without_its_session_id_lasts_while_the_subject_has_any_session()
     {
         await SeedAsync(sessions: ["laptop", "phone"]);

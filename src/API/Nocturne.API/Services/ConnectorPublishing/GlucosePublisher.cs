@@ -39,8 +39,9 @@ internal sealed class GlucosePublisher : ConnectorPublisherBase, IGlucosePublish
         ICanonicalAlertEvaluator alertEvaluator,
         IAuditContext auditContext,
         PublishSkipTally skips,
+        ITenantAccessor tenantAccessor,
         ILogger<GlucosePublisher> logger)
-        : base(auditContext, skips, logger)
+        : base(auditContext, skips, tenantAccessor, logger)
     {
         _entryService = entryService ?? throw new ArgumentNullException(nameof(entryService));
         _sensorGlucoseRepository = sensorGlucoseRepository ?? throw new ArgumentNullException(nameof(sensorGlucoseRepository));

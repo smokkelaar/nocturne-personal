@@ -48,7 +48,7 @@ public class GlucosePublisherTests
             _mockAlertEvaluator.Object,
             Mock.Of<IAuditContext>(),
             new PublishSkipTally(),
-            NullLogger<GlucosePublisher>.Instance
+            Mock.Of<ITenantAccessor>(), NullLogger<GlucosePublisher>.Instance
         );
     }
 

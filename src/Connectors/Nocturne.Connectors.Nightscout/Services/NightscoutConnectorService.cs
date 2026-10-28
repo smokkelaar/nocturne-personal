@@ -20,7 +20,6 @@ public class NightscoutConnectorServiceBase<TConfig> : BaseConnectorService<TCon
 {
     private readonly IRetryDelayStrategy _retryDelayStrategy;
     private readonly IRateLimitingStrategy _rateLimitingStrategy;
-    private readonly TimeProvider _timeProvider;
 
     // Starts as the startup defaults (from IConnectorRegistration); replaced with the
     // per-tenant config when AuthenticateWithConfigAsync runs at the start of a sync.
@@ -40,9 +39,8 @@ public class NightscoutConnectorServiceBase<TConfig> : BaseConnectorService<TCon
         IConnectorPublisher? publisher = null,
         TimeProvider? timeProvider = null
     )
-        : base(httpClient, serverResolver, logger, publisher)
+        : base(httpClient, serverResolver, logger, publisher, timeProvider)
     {
-        _timeProvider = timeProvider ?? TimeProvider.System;
         _retryDelayStrategy = retryDelayStrategy ?? throw new ArgumentNullException(nameof(retryDelayStrategy));
         _rateLimitingStrategy = rateLimitingStrategy ?? throw new ArgumentNullException(nameof(rateLimitingStrategy));
         _currentConfig = registration?.Defaults ?? throw new ArgumentNullException(nameof(registration));
@@ -231,7 +229,7 @@ public class NightscoutConnectorServiceBase<TConfig> : BaseConnectorService<TCon
                     ? ResumeFrom(request.From, await CalculateTreatmentSinceTimestampAsync(config))
                     : request.From;
 
-                var now = _timeProvider.GetUtcNow().UtcDateTime;
+                var now = Clock.GetUtcNow().UtcDateTime;
                 var recent = openEnded && treatmentFrom is { } crawlFrom
                     ? await RecentTreatmentsForAsync(crawlFrom, now)
                     : null;
@@ -825,7 +823,7 @@ public class NightscoutConnectorServiceBase<TConfig> : BaseConnectorService<TCon
         IReadOnlyDictionary<string, DateTime> read,
         CancellationToken cancellationToken)
     {
-        var now = _timeProvider.GetUtcNow().UtcDateTime;
+        var now = Clock.GetUtcNow().UtcDateTime;
         var stored = await treatments.GetStoredTreatmentIdsAsync(ConnectorSource, windowStart, now, cancellationToken);
         var candidates = stored
             .Where(s => !read.ContainsKey(s.Key) && !IsConfirmedPresent(s.Key, now))

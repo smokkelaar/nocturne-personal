@@ -19,6 +19,7 @@ using Nocturne.Core.Contracts.Treatments;
 using Nocturne.Core.Contracts.V4;
 using Nocturne.Core.Contracts.V4.Repositories;
 using Nocturne.Core.Models;
+using Nocturne.Core.Models.Authorization;
 using Nocturne.Core.Models.V4;
 using Xunit;
 using LegacyV1 = Nocturne.API.Controllers.V1;
@@ -261,10 +262,12 @@ public class LegacyPostBodyTests
             .Setup(s => s.CreateActivitiesAsync(It.IsAny<IEnumerable<Activity>>(), It.IsAny<CancellationToken>()))
             .Callback<IEnumerable<Activity>, CancellationToken>((a, _) => activities.AddRange(a))
             .ReturnsAsync([]);
+        var decomposer = new Mock<IActivityDecomposer>();
+        decomposer.Setup(d => d.RequiredWriteScope(It.IsAny<Activity>())).Returns(Scope.TreatmentsReadWrite);
         var controller = WithContext(new LegacyV1.ActivityController(
-            service.Object, Mock.Of<IActivityDecomposer>(), NullLogger<LegacyV1.ActivityController>.Instance,
+            service.Object, decomposer.Object, NullLogger<LegacyV1.ActivityController>.Instance,
             TimeProvider.System));
-        controller.HttpContext.Items["GrantedScopes"] = (IReadOnlySet<string>)new HashSet<string>();
+        controller.HttpContext.Items["GrantedScopes"] = (IReadOnlySet<string>)new HashSet<string> { Scope.TreatmentsReadWrite };
         return new Handler(
             $$"""{"Type":"walk","Duration":"30","Mills":{{Millis}}}""",
             """{"Type":"walk","Duration":"abc"}""",
@@ -281,7 +284,7 @@ public class LegacyPostBodyTests
             .Setup(s => s.CheckForDuplicateEntriesAsync(
                 It.IsAny<IReadOnlyList<EntryDuplicateProbe>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((IReadOnlyList<EntryDuplicateProbe> probes, CancellationToken _) =>
-                probes.Select(_ => (Entry?)null).ToArray());
+                probes.Select(_ => (StoredEntryMatch?)null).ToArray());
         service
             .Setup(s => s.CreateEntriesAsync(
                 It.IsAny<IEnumerable<Entry>>(), It.IsAny<WriteOrigin>(), It.IsAny<CancellationToken>()))

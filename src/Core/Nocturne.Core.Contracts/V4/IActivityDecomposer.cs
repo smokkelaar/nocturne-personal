@@ -5,10 +5,8 @@ using Nocturne.Core.Models.V4;
 namespace Nocturne.Core.Contracts.V4;
 
 /// <summary>
-/// Decomposes legacy Activity records into dedicated v4 models (HeartRate, StepCount).
-/// Activities with "bpm" in AdditionalProperties are routed to heart_rates table.
-/// Step-count activities, per <see cref="IsStepCount"/>, are routed to step_counts table.
-/// Regular activities (exercise, sleep, etc.) pass through unchanged to StateSpan storage.
+/// Decomposes legacy Activity records into dedicated v4 models (HeartRate, StepCount), routed
+/// per <see cref="Classify"/>. Other activities pass through unchanged to StateSpan storage.
 /// </summary>
 /// <seealso cref="IDecompositionPipeline"/>
 /// <seealso cref="IHeartRateService"/>
@@ -49,34 +47,23 @@ public interface IActivityDecomposer
     Task<bool> IsDeletedByUserAsync(string id, CancellationToken ct = default);
 
     /// <summary>
-    /// Determines whether an activity represents heart rate data (has "bpm" in AdditionalProperties).
+    /// The storage the activity is written to: heart-rate data (a <c>bpm</c> key in
+    /// <see cref="Activity.AdditionalProperties"/>) first, then step-count data (a <c>metric</c> key,
+    /// or, as xDrip uploads it, a <c>steps</c> key and <see cref="Activity.Type"/>
+    /// <c>"steps-total"</c>), then a sleep type, else a state span. The write routes and the scope
+    /// gates all switch on this rather than ordering the checks themselves.
     /// </summary>
-    bool IsHeartRate(Activity activity);
+    ActivityDestination Classify(Activity activity);
 
     /// <summary>
-    /// Determines whether an activity represents step count data: it has a <c>metric</c> key in
-    /// <see cref="Activity.AdditionalProperties"/>, or, as xDrip uploads it, a <c>steps</c> key there
-    /// and <see cref="Activity.Type"/> <c>"steps-total"</c>.
+    /// Returns the OAuth write scope of the storage <see cref="Classify"/> routes the activity to:
+    /// the heart rate, step count or sleep scope, or <c>treatments.readwrite</c> for a state span.
     /// </summary>
-    bool IsStepCount(Activity activity);
-
-    /// <summary>
-    /// Returns true for heart rate or step count data that should be routed to a dedicated table
-    /// rather than stored as a StateSpan.
-    /// </summary>
-    bool IsSensorData(Activity activity);
-
-    /// <summary>
-    /// Returns the OAuth write scope required to persist the activity, based on the dedicated
-    /// table it routes to (heart rate, step count, or sleep), or <see langword="null"/> for a
-    /// regular activity that routes to StateSpans and carries no category scope.
-    /// </summary>
-    string? RequiredWriteScope(Activity activity);
+    string RequiredWriteScope(Activity activity);
 
     /// <summary>
     /// Returns the OAuth read scope required to see the activity, based on the storage it came
-    /// from (heart rate, step count, sleep, or StateSpans). Unlike
-    /// <see cref="RequiredWriteScope"/> this is never <see langword="null"/>: the merged activity
+    /// from (heart rate, step count, sleep, or StateSpans). The merged activity
     /// read endpoints return records from all four storages in one response, so every record
     /// needs a category to be filtered on.
     /// </summary>

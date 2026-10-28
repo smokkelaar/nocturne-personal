@@ -44,11 +44,14 @@ public interface IActivityService
     );
 
     /// <summary>
-    /// Get a specific <see cref="Activity"/> record by ID.
+    /// Every stored record <paramref name="id"/> addresses, by primary key or by the client id it
+    /// was stored under, in state span, sleep session, heart rate and step count order. One id can
+    /// name a record in each storage, and <see cref="DeleteActivityAsync"/> removes all of them, so
+    /// a scope gate on an existing record checks every one.
     /// </summary>
-    /// <param name="id">Activity ID (legacy MongoDB ObjectId or UUID v7 string).</param>
-    /// <returns>The <see cref="Activity"/> if found; <c>null</c> otherwise.</returns>
-    Task<Activity?> GetActivityByIdAsync(string id, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<Activity>> GetStoredActivitiesAsync(
+        string id,
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Create new <see cref="Activity"/> records with WebSocket broadcasting.
@@ -74,7 +77,8 @@ public interface IActivityService
     );
 
     /// <summary>
-    /// Delete an <see cref="Activity"/> record with WebSocket broadcasting.
+    /// Delete every record <see cref="GetStoredActivitiesAsync"/> returns for the id, with WebSocket
+    /// broadcasting.
     /// </summary>
     /// <remarks>Broadcasts a storage-delete event via SignalR after persistence.</remarks>
     /// <returns><c>true</c> if deleted successfully; <c>false</c> if not found.</returns>

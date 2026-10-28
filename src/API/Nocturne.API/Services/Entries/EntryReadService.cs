@@ -227,6 +227,10 @@ public class EntryReadService : IEntryStore
     /// <inheritdoc />
     public async Task<Entry?> CheckDuplicateAsync(string? device, string type, long mills,
         CancellationToken ct = default)
+        => (await FindDuplicateAsync(device, type, mills, ct))?.Entry;
+
+    private async Task<StoredEntryMatch?> FindDuplicateAsync(string? device, string type, long mills,
+        CancellationToken ct)
     {
         var (from, to) = MillisecondOf(mills);
 
@@ -240,10 +244,10 @@ public class EntryReadService : IEntryStore
     }
 
     /// <inheritdoc />
-    public async Task<IReadOnlyList<Entry?>> CheckDuplicatesAsync(
+    public async Task<IReadOnlyList<StoredEntryMatch?>> CheckDuplicatesAsync(
         IReadOnlyList<EntryDuplicateProbe> probes, CancellationToken ct = default)
     {
-        var results = new Entry?[probes.Count];
+        var results = new StoredEntryMatch?[probes.Count];
         var sgvProbes = new List<(EntryDuplicateProbe probe, int index)>();
 
         for (var i = 0; i < probes.Count; i++)
@@ -257,7 +261,7 @@ public class EntryReadService : IEntryStore
 
             // Only sgv arrives in the thousands-per-cycle uploads this batching exists for, so mbg
             // and cal keep the per-entry probe. Unknown types return null without a query.
-            results[i] = await CheckDuplicateAsync(probe.Device, probe.Type, probe.Mills, ct);
+            results[i] = await FindDuplicateAsync(probe.Device, probe.Type, probe.Mills, ct);
         }
 
         foreach (var chunk in ChunkByTimeSpan(sgvProbes))
@@ -689,28 +693,28 @@ public class EntryReadService : IEntryStore
 
     #region Private — Duplicate check helpers
 
-    private async Task<Entry?> CheckSgvDuplicateAsync(
+    private async Task<StoredEntryMatch?> CheckSgvDuplicateAsync(
         string? device, DateTime from, DateTime to, CancellationToken ct)
     {
         // Probe raw storage rather than the visibility-filtered GetAsync: copies linked as
         // non-primary cross-connector duplicates are hidden from reads, but they still mean the
         // reading is already stored — a filtered check re-inserts them on every upload.
         var match = await _sgRepo.FindStoredDuplicateAsync(device, from, to, ct);
-        return match is null ? null : EntryProjection.FromSensorGlucose(match);
+        return match is null ? null : MatchOf(match);
     }
 
-    private async Task<Entry?> CheckMbgDuplicateAsync(
+    private async Task<StoredEntryMatch?> CheckMbgDuplicateAsync(
         string? device, DateTime from, DateTime to, CancellationToken ct)
     {
         var match = await _mgRepo.FindStoredDuplicateAsync(device, from, to, ct);
-        return match is null ? null : EntryProjection.FromMeterGlucose(match);
+        return match is null ? null : new StoredEntryMatch(EntryProjection.FromMeterGlucose(match), match.LegacyId);
     }
 
-    private async Task<Entry?> CheckCalDuplicateAsync(
+    private async Task<StoredEntryMatch?> CheckCalDuplicateAsync(
         string? device, DateTime from, DateTime to, CancellationToken ct)
     {
         var match = await _calRepo.FindStoredDuplicateAsync(device, from, to, ct);
-        return match is null ? null : EntryProjection.FromCalibration(match);
+        return match is null ? null : new StoredEntryMatch(EntryProjection.FromCalibration(match), match.LegacyId);
     }
 
     /// <summary>
@@ -719,7 +723,7 @@ public class EntryReadService : IEntryStore
     /// </summary>
     private async Task ClassifySgvChunkAsync(
         List<(EntryDuplicateProbe probe, int index)> chunk,
-        Entry?[] results,
+        StoredEntryMatch?[] results,
         CancellationToken ct)
     {
         var (from, _) = MillisecondOf(chunk[0].probe.Mills);
@@ -738,7 +742,7 @@ public class EntryReadService : IEntryStore
             foreach (var (probe, index) in chunk)
             {
                 ct.ThrowIfCancellationRequested();
-                results[index] = await CheckDuplicateAsync(probe.Device, probe.Type, probe.Mills, ct);
+                results[index] = await FindDuplicateAsync(probe.Device, probe.Type, probe.Mills, ct);
             }
 
             return;
@@ -748,9 +752,12 @@ public class EntryReadService : IEntryStore
         {
             ct.ThrowIfCancellationRequested();
             var match = MatchAtMillisecond(candidates, probe);
-            results[index] = match is null ? null : EntryProjection.FromSensorGlucose(match);
+            results[index] = match is null ? null : MatchOf(match);
         }
     }
+
+    private static StoredEntryMatch MatchOf(SensorGlucose stored) =>
+        new(EntryProjection.FromSensorGlucose(stored), stored.LegacyId);
 
     /// <summary>
     /// The single-entry probe's match rule, applied in memory: the newest candidate at the probe's

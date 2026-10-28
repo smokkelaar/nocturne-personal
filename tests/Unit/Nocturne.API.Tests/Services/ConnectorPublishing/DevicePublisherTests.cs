@@ -1,3 +1,4 @@
+using Nocturne.Core.Contracts.Multitenancy;
 using Nocturne.Connectors.Core.Models;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
@@ -51,7 +52,7 @@ public class DevicePublisherTests
             _mockPumpSnapshotRepository.Object,
             _mockUploaderSnapshotRepository.Object,
             new PublishSkipTally(),
-            NullLogger<DevicePublisher>.Instance
+            Mock.Of<ITenantAccessor>(), NullLogger<DevicePublisher>.Instance
         );
     }
 

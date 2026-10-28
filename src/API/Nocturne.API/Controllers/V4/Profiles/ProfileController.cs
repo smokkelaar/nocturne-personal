@@ -354,6 +354,7 @@ public class ProfileController : ControllerBase, IWriteScopedController
     /// <summary>
     /// Get all therapy settings with optional filtering
     /// </summary>
+    /// <param name="includeTotal">Count every record in the range and return it as `pagination.total`. Defaults to `false`.</param>
     [HttpGet("settings")]
     [RequireScope(Scope.TherapyRead)]
     [RemoteQuery]
@@ -367,6 +368,7 @@ public class ProfileController : ControllerBase, IWriteScopedController
         [FromQuery] string sort = "timestamp_desc",
         [FromQuery] string? device = null,
         [FromQuery] string? source = null,
+        [FromQuery] bool includeTotal = false,
         CancellationToken ct = default
     )
     {
@@ -379,7 +381,7 @@ public class ProfileController : ControllerBase, IWriteScopedController
         offset = V4ReadLimits.ClampOffset(offset);
 
         var descending = sort == "timestamp_desc";
-        var data = await _therapyRepo.GetAsync(
+        var data = (await _therapyRepo.GetAsync(
             from,
             to,
             device,
@@ -388,15 +390,15 @@ public class ProfileController : ControllerBase, IWriteScopedController
             offset,
             descending,
             ct
+        )).ToList();
+        var pagination = await PaginationInfo.ForPageAsync(
+            limit,
+            offset,
+            data.Count,
+            includeTotal,
+            () => _therapyRepo.CountAsync(from, to, ct)
         );
-        var total = await _therapyRepo.CountAsync(from, to, ct);
-        return Ok(
-            new PaginatedResponse<TherapySettings>
-            {
-                Data = data,
-                Pagination = new(limit, offset, total),
-            }
-        );
+        return Ok(new PaginatedResponse<TherapySettings> { Data = data, Pagination = pagination });
     }
 
     /// <summary>

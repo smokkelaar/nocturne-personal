@@ -65,6 +65,18 @@ public class ModelConventionTests
                 && !i.IsUnique
                 && i.GetFilter() == "legacy_id IS NOT NULL AND deleted_by_user");
 
+    [Fact]
+    public void EverySyncDedupedTable_HasTheUserTombstoneSyncKeyIndex() =>
+        AssertFamily(
+            NocturneDbContext.SyncDedupedEntities,
+            "_tenant_source_sync_id_user_deleted",
+            i => Columns(i).SequenceEqual([
+                    nameof(ITenantScoped.TenantId),
+                    nameof(ISyncDedupable.DataSource),
+                    nameof(ISyncDedupable.SyncIdentifier)])
+                && !i.IsUnique
+                && i.GetFilter() == "sync_identifier IS NOT NULL AND deleted_by_user");
+
     /// <summary>
     /// <see cref="Nocturne.Infrastructure.Data.Repositories.V4.V4RepositoryBase{TModel,TEntity}"/>
     /// watermarks each connector sync on the newest timestamp for one tenant and data source. The
@@ -90,16 +102,17 @@ public class ModelConventionTests
     /// cannot serve them.
     /// </summary>
     [Fact]
-    public void EverySnapshotTable_HasTheTenantLeadingTimestampIndex() =>
+    public void EverySortedListTable_HasTheTenantLeadingSortIndex() =>
         AssertFamily(
-            NocturneDbContext.V4SnapshotEntities,
-            "_tenant_timestamp",
+            NocturneDbContext.V4SortedListEntities,
+            "_tenant_timestamp_id",
             i => Columns(i).SequenceEqual([
                     nameof(ITenantScoped.TenantId),
-                    nameof(IV4TimeSeriesEntity.Timestamp)])
+                    nameof(IV4TimeSeriesEntity.Timestamp),
+                    nameof(IIdentified.Id)])
                 && !i.IsUnique
                 && i.IsDescending is not null
-                && i.IsDescending.SequenceEqual([false, true])
+                && i.IsDescending.SequenceEqual([false, true, true])
                 && i.GetFilter() == "deleted_at IS NULL");
 
     [Fact]

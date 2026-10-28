@@ -1853,7 +1853,8 @@ public class GoogleHealthTests : IDisposable
                 new ConnectorConfigurationLoader<GoogleHealthConnectorConfiguration>(
                     new ConnectorRegistration<GoogleHealthConnectorConfiguration>(new(), "GoogleHealth"),
                     Configurations,
-                    NullLogger<ConnectorConfigurationLoader<GoogleHealthConnectorConfiguration>>.Instance),
+                    NullLogger<ConnectorConfigurationLoader<GoogleHealthConnectorConfiguration>>.Instance,
+                    TimeProvider.System),
                 Microsoft.Extensions.Options.Options.Create(Platform()));
         }
 

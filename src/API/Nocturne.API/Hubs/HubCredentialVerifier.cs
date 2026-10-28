@@ -4,6 +4,7 @@ using Nocturne.API.Services.Identity;
 using Nocturne.Core.Contracts.Auth;
 using Nocturne.Core.Contracts.Multitenancy;
 using Nocturne.Core.Models.Authorization;
+using Nocturne.Infrastructure.Data.Entities;
 using Nocturne.Infrastructure.Data.Services;
 
 namespace Nocturne.API.Hubs;
@@ -92,21 +93,20 @@ public sealed class HubCredentialVerifier(IServiceProvider services, TimeProvide
 
     /// <summary>
     /// Whether the session a login belongs to still has a live refresh token. A connection admitted
-    /// on a session token that names no session (<paramref name="sessionId"/> null: minted before
-    /// the claim, or from a chain not yet tagged) can only be matched to the subject, so any live
-    /// session of the subject keeps it for as long as the connection stays open. With refresh-token
-    /// rotation on, rotation tags an untagged chain, so such tokens stop being minted within one
-    /// refresh.
+    /// on an access token that names no session (<paramref name="sessionId"/> null, which only an
+    /// access token minted before every chain carried a session key can be) can only be matched to
+    /// the subject, so any live session of the subject keeps it for as long as the connection stays
+    /// open. A session id is matched by <see cref="RefreshTokenEntity.InSession"/>.
     /// </summary>
     private async Task<bool> HasSessionAsync(Guid subjectId, string? sessionId) =>
         await Memo<object>(("session", subjectId, sessionId), async () =>
         {
             await using var db = await Contexts.CreateForSubjectAsync(subjectId);
-            return await db.RefreshTokens.AnyAsync(t =>
-                t.SubjectId == subjectId
-                && (sessionId == null || t.OidcSessionId == sessionId)
-                && t.RevokedAt == null
-                && t.ExpiresAt > _now);
+            var live = db.RefreshTokens.Where(t =>
+                t.SubjectId == subjectId && t.RevokedAt == null && t.ExpiresAt > _now);
+            if (sessionId != null)
+                live = live.Where(RefreshTokenEntity.InSession(sessionId));
+            return await live.AnyAsync();
         }) is true;
 
     private Task<TenantMemberAccess?> MembershipAsync(Guid subjectId, Guid tenantId) =>

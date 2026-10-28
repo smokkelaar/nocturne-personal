@@ -52,9 +52,10 @@ public partial class DeviceSetupService(
     /// </summary>
     private static readonly (string Token, string CatalogId)[] ModelTokens =
     [
+        ("dexcomg715day", "dexcom-g7-15-day"), ("g715day", "dexcom-g7-15-day"),
         ("dexcomg7", "dexcom-g7"), ("g7", "dexcom-g7"),
         ("dexcomg6", "dexcom-g6"), ("g6", "dexcom-g6"),
-        ("libre3", "libre-3"), ("libre2plus", "libre-2-plus"), ("libre2", "libre-2"),
+        ("libre3plus", "libre-3-plus"), ("libre3", "libre-3"), ("libre2plus", "libre-2-plus"), ("libre2", "libre-2"),
         ("guardian4", "medtronic-guardian-4"), ("guardian3", "medtronic-guardian-3"),
         ("omnipod5", "omnipod-5"), ("dash", "omnipod-dash"),
         ("mobi", "tandem-mobi"), ("tslim", "tandem-tslim-x2"),

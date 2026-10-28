@@ -4,12 +4,12 @@
  */
 import { z } from "zod";
 import { getRequestEvent, query } from "$app/server";
-import { ClusterConfidence, SleepSource } from "$lib/api";
+import { ClusterConfidence, SleepSource } from "#lib/api/index.js";
 import { fetchAllGlucose } from "./glucose-pagination";
 import { DateRangeSchema, resolvePatientToday, resolveReportRange } from "./report-range";
-import { readable } from "$lib/server/patient-timezone";
-import { compare } from "$api/generated/cgmComparisons.generated.remote";
-import { getTrends } from "$api/generated/sleepReports.generated.remote";
+import { readable } from "#lib/server/patient-timezone.js";
+import { compare } from "#lib/api/generated/cgmComparisons.generated.remote.js";
+import { getTrends } from "#lib/api/generated/sleepReports.generated.remote.js";
 
 export type { DateRangeInput } from "./report-range";
 
@@ -106,7 +106,7 @@ export const getReportsData = query(
     // The pages show how many readings the window holds, not the readings: one row and the
     // total rather than every reading of the window.
     const [readings, { analysis, averagedStats, personalRange, timeZoneUnavailableReason }] = await Promise.all([
-      apiClient.sensorGlucose.getAll(startDate, endDate, 1, 0),
+      apiClient.sensorGlucose.getAll(startDate, endDate, 1, 0, undefined, undefined, undefined, true),
       apiClient.statistics.getRangeAnalytics(startDate, endDate),
     ]);
 

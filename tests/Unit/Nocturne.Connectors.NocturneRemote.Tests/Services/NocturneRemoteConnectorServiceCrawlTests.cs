@@ -124,6 +124,36 @@ public class NocturneRemoteConnectorServiceCrawlTests
     }
 
     /// <summary>
+    /// A remote that omits <c>pagination.total</c> cannot say where the range ends, so a last page that
+    /// is exactly full costs one more request, which comes back empty and ends the crawl.
+    /// </summary>
+    [Fact]
+    public async Task SyncDataAsync_WhenPagesCarryNoTotalAndTheLastPageIsFull_EndsOnTheEmptyPageAndCollectsEverything()
+    {
+        static HttpResponseMessage Page(params string[] timestamps) =>
+            RemoteFakeHandler.Json("{\"data\":[" + string.Join(",", timestamps.Select(t =>
+                $$"""{"id":"{{Guid.NewGuid()}}","timestamp":"{{t}}","mgdl":120}""")) + "],\"pagination\":{\"limit\":2,\"offset\":0}}");
+
+        var handler = new RemoteFakeHandler()
+            .Serve(NocturneRemoteConstants.SensorGlucose,
+                Page("2026-01-03T08:00:00Z", "2026-01-03T08:05:00Z"),
+                Page("2026-01-03T08:10:00Z", "2026-01-03T08:15:00Z"));
+        var fixture = new ServiceFixture(handler);
+
+        var result = await fixture.Service.SyncDataAsync(
+            new SyncRequest { DataTypes = [SyncDataType.Glucose] },
+            fixture.Config,
+            CancellationToken.None);
+
+        result.Success.Should().BeTrue();
+        result.ItemsSynced.Should().BeEquivalentTo(new Dictionary<SyncDataType, int>
+        {
+            [SyncDataType.Glucose] = 4,
+        });
+        fixture.PublishedGlucose.Should().HaveCount(4);
+    }
+
+    /// <summary>
     /// A window the remote holds nothing for still records a count: the tenant's sync card renders a
     /// badge per key, so "checked, found nothing" must not be reported the way "could not check" is.
     /// </summary>

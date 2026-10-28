@@ -28,10 +28,9 @@ public sealed class GoogleHealthConnectorService(
     ILogger<GoogleHealthConnectorService> logger,
     IConnectorPublisher? publisher = null,
     TimeProvider? timeProvider = null)
-    : BaseConnectorService<GoogleHealthConnectorConfiguration>(httpClient, serverResolver, logger, publisher)
+    : BaseConnectorService<GoogleHealthConnectorConfiguration>(httpClient, serverResolver, logger, publisher, timeProvider)
 {
     public const string ConnectorName = "GoogleHealth";
-    private readonly TimeProvider clock = timeProvider ?? TimeProvider.System;
 
     protected override string ConnectorSource => DataSources.GoogleHealthConnector;
     public override string ServiceName => ServiceNames.GoogleHealthConnector;
@@ -296,7 +295,7 @@ public sealed class GoogleHealthConnectorService(
             var coversConfiguredTypes = ResolveActiveTypes(new SyncRequest(), config)
                 .All(type => GoogleHealthClient.TryGetDataType(type, out var name) && active.Contains(name, StringComparer.Ordinal));
 
-            var now = clock.GetUtcNow();
+            var now = Clock.GetUtcNow();
             var window = await ResolveWindowAsync(request, config, now, cancellationToken);
             await coordinator.ReportAsync(tenantId, GoogleHealthSyncPhase.Reading, completedDataTypes: 0, totalDataTypes: active.Length);
 
@@ -460,16 +459,16 @@ public sealed class GoogleHealthConnectorService(
                     reconciliationRun = await writer.BeginReconciliationAsync([type], from, to, ct);
                     stage = "google_read";
                     await coordinator.ReportAsync(tenantId, GoogleHealthSyncPhase.Reading, type, index, active.Length, 0);
-                    var progressAt = clock.GetTimestamp();
+                    var progressAt = Clock.GetTimestamp();
                     var pagesRead = 0;
                     async Task PageRead(int pages)
                     {
                         pagesRead = pages;
                         // Progress uses database sessions; publish at most once per two seconds,
                         // while phase transitions below always publish the final page count.
-                        if (clock.GetElapsedTime(progressAt) < TimeSpan.FromSeconds(2)) return;
+                        if (Clock.GetElapsedTime(progressAt) < TimeSpan.FromSeconds(2)) return;
                         await coordinator.ReportAsync(tenantId, GoogleHealthSyncPhase.Reading, type, index, active.Length, pages);
-                        progressAt = clock.GetTimestamp();
+                        progressAt = Clock.GetTimestamp();
                     }
                     if (type == "sleep")
                         await foreach (var page in google.ReadSleepPagesAsync(accessToken, from, to, ct, PageRead))

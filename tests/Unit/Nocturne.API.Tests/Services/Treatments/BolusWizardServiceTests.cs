@@ -32,7 +32,6 @@ public class BolusWizardServiceTests
             carbIntakes: new List<CarbIntake>(),
             profileData: new TestProfileData
             {
-                Dia = 3,
                 Sens = 90,
                 TargetHigh = 120,
                 TargetLow = 100,
@@ -44,9 +43,9 @@ public class BolusWizardServiceTests
 
         // Assert
         Assert.Equal(0, result.Effect);
-        Assert.Equal("0", result.EffectDisplay);
+        Assert.Equal(0, result.EffectDisplay);
         Assert.Equal(100, result.Outcome);
-        Assert.Equal("100", result.OutcomeDisplay);
+        Assert.Equal(100, result.OutcomeDisplay);
         Assert.Equal(0, result.BolusEstimate);
         Assert.Equal("BWP: 0U", result.DisplayLine);
     }
@@ -61,7 +60,6 @@ public class BolusWizardServiceTests
             carbIntakes: new List<CarbIntake>(),
             profileData: new TestProfileData
             {
-                Dia = 3,
                 Sens = 50,
                 TargetHigh = 100,
                 TargetLow = 50,
@@ -73,9 +71,9 @@ public class BolusWizardServiceTests
 
         // Assert
         Assert.Equal(50, Math.Round(result.Effect));
-        Assert.Equal("50", result.EffectDisplay);
+        Assert.Equal(50, result.EffectDisplay);
         Assert.Equal(50, Math.Round(result.Outcome));
-        Assert.Equal("50", result.OutcomeDisplay);
+        Assert.Equal(50, result.OutcomeDisplay);
         Assert.Equal(0, result.BolusEstimate);
         Assert.Equal("BWP: 0U", result.DisplayLine);
     }
@@ -90,7 +88,6 @@ public class BolusWizardServiceTests
             carbIntakes: new List<CarbIntake>(),
             profileData: new TestProfileData
             {
-                Dia = 3,
                 Sens = 50,
                 TargetHigh = 200,
                 TargetLow = 100,
@@ -103,9 +100,9 @@ public class BolusWizardServiceTests
 
         // Assert
         Assert.Equal(50, Math.Round(result.Effect));
-        Assert.Equal("50", result.EffectDisplay);
+        Assert.Equal(50, result.EffectDisplay);
         Assert.Equal(50, Math.Round(result.Outcome));
-        Assert.Equal("50", result.OutcomeDisplay);
+        Assert.Equal(50, result.OutcomeDisplay);
         Assert.Equal(-1, Math.Round(result.BolusEstimate));
         Assert.Equal("BWP: -1.00U", result.DisplayLine);
         Assert.NotNull(result.TempBasalAdjustment);
@@ -124,7 +121,6 @@ public class BolusWizardServiceTests
             carbIntakes: new List<CarbIntake>(),
             profileData: new TestProfileData
             {
-                Dia = 3,
                 Sens = 10, // mmol/L per unit
                 TargetHigh = 10,
                 TargetLow = 5.6,
@@ -157,7 +153,6 @@ public class BolusWizardServiceTests
             carbIntakes: new List<CarbIntake>(),
             profileData: new TestProfileData
             {
-                Dia = 3,
                 Sens = 9, // mmol/L per unit
                 TargetHigh = 6,
                 TargetLow = 5,
@@ -191,7 +186,6 @@ public class BolusWizardServiceTests
             carbIntakes: new List<CarbIntake>(),
             profileData: new TestProfileData
             {
-                Dia = 3,
                 Sens = 50,
                 TargetHigh = 120,
                 TargetLow = 100,
@@ -227,7 +221,6 @@ public class BolusWizardServiceTests
             carbIntakes: carbIntakes,
             profileData: new TestProfileData
             {
-                Dia = 3,
                 Sens = 50,
                 TargetHigh = 120,
                 TargetLow = 100,
@@ -339,11 +332,7 @@ public class BolusWizardServiceTests
         mockProfile
             .Setup(p => p.GetLowBGTarget(It.IsAny<long>(), null))
             .Returns(profileData.TargetLow);
-        mockProfile.Setup(p => p.GetBasal(It.IsAny<long>(), null)).Returns(profileData.Basal);
-        mockProfile.Setup(p => p.GetDIA(It.IsAny<long>(), null)).Returns(profileData.Dia);
-        mockProfile
-            .Setup(p => p.GetCarbRatio(It.IsAny<long>(), null))
-            .Returns(profileData.CarbRatio);
+        mockProfile.Setup(p => p.GetTotalBasal(It.IsAny<long>(), null)).Returns(profileData.Basal);
 
         // Create concrete Entry object instead of mocking
         var entry = new Entry
@@ -371,37 +360,23 @@ public class BolusWizardServiceTests
         mockSandbox.Setup(s => s.GetCarbIntakes()).Returns(carbIntakes);
         mockSandbox.Setup(s => s.Iob).Returns(iobResult);
         mockSandbox.Setup(s => s.Time).Returns(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
-        mockSandbox.Setup(s => s.Units).Returns(profileData.Units ?? "mg/dL"); // Mock the rounding functions to match legacy behavior exactly
+        var mgdlSandbox = new BwpSandbox(0, null, null, [], null);
         mockSandbox
             .Setup(s => s.RoundInsulinForDisplayFormat(It.IsAny<double>()))
-            .Returns<double>(insulin =>
-            {
-                // Special case to match legacy inconsistency for this specific test value
-                if (Math.Abs(insulin - (-0.061111)) < 0.001)
-                    return "-0.07";
-
-                // Normal rounding behavior
-                var rounded = Math.Round(insulin, 2, MidpointRounding.AwayFromZero);
-                if (Math.Abs(rounded) >= 1.0)
-                    return rounded.ToString("F2");
-                else
-                    return rounded.ToString("F2").TrimEnd('0').TrimEnd('.');
-            });
+            .Returns<double>(mgdlSandbox.RoundInsulinForDisplayFormat);
         mockSandbox
             .Setup(s => s.RoundBGToDisplayFormat(It.IsAny<double>()))
-            .Returns<double>(bg => Math.Round(bg, 1).ToString("F1").TrimEnd('0').TrimEnd('.'));
+            .Returns<double>(bg => profileData.Units == "mmol" ? Math.Floor(bg * 10 + 0.5) / 10 : mgdlSandbox.RoundBGToDisplayFormat(bg));
 
         return mockSandbox;
     }
 
     private class TestProfileData
     {
-        public double Dia { get; set; }
         public double Sens { get; set; }
         public double TargetHigh { get; set; }
         public double TargetLow { get; set; }
         public double Basal { get; set; }
-        public double CarbRatio { get; set; } = 15; // Default carb ratio
         public string? Units { get; set; }
     }
 }

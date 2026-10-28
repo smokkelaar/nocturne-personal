@@ -11,15 +11,17 @@ public interface IFirstPartyTokenRepository
     Task RevokeAsync(Guid tokenId, string reason, Guid? replacedByTokenId = null, CancellationToken ct = default);
 
     /// <summary>
-    /// Atomically marks an active token as rotated — revokes it and links it to its
-    /// replacement — but only if it is still active (not yet revoked). Returns true if this
-    /// caller performed the rotation, false if a concurrent request already rotated it.
+    /// Atomically marks an active token as rotated (revokes it and links it to its
+    /// replacement) and stores <paramref name="successor"/>, but only if the token is still
+    /// active (not yet revoked). Returns true if this caller performed the rotation, false if a
+    /// concurrent request already rotated it.
     /// The single conditional UPDATE lets exactly one of several parallel refresh requests
     /// win, which prevents the token family from forking under the concurrent requests an
     /// SSR app issues per navigation (page load, preload, proxied API and remote-function
-    /// calls all carry the same refresh-token cookie).
+    /// calls all carry the same refresh-token cookie). The claim and the insert commit together,
+    /// so a failure cannot revoke the token without leaving its successor behind.
     /// </summary>
-    Task<bool> TryMarkRotatedAsync(Guid tokenId, Guid replacedByTokenId, CancellationToken ct = default);
+    Task<bool> TryRotateAsync(Guid tokenId, RefreshTokenRecord successor, CancellationToken ct = default);
     Task<int> RevokeAllForSubjectAsync(Guid subjectId, string reason, CancellationToken ct = default);
     Task<int> RevokeByOidcSessionAsync(string oidcSessionId, string reason, CancellationToken ct = default);
 

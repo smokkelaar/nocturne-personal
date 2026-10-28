@@ -20,7 +20,7 @@ namespace Nocturne.API.Middleware;
 /// <remarks>
 /// <para>
 /// Must run after <see cref="AuthenticationMiddleware"/>: reads the <see cref="AuthContext"/> it sets
-/// and replaces <c>HttpContext.Items[AuthContextKeys.GrantedScopes]</c> and <c>HttpContext.Items[AuthContextKeys.PermissionTrie]</c>
+/// and the <see cref="RequestMembership"/> it read, and replaces <c>HttpContext.Items[AuthContextKeys.GrantedScopes]</c> and <c>HttpContext.Items[AuthContextKeys.PermissionTrie]</c>
 /// with membership-scoped values. Uses <see cref="ScopeTranslator"/> to convert between
 /// Shiro-style permissions and OAuth scopes.
 /// </para>
@@ -115,26 +115,14 @@ public class MemberScopeMiddleware
             return;
         }
 
-        await using var dbContext = await context.RequestServices
-            .GetRequiredService<INocturneDbContextFactory>()
-            .CreateAsync(context.RequestAborted);
-
-        var membership = await dbContext.TenantMembers
-            .AsNoTracking()
-            .Include(tm => tm.MemberRoles)
-                .ThenInclude(mr => mr.TenantRole)
-            .Where(tm => tm.SubjectId == authContext.SubjectId.Value
-                         && tm.TenantId == tenantId)
-            .FirstOrDefaultAsync();
-
-        // AuthenticationMiddleware has already reduced a non-member to anonymous, or to the
-        // scopeless identity an invite route keeps; neither gains anything here.
-        if (membership == null)
+        // AuthenticationMiddleware read the membership and has already reduced a non-member to
+        // anonymous, or to the scopeless identity an invite route keeps; neither gains anything here.
+        if (RequestMembership.Of(context, authContext.SubjectId.Value, tenantId)?.Membership is not { } membership)
         {
             return;
         }
 
-        var effectivePermissions = membership.EffectivePermissions().ToHashSet();
+        var effectivePermissions = membership.Access.EffectivePermissions;
 
         var resolvedScopes = MemberScopeResolver.Resolve(
             effectivePermissions, authContext.AuthType, context.GetGrantedScopes());
@@ -151,21 +139,20 @@ public class MemberScopeMiddleware
         context.SetPermissionTrie(memberTrie);
 
         authContext.LimitTo24Hours = MemberScopeResolver.IsHistoryClamped(
-            authContext.LimitTo24Hours, membership.LimitTo24Hours, effectivePermissions);
+            authContext.LimitTo24Hours, membership.Access.LimitTo24Hours, effectivePermissions);
 
         _logger.LogDebug(
             "Member {SubjectId} on tenant {TenantId} resolved with {PermCount} effective permissions (LimitTo24Hours={LimitTo24Hours})",
-            authContext.SubjectId, authContext.TenantId, effectivePermissions.Count, membership.LimitTo24Hours);
+            authContext.SubjectId, authContext.TenantId, effectivePermissions.Count, membership.Access.LimitTo24Hours);
 
-        // Fire-and-forget LastUsedAt update (debounced: only if > 5 min since last update).
+        // Fire-and-forget LastUsedAt update, debounced by LastUsedStamp.
         // Skipped for AuthType.ApiKey. These columns back the "Last active" line on the
         // member card, which reports when the person was last active and from where; an uploader
         // polling on their key is not the member logging in, and attributing it would overwrite
         // that with the uploader's IP and user-agent. The grant row has its own LastUsedAt,
         // maintained by ApiKeyHandler, which is where key activity belongs.
         if (authContext.AuthType is not AuthType.ApiKey
-            && (membership.LastUsedAt == null
-                || (DateTime.UtcNow - membership.LastUsedAt.Value).TotalMinutes > 5))
+            && LastUsedStamp.IsDue(membership.LastUsedAt, DateTime.UtcNow))
         {
             var membershipId = membership.Id;
             var ip = context.Connection.RemoteIpAddress?.ToString();
@@ -190,8 +177,8 @@ public class MemberScopeMiddleware
                 {
                     // Best-effort — don't let tracking failures affect the request. Warned rather
                     // than debugged: a write the database refuses would otherwise be invisible at
-                    // production log levels. The 5-minute refresh window bounds the rate to one
-                    // per member.
+                    // production log levels. <see cref="LastUsedStamp"/> bounds the rate to one per
+                    // member.
                     _logger.LogWarning(
                         ex, "Failed to record last-used for membership {MembershipId}", membershipId);
                 }

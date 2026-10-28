@@ -104,13 +104,29 @@ public class HubTokenAuthorizerTests
             .ReturnsAsync(false);
     }
 
-    /// <summary>Makes <paramref name="subjectId"/> a member of <paramref name="tenantId"/> only.</summary>
+    /// <summary>
+    /// Makes <paramref name="subjectId"/> a member of <paramref name="tenantId"/> only: in the store,
+    /// where a grant's lookup reads it, and in the member service the JWT path asks.
+    /// </summary>
     private void SeedMember(Guid tenantId, Guid subjectId, params string[] rolePermissions) =>
         SeedMember(tenantId, subjectId, limitTo24Hours: false, rolePermissions);
 
     private void SeedMember(
         Guid tenantId, Guid subjectId, bool limitTo24Hours, params string[] rolePermissions)
     {
+        using (var db = _dbContextFactory.CreateDbContext())
+        {
+            db.TenantMembers.Add(new TenantMemberEntity
+            {
+                Id = Guid.CreateVersion7(),
+                TenantId = tenantId,
+                SubjectId = subjectId,
+                DirectPermissions = [.. rolePermissions],
+                LimitTo24Hours = limitTo24Hours,
+            });
+            db.SaveChanges();
+        }
+
         _memberService
             .Setup(m => m.GetMemberAccessAsync(
                 subjectId, It.IsAny<Guid>(), It.IsAny<CancellationToken>()))

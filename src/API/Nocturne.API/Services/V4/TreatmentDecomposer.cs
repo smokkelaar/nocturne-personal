@@ -417,10 +417,11 @@ public class TreatmentDecomposer : DecomposerBase, ITreatmentDecomposer, IDecomp
         NormalizeIdentity(treatment);
         using var restated = OpenRestatedScope([treatment]);
 
+        var storedCorrelationIds = await GetStoredCorrelationIdsAsync([treatment.Id], TreatmentTables, ct);
+        var isStored = storedCorrelationIds.Count > 0;
         var result = new V4Models.DecompositionResult
         {
-            CorrelationId = CorrelationIdFor(
-                treatment.Id, await GetStoredCorrelationIdsAsync([treatment.Id], TreatmentTables, ct))
+            CorrelationId = CorrelationIdFor(treatment.Id, storedCorrelationIds)
         };
 
         var c = ClassifyTreatment(treatment);
@@ -467,10 +468,20 @@ public class TreatmentDecomposer : DecomposerBase, ITreatmentDecomposer, IDecomp
 
         if (c.ProduceCarbIntake)
         {
-            await DecomposeCarbIntakeAsync(treatment, result, c.KeepsUploadedEventType, origin, ct);
+            await DecomposeCarbIntakeAsync(treatment, result, c.KeepsUploadedEventType, isStored, origin, ct);
         }
 
+        var absentMealCarbs = !c.ProduceCarbIntake && !c.ProducesNothing && isStored
+            && result.CorrelationId is { } mealId && treatment.Id is { } mealKey
+                ? await MealCarbsOfBolusAsync(mealKey, mealId, ct)
+                : null;
+
         await DropAbsentProjectionsAsync([(treatment, c)], origin, ct);
+
+        // A meal's carbs a connector keyed apart from its bolus outlive the drop by the bolus's key.
+        // The user removed them, so the tombstone stops the connector's re-sync bringing them back.
+        if (absentMealCarbs is { LegacyId: { Length: > 0 } carbsKey } && carbsKey != treatment.Id)
+            await DeleteByLegacyIdAsync(carbsKey, origin, ct);
 
         if (c.ProduceBGCheck)
         {
@@ -596,15 +607,50 @@ public class TreatmentDecomposer : DecomposerBase, ITreatmentDecomposer, IDecomp
     }
 
     private async Task DecomposeCarbIntakeAsync(
-        Treatment treatment, V4Models.DecompositionResult result, bool keepEventType, WriteOrigin origin, CancellationToken ct)
+        Treatment treatment, V4Models.DecompositionResult result, bool keepEventType, bool isStored,
+        WriteOrigin origin, CancellationToken ct)
     {
+        var model = Mapped(() => MapToCarbIntake(treatment, result.CorrelationId, keepEventType));
         var upserted = await UpsertByLegacyIdAsync(
-            _carbIntakeRepository, treatment.Id, Mapped(() => MapToCarbIntake(treatment, result.CorrelationId, keepEventType)),
-            result, origin, ct);
+            _carbIntakeRepository, treatment.Id, model, result, origin, ct,
+            findStored: isStored && result.CorrelationId is { } correlationId && treatment.Id is { } legacyId
+                ? () => FindStoredMealCarbsAsync(model, legacyId, correlationId, ct)
+                : null);
 
         if (upserted is ({ } carbIntake, true))
             await WriteLegacyFoodLineAsync(carbIntake.Id, treatment, ct);
     }
+
+    /// <summary>
+    /// The stored carb intake a treatment's carbs update: the one under its legacy id, else the one
+    /// served as a Meal Bolus with the bolus stored under it, whose halves a connector keys apart.
+    /// That carb intake keeps its own legacy and sync ids, which its source re-syncs it by; the ones
+    /// the treatment carries are the bolus's.
+    /// </summary>
+    private async Task<V4Models.CarbIntake?> FindStoredMealCarbsAsync(
+        V4Models.CarbIntake model, string legacyId, Guid correlationId, CancellationToken ct)
+    {
+        if (await _carbIntakeRepository.GetByLegacyIdAsync(legacyId, ct) is { } stored)
+            return stored;
+
+        if (await MealCarbsOfBolusAsync(legacyId, correlationId, ct) is not { } mealCarbs)
+            return null;
+
+        model.LegacyId = string.IsNullOrEmpty(mealCarbs.LegacyId) ? legacyId : mealCarbs.LegacyId;
+        if (!string.IsNullOrEmpty(mealCarbs.SyncIdentifier))
+            model.SyncIdentifier = mealCarbs.SyncIdentifier;
+        return mealCarbs;
+    }
+
+    /// <summary>
+    /// The carb intake served as a Meal Bolus with the bolus stored under <paramref name="legacyId"/>,
+    /// when that bolus belongs to <paramref name="correlationId"/>.
+    /// </summary>
+    private async Task<V4Models.CarbIntake?> MealCarbsOfBolusAsync(
+        string legacyId, Guid correlationId, CancellationToken ct) =>
+        await _bolusRepository.GetByLegacyIdAsync(legacyId, ct) is { CorrelationId: { } paired } && paired == correlationId
+            ? LegacyTreatmentTables.MealHalf(await _carbIntakeRepository.GetByCorrelationIdAsync(correlationId, ct))
+            : null;
 
     private async Task DecomposeBGCheckAsync(Treatment treatment, V4Models.DecompositionResult result, WriteOrigin origin, CancellationToken ct)
         => await UpsertByLegacyIdAsync(
@@ -847,7 +893,7 @@ public class TreatmentDecomposer : DecomposerBase, ITreatmentDecomposer, IDecomp
         {
             var governing = await db.StateSpans.IgnoreQueryFilters().AsNoTracking()
                 .Where(s => s.TenantId == db.TenantId && s.OriginalId == originalId)
-                .WhereBlocksRecreation()
+                .WhereBlocksSpanRecreation()
                 .Select(s => s.DeletedAt == null)
                 .ToListAsync(ct);
             if (governing.Count > 0 && !governing.Contains(true))
@@ -2149,7 +2195,7 @@ public class TreatmentDecomposer : DecomposerBase, ITreatmentDecomposer, IDecomp
         db.StateSpans.IgnoreQueryFilters()
             .Where(s => s.TenantId == db.TenantId && s.Source == source
                      && s.OriginalId != null && originalIds.Contains(s.OriginalId))
-            .WhereBlocksRecreation();
+            .WhereBlocksSpanRecreation();
 
     /// <inheritdoc />
     /// <remarks>
@@ -2260,7 +2306,7 @@ public class TreatmentDecomposer : DecomposerBase, ITreatmentDecomposer, IDecomp
         var ids = legacyIds.ToArray();
         rows.AddRange((await db.StateSpans.IgnoreQueryFilters().AsNoTracking()
                 .Where(s => s.TenantId == db.TenantId && s.OriginalId != null && ids.Contains(s.OriginalId))
-                .WhereBlocksRecreation()
+                .WhereBlocksSpanRecreation()
                 .Select(s => new { Key = s.OriginalId!, Live = s.DeletedAt == null })
                 .ToListAsync(ct))
             .Select(s => (s.Key, s.Live)));

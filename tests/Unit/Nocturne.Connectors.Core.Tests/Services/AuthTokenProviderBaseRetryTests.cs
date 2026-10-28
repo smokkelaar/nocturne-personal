@@ -2,6 +2,7 @@ using System.Net;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Time.Testing;
 using Moq;
 using Nocturne.Connectors.Core.Interfaces;
 using Nocturne.Connectors.Core.Services;
@@ -433,6 +434,67 @@ public class AuthTokenProviderBaseRetryTests
         protected override Task<(string? Token, DateTime ExpiresAt, IReadOnlyDictionary<string, string>? Metadata)> AcquireTokenAsync(
             TestConnectorConfig config, CancellationToken cancellationToken)
             => Task.FromException<(string? Token, DateTime ExpiresAt, IReadOnlyDictionary<string, string>? Metadata)>(loginFailure);
+    }
+
+    /// <summary>
+    ///     A token is refetched <see cref="AuthTokenProviderBase{TConfig}.TokenLifetimeBufferMinutes"/>
+    ///     before the source says it expires, so a request never carries a token about to lapse.
+    /// </summary>
+    [Fact]
+    public async Task GetValidTokenAsync_RefetchesFromTheRefreshMargin()
+    {
+        var clock = new FakeTimeProvider(new DateTimeOffset(2026, 3, 1, 12, 0, 0, TimeSpan.Zero));
+        var tenantAccessor = new Mock<ITenantAccessor>();
+        tenantAccessor.Setup(t => t.IsResolved).Returns(true);
+        tenantAccessor.Setup(t => t.TenantId).Returns(Guid.NewGuid());
+        using var provider = new LifetimeTokenProvider(
+            new HttpClient(),
+            new ConnectorTokenCache(clock),
+            NoOpResolver,
+            tenantAccessor.Object,
+            NullLogger<LifetimeTokenProvider>.Instance,
+            clock,
+            TimeSpan.FromMinutes(30));
+        var config = new TestConnectorConfig();
+
+        await provider.GetValidTokenAsync(config);
+        provider.AcquireCalls.Should().Be(1);
+
+        clock.Advance(TimeSpan.FromMinutes(25) - TimeSpan.FromSeconds(1));
+        await provider.GetValidTokenAsync(config);
+        provider.AcquireCalls.Should().Be(1, "one second before the 5 minute margin the cached token still serves");
+
+        clock.Advance(TimeSpan.FromSeconds(1));
+        await provider.GetValidTokenAsync(config);
+        provider.AcquireCalls.Should().Be(2, "at the margin the token is refetched");
+
+        clock.Advance(TimeSpan.FromMinutes(25) + TimeSpan.FromSeconds(1));
+        await provider.GetValidTokenAsync(config);
+        provider.AcquireCalls.Should().Be(3, "after the margin the token is refetched");
+    }
+
+    /// <summary>Hands out a token living <paramref name="lifetime"/> from the injected clock.</summary>
+    private sealed class LifetimeTokenProvider(
+        HttpClient httpClient,
+        IConnectorTokenCache tokenCache,
+        IConnectorServerResolver<TestConnectorConfig> serverResolver,
+        ITenantAccessor tenantAccessor,
+        ILogger logger,
+        TimeProvider clock,
+        TimeSpan lifetime)
+        : AuthTokenProviderBase<TestConnectorConfig>(httpClient, tokenCache, serverResolver, tenantAccessor, logger)
+    {
+        internal int AcquireCalls { get; private set; }
+
+        protected override string ConnectorName => "Lifetime";
+
+        protected override Task<(string? Token, DateTime ExpiresAt, IReadOnlyDictionary<string, string>? Metadata)> AcquireTokenAsync(
+            TestConnectorConfig config, CancellationToken cancellationToken)
+        {
+            AcquireCalls++;
+            return Task.FromResult<(string? Token, DateTime ExpiresAt, IReadOnlyDictionary<string, string>? Metadata)>(
+                ($"token-{AcquireCalls}", clock.GetUtcNow().UtcDateTime + lifetime, null));
+        }
     }
 
     /// <summary>Fails every login, recording how many times it was asked to try.</summary>

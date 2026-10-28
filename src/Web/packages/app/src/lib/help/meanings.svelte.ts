@@ -16,10 +16,6 @@ export function pageMeanings(): Record<string, HelpSection[]> {
     "Consensus targets",
     "At least 70% of the time in range, less than 4% below range, less than 1% very low, less than 25% above range, and less than 5% very high. These are general targets. Your care team can agree other targets with you.",
   ];
-  const routes = (data: string): [string, string] => [
-    `How ${data} reach Nocturne`,
-    `Fitbit and Pixel Watch write to Google Health directly. Garmin, Samsung, Oura and Withings on Android write to Health Connect, and the Google Health app reads Health Connect. On an iPhone, Garmin Connect, Apple Watch and most apps write to Apple Health, and the Google Health app can read Apple Health. Then connect Google Health in Connectors & Apps and select ${data}.`,
-  ];
   return {
     "/": items([
       [
@@ -167,7 +163,7 @@ export function pageMeanings(): Record<string, HelpSection[]> {
       ],
       [
         "How a run ended",
-        "Completed means that you completed the tracker. Expired means it reached its end without completion. Fell off means the device record stopped.",
+        "Completed means the run ended at or near its expected time. Expired means it ran past its expected life. Fell off means the device came off the body. Replaced early, Failed, Empty and Refilled give other reasons.",
       ],
     ]),
     "/alerts": items([
@@ -252,7 +248,10 @@ export function pageMeanings(): Record<string, HelpSection[]> {
         "Steps and glucose",
         "Activity often lowers glucose during and for hours after it. Compare active days with Day in review.",
       ],
-      routes("steps"),
+      [
+        "How steps reach Nocturne",
+        "Fitbit and Pixel Watch write to Google Health directly. Garmin, Samsung, Oura and Withings on Android write to Health Connect, and the Google Health app reads Health Connect. On an iPhone, Garmin Connect, Apple Watch and most apps write to Apple Health, and the Google Health app can read Apple Health. Then connect Google Health in Connectors & Apps and select Steps.",
+      ],
       [
         "Other routes",
         "Glooko can import daily step totals from Apple Health with Use Granular Sync (Experimental) and Sync activity on. xDrip+ can upload steps from the phone or a supported watch.",
@@ -267,7 +266,10 @@ export function pageMeanings(): Record<string, HelpSection[]> {
         "Units and gaps",
         "Values are beats per minute. Google Health gives one average per minute, so short peaks can disappear. A gap is no data, not a heart rate of zero.",
       ],
-      routes("heart rate"),
+      [
+        "How heart rate reaches Nocturne",
+        "Fitbit and Pixel Watch write to Google Health directly. Garmin, Samsung, Oura and Withings on Android write to Health Connect, and the Google Health app reads Health Connect. On an iPhone, Garmin Connect, Apple Watch and most apps write to Apple Health, and the Google Health app can read Apple Health. Then connect Google Health in Connectors & Apps and select Heart rate.",
+      ],
     ]),
     "/reports/sleep": items([
       [
@@ -286,7 +288,10 @@ export function pageMeanings(): Record<string, HelpSection[]> {
         "Dawn rise",
         "The change in glucose in the last 2 hours before you woke up. A rise points to the dawn phenomenon. It needs at least 4 readings in that window.",
       ],
-      routes("sleep"),
+      [
+        "How sleep reaches Nocturne",
+        "Fitbit and Pixel Watch write to Google Health directly. Garmin, Samsung, Oura and Withings on Android write to Health Connect, and the Google Health app reads Health Connect. On an iPhone, Garmin Connect, Apple Watch and most apps write to Apple Health, and the Google Health app can read Apple Health. Then connect Google Health in Connectors & Apps and select Sleep.",
+      ],
     ]),
     "/reports/sleep/[date]": items([
       [
@@ -294,8 +299,8 @@ export function pageMeanings(): Record<string, HelpSection[]> {
         "Deep, REM, light and awake come from your device. Asleep (unstaged) is sleep without stages, for example from a manual entry.",
       ],
       [
-        "Glucose during the night",
-        "The glucose line runs under the stages, so you can see lows and rises in each stage. A low wakes you up more often than a deep sleep stage suggests.",
+        "Overnight time in range",
+        "Overnight time in range uses the readings between falling asleep and waking up. Compare a low with the stage at the same time in the hypnogram. No CGM data means that no readings overlap the session.",
       ],
     ]),
   };

@@ -241,7 +241,7 @@ describe("year overview color focus", () => {
     await expect.element(selected("boundaries")).toHaveTextContent("null");
   });
 
-  it("edits glucose in mmol/L while storing mg/dL, with the ramp fixed to its own domain", async () => {
+  it("edits glucose in mmol/L while storing mg/dL, the ramp following the window", async () => {
     render(Harness, { glucose: true, units: "mmol", metricLabel: "Avg Glucose" });
     await expect.element(minimumInput("Avg Glucose")).toHaveValue(2.2);
     await expect.element(maximumInput("Avg Glucose")).toHaveValue(19.4);
@@ -249,7 +249,7 @@ describe("year overview color focus", () => {
 
     await minimumInput("Avg Glucose").fill("3.9");
     await expect.element(selected("window")).toHaveTextContent("[70,350]");
-    expect(gradient("glucose-color-track")).toBe(before);
+    expect(gradient("glucose-color-track")).not.toBe(before);
 
     await addBoundary().click();
     await expect.element(boundaryInput(1, "Avg Glucose")).toHaveValue(11.7);

@@ -238,3 +238,13 @@ describe("chosen colors", () => {
     expect(rampColor(scale.ramp, added.position)).toBe(scaleFill(added.value, scale));
   });
 });
+
+describe("glucoseScale", () => {
+  it("spans the glucose ramp across a narrowed window", () => {
+    const scale = buildGlucoseScale([70, 180], null, 90);
+    expect(scale.domain).toEqual([70, 180]);
+    expect(scale.axis).toEqual([GLUCOSE_COLOR_MIN, GLUCOSE_COLOR_MAX]);
+    expect(scaleFill(70, scale)).toBe(GLUCOSE_RAMP[0].color);
+    expect(scaleFill(180, scale)).toBe(GLUCOSE_RAMP.at(-1)!.color);
+  });
+});

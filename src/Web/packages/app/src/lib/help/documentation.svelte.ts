@@ -8,6 +8,7 @@ import { connectorArticles } from "./connectors.svelte";
 import { readingGuides } from "./reading-guides.svelte";
 import { pageMeanings } from "./meanings.svelte";
 import { reportMeanings } from "./report-meanings.svelte";
+import { workflowArticles } from "./workflows.svelte";
 import { glucoseReferenceArticle } from "./glucose-reference.svelte";
 import { GLUCOSE_REFERENCE_PATH } from "./reference-path";
 
@@ -20,6 +21,7 @@ export function articles(): HelpArticle[] {
     ...reportArticles(),
     ...settingsArticles(),
     ...connectorArticles(),
+    ...workflowArticles(),
     glucoseReferenceArticle(),
   ];
   return entries.map((article) => {

@@ -120,7 +120,7 @@ export function settingsArticles(): HelpArticle[] {
       "Use the support and issue controls here. Review optional device information and your message before submitting. Tutorial preferences are also here.",
       "Version and error details help maintainers understand a reproducible problem.",
       "Describe the page, expected result, and steps to reproduce. Keep credentials, tokens, and identifiable health records out of a public issue.",
-      ["/settings/connectors"]
+      ["/help/getting-started", "/help/troubleshooting", "/settings/connectors"]
     ),
     guide(
       "/settings/translations",

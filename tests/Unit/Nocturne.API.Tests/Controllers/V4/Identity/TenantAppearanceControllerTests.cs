@@ -143,12 +143,12 @@ public sealed class TenantAppearanceControllerTests
         // declarations is what makes adding one a decision rather than a default.
         PropertyNames(typeof(YearOverviewColorPreferences)).Should().BeEquivalentTo(
             "OutOfBandTransparency",
-            "AvgGlucoseBand", "AvgGlucoseBoundaries", "AvgGlucoseLowColor", "AvgGlucoseHighColor", "AvgGlucosePalette", "AvgGlucoseMirror",
-            "TirBand", "TirBoundaries", "TirLowColor", "TirHighColor", "TirPalette", "TirMirror",
-            "BolusBand", "BolusBoundaries", "BolusLowColor", "BolusHighColor", "BolusPalette", "BolusMirror",
-            "BasalBand", "BasalBoundaries", "BasalLowColor", "BasalHighColor", "BasalPalette", "BasalMirror",
-            "TddBand", "TddBoundaries", "TddLowColor", "TddHighColor", "TddPalette", "TddMirror",
-            "CarbsBand", "CarbsBoundaries", "CarbsLowColor", "CarbsHighColor", "CarbsPalette", "CarbsMirror");
+            "AvgGlucoseBand", "AvgGlucoseBoundaries", "AvgGlucoseLowColor", "AvgGlucoseHighColor", "AvgGlucosePalette", "AvgGlucoseMirror", "AvgGlucoseColorRange",
+            "TirBand", "TirBoundaries", "TirLowColor", "TirHighColor", "TirPalette", "TirMirror", "TirColorRange",
+            "BolusBand", "BolusBoundaries", "BolusLowColor", "BolusHighColor", "BolusPalette", "BolusMirror", "BolusColorRange",
+            "BasalBand", "BasalBoundaries", "BasalLowColor", "BasalHighColor", "BasalPalette", "BasalMirror", "BasalColorRange",
+            "TddBand", "TddBoundaries", "TddLowColor", "TddHighColor", "TddPalette", "TddMirror", "TddColorRange",
+            "CarbsBand", "CarbsBoundaries", "CarbsLowColor", "CarbsHighColor", "CarbsPalette", "CarbsMirror", "CarbsColorRange");
         PropertyNames(typeof(YearOverviewColorBoundary)).Should().BeEquivalentTo("Value", "Position", "Color");
         PropertyNames(typeof(PredictionPreferences)).Should().BeEquivalentTo(
             "Enabled", "Minutes", "DisplayMode");

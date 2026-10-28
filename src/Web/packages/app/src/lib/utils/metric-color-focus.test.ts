@@ -3,6 +3,7 @@ import { getGlucoseHeatmapFill } from "./chart-colors";
 import {
   addColorBoundary,
   insertSliderSteps,
+  isOutsideWindow,
   intensityScale,
   metricRamp,
   paintRamp,
@@ -11,6 +12,7 @@ import {
   rampValue,
   resolveColorBoundaries,
   resolveColorFocusRange,
+  scaleColor,
   scaleFill,
   scaleGradient,
   glucoseScale as buildGlucoseScale,
@@ -240,11 +242,21 @@ describe("chosen colors", () => {
 });
 
 describe("glucoseScale", () => {
-  it("spans the glucose ramp across a narrowed window", () => {
-    const scale = buildGlucoseScale([70, 180], null, 90);
+  it("spans the glucose ramp across the color range, apart from the window", () => {
+    const scale = buildGlucoseScale([100, 300], null, 90, {}, {}, [70, 180]);
     expect(scale.domain).toEqual([70, 180]);
+    expect(scale.window).toEqual([100, 300]);
     expect(scale.axis).toEqual([GLUCOSE_COLOR_MIN, GLUCOSE_COLOR_MAX]);
-    expect(scaleFill(70, scale)).toBe(GLUCOSE_RAMP[0].color);
-    expect(scaleFill(180, scale)).toBe(GLUCOSE_RAMP.at(-1)!.color);
+    expect(scaleColor(70, scale)).toBe(GLUCOSE_RAMP[0].color);
+    expect(scaleColor(180, scale)).toBe(GLUCOSE_RAMP.at(-1)!.color);
+    expect(isOutsideWindow(90, scale)).toBe(true);
+    expect(buildGlucoseScale([70, 180], null, 90).domain).toEqual([GLUCOSE_COLOR_MIN, GLUCOSE_COLOR_MAX]);
+  });
+
+  it("keeps an intensity ramp on its color range when the window narrows", () => {
+    const scale = intensityScale("--insulin", [0, Infinity], 50, [10, 20], null, 90, {}, {}, [5, 40]);
+    expect(scale.domain).toEqual([5, 40]);
+    expect(scale.window).toEqual([10, 20]);
+    expect(intensityScale("--insulin", [0, Infinity], 50, [10, 20], null, 90).domain).toEqual([0, 50]);
   });
 });

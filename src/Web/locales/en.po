@@ -18566,6 +18566,7 @@ msgstr "Settings evidence"
 msgid "Report body"
 msgstr "Report body"
 
+#: src/lib/components/layout/AppSidebarHarness.test.svelte
 #: src/lib/components/layout/ReportFilterExtensionProbe.test-harness.svelte
 msgid "Report filter"
 msgstr "Report filter"
@@ -28898,6 +28899,7 @@ msgid "Open help <0/>"
 msgstr "Open help <0/>"
 
 #: src/lib/components/help/HelpNavigation.svelte
+#: src/lib/components/layout/AppSidebar.svelte
 msgid "Documentation navigation"
 msgstr "Documentation navigation"
 
@@ -30891,9 +30893,6 @@ msgstr "Open the relevant controls in a new tab. Your original page stays in pla
 msgid "Page reading aid"
 msgstr "Page reading aid"
 
-#~ msgid "Schematic reading example, without personal data"
-#~ msgstr "Schematic reading example, without personal data"
-
 #: src/lib/components/help/HelpReadingAid.svelte
 msgid "How to read this page"
 msgstr "How to read this page"
@@ -32862,9 +32861,6 @@ msgstr "Only the background layer changes. Documentation text stays fully visibl
 #: src/lib/components/help/HelpBar.svelte
 msgid ": Explanations, settings, and getting started"
 msgstr ": Explanations, settings, and getting started"
-
-#~ msgid "Reading diagram: illustrative, not your measurements. Colors follow your Nocturne theme."
-#~ msgstr "Reading diagram: illustrative, not your measurements. Colors follow your Nocturne theme."
 
 #. 0: bg(facts.maximumPlausibleGlucose); 1: unit
 #: src/lib/components/help/HelpReference.svelte
@@ -35166,6 +35162,36 @@ msgstr "Scheduled rate (U/h), 00:00–23:00"
 msgid "These controls only change the example. Your records and saved settings stay the same."
 msgstr "These controls only change the example. Your records and saved settings stay the same."
 
+#. 0: metricLabel
+#. 0: metricLabel
+#: src/lib/components/reports/year-overview/ColorFocusRange.svelte
+#: src/lib/components/reports/year-overview/ColorFocusRange.svelte
+msgid "{0} low color position"
+msgstr "{0} low color position"
+
+#. 0: metricLabel
+#. 0: metricLabel
+#: src/lib/components/reports/year-overview/ColorFocusRange.svelte
+#: src/lib/components/reports/year-overview/ColorFocusRange.svelte
+msgid "{0} high color position"
+msgstr "{0} high color position"
+
+#. 0: metricLabel
+#: src/lib/components/reports/year-overview/ColorFocusRange.svelte
+msgid "{0} focus window"
+msgstr "{0} focus window"
+
+#. 0: Number.isFinite(limits[1]) ? `, between ${formatted(limits[0])} and ${formatted(limits[1])} ${unitLabel}` \\: ""
+#: src/lib/components/reports/year-overview/ColorFocusRange.svelte
+msgid "Enter a color range with its low end below its high end{0}."
+msgstr "Enter a color range with its low end below its high end{0}."
+
+#~ msgid "Schematic reading example, without personal data"
+#~ msgstr "Schematic reading example, without personal data"
+
+#~ msgid "Reading diagram: illustrative, not your measurements. Colors follow your Nocturne theme."
+#~ msgstr "Reading diagram: illustrative, not your measurements. Colors follow your Nocturne theme."
+
 #~ msgid "Avg Glucose"
 #~ msgstr "Avg Glucose"
 
@@ -35337,8 +35363,9 @@ msgstr "These controls only change the example. Your records and saved settings 
 #~ msgid "Average glucose: Year Overview"
 #~ msgstr "Average glucose: Year Overview"
 
-#~ msgid "Underlying report"
-#~ msgstr "Underlying report"
+#: src/lib/components/layout/AppSidebarHarness.test.svelte
+msgid "Underlying report"
+msgstr "Underlying report"
 
 #~ msgid "Choose a report to explore glucose, treatments, or activity."
 #~ msgstr "Choose a report to explore glucose, treatments, or activity."

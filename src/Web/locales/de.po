@@ -18566,6 +18566,7 @@ msgstr ""
 msgid "Report body"
 msgstr ""
 
+#: src/lib/components/layout/AppSidebarHarness.test.svelte
 #: src/lib/components/layout/ReportFilterExtensionProbe.test-harness.svelte
 msgid "Report filter"
 msgstr ""
@@ -28898,6 +28899,7 @@ msgid "Open help <0/>"
 msgstr ""
 
 #: src/lib/components/help/HelpNavigation.svelte
+#: src/lib/components/layout/AppSidebar.svelte
 msgid "Documentation navigation"
 msgstr ""
 
@@ -30891,9 +30893,6 @@ msgstr ""
 msgid "Page reading aid"
 msgstr ""
 
-#~ msgid "Schematic reading example, without personal data"
-#~ msgstr ""
-
 #: src/lib/components/help/HelpReadingAid.svelte
 msgid "How to read this page"
 msgstr ""
@@ -32862,9 +32861,6 @@ msgstr ""
 #: src/lib/components/help/HelpBar.svelte
 msgid ": Explanations, settings, and getting started"
 msgstr ""
-
-#~ msgid "Reading diagram: illustrative, not your measurements. Colors follow your Nocturne theme."
-#~ msgstr ""
 
 #. 0: bg(facts.maximumPlausibleGlucose); 1: unit
 #: src/lib/components/help/HelpReference.svelte
@@ -35166,6 +35162,36 @@ msgstr ""
 msgid "These controls only change the example. Your records and saved settings stay the same."
 msgstr ""
 
+#. 0: metricLabel
+#. 0: metricLabel
+#: src/lib/components/reports/year-overview/ColorFocusRange.svelte
+#: src/lib/components/reports/year-overview/ColorFocusRange.svelte
+msgid "{0} low color position"
+msgstr ""
+
+#. 0: metricLabel
+#. 0: metricLabel
+#: src/lib/components/reports/year-overview/ColorFocusRange.svelte
+#: src/lib/components/reports/year-overview/ColorFocusRange.svelte
+msgid "{0} high color position"
+msgstr ""
+
+#. 0: metricLabel
+#: src/lib/components/reports/year-overview/ColorFocusRange.svelte
+msgid "{0} focus window"
+msgstr ""
+
+#. 0: Number.isFinite(limits[1]) ? `, between ${formatted(limits[0])} and ${formatted(limits[1])} ${unitLabel}` \\: ""
+#: src/lib/components/reports/year-overview/ColorFocusRange.svelte
+msgid "Enter a color range with its low end below its high end{0}."
+msgstr ""
+
+#~ msgid "Schematic reading example, without personal data"
+#~ msgstr ""
+
+#~ msgid "Reading diagram: illustrative, not your measurements. Colors follow your Nocturne theme."
+#~ msgstr ""
+
 #~ msgid "Avg Glucose"
 #~ msgstr "Ø Glukose"
 
@@ -35337,8 +35363,9 @@ msgstr ""
 #~ msgid "Average glucose: Year Overview"
 #~ msgstr ""
 
-#~ msgid "Underlying report"
-#~ msgstr ""
+#: src/lib/components/layout/AppSidebarHarness.test.svelte
+msgid "Underlying report"
+msgstr ""
 
 #~ msgid "Choose a report to explore glucose, treatments, or activity."
 #~ msgstr ""

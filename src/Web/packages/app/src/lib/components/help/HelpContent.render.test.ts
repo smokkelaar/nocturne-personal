@@ -39,10 +39,12 @@ describe("translation-aware help factories", () => {
     expect(setup).toContain("Snel starten");
     expect(setup).toContain("Koppelingen en apps");
   });
-  it("falls back to English for untranslated dashboard explanations", async () => {
+  it("renders dashboard explanations and page meanings in the interface language", async () => {
     const body = await content("/", "nl");
-    expect(body).toContain("Auto totals algorithm bolus records");
-    expect(body).toContain("The large value is the newest sensor measurement");
+    expect(body).toContain("Auto telt de algoritmebolussen op");
+    expect(body).toContain("De grote waarde is de nieuwste sensormeting");
+    const calendar = await content("/calendar", "nl");
+    expect(calendar).toContain("De kleuren van een dag");
   });
   it("renders report content through the production translation transform", async () => {
     const body = await content("/reports/agp");
@@ -58,9 +60,9 @@ describe("translation-aware help factories", () => {
     expect(body).toContain("Save selection and import");
     expect(body).toContain("required on first setup");
   });
-  it("has readable English help fallbacks in another interface language", async () => {
+  it("renders help in the interface language from the catalogue", async () => {
     const body = await content("/settings/connectors/google-health", "nl");
-    expect(body).toContain("required on first setup");
-    expect(body).toContain("Create the Web application client");
+    expect(body).toContain("verplicht bij de eerste keer");
+    expect(body).toContain("Maak de webapplicatie-client aan");
   });
 });

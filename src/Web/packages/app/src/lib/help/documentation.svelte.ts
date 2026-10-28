@@ -6,13 +6,22 @@ import { reportArticles } from "./reports.svelte";
 import { settingsArticles } from "./settings.svelte";
 import { connectorArticles } from "./connectors.svelte";
 import { readingGuides } from "./reading-guides.svelte";
+import { pageMeanings } from "./meanings.svelte";
+import { reportMeanings } from "./report-meanings.svelte";
+import { settingsMeanings } from "./settings-meaning.svelte";
 import { workflowArticles } from "./workflows.svelte";
 import { glucoseReferenceArticle } from "./glucose-reference.svelte";
-import { GLUCOSE_REFERENCE_PATH } from "./reference-path";
+import { dataRoutesArticle } from "./data-routes.svelte";
+import { DATA_ROUTES_PATH, GLUCOSE_REFERENCE_PATH } from "./reference-path";
 
 // Per-call factories let translated titles follow the current locale.
 export function articles(): HelpArticle[] {
   const readings = readingGuides();
+  const meanings = {
+    ...pageMeanings(),
+    ...reportMeanings(),
+    ...settingsMeanings(),
+  };
   const entries = [
     ...pageArticles(),
     ...reportArticles(),
@@ -20,12 +29,25 @@ export function articles(): HelpArticle[] {
     ...connectorArticles(),
     ...workflowArticles(),
     glucoseReferenceArticle(),
+    dataRoutesArticle(),
   ];
   return entries.map((article) => {
     const reading = readings[article.href];
     const related = [...article.related];
     if (["/", "/settings/profile", "/alerts"].includes(article.href))
       related.push(GLUCOSE_REFERENCE_PATH);
+    if (
+      article.href === "/settings/connectors" ||
+      article.href.startsWith("/settings/connectors/") ||
+      [
+        "/setup",
+        "/reports/steps",
+        "/reports/heart-rate",
+        "/reports/sleep",
+        "/settings/weight",
+      ].includes(article.href)
+    )
+      related.push(DATA_ROUTES_PATH);
     const sections =
       article.href === "/"
         ? [
@@ -36,7 +58,8 @@ export function articles(): HelpArticle[] {
             })),
           ]
         : article.sections;
-    return { ...article, ...reading, related, sections };
+    const meaning = article.meaning ?? meanings[article.href];
+    return { ...article, ...reading, meaning, related, sections };
   });
 }
 
@@ -52,14 +75,21 @@ function parentFor(href: string): string | undefined {
     return "/settings/patient";
   if (
     href === "/settings/migration" ||
-    href === "/settings/nightscout-transition"
+    href === "/settings/nightscout-transition" ||
+    href.startsWith("/oauth/") ||
+    href.startsWith("/settings/connectors/")
   )
     return "/settings/connectors";
+  if (href.startsWith("/settings/translations/"))
+    return "/settings/translations";
+  if (href === "/settings/audit") return "/settings/members";
   if (href === "/settings/integrations/discord") return "/settings/account";
+  if (href === "/tools") return "/tools/packing";
+  if (href === "/notifications") return "/settings/trackers";
   if (
+    href === "/settings/admin" ||
     href.startsWith("/settings/admin/") ||
-    href === "/settings/access-requests" ||
-    href === "/settings/audit"
+    href === "/settings/access-requests"
   )
     return "/settings/admin/tenants";
   return undefined;
@@ -112,13 +142,32 @@ export function documentationLinks(navigation: NavItem[]): NavLink[] {
   return links;
 }
 
+/**
+ * Whether `path` fills the `[param]` segments of a detail route such as
+ * `/alerts/[id]`.
+ */
+function matchesDetailRoute(route: string, path: string): boolean {
+  if (!route.includes("[")) return false;
+  const expected = route.split("/");
+  const actual = path.split("/");
+  return (
+    expected.length === actual.length &&
+    expected.every(
+      (segment, i) =>
+        (segment.startsWith("[") && actual[i] !== "") || segment === actual[i]
+    )
+  );
+}
+
 export function articleFor(path: string, links: NavLink[]): HelpArticle {
   const normalized = path.replace(/\/+$/, "") || "/";
   const all = articles();
   const exact = all.find((entry) => entry.href === normalized);
   if (exact) return exact;
-  if (/^\/reports\/sleep\/[^/]+$/.test(normalized))
-    return all.find((entry) => entry.href === "/reports/sleep/[date]")!;
+  const detail = all.find((entry) =>
+    matchesDetailRoute(entry.href, normalized)
+  );
+  if (detail) return detail;
   const parent = all
     .filter(
       (entry) => entry.href !== "/" && normalized.startsWith(`${entry.href}/`)
@@ -152,8 +201,16 @@ export function searchDocumentation(query: string, links: NavLink[]) {
         article.title,
         article.introduction,
         ...(article.reading ?? []).flatMap((step) => [step.title, step.text]),
+        ...(article.meaning ?? []).flatMap((item) => [item.title, item.text]),
 
-        ...article.sections.flatMap((section) => [section.title, section.text]),
+        ...article.sections.flatMap((section) => [
+          section.title,
+          section.text,
+          ...(section.routes ?? []).flatMap((route) => [
+            route.title,
+            route.text,
+          ]),
+        ]),
         ...(article.steps ?? []).flatMap((step) => [step.title, step.text]),
       ]
         .join(" ")

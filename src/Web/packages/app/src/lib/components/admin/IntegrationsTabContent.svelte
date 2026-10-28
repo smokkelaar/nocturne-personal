@@ -21,6 +21,7 @@
   import { errorMessage } from "$lib/forms/submit-error";
 
   const DISPLAY_NAMES: Record<string, string> = {
+    "google-health": "Google Health",
     discord: "Discord",
     slack: "Slack",
     telegram: "Telegram",
@@ -55,7 +56,7 @@
   function buildInitialState(platform: PlatformSettingsSummary): PlatformState {
     const fieldValues: Record<string, string> = {};
     for (const field of platform.fields ?? []) {
-      fieldValues[field.name ?? ""] = "";
+      fieldValues[field.name ?? ""] = field.defaultValue ?? "";
     }
     return {
       enabled: platform.enabled ?? false,
@@ -85,9 +86,13 @@
       await onSave(category, state.enabled, state.fieldValues);
       // Clear field values after successful save (secrets are stored, not echoed)
       for (const key of Object.keys(state.fieldValues)) {
-        state.fieldValues[key] = "";
+        if (key !== "redirectUri") state.fieldValues[key] = "";
       }
-      toast.success("Settings saved. Restart the frontend for changes to take effect.");
+      toast.success(
+        category === "google-health"
+          ? "Google Health settings saved. No restart required."
+          : "Settings saved. Restart the frontend for changes to take effect."
+      );
     } catch (err) {
       toast.error("Failed to save settings", { description: errorMessage(err) });
     } finally {
@@ -175,12 +180,21 @@
                 </div>
                 <Input
                   id="field-{category}-{name}"
-                  type="password"
+                  type={category === "google-health" && name !== "clientSecret" ? "text" : "password"}
+                  autocomplete="off"
                   placeholder={fieldConfigured ? "Leave blank to keep current value" : "Not set"}
                   bind:value={state.fieldValues[name]}
+                  aria-describedby={category === "google-health" && name === "redirectUri"
+                    ? "google-health-callback-help"
+                    : undefined}
                 />
               </div>
             {/each}
+            {#if category === "google-health"}
+              <p id="google-health-callback-help" class="text-xs text-muted-foreground">
+                The callback URL ends in /api/v4/google-health/oauth/callback.
+              </p>
+            {/if}
           </div>
         </CardContent>
         <CardFooter class="flex justify-between">

@@ -450,6 +450,30 @@ describe("documentation help", () => {
       .element(page.getByLabelText("Documentation layout"))
       .toHaveTextContent("Right drawer");
   });
+  it("opens with I, D or H, but not while the reader types in a field", async () => {
+    render(Harness);
+    const closed = page.getByRole("button", {
+      name: "Open page help",
+      exact: true,
+    });
+    const opened = page.getByRole("button", {
+      name: "Close page help",
+      exact: true,
+    });
+    const notes = page.getByRole("textbox", { name: "Report notes" });
+    await notes.click();
+    await userEvent.keyboard("hid");
+    await expect.element(notes).toHaveValue("hid");
+    await expect.element(closed).toBeVisible();
+    for (const key of ["i", "D", "h"]) {
+      if (document.activeElement instanceof HTMLElement)
+        document.activeElement.blur();
+      window.dispatchEvent(new KeyboardEvent("keydown", { key }));
+      await expect.element(opened).toBeVisible();
+      window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+      await expect.element(closed).toBeVisible();
+    }
+  });
   it("opens current-page help, follows connector guides, searches, and closes without navigation", async () => {
     render(Harness);
     await page

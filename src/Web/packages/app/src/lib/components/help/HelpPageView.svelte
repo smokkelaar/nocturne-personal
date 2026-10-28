@@ -1,5 +1,6 @@
 <script lang="ts">
   import { tick, type Snippet } from "svelte";
+  import { page } from "$app/state";
   import { Key } from "@nocturne/ui/keys";
   import { on } from "svelte/events";
   import { getHelpContext } from "$lib/help/help-context.svelte";
@@ -9,6 +10,26 @@
   const help = getHelpContext();
   // @wc-ignore
   const tabKey = "Tab";
+  // @wc-ignore
+  const openKeys = ["i", "d", "h"];
+
+  /**
+   * Info, documentation or help opens the help, unless the key is typed into a
+   * field or a dialog.
+   */
+  function opensHelp(event: KeyboardEvent): boolean {
+    if (!help?.ready || help.open || help.mode === "hidden") return false;
+    if (event.defaultPrevented || event.repeat) return false;
+    if (event.ctrlKey || event.metaKey || event.altKey) return false;
+    if (!openKeys.includes(event.key.toLowerCase())) return false;
+    const target = event.target;
+    return !(
+      target instanceof Element &&
+      target.closest(
+        'input, textarea, select, [contenteditable]:not([contenteditable="false"]), [role="textbox"], [role="combobox"], [role="dialog"], [role="alertdialog"], [role="menu"], [role="listbox"]'
+      )
+    );
+  }
   $effect(() => {
     if (!help?.open) return;
     const active = document.activeElement;
@@ -77,6 +98,11 @@
   onkeydown={(event) => {
     if (help?.open && event.key === Key.Escape && !event.defaultPrevented)
       help.open = false;
+    else if (opensHelp(event)) {
+      event.preventDefault();
+      help?.show(page.url.pathname);
+      return;
+    }
     if (help?.blocking && event.key === tabKey && !event.defaultPrevented) {
       // A higher-priority app dialog (for example an alert) owns its own focus.
       if (

@@ -9,10 +9,12 @@ import { readingGuides } from "./reading-guides.svelte";
 import { workflowArticles } from "./workflows.svelte";
 import { glucoseReferenceArticle } from "./glucose-reference.svelte";
 import { GLUCOSE_REFERENCE_PATH } from "./reference-path";
+import { tutorialSections } from "./tutorials.svelte";
 
 // Per-call factories let translated titles follow the current locale.
 export function articles(): HelpArticle[] {
   const readings = readingGuides();
+  const tutorials = tutorialSections();
   const entries = [
     ...pageArticles(),
     ...reportArticles(),
@@ -36,7 +38,12 @@ export function articles(): HelpArticle[] {
             })),
           ]
         : article.sections;
-    return { ...article, ...reading, related, sections };
+    return {
+      ...article,
+      ...reading,
+      related,
+      sections: [...sections, ...(tutorials[article.href] ?? [])],
+    };
   });
 }
 

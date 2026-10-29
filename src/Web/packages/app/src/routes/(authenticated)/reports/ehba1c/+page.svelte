@@ -247,22 +247,30 @@
   );
 
   /**
-   * CSS pixels either side of a lab marker within which the tooltip shows that lab draw: a 48 px
-   * target for a mouse and 64 px for touch, above the 44 px of WCAG 2.5.5. CSS pixels already
-   * scale with the screen's pixel density.
+   * Personal: CSS pixels around a lab marker, across and up or down, within which the tooltip shows
+   * that lab draw. Kept tight so the days around a lab draw, and the date axis below it, stay
+   * readable.
    */
-  const LAB_SNAP_PX = { fine: 24, coarse: 32 };
+  const LAB_SNAP_PX = { fine: 12, coarse: 16 };
   const coarsePointer = new MediaQuery("pointer: coarse");
 
   /**
    * Personal: a lab draw is one day wide on a year of daily estimates, so the tooltip snaps to the
-   * nearest lab date within {@link LAB_SNAP_PX} of the hovered date.
+   * nearest lab marker when the pointer is within {@link LAB_SNAP_PX} of it. `pointerY` is in the
+   * same plot coordinates as `yScale`.
    */
-  function snapToLabDate(hovered: Date, xScale: (value: Date) => number): Date {
+  function snapToLabDate(
+    hovered: Date,
+    pointerY: number,
+    xScale: (value: Date) => number,
+    yScale: (value: number) => number
+  ): Date {
     const hoveredX = xScale(hovered);
+    const reach = coarsePointer.current ? LAB_SNAP_PX.coarse : LAB_SNAP_PX.fine;
     let nearest = hovered;
-    let nearestDistance = coarsePointer.current ? LAB_SNAP_PX.coarse : LAB_SNAP_PX.fine;
+    let nearestDistance = reach;
     for (const labPoint of labChartPoints) {
+      if (Math.abs(yScale(labPoint.displayValue) - pointerY) > reach) continue;
       const distance = Math.abs(xScale(labPoint.date) - hoveredX);
       if (distance <= nearestDistance) {
         nearest = labPoint.date;
@@ -451,7 +459,12 @@
             {#snippet tooltip({ context })}
               <Tooltip.Root {context} class="bg-popover text-popover-foreground rounded-md border p-3 shadow-lg">
                 {#snippet children({ data })}
-                  {@const hoveredDate = snapToLabDate(context.x(data), context.xScale)}
+                  {@const hoveredDate = snapToLabDate(
+                    context.x(data),
+                    context.tooltip.y - context.padding.top,
+                    context.xScale,
+                    context.yScale
+                  )}
                   {@const hoveredDateKey = dateKey(hoveredDate)}
                   {@const eHbA1cPoint = chartData.find((point) => dateKey(point.date) === hoveredDateKey)}
                   {@const labResultsForDate = labChartPoints.filter((point) => dateKey(point.date) === hoveredDateKey)}

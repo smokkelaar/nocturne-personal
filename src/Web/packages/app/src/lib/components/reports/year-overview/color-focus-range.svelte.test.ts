@@ -307,7 +307,7 @@ describe("year overview color focus", () => {
     expect(gradient()).toContain("#00ff00");
   });
 
-  it("offers no swap, and puts the add button where the next boundary lands", async () => {
+  it("offers no swap, and puts the labeled add button and the unit in the color row", async () => {
     render(Harness, { initialWindow: [10, 70], initialRange: [10, 70], initialBoundaries: [{ value: 20, position: 0.3 }] });
     await expect.element(minimumInput()).toBeInTheDocument();
     expect(page.getByRole("button", { name: /Swap/ }).elements()).toHaveLength(0);
@@ -317,6 +317,8 @@ describe("year overview color focus", () => {
     expect(boundary.compareDocumentPosition(add) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     const highEnd = page.getByRole("spinbutton", { name: "TDD high color position" }).element();
     expect(add.compareDocumentPosition(highEnd) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(add.textContent).toContain("Color boundary");
+    expect(highEnd.parentElement?.textContent).toContain("U");
   });
 
   it("clears chosen colors on reset", async () => {

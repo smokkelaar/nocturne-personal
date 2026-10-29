@@ -197,13 +197,13 @@
 {#snippet addButton()}
   <Button
     variant="outline"
-    size="icon-xs"
-    aria-label="Color boundary"
+    size="xs"
     title="Add a color boundary here"
     disabled={!added}
     onclick={() => added && onBoundariesChange(added)}
   >
     <Plus />
+    Color boundary
   </Button>
 {/snippet}
 
@@ -379,6 +379,7 @@
             onChange={(low) => onEndsChange({ ...scale.ends, low })}
           />
           {@render rangeInput(0)}
+          <span class="whitespace-nowrap">{unitLabel}</span>
         </span>
         {#each scale.boundaries as boundary, index (boundary.position)}
           {#if index === addAt}
@@ -416,6 +417,7 @@
         {/if}
         <span class="flex items-center gap-1.5">
           {@render rangeInput(1)}
+          <span class="whitespace-nowrap">{unitLabel}</span>
           <ColorSwatchInput
             color={highColor}
             label={`${metricLabel} high end color`}

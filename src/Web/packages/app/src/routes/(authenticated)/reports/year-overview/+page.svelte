@@ -32,15 +32,13 @@
   import {
     glucoseScale,
     intensityScale,
-    metricRamp,
     scaleFill,
     GLUCOSE_LIMITS,
-    GLUCOSE_RAMP,
     type ColorBoundary,
     type ColorEnds,
     type ColorFocusRange,
   } from "$lib/utils/metric-color-focus";
-  import { resolvePalette, type RampLook } from "$lib/utils/metric-color-palette";
+  import { resolvePalette } from "$lib/utils/metric-color-palette";
   import { onMount, untrack, tick } from "svelte";
   import { fade } from "svelte/transition";
   import { YearLoader } from "$lib/components/reports/year-overview/year-loader";
@@ -187,10 +185,7 @@
     low: colorPreferences[scaleKeys.low],
     high: colorPreferences[scaleKeys.high],
   });
-  const scaleLook = $derived<RampLook>({
-    palette: resolvePalette(colorPreferences[scaleKeys.palette]) ?? undefined,
-    mirror: colorPreferences[scaleKeys.mirror] === true,
-  });
+  /** Personal: no palettes or mirroring; a saved palette or mirror is kept but not drawn. */
   const scale = $derived(
     selectedMetric === "avgGlucose"
       ? glucoseScale(
@@ -198,7 +193,7 @@
           colorPreferences.avgGlucoseBoundaries,
           dim,
           scaleEnds,
-          scaleLook,
+          {},
           colorPreferences.avgGlucoseColorRange
         )
       : intensityScale(
@@ -209,15 +204,9 @@
           colorPreferences[scaleKeys.boundaries],
           dim,
           scaleEnds,
-          scaleLook,
+          {},
           colorPreferences[scaleKeys.range]
         )
-  );
-  const themeColors = $derived(
-    (selectedMetric === "avgGlucose"
-      ? GLUCOSE_RAMP
-      : metricRamp(METRIC_CSS_VARS[selectedMetric])
-    ).map((stop) => stop.color)
   );
 
   /** Writes only the current shape, so keys from a retired one are dropped on the next save. */
@@ -274,23 +263,6 @@
       else delete next[scaleKeys.low];
       if (ends.high) next[scaleKeys.high] = ends.high;
       else delete next[scaleKeys.high];
-    });
-  }
-
-  /** A palette shows its own ends, so it clears the end colors chosen over the last one. */
-  function setScalePalette(palette: string[] | null) {
-    saveColorPreferences((next) => {
-      if (palette) next[scaleKeys.palette] = palette;
-      else delete next[scaleKeys.palette];
-      delete next[scaleKeys.low];
-      delete next[scaleKeys.high];
-    });
-  }
-
-  function setScaleMirror(mirror: boolean) {
-    saveColorPreferences((next) => {
-      if (mirror) next[scaleKeys.mirror] = true;
-      else delete next[scaleKeys.mirror];
     });
   }
 
@@ -727,11 +699,6 @@
       onEndsChange={setScaleEnds}
       onDimChange={setDim}
       onReset={resetScale}
-      {themeColors}
-      palette={scaleLook.palette}
-      mirror={scaleLook.mirror}
-      onPaletteChange={setScalePalette}
-      onMirrorChange={setScaleMirror}
       {glucoseBands}
     />
 

@@ -159,8 +159,9 @@ export function resolveColorEnds(candidate: ColorEnds): ColorEnds {
 }
 
 /**
- * The base ramp with the end colors in place of its ends and each colored boundary inside
- * `domain` as a stop of its own. A boundary the domain does not reach is ignored, as
+ * The base ramp with the end colors in place of its ends. Personal: once a boundary inside
+ * `domain` has a color, the ramp runs only between the ends and the colored boundaries, so each
+ * color blends straight into the next. A boundary the domain does not reach is ignored, as
  * {@link rampPosition} ignores it.
  */
 export function paintRamp(
@@ -173,18 +174,22 @@ export function paintRamp(
     (b): b is ColorBoundary & { color: string } =>
       b.color !== undefined && b.value > domain[0] && b.value < domain[1]
   );
-  if (!ends.low && !ends.high && pinned.length === 0) return base;
-  const stops = base
-    .filter((stop) => !pinned.some((b) => b.position === stop.position))
-    .map((stop, i, all) =>
-      i === 0 && ends.low
-        ? { ...stop, color: ends.low }
-        : i === all.length - 1 && ends.high
-          ? { ...stop, color: ends.high }
-          : stop
-    );
-  return [...stops, ...pinned.map((b) => ({ position: b.position, color: b.color }))].sort(
-    (a, b) => a.position - b.position
+  if (pinned.length > 0) {
+    const first = base[0];
+    const last = base[base.length - 1];
+    return [
+      { position: first.position, color: ends.low ?? first.color },
+      ...pinned.map((b) => ({ position: b.position, color: b.color })),
+      { position: last.position, color: ends.high ?? last.color },
+    ];
+  }
+  if (!ends.low && !ends.high) return base;
+  return base.map((stop, i, all) =>
+    i === 0 && ends.low
+      ? { ...stop, color: ends.low }
+      : i === all.length - 1 && ends.high
+        ? { ...stop, color: ends.high }
+        : stop
   );
 }
 

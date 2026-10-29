@@ -307,18 +307,16 @@ describe("year overview color focus", () => {
     expect(gradient()).toContain("#00ff00");
   });
 
-  it("swaps the end colors of a dose scale", async () => {
-    render(Harness);
-    pick("TDD low end color", "#000000");
-    pick("TDD high end color", "#ffffff");
-    await page.getByRole("button", { name: "Swap TDD end colors" }).click();
-    await expect.element(selected("ends")).toHaveTextContent('{"low":"#ffffff","high":"#000000"}');
-  });
-
-  it("offers no swap on the glucose ramp", async () => {
-    render(Harness, { glucose: true, metricLabel: "Avg Glucose" });
-    await expect.element(minimumInput("Avg Glucose")).toBeInTheDocument();
+  it("offers no swap, and puts the add button where the next boundary lands", async () => {
+    render(Harness, { initialWindow: [10, 70], initialRange: [10, 70], initialBoundaries: [{ value: 20, position: 0.3 }] });
+    await expect.element(minimumInput()).toBeInTheDocument();
     expect(page.getByRole("button", { name: /Swap/ }).elements()).toHaveLength(0);
+    const add = addBoundary().element();
+    const boundary = boundaryInput(1).element();
+    // The widest gap is 20 to 70, so the next boundary follows the existing one.
+    expect(boundary.compareDocumentPosition(add) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    const highEnd = page.getByRole("spinbutton", { name: "TDD high color position" }).element();
+    expect(add.compareDocumentPosition(highEnd) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
   it("clears chosen colors on reset", async () => {

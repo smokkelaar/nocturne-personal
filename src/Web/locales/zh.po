@@ -34385,8 +34385,9 @@ msgstr ""
 msgid "Remove {0} color boundary {1}"
 msgstr ""
 
-#~ msgid "<0/> Color boundary"
-#~ msgstr ""
+#: src/lib/components/reports/year-overview/ColorFocusRange.svelte
+msgid "<0/> Color boundary"
+msgstr ""
 
 #. 0: Number.isFinite(limits[1]) ? `, between ${formatted(limits[0])} and ${formatted(limits[1])} ${unitLabel}` \\: ""
 #: src/lib/components/reports/year-overview/ColorFocusRange.svelte
@@ -44883,9 +44884,8 @@ msgstr ""
 #~ msgid "The glucose line runs under the stages, so you can see lows and rises in each stage. A low wakes you up more often than a deep sleep stage suggests."
 #~ msgstr ""
 
-#: src/lib/components/reports/year-overview/ColorFocusRange.svelte
-msgid "Color boundary"
-msgstr ""
+#~ msgid "Color boundary"
+#~ msgstr ""
 
 #: src/lib/components/reports/year-overview/ColorFocusRange.svelte
 msgid "Add a color boundary here"

@@ -7,7 +7,6 @@
   import Headroom from "$lib/components/layout/Headroom.svelte";
   import { formatGlucoseValue, getUnitLabel, type GlucoseUnits } from "$lib/utils/formatting";
   import ColorFocusRange from "./ColorFocusRange.svelte";
-  import ColorPalettePicker from "./ColorPalettePicker.svelte";
   import ChartKey from "$lib/components/charts/print/ChartKey.svelte";
   import {
     scaleGradient,
@@ -31,8 +30,6 @@
     onDimChange,
     onReset,
     glucoseBands,
-    mirror = false,
-    onMirrorChange = undefined,
   }: {
     selectedMetric: Metric;
     metricOptions: { value: Metric; label: string }[];
@@ -49,9 +46,6 @@
     onReset: () => void;
     /** Very-low, low, high and very-high boundaries in mg/dL, as the cells are hatched. */
     glucoseBands: readonly number[];
-    mirror?: boolean;
-    /** Shows the mirror toggle when given. Personal: no palette presets. */
-    onMirrorChange?: (mirror: boolean) => void;
   } = $props();
 
   const glucose = $derived(selectedMetric === "avgGlucose");
@@ -153,13 +147,6 @@
             </Button>
           {/snippet}
         </ColorFocusRange>
-        {#if onMirrorChange}
-          <ColorPalettePicker
-            {metricLabel}
-            {mirror}
-            {onMirrorChange}
-          />
-        {/if}
       {/if}
     </div>
 

@@ -1,12 +1,10 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
   import { Slider } from "bits-ui";
-  import ArrowLeftRight from "@lucide/svelte/icons/arrow-left-right";
   import Plus from "@lucide/svelte/icons/plus";
   import X from "@lucide/svelte/icons/x";
   import { Button } from "$lib/components/ui/button";
   import { Input } from "$lib/components/ui/input";
-  import { cssColorToHex } from "$lib/utils/css-color";
   import ColorSwatchInput from "./ColorSwatchInput.svelte";
   import {
     convertToDisplayUnits,
@@ -178,6 +176,10 @@
 
   /** Null when no boundary fits: at the cap, or the widest gap snaps onto an existing one. */
   const added = $derived(addColorBoundary(scale, snap));
+  /** Where the next boundary lands among the current ones; past the end when none fits. */
+  const addAt = $derived(
+    added ? added.findIndex((b) => !scale.boundaries.some((o) => o.value === b.value)) : scale.boundaries.length
+  );
 
   const lowColor = $derived(rampColor(scale.ramp, 0));
   const highColor = $derived(rampColor(scale.ramp, 1));
@@ -186,17 +188,24 @@
     onBoundariesChange(scale.boundaries.map((b, i) => (i === index ? { ...b, color } : b)));
   }
 
-  function swapEnds(event: MouseEvent) {
-    const host = event.currentTarget;
-    if (!(host instanceof Element)) return;
-    onEndsChange({ low: cssColorToHex(highColor, host), high: cssColorToHex(lowColor, host) });
-  }
-
   function removeBoundary(index: number) {
     const next = scale.boundaries.filter((_, i) => i !== index);
     onBoundariesChange(next.length ? next : null);
   }
 </script>
+
+{#snippet addButton()}
+  <Button
+    variant="outline"
+    size="icon-xs"
+    aria-label="Color boundary"
+    title="Add a color boundary here"
+    disabled={!added}
+    onclick={() => added && onBoundariesChange(added)}
+  >
+    <Plus />
+  </Button>
+{/snippet}
 
 {#snippet rangeInput(index: 0 | 1)}
   <Input
@@ -360,7 +369,9 @@
         </Slider.Root>
       </div>
 
-      <div class="flex items-center justify-between gap-2 tabular-nums">
+      <!-- Personal: the end colors, the boundaries and the button that adds the next boundary
+           share one row, in the order they sit on the bar. -->
+      <div class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 tabular-nums">
         <span class="flex items-center gap-1.5">
           <ColorSwatchInput
             color={lowColor}
@@ -369,16 +380,39 @@
           />
           {@render rangeInput(0)}
         </span>
-        {#if !glucose}
-          <Button
-            variant="ghost-muted"
-            size="xs"
-            aria-label={`Swap ${metricLabel} end colors`}
-            onclick={swapEnds}
-          >
-            <ArrowLeftRight />
-            Swap colors
-          </Button>
+        {#each scale.boundaries as boundary, index (boundary.position)}
+          {#if index === addAt}
+            {@render addButton()}
+          {/if}
+          <span class="flex items-center gap-1">
+            <ColorSwatchInput
+              color={rampColor(scale.ramp, boundary.position)}
+              label={`${metricLabel} color boundary ${index + 1} color`}
+              onChange={(color) => colorBoundary(index, color)}
+            />
+            <Input
+              type="number"
+              inputmode="decimal"
+              step={step ?? "any"}
+              value={display(boundary.value)}
+              oninput={(event: Event & { currentTarget: HTMLInputElement }) => typeBoundary(index, event)}
+              aria-label={`${metricLabel} color boundary ${index + 1}`}
+              aria-invalid={invalid === "boundary"}
+              size="xs"
+              class="w-16 tabular-nums"
+            />
+            <Button
+              variant="ghost-muted"
+              size="icon-xs"
+              aria-label={`Remove ${metricLabel} color boundary ${index + 1}`}
+              onclick={() => removeBoundary(index)}
+            >
+              <X />
+            </Button>
+          </span>
+        {/each}
+        {#if addAt >= scale.boundaries.length}
+          {@render addButton()}
         {/if}
         <span class="flex items-center gap-1.5">
           {@render rangeInput(1)}
@@ -389,48 +423,6 @@
           />
         </span>
       </div>
-    </div>
-
-    <div
-      class="col-span-2 row-start-3 flex @max-md:row-start-4 flex-wrap items-center gap-1.5 @3xl:col-span-1 @3xl:col-start-2 @3xl:row-start-2"
-    >
-      {#each scale.boundaries as boundary, index (boundary.position)}
-        <div class="flex items-center gap-1">
-          <ColorSwatchInput
-            color={rampColor(scale.ramp, boundary.position)}
-            label={`${metricLabel} color boundary ${index + 1} color`}
-            onChange={(color) => colorBoundary(index, color)}
-          />
-          <Input
-            type="number"
-            inputmode="decimal"
-            step={step ?? "any"}
-            value={display(boundary.value)}
-            oninput={(event: Event & { currentTarget: HTMLInputElement }) => typeBoundary(index, event)}
-            aria-label={`${metricLabel} color boundary ${index + 1}`}
-            aria-invalid={invalid === "boundary"}
-            size="xs"
-            class="w-16 tabular-nums"
-          />
-          <Button
-            variant="ghost-muted"
-            size="icon-xs"
-            aria-label={`Remove ${metricLabel} color boundary ${index + 1}`}
-            onclick={() => removeBoundary(index)}
-          >
-            <X />
-          </Button>
-        </div>
-      {/each}
-      <Button
-        variant="outline"
-        size="xs"
-        disabled={!added}
-        onclick={() => added && onBoundariesChange(added)}
-      >
-        <Plus />
-        Color boundary
-      </Button>
     </div>
   </div>
 

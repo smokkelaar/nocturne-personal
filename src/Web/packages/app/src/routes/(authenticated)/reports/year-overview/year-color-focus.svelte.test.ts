@@ -132,14 +132,14 @@ describe("year overview page color focus integration", () => {
     vi.unstubAllGlobals();
   });
 
-  it("colors each metric in its own theme color, with no palette presets and no advanced mode", async () => {
+  it("colors each metric in its own theme color, with no palette presets, mirror or advanced mode", async () => {
     render(YearOverviewPage);
     await expect.element(cell("2026-01-01")).toHaveTextContent(getGlucoseHeatmapFill(120));
     await selectMetric("TDD");
     await expect.element(cell("2026-01-04")).toHaveTextContent(/^var\(--insulin\)$/);
     await selectMetric("Carbs");
-    await expect.element(page.getByRole("button", { name: "Mirror Carbs colors" })).toBeInTheDocument();
-    expect(page.getByRole("button", { name: /palette$/ }).elements()).toHaveLength(0);
+    await expect.element(page.getByRole("button", { name: "Reset Carbs color scale" })).toBeInTheDocument();
+    expect(page.getByRole("button", { name: /palette$|^Mirror/ }).elements()).toHaveLength(0);
     await expect.element(page.getByRole("checkbox", { name: "Advanced" })).not.toBeInTheDocument();
     expect(page.getByRole("slider").elements()).toHaveLength(4);
   });
@@ -405,16 +405,13 @@ describe("year overview page color focus integration", () => {
 
   const viridis = ["#440154", "#3b528b", "#21908d", "#5dc963", "#fde725"];
 
-  it("mirrors one metric's colors and keeps a palette saved earlier without drawing it", async () => {
-    applyPreferences({ yearOverviewColors: { tddPalette: viridis } });
+  it("keeps a palette and mirror saved earlier without drawing them, and clears them on reset", async () => {
+    applyPreferences({ yearOverviewColors: { tddPalette: viridis, tddMirror: true } });
     render(YearOverviewPage);
     await selectMetric("TDD");
     await expect.element(cell("2026-01-04")).toHaveTextContent(/^var\(--insulin\)$/);
-    await page.getByRole("button", { name: "Mirror TDD colors" }).click();
-    await expect
-      .element(cell("2026-01-04"))
-      .toHaveTextContent(/^color-mix\(in srgb, var\(--insulin\) 15%, transparent\)$/);
-    expect(stored()).toEqual({ tddPalette: viridis, tddMirror: true });
+    await maximum().fill("400");
+    expect(stored()).toEqual({ tddBand: [0, 400], tddPalette: viridis, tddMirror: true });
     await reset().click();
     expect(stored()).toEqual({});
   });
@@ -425,9 +422,7 @@ describe("year overview page color focus integration", () => {
     });
     render(YearOverviewPage);
     await selectMetric("TDD");
-    await expect
-      .element(cell("2026-01-04"))
-      .toHaveTextContent(/^color-mix\(in srgb, var\(--insulin\) 15%, transparent\)$/);
+    await expect.element(cell("2026-01-04")).toHaveTextContent(/^var\(--insulin\)$/);
     await maximum().fill("400");
     expect(stored()).toEqual({ tddBand: [0, 400], tddPalette: viridis, tddMirror: true });
   });

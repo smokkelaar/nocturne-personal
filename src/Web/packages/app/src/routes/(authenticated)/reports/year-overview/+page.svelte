@@ -38,7 +38,7 @@
     type ColorEnds,
     type ColorFocusRange,
   } from "$lib/utils/metric-color-focus";
-  import { resolvePalette, type RampLook } from "$lib/utils/metric-color-palette";
+  import { resolvePalette } from "$lib/utils/metric-color-palette";
   import { onMount, untrack, tick } from "svelte";
   import { fade } from "svelte/transition";
   import { YearLoader } from "$lib/components/reports/year-overview/year-loader";
@@ -185,10 +185,7 @@
     low: colorPreferences[scaleKeys.low],
     high: colorPreferences[scaleKeys.high],
   });
-  /** Personal: no palette presets; a saved palette is kept but no longer drawn. */
-  const scaleLook = $derived<RampLook>({
-    mirror: colorPreferences[scaleKeys.mirror] === true,
-  });
+  /** Personal: no palettes or mirroring; a saved palette or mirror is kept but not drawn. */
   const scale = $derived(
     selectedMetric === "avgGlucose"
       ? glucoseScale(
@@ -196,7 +193,7 @@
           colorPreferences.avgGlucoseBoundaries,
           dim,
           scaleEnds,
-          scaleLook,
+          {},
           colorPreferences.avgGlucoseColorRange
         )
       : intensityScale(
@@ -207,7 +204,7 @@
           colorPreferences[scaleKeys.boundaries],
           dim,
           scaleEnds,
-          scaleLook,
+          {},
           colorPreferences[scaleKeys.range]
         )
   );
@@ -266,13 +263,6 @@
       else delete next[scaleKeys.low];
       if (ends.high) next[scaleKeys.high] = ends.high;
       else delete next[scaleKeys.high];
-    });
-  }
-
-  function setScaleMirror(mirror: boolean) {
-    saveColorPreferences((next) => {
-      if (mirror) next[scaleKeys.mirror] = true;
-      else delete next[scaleKeys.mirror];
     });
   }
 
@@ -709,8 +699,6 @@
       onEndsChange={setScaleEnds}
       onDimChange={setDim}
       onReset={resetScale}
-      mirror={scaleLook.mirror}
-      onMirrorChange={setScaleMirror}
       {glucoseBands}
     />
 

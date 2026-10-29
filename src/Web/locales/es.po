@@ -14741,7 +14741,6 @@ msgstr "<0/> Alto"
 msgid "Enter a dim percentage between 0 and 100."
 msgstr "Introduce un porcentaje de atenuación entre 0 y 100."
 
-#: src/lib/components/reports/year-overview/ColorPalettePicker.svelte
 #: src/routes/(authenticated)/settings/appearance/+page.svelte
 msgid "Theme"
 msgstr "Tema"
@@ -34335,24 +34334,17 @@ msgstr ""
 msgid "Motion not active"
 msgstr ""
 
-#. 0: metricLabel
-#: src/lib/components/reports/year-overview/ColorPalettePicker.svelte
-msgid "{0} color palettes"
-msgstr ""
+#~ msgid "{0} color palettes"
+#~ msgstr ""
 
-#. 0: option.label
-#: src/lib/components/reports/year-overview/ColorPalettePicker.svelte
-msgid "{0} palette"
-msgstr ""
+#~ msgid "{0} palette"
+#~ msgstr ""
 
-#. 0: metricLabel
-#: src/lib/components/reports/year-overview/ColorPalettePicker.svelte
-msgid "Mirror {0} colors"
-msgstr ""
+#~ msgid "Mirror {0} colors"
+#~ msgstr ""
 
-#: src/lib/components/reports/year-overview/ColorPalettePicker.svelte
-msgid "<0/> Mirror"
-msgstr ""
+#~ msgid "<0/> Mirror"
+#~ msgstr ""
 
 #: src/lib/components/alerts/alert-labels.svelte.ts
 msgid "Flat"
@@ -34393,9 +34385,8 @@ msgstr ""
 msgid "Remove {0} color boundary {1}"
 msgstr ""
 
-#: src/lib/components/reports/year-overview/ColorFocusRange.svelte
-msgid "<0/> Color boundary"
-msgstr ""
+#~ msgid "<0/> Color boundary"
+#~ msgstr ""
 
 #. 0: Number.isFinite(limits[1]) ? `, between ${formatted(limits[0])} and ${formatted(limits[1])} ${unitLabel}` \\: ""
 #: src/lib/components/reports/year-overview/ColorFocusRange.svelte
@@ -34429,14 +34420,11 @@ msgstr ""
 msgid "{0} low end color"
 msgstr ""
 
-#. 0: metricLabel
-#: src/lib/components/reports/year-overview/ColorFocusRange.svelte
-msgid "Swap {0} end colors"
-msgstr ""
+#~ msgid "Swap {0} end colors"
+#~ msgstr ""
 
-#: src/lib/components/reports/year-overview/ColorFocusRange.svelte
-msgid "<0/> Swap colors"
-msgstr ""
+#~ msgid "<0/> Swap colors"
+#~ msgstr ""
 
 #. 0: metricLabel
 #: src/lib/components/reports/year-overview/ColorFocusRange.svelte
@@ -44894,3 +44882,11 @@ msgstr ""
 
 #~ msgid "The glucose line runs under the stages, so you can see lows and rises in each stage. A low wakes you up more often than a deep sleep stage suggests."
 #~ msgstr ""
+
+#: src/lib/components/reports/year-overview/ColorFocusRange.svelte
+msgid "Color boundary"
+msgstr ""
+
+#: src/lib/components/reports/year-overview/ColorFocusRange.svelte
+msgid "Add a color boundary here"
+msgstr ""

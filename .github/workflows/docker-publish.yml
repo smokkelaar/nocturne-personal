@@ -29,7 +29,9 @@ jobs:
     if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
     # The native library is built on the runner and links against its glibc, which must be
     # no newer than the API base image's (mcr.microsoft.com/dotnet/aspnet:10.0, Ubuntu 24.04).
-    runs-on: ubuntu-24.04
+    # Personal builds amd64 only, on the self-hosted Linux runner; push events only, so no
+    # outside code reaches it.
+    runs-on: [self-hosted, Linux, X64]
     permissions:
       contents: read
       packages: write
@@ -51,10 +53,6 @@ jobs:
           key: nuget-publish-${{ runner.os }}-${{ hashFiles('**/*.csproj', 'Directory.Packages.props') }}
           restore-keys: nuget-publish-${{ runner.os }}-
 
-      # The native-library check below runs the arm64 image.
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
         with:
@@ -72,11 +70,6 @@ jobs:
       # image ships without it and every rule classifies as undirected.
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: aarch64-unknown-linux-gnu
-
-      - name: Install aarch64 cross-linker
-        run: sudo apt-get update && sudo apt-get install -y gcc-aarch64-linux-gnu
 
       - name: Cache cargo
         uses: actions/cache@v5
@@ -92,13 +85,9 @@ jobs:
 
       - name: Build nocturne_alerts native library
         working-directory: crates
-        env:
-          CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
         run: |
           cargo build --release -p nocturne-alerts-ffi
-          cargo build --release -p nocturne-alerts-ffi --target aarch64-unknown-linux-gnu
           test -f target/release/libnocturne_alerts.so
-          test -f target/aarch64-unknown-linux-gnu/release/libnocturne_alerts.so
 
       # The API's post-build targets would run the client codegen, which needs pnpm; only the
       # web image uses that client, so it is switched off here.
@@ -112,7 +101,7 @@ jobs:
           dotnet publish \
             -c Release \
             -p:PublishProfile=DefaultContainer \
-            '-p:ContainerRuntimeIdentifiers="linux-x64;linux-arm64"' \
+            '-p:ContainerRuntimeIdentifiers="linux-x64"' \
             -p:ContainerRegistry=${{ env.REGISTRY }} \
             -p:ContainerRepository=${{ env.IMAGE_REPOSITORY }}/nocturne-api \
             -p:GenerateNSwagClient=false \
@@ -127,7 +116,7 @@ jobs:
           dotnet publish \
             -c Release \
             -p:PublishProfile=DefaultContainer \
-            '-p:ContainerRuntimeIdentifiers="linux-x64;linux-arm64"' \
+            '-p:ContainerRuntimeIdentifiers="linux-x64"' \
             -p:ContainerRegistry=${{ env.REGISTRY }} \
             -p:ContainerRepository=${{ env.IMAGE_REPOSITORY }}/nocturne-demo \
             "-p:ContainerImageTags=${{ steps.tags.outputs.version }}"
@@ -148,7 +137,7 @@ jobs:
           done
 
       # The API csproj silently skips packing the cdylib when it is missing, and
-      # Alerts:Engine=rust refuses to start without it, so load it in every platform's image.
+      # Alerts:Engine=rust refuses to start without it, so load it in the image.
       - name: Verify the API image loads the nocturne_alerts native library
         run: |
           set -euo pipefail
@@ -156,7 +145,7 @@ jobs:
           probe="$RUNNER_TEMP/alerts-native-probe"
           dotnet publish scripts/alerts-native-probe.cs -o "$probe"
           find "$probe" -name '*nocturne_alerts*' -delete
-          for pair in "linux/amd64:linux-x64" "linux/arm64:linux-arm64"; do
+          for pair in "linux/amd64:linux-x64"; do
             platform="${pair%%:*}"
             rid="${pair##*:}"
             docker pull --quiet --platform "$platform" "$ref" >/dev/null
@@ -171,7 +160,7 @@ jobs:
 
   web-image:
     if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
-    runs-on: ubuntu-24.04
+    runs-on: [self-hosted, Linux, X64]
     permissions:
       contents: read
       packages: write
@@ -208,9 +197,6 @@ jobs:
       - name: Install web dependencies
         working-directory: src/Web
         run: pnpm install --frozen-lockfile
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -268,7 +254,7 @@ jobs:
           CACHE_REF="${{ env.REGISTRY }}/${{ env.IMAGE_REPOSITORY }}/nocturne-web:buildcache"
           CACHE_ARGS=(--cache-from "type=registry,ref=${CACHE_REF}" --cache-to "type=registry,ref=${CACHE_REF},mode=max")
           docker buildx build \
-            --platform linux/amd64,linux/arm64 \
+            --platform linux/amd64 \
             "${TAG_ARGS[@]}" \
             "${CACHE_ARGS[@]}" \
             --file Dockerfile.web \
@@ -314,7 +300,7 @@ jobs:
             ref="${{ env.REGISTRY }}/${{ env.IMAGE_REPOSITORY }}/${image}:${{ steps.tags.outputs.version }}"
             echo "Verifying manifest: $ref"
             manifest=$(docker buildx imagetools inspect "$ref")
-            for platform in "linux/amd64" "linux/arm64"; do
+            for platform in "linux/amd64"; do
               if ! grep -q "$platform" <<< "$manifest"; then
                 echo "::error::$ref is missing the $platform platform"
                 exit 1

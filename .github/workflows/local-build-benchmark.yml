@@ -1,0 +1,82 @@
+name: Local build benchmark
+
+on:
+  workflow_dispatch:
+    inputs:
+      runner:
+        description: Build machine
+        type: choice
+        options: [local, github]
+        default: local
+
+permissions:
+  contents: read
+
+concurrency:
+  group: local-build-benchmark
+  cancel-in-progress: false
+
+jobs:
+  benchmark:
+    if: github.repository == 'smokkelaar/nocturne-personal' && github.actor == 'smokkelaar' && github.ref == 'refs/heads/main'
+    runs-on: ${{ fromJSON(inputs.runner == 'local' && '["self-hosted","Windows","X64","nocturne-local"]' || '["windows-latest"]') }}
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: pwsh
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      NODE_OPTIONS: --max-old-space-size=6144
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.403
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24.22.2
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320
+        with:
+          version: 11.5.0
+      - name: Install web dependencies
+        working-directory: src/Web
+        run: pnpm install --frozen-lockfile --config.enable-global-virtual-store=false
+      - name: Measure API rebuild and incremental build
+        run: |
+          New-Item -ItemType Directory -Force benchmark | Out-Null
+          $results = @()
+          foreach ($target in @('Rebuild', 'Build')) {
+            $watch = [Diagnostics.Stopwatch]::StartNew()
+            dotnet build src/API/Nocturne.API/Nocturne.API.csproj -c Release "-t:$target" -p:GenerateNSwagClient=false -m:8 *> "benchmark/api-$target.log"
+            $code = $LASTEXITCODE
+            $watch.Stop()
+            $results += @{phase="api-$target";seconds=$watch.Elapsed.TotalSeconds;exitCode=$code;commit=$env:GITHUB_SHA;machine=$env:RUNNER_NAME}
+            $results | ConvertTo-Json -Depth 4 | Set-Content benchmark/api-results.json
+            if ($code -ne 0) { Get-Content "benchmark/api-$target.log" -Tail 40; exit $code }
+          }
+      - name: Measure bridge build
+        working-directory: src/Web
+        run: |
+          $watch = [Diagnostics.Stopwatch]::StartNew()
+          pnpm --filter @nocturne/bridge build *> ../../benchmark/bridge.log
+          $code = $LASTEXITCODE
+          $watch.Stop()
+          @{phase='bridge';seconds=$watch.Elapsed.TotalSeconds;exitCode=$code;commit=$env:GITHUB_SHA;machine=$env:RUNNER_NAME} | ConvertTo-Json | Set-Content ../../benchmark/bridge-results.json
+          exit $code
+      - name: Explain benchmark scope
+        if: always()
+        run: |
+          @'
+          API compilation and bridge build only. API client generation, the web app, Rust native libraries and Docker images are outside this benchmark.
+          Rebuild retains downloaded dependencies. The following Build measures incremental work on the same checkout.
+          Compare local and GitHub runs at the same commit; dependency downloads are outside the measured steps.
+          '@ | Set-Content benchmark/README.txt
+      - uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: build-benchmark-${{ inputs.runner }}-${{ github.run_id }}
+          path: benchmark/
+          retention-days: 14
+

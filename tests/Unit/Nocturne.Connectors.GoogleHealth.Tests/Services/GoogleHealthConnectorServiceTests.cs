@@ -908,6 +908,80 @@ public class GoogleHealthConnectorServiceTests
         Assert.False(fixture.ImportFromWasConsumed);
     }
 
+    [Fact]
+    public async Task Explicit_range_is_halved_until_google_can_serve_it()
+    {
+        var served = new List<(DateTimeOffset From, DateTimeOffset To)>();
+        var fixture = new Fixture(request =>
+        {
+            if (request.RequestUri!.AbsolutePath == "/token")
+                return Json($$"""{"access_token":"access","refresh_token":"refresh","expires_in":3600,"scope":"{{GoogleHealthClient.MetricsScope}}"}""");
+            var (start, end) = FilterRange(request);
+            if (end - start > TimeSpan.FromDays(20))
+                return new HttpResponseMessage(HttpStatusCode.ServiceUnavailable);
+            served.Add((start, end));
+            return Json("""{"dataPoints":[]}""");
+        });
+        var from = new DateTime(2026, 8, 1, 0, 0, 0, DateTimeKind.Utc);
+        var to = new DateTime(2026, 10, 26, 19, 0, 0, DateTimeKind.Utc);
+
+        var result = await fixture.Service.SyncDataAsync(
+            new SyncRequest { From = from, To = to }, fixture.Configuration(), default);
+
+        Assert.True(result.Success, result.Message);
+        Assert.All(served, window => Assert.True(window.To - window.From <= TimeSpan.FromDays(20)));
+        Assert.Equal(new DateTimeOffset(from), served[0].From);
+        Assert.Equal(new DateTimeOffset(to), served[^1].To);
+        for (var index = 1; index < served.Count; index++)
+            Assert.Equal(served[index - 1].To, served[index].From);
+    }
+
+    [Fact]
+    public async Task Explicit_range_split_skips_types_that_already_completed()
+    {
+        var stepsRequests = 0;
+        var fixture = new Fixture(request =>
+        {
+            if (request.RequestUri!.AbsolutePath == "/token")
+                return Json($$"""{"access_token":"access","refresh_token":"refresh","expires_in":3600,"scope":"{{GoogleHealthClient.MetricsScope}} {{GoogleHealthClient.ActivityScope}}"}""");
+            var (start, end) = FilterRange(request);
+            if (request.RequestUri.AbsolutePath.Contains("/steps/")) stepsRequests++;
+            else if (end - start > TimeSpan.FromDays(10))
+                return new HttpResponseMessage(HttpStatusCode.ServiceUnavailable);
+            return Json("""{"dataPoints":[]}""");
+        });
+        fixture.SetSession("refresh", $"{GoogleHealthClient.MetricsScope} {GoogleHealthClient.ActivityScope}");
+        var config = fixture.Configuration();
+        config.SyncSteps = true;
+        var from = new DateTime(2026, 9, 1, 0, 0, 0, DateTimeKind.Utc);
+
+        var result = await fixture.Service.SyncDataAsync(
+            new SyncRequest { From = from, To = from.AddDays(30) }, config, default);
+
+        Assert.True(result.Success, result.Message);
+        Assert.Equal(1, stepsRequests);
+    }
+
+    [Fact]
+    public async Task Explicit_range_is_not_split_when_rate_limited()
+    {
+        var requests = 0;
+        var fixture = new Fixture(request =>
+        {
+            if (request.RequestUri!.AbsolutePath == "/token")
+                return Json($$"""{"access_token":"access","refresh_token":"refresh","expires_in":3600,"scope":"{{GoogleHealthClient.MetricsScope}}"}""");
+            requests++;
+            return new HttpResponseMessage(HttpStatusCode.TooManyRequests);
+        });
+        var from = new DateTime(2026, 8, 1, 0, 0, 0, DateTimeKind.Utc);
+
+        var result = await fixture.Service.SyncDataAsync(
+            new SyncRequest { From = from, To = from.AddDays(60) }, fixture.Configuration(), default);
+
+        Assert.False(result.Success);
+        Assert.Equal(1, requests);
+    }
+
     private sealed class Fixture
     {
         private readonly Guid tenantId = Guid.NewGuid();
@@ -1072,6 +1146,12 @@ public class GoogleHealthConnectorServiceTests
         var timestamp = filter.Split('"')[1];
         capture(DateTimeOffset.Parse(timestamp));
         return Json("{\"dataPoints\":[]}");
+    }
+
+    private static (DateTimeOffset From, DateTimeOffset To) FilterRange(HttpRequestMessage request)
+    {
+        var parts = System.Web.HttpUtility.ParseQueryString(request.RequestUri!.Query)["filter"]!.Split('"');
+        return (DateTimeOffset.Parse(parts[1]), DateTimeOffset.Parse(parts[3]));
     }
 
     private sealed class StubHandler(Func<HttpRequestMessage, HttpResponseMessage> responder)

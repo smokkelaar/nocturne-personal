@@ -1,7 +1,9 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
-  import { Button } from "$lib/components/ui/button";
-  import { Input } from "$lib/components/ui/input";
+  import { useModifierKey } from "@nocturne/ui/modifier-key";
+  import { Button } from "#lib/components/ui/button/index.js";
+  import { Input } from "#lib/components/ui/input/index.js";
+  import { SubmitButton } from "#lib/forms/index.js";
   import ArrowLeft from "@lucide/svelte/icons/arrow-left";
   import Play from "@lucide/svelte/icons/play";
   import Save from "@lucide/svelte/icons/save";
@@ -13,6 +15,8 @@
   interface Props {
     clockName: string;
     saving: boolean;
+    /** See `SubmitButton`'s `saved`. */
+    saved: number;
     canUndo: boolean;
     canRedo: boolean;
     onNameChange: (name: string) => void;
@@ -27,6 +31,7 @@
   let {
     clockName,
     saving,
+    saved,
     canUndo,
     canRedo,
     onNameChange,
@@ -37,6 +42,7 @@
     onPreview,
     children,
   }: Props = $props();
+  const modifier = useModifierKey();
 </script>
 
 <header
@@ -61,7 +67,7 @@
       size="icon"
       onclick={onUndo}
       disabled={!canUndo}
-      title="Undo (Ctrl+Z)"
+      title="Undo ({modifier.label}+Z)"
     >
       <Undo2 class="size-4" />
     </Button>
@@ -70,7 +76,7 @@
       size="icon"
       onclick={onRedo}
       disabled={!canRedo}
-      title="Redo (Ctrl+Shift+Z)"
+      title="Redo ({modifier.label}+Shift+Z)"
     >
       <Redo2 class="size-4" />
     </Button>
@@ -80,11 +86,19 @@
     {#if children}
       {@render children()}
     {/if}
-    <Button variant="outline" onclick={onSave} disabled={saving} aria-label="Save">
+    <SubmitButton
+      type="button"
+      variant="outline"
+      {saved}
+      onclick={onSave}
+      disabled={saving}
+      title="Save"
+      aria-label="Save"
+    >
       {#if saving}<Loader2 class="size-4 animate-spin" />{:else}<Save
           class="size-4"
         />{/if}
-    </Button>
+    </SubmitButton>
     <Button onclick={onPreview} aria-label="Preview">
       <Play class="size-4" />
       <span class="ml-2 hidden @xl:inline">Preview</span>

@@ -1,28 +1,28 @@
 <script lang="ts">
   import { page } from "$app/state";
-  import { satisfiesScope } from "$lib/authorization/scopes";
-  import * as Card from "$lib/components/ui/card";
-  import * as Tabs from "$lib/components/ui/tabs";
-  import { Switch } from "$lib/components/ui/switch";
-  import { Input } from "$lib/components/ui/input";
-  import { Label } from "$lib/components/ui/label";
-  import { Button } from "$lib/components/ui/button";
-  import { Badge } from "$lib/components/ui/badge";
+  import { satisfiesScope } from "#lib/authorization/scopes.js";
+  import * as Card from "#lib/components/ui/card/index.js";
+  import * as Tabs from "#lib/components/ui/tabs/index.js";
+  import { Switch } from "#lib/components/ui/switch/index.js";
+  import { Input } from "#lib/components/ui/input/index.js";
+  import { Label } from "#lib/components/ui/label/index.js";
+  import { Button } from "#lib/components/ui/button/index.js";
+  import { Badge } from "#lib/components/ui/badge/index.js";
   import ScrollText from "@lucide/svelte/icons/scroll-text";
   import Settings2 from "@lucide/svelte/icons/settings-2";
   import Loader2 from "@lucide/svelte/icons/loader-circle";
-  import Info from "@lucide/svelte/icons/info";
   import X from "@lucide/svelte/icons/x";
+  import { EmptyState } from "#lib/components/shared/index.js";
   import {
     getMutationAuditLog,
     getReadAccessAuditLog,
     getAuditConfig,
     updateAuditConfig,
-  } from "$lib/api/generated/audits.generated.remote";
-  import AuditMutationsTable from "$lib/components/audit/AuditMutationsTable.svelte";
-  import AuditReadsTable from "$lib/components/audit/AuditReadsTable.svelte";
-  import { localDayStart, localDayEnd } from "$lib/utils/timezone";
-  import { toIsoString } from "$lib/utils/api-date";
+  } from "#lib/api/generated/audits.generated.remote.js";
+  import AuditMutationsTable from "#lib/components/audit/AuditMutationsTable.svelte";
+  import AuditReadsTable from "#lib/components/audit/AuditReadsTable.svelte";
+  import { localDayStart, localDayEnd } from "#lib/utils/timezone.js";
+  import { toIsoString } from "#lib/utils/api-date.js";
 
   // Permissions
   const canManageAudit = $derived(
@@ -218,7 +218,7 @@
 
   <!-- Tabbed Log Viewer -->
   <Tabs.Root bind:value={activeTab} class="space-y-4">
-    <Tabs.List class="grid w-full grid-cols-2">
+    <Tabs.List variant="wrap">
       <Tabs.Trigger value="mutations">
         Data changes
         {#if mutationsTotal > 0}
@@ -297,28 +297,23 @@
       <!-- Gated on the saved config, not the switch: flipping the switch without
            saving would otherwise reveal an empty table the server isn't filling. -->
       {#if !config?.readAuditEnabled}
-        <!-- Empty state: read audit not enabled -->
-        <Card.Root>
-          <Card.Content class="flex flex-col items-center justify-center py-12 text-center">
-            <Info class="h-10 w-10 text-muted-foreground mb-4" />
-            <p class="text-lg font-medium mb-2">Read audit is not enabled</p>
-            {#if canManageAudit}
-              <p class="text-sm text-muted-foreground mb-4">
-                Enable read access logging to track who views patient data.
-              </p>
-              <Button onclick={enableReadAudit} disabled={isSaving}>
-                {#if isSaving}
-                  <Loader2 class="mr-2 h-4 w-4 animate-spin" />
-                {/if}
-                Enable now
-              </Button>
-            {:else}
-              <p class="text-sm text-muted-foreground">
-                Contact your admin to enable read audit logging.
-              </p>
+        <EmptyState
+          art="clock"
+          variant="card"
+          title="Read audit is not enabled"
+          body={canManageAudit
+            ? "Enable read access logging to track who views patient data."
+            : "Contact your admin to enable read audit logging."}
+          action={canManageAudit ? enableReadAuditAction : undefined}
+        />
+        {#snippet enableReadAuditAction()}
+          <Button onclick={enableReadAudit} disabled={isSaving}>
+            {#if isSaving}
+              <Loader2 class="mr-2 h-4 w-4 animate-spin" />
             {/if}
-          </Card.Content>
-        </Card.Root>
+            Enable now
+          </Button>
+        {/snippet}
       {:else}
         <!-- Date Range Filter Card -->
         <Card.Root>

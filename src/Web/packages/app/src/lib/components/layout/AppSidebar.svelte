@@ -1,29 +1,30 @@
 <script lang="ts">
   import { page } from "$app/state";
-  import HelpIcon from "$lib/components/help/HelpIcon.svelte";
-  import { getHelpContext } from "$lib/help/help-context.svelte";
-  import { tick, untrack } from "svelte";
 
-  import * as Sidebar from "$lib/components/ui/sidebar";
-  import * as Collapsible from "$lib/components/ui/collapsible";
-  import * as Select from "$lib/components/ui/select";
+  import * as Sidebar from "#lib/components/ui/sidebar/index.js";
+  import * as Collapsible from "#lib/components/ui/collapsible/index.js";
+  import * as Select from "#lib/components/ui/select/index.js";
   import SidebarGlucoseWidget from "./SidebarGlucoseWidget.svelte";
   import SidebarNotifications from "./SidebarNotifications.svelte";
-  import SidebarDndToggle from "$lib/components/alerts/SidebarDndToggle.svelte";
-  import SetupOpenCount from "$lib/components/setup-hub/SetupOpenCount.svelte";
+  import SidebarDndToggle from "#lib/components/alerts/SidebarDndToggle.svelte";
+  import SetupOpenCount from "#lib/components/setup-hub/SetupOpenCount.svelte";
   import UserMenu from "./UserMenu.svelte";
-  import LanguageSelector from "$lib/components/LanguageSelector.svelte";
-  import { updateLanguagePreference } from "$api/user-preferences.remote";
-  import { hasLanguagePreference } from "$lib/stores/appearance-store.svelte";
+  import LanguageSelector from "#lib/components/LanguageSelector.svelte";
+  import { updateLanguagePreference } from "#lib/api/user-preferences.remote.js";
+  import { hasLanguagePreference } from "#lib/stores/appearance-store.svelte.js";
   import ChevronDown from "@lucide/svelte/icons/chevron-down";
   import Shield from "@lucide/svelte/icons/shield";
   import Eye from "@lucide/svelte/icons/eye";
-  import { buildAppNavigation, type NavItem, type NavLink } from "$lib/navigation/app-navigation.svelte";
+  import { stillArtwork } from "#lib/watercolour-deferral.svelte.js";
+  import { coachmark } from "@nocturne/coach";
+  import { whileShown } from "#lib/coach-marks/attach.js";
+  import { coachFor } from "#lib/coach-marks/copy.svelte.js";
+  import { buildAppNavigation, type NavItem, type NavLink } from "#lib/navigation/app-navigation.svelte.js";
   import {
     goToTenant,
     type TenantSwitcherTarget,
-  } from "$lib/utils/tenant-host";
-  import type { AuthUser } from "$lib/stores/auth-store.svelte";
+  } from "#lib/utils/tenant-host.js";
+  import type { AuthUser } from "#lib/stores/auth-store.svelte.js";
 
   interface Props {
     /** Current authenticated user (passed from layout data) */
@@ -56,7 +57,9 @@
   }: Props = $props();
 
   const sidebar = Sidebar.useSidebar();
-  const help = getHelpContext();
+
+  // Absolutely positioned over the item, so the menu lays out the same before it arrives.
+  const selectionEdge = stillArtwork(() => import("#lib/watercolour/selection-edge.js"));
 
   // Defer localStorage check to after hydration so SSR and client initial render
   // both produce the same DOM (avoids hydration mismatch from conditional rendering).
@@ -124,33 +127,16 @@
     }),
   );
 
-  $effect(() => {
-    if (help) help.navigation = navigation;
-  });
-
   // Track which collapsible menus are open
   let openMenus = $state<Record<string, boolean>>({});
-  let navigationElement = $state<HTMLElement | null>(null);
-  const pageHelp = $derived(help?.open && (help.layout === "page" || help.layout === "drawer"));
-  // Documentation expansion must not alter the user's app navigation state.
-  $effect(() => {
-    if (!pageHelp) return;
-    const saved = untrack(() => ({ ...openMenus }));
-    const savedScroll = untrack(() => navigationElement?.scrollTop ?? 0);
-    return () => {
-      openMenus = saved;
-      void tick().then(() => { if (!help?.open && navigationElement) navigationElement.scrollTop = savedScroll; });
-    };
-  });
 
   const isActive = (item: NavItem | NavLink): boolean => {
-    const path = pageHelp ? help!.path : page.url.pathname;
     if (item.href && item?.strict) {
-      return path === item.href;
+      return page.url.pathname === item.href;
     }
 
     if (item.href) {
-      return path.startsWith(item.href);
+      return page.url.pathname.startsWith(item.href);
     }
 
     if ("children" in item && item.children) {
@@ -161,29 +147,35 @@
   };
 
   // Initialize open state for menus that have active children
-  let wasPageHelp = false;
   $effect(() => {
-    const activeMenus = navigation.filter((item) => item.children && isActive(item));
-    const returning = wasPageHelp && !pageHelp;
-    wasPageHelp = !!pageHelp;
-    if (returning) return;
-    activeMenus.forEach((item) => { openMenus[item.id] = true; });
+    navigation.forEach((item) => {
+      if (item.children && isActive(item)) {
+        openMenus[item.id] = true;
+      }
+    });
   });
+
+  /**
+   * The edge marks the most specific active item on screen: a parent only while
+   * its active child is hidden, in a closed submenu or the icon rail.
+   */
+  const showParentEdge = (item: NavItem): boolean =>
+    isActive(item) && (!openMenus[item.id] || sidebar.state === "collapsed");
 
   function toggleMenu(id: string) {
     openMenus[id] = !openMenus[id];
   }
-  function navigateHelp(event: MouseEvent, href: string | undefined) {
-    if (!help?.open || !href || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-    event.preventDefault();
-    help.select(href);
-    sidebar.setOpenMobile(false);
-  }
 </script>
+
+{#snippet edge(active: boolean)}
+  {#if selectionEdge.component}
+    <selectionEdge.component {active} />
+  {/if}
+{/snippet}
 
 <Sidebar.Sidebar collapsible="icon">
   <Sidebar.Header
-    class="flex flex-row items-center justify-between p-4 group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-2"
+    class="flex flex-row items-center justify-between p-4 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-2"
   >
     <div class="flex items-center gap-2 group-data-[collapsible=icon]:hidden">
       <img
@@ -198,15 +190,12 @@
       />
       <span class="text-lg font-bold">Nocturne</span>
     </div>
-    <HelpIcon />
-    <Sidebar.Trigger inert={help?.blocking} />
+    <Sidebar.Trigger />
   </Sidebar.Header>
-
-  <div class="contents" inert={help?.open && !pageHelp}>
 
   <!-- Glucose Widget (fixed, not scrollable). One tenant's latest reading. -->
   {#if !tenantless}
-    <Sidebar.Group inert={help?.blocking}>
+    <Sidebar.Group>
       <Sidebar.GroupContent>
         <SidebarGlucoseWidget />
       </Sidebar.GroupContent>
@@ -245,7 +234,7 @@
   <!-- The switcher needs a host to navigate to, so unlike the Tenants nav item it stays gated
        on baseDomain. -->
   {#if baseDomain && tenantTargets.length > 1 && !isGuestSession}
-    <div class="border-b px-3 py-2 group-data-[collapsible=icon]:hidden" inert={help?.blocking}>
+    <div class="border-b px-3 py-2 group-data-[collapsible=icon]:hidden">
       <p
         class="mb-1.5 text-xs font-medium text-muted-foreground flex items-center gap-1.5"
       >
@@ -274,7 +263,7 @@
     </div>
   {/if}
 
-  <Sidebar.Content bind:ref={navigationElement} inert={help?.open && !pageHelp} role={help?.open && help.layout === "drawer" ? "navigation" : undefined} aria-label={help?.open && help.layout === "drawer" ? "Documentation navigation" : undefined} data-help-navigation={help?.open && help.layout === "drawer" ? "" : undefined}>
+  <Sidebar.Content>
     <!-- Navigation -->
     <Sidebar.Group>
       <Sidebar.GroupLabel>Navigation</Sidebar.GroupLabel>
@@ -287,11 +276,17 @@
                 open={openMenus[item.id]}
                 onOpenChange={() => toggleMenu(item.id)}
               >
-                <Sidebar.MenuItem>
+                <!-- On a phone the navigation is a sheet, and a tip raised as it opens covers it. -->
+                <Sidebar.MenuItem
+                  {@attach isGuestSession && item.id === "reports" && !sidebar.isMobile
+                    ? whileShown(coachmark(coachFor("guest-tour.reports")))
+                    : undefined}
+                >
                   <Sidebar.MenuButton
                     isActive={isActive(item)}
                     onclick={() => toggleMenu(item.id)}
                   >
+                    {@render edge(showParentEdge(item))}
                     <item.icon class="h-4 w-4" />
                     <span class="group-data-[collapsible=icon]:hidden">
                       {item.title}
@@ -309,14 +304,14 @@
                   <Sidebar.MenuSub>
                     {#each item.children as child (child.href)}
                       <Sidebar.MenuSubItem>
-                        {#if child.href === "/alerts/dnd" && !help?.open}
+                        {#if child.href === "/alerts/dnd"}
                           <SidebarDndToggle visible={openMenus[item.id] === true} />
                         {:else}
                           <Sidebar.MenuSubButton
                             href={child.href}
                             isActive={isActive(child)}
-                            onclick={(event) => navigateHelp(event, child.href)}
                           >
+                            {@render edge(isActive(child))}
                             <child.icon class="h-4 w-4" />
                             <span>{child.title}</span>
                             {#if child.href === "/setup"}
@@ -335,7 +330,8 @@
                 <Sidebar.MenuButton isActive={isActive(item)}>
                   {#snippet child({ props })}
                     <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- item.href is a runtime string | undefined from NavItem; resolve() requires a literal route id and throws on undefined -->
-                    <a href={item.href} {...props} onclick={(event) => navigateHelp(event, item.href)}>
+                    <a href={item.href} {...props}>
+                      {@render edge(isActive(item))}
                       <item.icon class="h-4 w-4" />
                       <span class="group-data-[collapsible=icon]:hidden">
                         {item.title}
@@ -350,9 +346,8 @@
       </Sidebar.GroupContent>
     </Sidebar.Group>
   </Sidebar.Content>
-  </div>
 
-  <Sidebar.Footer inert={help?.open}>
+  <Sidebar.Footer>
     <Sidebar.Menu>
       {#if !langPrefKnown}
         <Sidebar.MenuItem class="group-data-[collapsible=icon]:hidden">

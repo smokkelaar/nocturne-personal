@@ -1,20 +1,17 @@
 <script lang="ts">
-  import HelpIcon from "$lib/components/help/HelpIcon.svelte";
-  import { getHelpContext } from "$lib/help/help-context.svelte";
-  const help = getHelpContext();
-  import { tryGetRealtimeStore } from "$lib/stores/realtime-store.svelte";
-  import { getDirectionInfo } from "$lib/utils";
+  import { tryGetRealtimeStore } from "#lib/stores/realtime-store.svelte.js";
+  import { getDirectionInfo } from "#lib/utils/index.js";
   import {
     formatGlucoseValue,
     formatGlucoseDelta,
     relativeAge,
-  } from "$lib/utils/formatting";
-  import { glucoseUnits } from "$lib/stores/appearance-store.svelte";
-  import { STALE_THRESHOLD_MS } from "$lib/constants/staleness";
-  import { GlucoseValueIndicator } from "$lib/components/shared";
-  import * as Sidebar from "$lib/components/ui/sidebar";
-  import { displayedGlucose } from "$lib/stores/current-glucose-status.svelte";
-  import { getGlucoseTileVariant } from "$lib/utils/glucose-status";
+  } from "#lib/utils/formatting.js";
+  import { glucoseUnits } from "#lib/stores/appearance-store.svelte.js";
+  import { STALE_THRESHOLD_MS } from "#lib/constants/staleness.js";
+  import { GlucoseValueIndicator } from "#lib/components/shared/index.js";
+  import * as Sidebar from "#lib/components/ui/sidebar/index.js";
+  import { displayedGlucose } from "#lib/stores/current-glucose-status.svelte.js";
+  import { getGlucoseTileVariant } from "#lib/utils/glucose-status.js";
 
   const realtimeStore = tryGetRealtimeStore();
 
@@ -29,8 +26,8 @@
   const glucose = displayedGlucose(realtimeStore);
   const directionInfo = $derived(getDirectionInfo(glucose.direction));
 
-  // This header is the only glucose surface on a phone — CurrentBGDisplay hides
-  // itself below @md — so it carries the same stale/disconnected states.
+  // This header is the glucose surface on a phone unless the Current Glucose widget is showing —
+  // CurrentBGDisplay hides itself below @md — so it carries the same stale/disconnected states.
   const rawCurrentBG = $derived(glucose.currentBG);
   const lastUpdated = $derived(realtimeStore?.lastUpdated ?? 0);
   const tileVariant = $derived(
@@ -69,10 +66,10 @@
     lastScrollY = currentScrollY;
   }
 
-  // The layout's sticky banner strip reads this to sit flush under the header as it slides.
+  // Page-level sticky bars read this, through --app-sticky-top, to sit flush under the header as it slides.
   $effect(() => {
     const root = document.documentElement;
-    root.style.setProperty("--mobile-header-offset", isVisible || help?.open ? "3.5rem" : "0px");
+    root.style.setProperty("--mobile-header-offset", isVisible ? "3.5rem" : "0px");
     return () => root.style.removeProperty("--mobile-header-offset");
   });
 </script>
@@ -81,18 +78,16 @@
 
 <!-- Mobile-only sticky header -->
 <header
-  data-help-header
   class="md:hidden print:hidden fixed top-0 left-0 right-0 z-50 flex h-14 items-center justify-between gap-2 border-b border-border bg-background/95 backdrop-blur px-4 transition-transform duration-300"
-  class:translate-y-0={isVisible || help?.open}
-  class:-translate-y-full={!isVisible && !help?.open}
+  class:translate-y-0={isVisible}
+  class:-translate-y-full={!isVisible}
 >
   <!-- Sidebar trigger on the left -->
-  <Sidebar.Trigger class="-ml-1" inert={help?.blocking} />
-  <HelpIcon />
+  <Sidebar.Trigger class="-ml-1" />
 
   <!-- Current BG display on the right -->
   {#if realtimeStore}
-    <div class="flex items-center gap-2" inert={help?.blocking}>
+    <div class="flex items-center gap-2">
       <GlucoseValueIndicator
         displayValue={displayCurrentBG}
         variant={tileVariant}

@@ -11,11 +11,13 @@
     MAX_CUSTOM_SOUND_SIZE_MB,
     type CustomAlarmSound,
     type CustomSoundRejection,
-  } from "$lib/audio/alarm-sounds";
-  import { formatFileSize } from "$lib/utils/formatting";
-  import { Button } from "$lib/components/ui/button";
-  import { Input } from "$lib/components/ui/input";
-  import { Label } from "$lib/components/ui/label";
+  } from "#lib/audio/alarm-sounds.js";
+  import { formatFileSize } from "#lib/utils/formatting.js";
+  import { Button } from "#lib/components/ui/button/index.js";
+  import { Input } from "#lib/components/ui/input/index.js";
+  import { Label } from "#lib/components/ui/label/index.js";
+  import { EmptyState } from "#lib/components/shared/index.js";
+  import { soundArtwork } from "#lib/watercolour-icons.js";
   import {
     Dialog,
     DialogContent,
@@ -24,12 +26,11 @@
     DialogHeader,
     DialogTitle,
     DialogTrigger,
-  } from "$lib/components/ui/dialog";
+  } from "#lib/components/ui/dialog/index.js";
   import Upload from "@lucide/svelte/icons/upload";
   import Trash2 from "@lucide/svelte/icons/trash-2";
   import Play from "@lucide/svelte/icons/play";
   import Square from "@lucide/svelte/icons/square";
-  import Music from "@lucide/svelte/icons/music";
   import FileAudio from "@lucide/svelte/icons/file-headphone";
   import AlertCircle from "@lucide/svelte/icons/circle-alert";
   import Check from "@lucide/svelte/icons/check";
@@ -262,13 +263,13 @@
       Loading custom sounds...
     </div>
   {:else if customSounds.length === 0}
-    <div
-      class="flex flex-col items-center justify-center py-8 text-muted-foreground border-2 border-dashed rounded-lg"
-    >
-      <Music class="h-8 w-8 mb-2 opacity-50" />
-      <p class="text-sm">No custom sounds uploaded yet</p>
-      <p class="text-xs">Select "Upload sound" to add your own</p>
-    </div>
+    <EmptyState
+      art={soundArtwork}
+      size="compact"
+      variant="outline"
+      title="No custom sounds uploaded yet"
+      body='Select "Upload sound" to add your own'
+    />
   {:else}
     <div class="space-y-2">
       {#each customSounds as sound (sound.id)}

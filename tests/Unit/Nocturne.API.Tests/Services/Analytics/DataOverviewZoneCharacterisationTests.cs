@@ -75,7 +75,7 @@ public class DataOverviewZoneCharacterisationTests : IDisposable
                 NullLogger<TenantClockResolver>.Instance),
             statistics.Object,
             cacheService.Object,
-            NullLogger<DataOverviewService>.Instance
+            TimeProvider.System, NullLogger<DataOverviewService>.Instance
         );
     }
 

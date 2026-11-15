@@ -92,7 +92,7 @@ public class DataOverviewServiceTests : IDisposable
             new TenantClockResolver(_therapySettings.Object, _readContext, NullLogger<TenantClockResolver>.Instance),
             mockStatisticsService.Object,
             TestTenantCache.Create(distributed: _distributed.Object, tenantId: TenantId),
-            _logger
+            TimeProvider.System, _logger
         );
     }
 
@@ -283,6 +283,42 @@ public class DataOverviewServiceTests : IDisposable
         await _dbContext.SaveChangesAsync();
 
         var result = await _service.GetAvailableYearsAsync();
+
+        result.Years.Should().ContainSingle().Which.Should().Be(2024);
+        result.AvailableDataSources.Should().ContainSingle().Which.Should().Be("dexcom");
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    public async Task GetAvailableYearsAsync_ServesTheCachedExtent_WithoutRereadingTheTables()
+    {
+        var service = new DataOverviewService(
+            _factory.Object,
+            new TenantClockResolver(_therapySettings.Object, _readContext, NullLogger<TenantClockResolver>.Instance),
+            Mock.Of<IStatisticsService>(),
+            TestTenantCache.Create(tenantId: TenantId),
+            TimeProvider.System, _logger
+        );
+
+        _dbContext.SensorGlucose.Add(new SensorGlucoseEntity
+        {
+            Id = Guid.NewGuid(),
+            Timestamp = DateTimeOffset.FromUnixTimeMilliseconds(June15_2024_Noon).UtcDateTime,
+            Mgdl = 120.0,
+            DataSource = "dexcom"
+        });
+        await _dbContext.SaveChangesAsync();
+        await service.GetAvailableYearsAsync();
+
+        _dbContext.Boluses.Add(new BolusEntity
+        {
+            Id = Guid.NewGuid(),
+            Timestamp = DateTimeOffset.FromUnixTimeMilliseconds(Jan1_2025_01h).UtcDateTime,
+            Insulin = 5.0,
+            DataSource = "glooko"
+        });
+        await _dbContext.SaveChangesAsync();
+        var result = await service.GetAvailableYearsAsync();
 
         result.Years.Should().ContainSingle().Which.Should().Be(2024);
         result.AvailableDataSources.Should().ContainSingle().Which.Should().Be("dexcom");
@@ -1165,9 +1201,8 @@ public class DataOverviewServiceTests : IDisposable
             Text = "anchors the day",
             DataSource = "glooko"
         });
-        AddNonPrimaryLink("bgcheck", bgCheckId);
-        AddNonPrimaryLink("tempbasal", tempBasalId);
-        await _dbContext.SaveChangesAsync();
+        await DuplicateGroups.LinkAsync(_dbContext, RecordType.BGCheck, primary: null, bgCheckId);
+        await DuplicateGroups.LinkAsync(_dbContext, RecordType.TempBasal, primary: null, tempBasalId);
 
         var result = await _service.GetDailySummaryAsync(2024);
 
@@ -1175,19 +1210,6 @@ public class DataOverviewServiceTests : IDisposable
         result.Days[0].Counts.Should().NotContainKeys("BGChecks", "TempBasals");
         result.Days[0].TotalCount.Should().Be(1);
     }
-
-    private void AddNonPrimaryLink(string recordType, Guid recordId) =>
-        _dbContext.LinkedRecords.Add(new LinkedRecordEntity
-        {
-            Id = Guid.CreateVersion7(),
-            CanonicalId = Guid.NewGuid(),
-            RecordType = recordType,
-            RecordId = recordId,
-            SourceTimestamp = June15_2024_Noon,
-            DataSource = "duplicate",
-            IsPrimary = false,
-            SysCreatedAt = DateTime.UtcNow,
-        });
 
     #endregion
 

@@ -1,22 +1,24 @@
 <script lang="ts">
-  import { formatDayTime, relativeTime } from "$lib/utils/formatting";
+  import type { RemoteCommand } from '$app/server';
+  import SuccessBanner from "#lib/forms/SuccessBanner.svelte";
+  import { formatDayTime, relativeTime } from "#lib/utils/formatting.js";
   import { page } from "$app/state";
-  import type { RemoteCommand } from "@sveltejs/kit";
-  import { satisfiesScope } from "$lib/authorization/scopes";
-  import { Button } from "$lib/components/ui/button";
-  import * as Card from "$lib/components/ui/card";
-  import { Badge } from "$lib/components/ui/badge";
-  import { Input } from "$lib/components/ui/input";
-  import { Label } from "$lib/components/ui/label";
-  import { Switch } from "$lib/components/ui/switch";
-  import { toggled } from "$lib/utils/collections";
+  import { satisfiesScope } from "#lib/authorization/scopes.js";
+  import { Button } from "#lib/components/ui/button/index.js";
+  import * as Card from "#lib/components/ui/card/index.js";
+  import { Badge } from "#lib/components/ui/badge/index.js";
+  import { Input } from "#lib/components/ui/input/index.js";
+  import { Label } from "#lib/components/ui/label/index.js";
+  import { Switch } from "#lib/components/ui/switch/index.js";
+  import { toggled } from "#lib/utils/collections.js";
   import { categoriesIn, formatList } from "./data-categories";
+  import { EmptyState } from "#lib/components/shared/index.js";
+  import UserAvatar from "#lib/components/account/UserAvatar.svelte";
   import { slide } from "svelte/transition";
   import { flip } from "svelte/animate";
-  import { createCopyFeedback } from "$lib/hooks/copy-feedback.svelte";
+  import CopyButton from "#lib/components/members/CopyButton.svelte";
+  import { Artwork } from "water-ui";
   import Clock from "@lucide/svelte/icons/clock";
-  import Copy from "@lucide/svelte/icons/copy";
-  import Check from "@lucide/svelte/icons/check";
   import X from "@lucide/svelte/icons/x";
   import Loader2 from "@lucide/svelte/icons/loader-circle";
   import Link from "@lucide/svelte/icons/link";
@@ -28,13 +30,13 @@
     createGuestLink,
     revokeGuestLink,
     dismissGuestLink,
-  } from "$api/generated/guestLinks.generated.remote";
+  } from "#lib/api/generated/guestLinks.generated.remote.js";
   import {
     type GuestLinkInfo,
     GuestLinkStatus,
-  } from "$api/generated/nocturne-api-client";
-  import { retainQuery } from "$lib/api/retain-query.svelte";
-  import { describeSubmitError } from "$lib/forms";
+  } from "#lib/api/generated/nocturne-api-client.js";
+  import { retainQuery } from "#lib/api/retain-query.svelte.js";
+  import { describeSubmitError, FormError } from "#lib/forms/index.js";
 
   let { onCreated }: { onCreated?: () => void } = $props();
 
@@ -69,9 +71,9 @@
   const chosenScopes = $derived(pickedScopes ?? scopeOptions?.defaults ?? []);
   let isCreating = $state(false);
   let createError = $state<string | null>(null);
+  let linkError = $state<string | null>(null);
   let createdCode = $state<string | null>(null);
   let createdUrl = $state<string | null>(null);
-  const copy = createCopyFeedback();
 
   function statusLabel(status: GuestLinkStatus | undefined): string {
     switch (status) {
@@ -127,17 +129,11 @@
   }
 
   function isTerminal(link: GuestLinkInfo): boolean {
-    return (
-      link.status === GuestLinkStatus.Revoked ||
-      link.status === GuestLinkStatus.Expired
-    );
+    return link.status === GuestLinkStatus.Revoked || link.status === GuestLinkStatus.Expired;
   }
 
   function canRevoke(link: GuestLinkInfo): boolean {
-    return (
-      link.status === GuestLinkStatus.Pending ||
-      link.status === GuestLinkStatus.Active
-    );
+    return link.status === GuestLinkStatus.Pending || link.status === GuestLinkStatus.Active;
   }
 
   /** The backend may report http behind a reverse proxy; use the browser's origin */
@@ -173,25 +169,36 @@
     }
   }
 
-  async function copyText(text: string, type: "code" | "url") {
-    await copy.copy(text, type);
-  }
-
-  async function mutateLink(id: string, run: RemoteCommand<string, unknown>) {
+  async function mutateLink(
+    id: string,
+    run: RemoteCommand<string, unknown>,
+    failureMessage: string
+  ) {
     pendingIds = new Set([...pendingIds, id]);
+    linkError = null;
     try {
       await run(id).updates(getGuestLinks);
+    } catch (err) {
+      linkError = describeSubmitError(err, failureMessage);
     } finally {
       pendingIds = new Set([...pendingIds].filter((x) => x !== id));
     }
   }
 
   async function handleDismiss(id: string) {
-    await mutateLink(id, dismissGuestLink);
+    await mutateLink(
+      id,
+      dismissGuestLink,
+      "Failed to dismiss the link. Try again."
+    );
   }
 
   async function handleRevoke(id: string) {
-    await mutateLink(id, revokeGuestLink);
+    await mutateLink(
+      id,
+      revokeGuestLink,
+      "Failed to revoke the link. Try again."
+    );
   }
 
   let reissuingId = $state<string | null>(null);
@@ -202,7 +209,7 @@
    */
   async function handleReissue(link: GuestLinkInfo) {
     reissuingId = link.id!;
-    createError = null;
+    linkError = null;
     try {
       const result = await createGuestLink({
         label: link.label || "Untitled",
@@ -212,11 +219,10 @@
       createdUrl = result.fullUrl ? normalizeCreatedUrl(result.fullUrl) : null;
       showCreateForm = true;
     } catch (err) {
-      createError = describeSubmitError(
+      linkError = describeSubmitError(
         err,
         "Failed to create a new code. Active links are limited to 5 at a time."
       );
-      showCreateForm = true;
     } finally {
       reissuingId = null;
     }
@@ -255,7 +261,7 @@
         <Button
           variant="outline"
           size="sm"
-          onclick={() => (showCreateForm = true)}
+          onclick={() => showCreateForm = true}
         >
           <Link class="mr-1.5 h-3.5 w-3.5" />
           Create guest link
@@ -277,16 +283,14 @@
         <Card.Content>
           {#if createdCode || createdUrl}
             <div class="space-y-4">
-              <div
-                class="flex items-start gap-3 rounded-md border border-success/30 bg-success/10 p-3"
-              >
-                <Check
-                  class="mt-0.5 h-4 w-4 shrink-0 text-success"
-                />
-                <p class="text-sm text-success">
-                  Guest link created successfully.
-                </p>
-              </div>
+              <Artwork
+                artwork="key"
+                palette="ember"
+                motion="auto"
+                autoplay="once"
+                class="mx-auto size-32"
+              />
+              <SuccessBanner>Guest link created successfully.</SuccessBanner>
 
               {#if createdCode}
                 <div class="space-y-1.5">
@@ -297,18 +301,11 @@
                     >
                       {createdCode}
                     </div>
-                    <Button
-                      variant="outline"
-                      size="icon"
+                    <CopyButton
+                      text={createdCode}
+                      label="Copy code"
                       class="shrink-0 self-center"
-                      onclick={() => copyText(createdCode!, "code")}
-                    >
-                      {#if copy.isCopied("code")}
-                        <Check class="h-4 w-4 text-success" />
-                      {:else}
-                        <Copy class="h-4 w-4" />
-                      {/if}
-                    </Button>
+                    />
                   </div>
                 </div>
               {/if}
@@ -323,18 +320,11 @@
                       readonly
                       class="font-mono"
                     />
-                    <Button
-                      variant="outline"
-                      size="icon"
+                    <CopyButton
+                      text={createdUrl}
+                      label="Copy link"
                       class="shrink-0"
-                      onclick={() => copyText(createdUrl!, "url")}
-                    >
-                      {#if copy.isCopied("url")}
-                        <Check class="h-4 w-4 text-success" />
-                      {:else}
-                        <Copy class="h-4 w-4" />
-                      {/if}
-                    </Button>
+                    />
                   </div>
                 </div>
               {/if}
@@ -388,10 +378,7 @@
                         </div>
                         <Switch
                           checked={on}
-                          onCheckedChange={() =>
-                            (pickedScopes = [
-                              ...toggled(new Set(chosenScopes), cat.scope),
-                            ])}
+                          onCheckedChange={() => pickedScopes = [...toggled(new Set(chosenScopes), cat.scope)]}
                           aria-label={cat.name}
                         />
                       </label>
@@ -400,13 +387,7 @@
                 </div>
               {/if}
 
-              {#if createError}
-                <div
-                  class="flex items-start gap-2 rounded-md border border-destructive/20 bg-destructive/5 p-3"
-                >
-                  <p class="text-sm text-destructive">{createError}</p>
-                </div>
-              {/if}
+              <FormError issues={createError} focusOnShow />
 
               <div class="flex gap-3">
                 <Button
@@ -437,22 +418,15 @@
 
     <!-- Guest Links List -->
     {#if allLinks.length === 0 && !showCreateForm}
-      <Card.Root>
-        <Card.Content
-          class="flex flex-col items-center justify-center py-12 text-center"
-        >
-          <div
-            class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted"
-          >
-            <Clock class="h-6 w-6 text-muted-foreground" />
-          </div>
-          <p class="text-sm text-muted-foreground max-w-sm">
-            No guest links yet. Create one to share temporary read-only access.
-          </p>
-        </Card.Content>
-      </Card.Root>
+      <EmptyState
+        art="key"
+        variant="dashed"
+        title="No guest links yet"
+        body="Create one to share temporary read-only access."
+      />
     {:else if allLinks.length > 0}
       <div class="space-y-2">
+        <FormError issues={linkError} focusOnShow />
         {#each guestLinks as link (link.id)}
           <div
             class={link.dismissedAt ? "opacity-50" : undefined}
@@ -461,6 +435,7 @@
           >
             <Card.Root>
               <Card.Content class="flex items-center gap-4 py-3">
+                <UserAvatar name={link.label || "Untitled"} />
                 <div class="flex-1 min-w-0">
                   <div class="flex items-center gap-2">
                     <span class="font-medium text-sm truncate">
@@ -491,7 +466,7 @@
                     {/if}
                   </div>
                 </div>
-                {#if link.status === GuestLinkStatus.Active || (isTerminal(link) && !link.dismissedAt)}
+                {#if link.status === GuestLinkStatus.Active || isTerminal(link) && !link.dismissedAt}
                   <Button
                     variant="ghost-muted"
                     size="sm"
@@ -539,11 +514,8 @@
         <Button
           variant="ghost-muted"
           size="xs"
-          onclick={() => (showDismissed = !showDismissed)}
-        >
-          {showDismissed ? "Hide" : "Show"}
-          {dismissedCount} dismissed
-        </Button>
+          onclick={() => showDismissed = !showDismissed}
+        >{showDismissed ? "Hide" : "Show"} {dismissedCount} dismissed</Button>
       {/if}
     {/if}
   </div>

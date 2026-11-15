@@ -1,12 +1,12 @@
 <script lang="ts">
-  import { indexBy } from "$lib/utils/collections";
-  import { Button } from "$lib/components/ui/button";
-  import * as Card from "$lib/components/ui/card";
-  import { ConfirmDialog } from "$lib/components/ui/confirm-dialog";
-  import { Badge } from "$lib/components/ui/badge";
-  import { Input } from "$lib/components/ui/input";
-  import { Separator } from "$lib/components/ui/separator";
-  import Smartphone from "@lucide/svelte/icons/smartphone";
+  import SuccessBanner from "#lib/forms/SuccessBanner.svelte";
+  import { indexBy } from "#lib/utils/collections.js";
+  import { Button } from "#lib/components/ui/button/index.js";
+  import * as Card from "#lib/components/ui/card/index.js";
+  import { ConfirmDialog } from "#lib/components/ui/confirm-dialog/index.js";
+  import { Badge } from "#lib/components/ui/badge/index.js";
+  import { Input } from "#lib/components/ui/input/index.js";
+  import { Separator } from "#lib/components/ui/separator/index.js";
   import Trash2 from "@lucide/svelte/icons/trash-2";
   import Check from "@lucide/svelte/icons/check";
   import X from "@lucide/svelte/icons/x";
@@ -14,18 +14,19 @@
   import Clock from "@lucide/svelte/icons/clock";
   import LoaderCircle from "@lucide/svelte/icons/loader-circle";
   import Pencil from "@lucide/svelte/icons/pencil";
-  import { relativeAge } from "$lib/utils/formatting";
-  import { Now } from "$lib/hooks/now.svelte";
+  import { relativeAge } from "#lib/utils/formatting.js";
+  import { EmptyState } from "#lib/components/shared/index.js";
+  import { Now } from "#lib/hooks/now.svelte.js";
 
   const now = new Now();
-  import { deviceKindLabel } from "$lib/utils/device-kind-labels";
-  import { describeSubmitError } from "$lib/forms/submit-error";
+  import { deviceKindLabel } from "#lib/utils/device-kind-labels.js";
+  import { describeSubmitError } from "#lib/forms/submit-error.js";
   import {
     getDevices,
     getCapabilityCatalog,
     rename,
     revoke,
-  } from "$lib/api/generated/clientDevices.generated.remote";
+  } from "#lib/api/generated/clientDevices.generated.remote.js";
 
   const devicesQuery = getDevices();
   const catalogQuery = getCapabilityCatalog();
@@ -46,7 +47,7 @@
   let isSaving = $state<string | null>(null);
   let isRevoking = $state<string | null>(null);
   let errorMessage = $state<string | null>(null);
-  let successMessage = $state<string | null>(null);
+  let successMessage = $state<{ text: string; wash: boolean } | null>(null);
 
   function clearMessages() {
     setTimeout(() => {
@@ -71,7 +72,7 @@
     errorMessage = null;
     try {
       await rename({ id, request: { label: editLabel.trim() || null } });
-      successMessage = "Device renamed.";
+      successMessage = { text: "Device renamed.", wash: true };
       editingId = null;
       clearMessages();
     } catch (err) {
@@ -87,7 +88,7 @@
     errorMessage = null;
     try {
       await revoke(id);
-      successMessage = "Device revoked.";
+      successMessage = { text: "Device revoked.", wash: false };
       clearMessages();
     } catch (err) {
       errorMessage = describeSubmitError(err, "Failed to revoke device. Try again.");
@@ -117,30 +118,16 @@
   {/if}
 
   {#if successMessage}
-    <div
-      class="flex items-start gap-3 rounded-md border border-success/30 bg-success/10 p-3"
-    >
-      <Check class="mt-0.5 h-4 w-4 shrink-0 text-success" />
-      <p class="text-sm text-success">{successMessage}</p>
-    </div>
+    <SuccessBanner wash={successMessage.wash}>{successMessage.text}</SuccessBanner>
   {/if}
 
   {#if devices.length === 0}
-    <Card.Root>
-      <Card.Content
-        class="flex flex-col items-center justify-center py-12 text-center"
-      >
-        <div
-          class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted"
-        >
-          <Smartphone class="h-6 w-6 text-muted-foreground" />
-        </div>
-        <p class="text-sm text-muted-foreground max-w-sm">
-          No registered devices. When you pair an app such as the Companion, it
-          will appear here.
-        </p>
-      </Card.Content>
-    </Card.Root>
+    <EmptyState
+      art="phone"
+      variant="card"
+      title="No registered devices"
+      body="When you pair an app such as the Companion, it will appear here."
+    />
   {:else}
     {#each devices as device (device.id)}
       <Card.Root>

@@ -5,29 +5,27 @@
    * calendar day across the full selected range (gaps for days with no
    * recorded night), plus a compact stage-composition reference panel.
    */
-  import { formatShortDate, formatWeekdayLabel } from "$lib/utils/formatting";
+  import { formatShortDate, formatWeekdayLabel } from "#lib/utils/formatting.js";
   import { Chart, Svg, Axis, Rect, Tooltip } from "layerchart";
   import { scaleBand, scaleLinear } from "d3-scale";
-  import { bandScale } from "$lib/components/charts/scale-guards";
+  import { bandScale } from "#lib/components/charts/scale-guards.js";
   import { goto } from "$app/navigation";
   import { resolve } from "$app/paths";
-  import { SLEEP_COMPOSITION_SEGMENTS, laneTexture } from "$lib/utils/sleep-stages";
-  import { patternClass } from "$lib/components/charts/print/chart-print-patterns";
-  import ChartKey from "$lib/components/charts/print/ChartKey.svelte";
-  import { localDayStart } from "$lib/utils/timezone";
-  import { indexBy } from "$lib/utils/collections";
-  import { formatMinutesDuration } from "$lib/utils/duration";
+  import { SLEEP_COMPOSITION_SEGMENTS, laneTexture } from "#lib/utils/sleep-stages.js";
+  import { patternClass } from "#lib/components/charts/print/chart-print-patterns.js";
+  import ChartKey from "#lib/components/charts/print/ChartKey.svelte";
+  import { localDayStart } from "#lib/utils/timezone.js";
+  import { indexBy } from "#lib/utils/collections.js";
+  import { formatMinutesDuration } from "#lib/utils/duration.js";
   import {
     SleepScoreSource,
     type SleepNightSummary,
     type SleepStageReferenceRangeSet,
-  } from "$lib/api";
+  } from "#lib/api/index.js";
 
   interface Props {
     /** Nights already filtered to the selected date range / source. */
     nights: SleepNightSummary[];
-    /** Replaces the drill-down navigation, for charts embedded outside the report. */
-    onSelectNight?: (night: SleepNightSummary) => void;
     /** Every `YYYY-MM-DD` day the report covers, as the API served it, including gaps. */
     days: string[];
     meanDeepPct?: number | undefined;
@@ -37,15 +35,8 @@
     deepMinutesDelta?: number | undefined;
   }
 
-  let {
-    nights,
-    onSelectNight,
-    days,
-    meanDeepPct,
-    meanRemPct,
-    referenceRanges,
-    deepMinutesDelta,
-  }: Props = $props();
+  let { nights, days, meanDeepPct, meanRemPct, referenceRanges, deepMinutesDelta }: Props =
+    $props();
 
   type SegmentKey = (typeof SLEEP_COMPOSITION_SEGMENTS)[number]["key"];
 
@@ -122,10 +113,6 @@
   /** Navigate to a night's drill-down using the backend's authoritative display date. */
   function navigateToNight(row: DayRow | undefined) {
     if (!row?.night?.displayDate) return;
-    if (onSelectNight) {
-      onSelectNight(row.night);
-      return;
-    }
     goto(resolve("/(authenticated)/reports/sleep/[date]", { date: row.night.displayDate }));
   }
 
@@ -218,7 +205,7 @@
                   width={bandwidth}
                   height={context.height}
                   fill="transparent"
-                  role={row.night ? (onSelectNight ? "button" : "link") : undefined}
+                  role={row.night ? "link" : undefined}
                   tabindex={row.night ? 0 : undefined}
                   aria-label={row.night
                     ? `Sleep session on ${formatShortDate(row.date)}`

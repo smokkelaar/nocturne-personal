@@ -1,29 +1,30 @@
 <script lang="ts">
     import { Key } from "@nocturne/ui/keys";
     import {page} from "$app/state";
-    import {formatMediumDateRange} from "$lib/utils/formatting";
-    import { Button } from "$lib/components/ui/button";
-    import {ReportsFilterSidebar} from "$lib/components/layout";
-    import ResourceGuard from "$lib/components/reports/ResourceGuard.svelte";
-    import ReportPageSwitcher from "$lib/components/reports/ReportPageSwitcher.svelte";
-    import { loopAnalysisHeaderMark } from "$lib/components/reports/loop-analysis/loop-analysis-tour.svelte";
-    import HistoryLimitNotice from "$lib/components/layout/HistoryLimitNotice.svelte";
-    import ReportPrintHeader from "$lib/components/reports/print/ReportPrintHeader.svelte";
+    import {formatMediumDateRange} from "#lib/utils/formatting.js";
+    import { Button } from "#lib/components/ui/button/index.js";
+    import {ReportsFilterSidebar} from "#lib/components/layout/index.js";
+    import ResourceGuard from "#lib/components/reports/ResourceGuard.svelte";
+    import ReportPageSwitcher from "#lib/components/reports/ReportPageSwitcher.svelte";
+    import { loopAnalysisHeaderMark } from "#lib/components/reports/loop-analysis/loop-analysis-tour.svelte.js";
+    import HistoryLimitNotice from "#lib/components/layout/HistoryLimitNotice.svelte";
+    import ReportPrintHeader from "#lib/components/reports/print/ReportPrintHeader.svelte";
+    import PrintReportButton from "#lib/components/reports/print/PrintReportButton.svelte";
     import {
         createReportPrintContext,
         installPrintFitFallback,
         printReport,
-    } from "$lib/components/reports/print/report-print.svelte";
-    import {reportCategories, reportDescription, reportSubRouteTitle, reportTitle} from "$lib/navigation/report-navigation.svelte";
+    } from "#lib/components/reports/print/report-print.svelte.js";
+    import {reportCategories, reportDescription, reportSubRouteTitle, reportTitle} from "#lib/navigation/report-navigation.svelte.js";
     import Filter from "@lucide/svelte/icons/funnel";
     import Calendar from "@lucide/svelte/icons/calendar";
     import ChevronDown from "@lucide/svelte/icons/chevron-down";
-    import Printer from "@lucide/svelte/icons/printer";
+    import ReportHeaderWashDeferred from "#lib/components/reports/ReportHeaderWashDeferred.svelte";
     import { toast } from "svelte-sonner";
     import { onMount } from "svelte";
-    import {useDateParams, setDateParamsContext, createSharedRangeUse} from "$lib/hooks/date-params.svelte";
-    import {createResourceContext} from "$lib/hooks/resource-context.svelte";
-    import {createReportSlots} from "$lib/hooks/report-slots.svelte";
+    import {useDateParams, setDateParamsContext, createSharedRangeUse} from "#lib/hooks/date-params.svelte.js";
+    import {createResourceContext} from "#lib/hooks/resource-context.svelte.js";
+    import {createReportSlots} from "#lib/hooks/report-slots.svelte.js";
 
     let {children} = $props();
 
@@ -57,8 +58,9 @@
 
     const printCtx = createReportPrintContext();
 
-    async function handlePrint() {
-        if (printCtx.printing) return;
+    /** Resolves true once the print dialog has run, false when it never opened. */
+    async function handlePrint(): Promise<boolean> {
+        if (printCtx.printing) return false;
         printCtx.printing = true;
         const url = page.url.href;
         const preparationVersion = printCtx.preparationVersion;
@@ -67,9 +69,11 @@
                 () => printCtx.prepare(),
                 () => page.url.href === url && printCtx.preparationVersion === preparationVersion,
             );
+            return true;
         } catch (error) {
             console.error("Failed to prepare report for printing:", error);
             toast.error("Could not load the complete report. Try again before printing.");
+            return false;
         } finally {
             printCtx.printing = false;
         }
@@ -153,38 +157,29 @@
                 class="sticky top-(--app-sticky-top,0px) z-20 transition-all duration-300 border-b border-border bg-card/95 backdrop-blur supports-backdrop-filter:bg-card/60 print:hidden"
                 {@attach loopAnalysisHeaderMark()}
         >
-            <div class="flex h-14 items-center justify-between gap-2 px-3 @md:px-6">
-                <div class="flex min-w-0 items-center gap-2">
-                    <!-- Report info -->
-                    <div class="flex min-w-0 items-center gap-3">
-                        <h1 class="truncate text-lg font-semibold text-foreground">{reportName}</h1>
-                        {#if showFilters}
-                            <Button
-                                    variant="outline"
-                                    size="sm"
-                                    class="hidden shrink-0 @xl:inline-flex"
-                                    onclick={() => (filterSidebarOpen = true)}
-                                    aria-label="Change date range"
-                            >
-                                <Calendar class="h-3.5 w-3.5"/>
-                                <span>{dateRangeDisplay}</span>
-                                <ChevronDown class="h-3 w-3 opacity-60"/>
-                            </Button>
-                        {/if}
-                    </div>
+            <!-- At 35% the darkest wash keeps the bar's text above 9:1 in either theme. -->
+            <ReportHeaderWashDeferred name={page.url.pathname} class="inset-0 opacity-35"/>
+            <div class="relative flex h-14 items-center justify-between gap-2 px-3 @md:px-6">
+                <!-- Report info -->
+                <div class="flex min-w-0 items-center gap-3">
+                    <h1 class="truncate text-lg font-semibold text-foreground">{reportName}</h1>
+                    {#if showFilters}
+                        <Button
+                                variant="outline"
+                                size="sm"
+                                class="hidden shrink-0 @xl:inline-flex"
+                                onclick={() => (filterSidebarOpen = true)}
+                                aria-label="Change date range"
+                        >
+                            <Calendar class="h-3.5 w-3.5"/>
+                            <span>{dateRangeDisplay}</span>
+                            <ChevronDown class="h-3 w-3 opacity-60"/>
+                        </Button>
+                    {/if}
                 </div>
 
                 <div class="flex shrink-0 items-center gap-2">
-                    <Button
-                            variant="outline"
-                            size="sm"
-                            onclick={handlePrint}
-                            disabled={printCtx.printing}
-                            aria-label="Print report"
-                    >
-                        <Printer class="w-4 h-4"/>
-                        <span class="hidden @lg:inline">Print</span>
-                    </Button>
+                    <PrintReportButton print={handlePrint} disabled={printCtx.printing}/>
                     {#if showFilters}
                         <Button
                                 variant="outline"

@@ -9,7 +9,7 @@ namespace Nocturne.Infrastructure.Data.Entities;
 /// eHbA1c estimate on the eHbA1c report — never read by that calculation.
 /// </summary>
 [Table("lab_hba1c_results")]
-public class LabHbA1cResultEntity : ITenantScoped, ISoftDeletable
+public class LabHbA1cResultEntity : ITenantScoped, IAuditable, ISoftDeletable
 {
     /// <summary>Owning tenant for RLS isolation.</summary>
     [Column("tenant_id")]
@@ -19,7 +19,7 @@ public class LabHbA1cResultEntity : ITenantScoped, ISoftDeletable
     [Key]
     public Guid Id { get; set; }
 
-    /// <summary>Local calendar date the blood was drawn, stored at UTC midnight.</summary>
+    /// <summary>Calendar date the blood was drawn, stored at UTC midnight.</summary>
     [Column("measured_at")]
     public DateTime MeasuredAt { get; set; }
 
@@ -37,6 +37,7 @@ public class LabHbA1cResultEntity : ITenantScoped, ISoftDeletable
     public DateTime CreatedAt { get; set; }
 
     /// <summary>When this row was soft-deleted, or null while it is live.</summary>
+    [AuditIgnored]
     [Column("deleted_at")]
     public DateTime? DeletedAt { get; set; }
 }

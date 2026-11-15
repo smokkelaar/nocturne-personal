@@ -134,9 +134,12 @@ jobs:
 
           keep=$(git log -n "$KEEP_TREES" --format=%H -- crates | while read -r commit; do
                    git rev-parse "$commit:crates"; done | sort -u)
+          known=$(git log --format=%H -- crates | while read -r commit; do
+                    git rev-parse "$commit:crates"; done | sort -u)
           gh release view "$RELEASE_TAG" --json assets --jq '.assets[].name' | while read -r asset; do
             tree=$(echo "$asset" | sed -nE 's/^nocturne_alerts-([0-9a-f]{40})-.*/\1/p')
-            if [ -n "$tree" ] && ! grep -qx "$tree" <<< "$keep"; then
+            # An older concurrent run cannot classify trees introduced after its checkout.
+            if [ -n "$tree" ] && grep -qx "$tree" <<< "$known" && ! grep -qx "$tree" <<< "$keep"; then
               gh release delete-asset "$RELEASE_TAG" "$asset" --yes
             fi
           done

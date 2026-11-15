@@ -6,7 +6,7 @@ namespace Nocturne.Core.Clinical.Tests.Statistics;
 
 public class GlycemicTargetStateTests
 {
-    private readonly StatisticsService _service = new();
+    private readonly StatisticsService _service = new(TimeProvider.System);
 
     [Theory]
     [InlineData(6.9, true, true)]
@@ -24,6 +24,18 @@ public class GlycemicTargetStateTests
 
         state.Percent.Should().Be(percentMet);
         state.MmolMol.Should().Be(mmolMolMet);
+    }
+
+    [Fact]
+    public void A1cTargetState_RoundsAsTheWebAppShowsTheValue()
+    {
+        // toFixed rounds the binary value just below each tie, so the web app shows 3.00 and 10.3.
+        var state = A1cTargetState.Below(
+            new A1cDisplayValue { Percent = 3.005, MmolMol = 10.35 },
+            new A1cDisplayValue { Percent = 3.01, MmolMol = 10.4 });
+
+        state.Percent.Should().BeTrue();
+        state.MmolMol.Should().BeTrue();
     }
 
     [Theory]

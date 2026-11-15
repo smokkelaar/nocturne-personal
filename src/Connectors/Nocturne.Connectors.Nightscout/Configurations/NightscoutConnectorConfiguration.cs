@@ -10,7 +10,7 @@ namespace Nocturne.Connectors.Nightscout.Configurations;
     ServiceNames.NightscoutConnector,
     "NIGHTSCOUT",
     "ConnectSource.Nightscout",
-    "nightscout-connector",
+    DataSources.NightscoutConnector,
     "nightscout",
     ConnectorCategory.Sync,
     "Sync glucose, treatment, device status, and profile data from a Nightscout instance",
@@ -38,6 +38,9 @@ public class NightscoutConnectorConfiguration : BaseConnectorConfiguration
     {
         ConnectSource = ConnectSource.Nightscout;
     }
+
+    [ConnectorProperty(ConnectorPropertyKey.SyncIntervalMinutes, AllowedNumbers = [1, 5, 60, 240])]
+    public override int SyncIntervalMinutes { get; set; } = 5;
 
     [ConnectorProperty(ConnectorPropertyKey.Url, Required = true, Format = "uri")]
     public string Url { get; set; } = string.Empty;

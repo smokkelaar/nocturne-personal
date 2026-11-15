@@ -1,34 +1,32 @@
 <script lang="ts">
-  import { BAND_KEY_SUFFIX } from "$lib/constants/year-overview-keys";
-  import { browser } from "$app/environment";
+  import { BAND_KEY_SUFFIX } from "#lib/constants/year-overview-keys.js";
+  import { browser } from "$app/env";
   import { goto } from "$app/navigation";
   import { resolve } from "$app/paths";
   import Loader2 from "@lucide/svelte/icons/loader-circle";
   import { scaleThreshold } from "d3-scale";
-  import { Button } from "$lib/components/ui/button";
-  import { Artwork } from "@nocturne/watercolour";
+  import { Button } from "#lib/components/ui/button/index.js";
+  import { EmptyState } from "#lib/components/shared/index.js";
   import {
     getAvailableYears,
     getYearSummary,
-  } from "$api/generated/dataOverviews.generated.remote";
-  import GlycemicRiskIndexChart from "$lib/components/reports/GlycemicRiskIndexChart.svelte";
-  import YearOverviewFilters from "$lib/components/reports/year-overview/YearOverviewFilters.svelte";
-  import HeatmapLegend from "$lib/components/reports/year-overview/HeatmapLegend.svelte";
-  import YearHeatmap from "$lib/components/reports/year-overview/YearHeatmap.svelte";
-  import VisibleChart from "$lib/components/reports/year-overview/VisibleChart.svelte";
-  import TimeZoneNote from "$lib/components/reports/TimeZoneNote.svelte";
+  } from "#lib/api/generated/dataOverviews.generated.remote.js";
+  import GlycemicRiskIndexChart from "#lib/components/reports/GlycemicRiskIndexChart.svelte";
+  import YearOverviewFilters from "#lib/components/reports/year-overview/YearOverviewFilters.svelte";
+  import HeatmapLegend from "#lib/components/reports/year-overview/HeatmapLegend.svelte";
+  import YearHeatmap from "#lib/components/reports/year-overview/YearHeatmap.svelte";
+  import VisibleChart from "#lib/components/reports/year-overview/VisibleChart.svelte";
+  import TimeZoneNote from "#lib/components/reports/TimeZoneNote.svelte";
   import type {
     DailySummaryDay,
     GlycemicThresholds,
     GriTimelinePeriod,
     TimeZoneUnavailableReason,
     YearOverviewColorPreferences,
-  } from "$api/generated/nocturne-api-client";
-  import { getUnitLabel } from "$lib/utils/formatting";
-  import {
-    glucoseUnits,
-    yearOverviewColors,
-  } from "$lib/stores/appearance-store.svelte";
+  } from "#lib/api/generated/nocturne-api-client.js";
+  import { getUnitLabel } from "#lib/utils/formatting.js";
+  import { glucoseUnits, yearOverviewColors } from "#lib/stores/appearance-store.svelte.js";
+
   import {
     glucoseScale,
     intensityScale,
@@ -37,18 +35,18 @@
     type ColorBoundary,
     type ColorEnds,
     type ColorFocusRange,
-  } from "$lib/utils/metric-color-focus";
-  import { resolvePalette } from "$lib/utils/metric-color-palette";
+  } from "#lib/utils/metric-color-focus.js";
   import { onMount, untrack, tick } from "svelte";
   import { fade } from "svelte/transition";
-  import { YearLoader } from "$lib/components/reports/year-overview/year-loader";
-  import { toggled } from "$lib/utils/collections";
+  import { YearLoader } from "#lib/components/reports/year-overview/year-loader.js";
+  import { toggled } from "#lib/utils/collections.js";
   import {
     getReportPrintContext,
     setReportPrintMeta,
     setReportPrintPreparation,
-  } from "$lib/components/reports/print/report-print.svelte";
-  import type { TextureKey } from "$lib/components/charts/print/chart-print-patterns";
+  } from "#lib/components/reports/print/report-print.svelte.js";
+  import type { TextureKey } from "#lib/components/charts/print/chart-print-patterns.js";
+  import { fresh } from "#lib/api/fresh-query.js";
 
   // =========================================================================
   // State
@@ -67,13 +65,7 @@
   let metadataLoading = $state(false);
   let sentinelElements: Record<number, HTMLDivElement | undefined> = $state({});
 
-  type HeatmapMetric =
-    | "avgGlucose"
-    | "tir"
-    | "bolus"
-    | "basal"
-    | "tdd"
-    | "carbs";
+  type HeatmapMetric = "avgGlucose" | "tir" | "bolus" | "basal" | "tdd" | "carbs";
 
   const METRIC_OPTIONS: { value: HeatmapMetric; label: string }[] = [
     { value: "avgGlucose", label: "Avg glucose" },
@@ -108,18 +100,12 @@
     boundaries: `${HeatmapMetric}Boundaries`;
     low: `${HeatmapMetric}LowColor`;
     high: `${HeatmapMetric}HighColor`;
-    palette: `${HeatmapMetric}Palette`;
-    mirror: `${HeatmapMetric}Mirror`;
-    range: `${HeatmapMetric}ColorRange`;
   };
   const scaleKeys = $derived<ScaleKeys>({
     band: `${selectedMetric}Band`,
     boundaries: `${selectedMetric}Boundaries`,
     low: `${selectedMetric}LowColor`,
     high: `${selectedMetric}HighColor`,
-    palette: `${selectedMetric}Palette`,
-    mirror: `${selectedMetric}Mirror`,
-    range: `${selectedMetric}ColorRange`,
   });
   /**
    * The retired shape applied its bands and dimming only in advanced mode. A blob saved with
@@ -127,30 +113,13 @@
    */
   const colorPreferences = $derived.by((): YearOverviewColorPreferences => {
     const stored = yearOverviewColors.current;
-    if (!("advancedMode" in stored)) return stored;
-    if (stored.advancedMode === true) return withRetiredPalettes(stored);
+    if (!("advancedMode" in stored) || stored.advancedMode === true) return stored;
     return Object.fromEntries(
       Object.entries(stored).filter(
         ([key]) => !key.endsWith(BAND_KEY_SUFFIX) && key !== "outOfBandTransparency"
       )
     );
   });
-  /**
-   * The retired shape's palette (`<metric>Colors`) and invert flag become the palette and
-   * mirror of the current one, unless those are already set.
-   */
-  function withRetiredPalettes(stored: YearOverviewColorPreferences): YearOverviewColorPreferences {
-    const retired = new Map<string, unknown>(Object.entries(stored));
-    const next: YearOverviewColorPreferences = { ...stored };
-    for (const { value } of METRIC_OPTIONS) {
-      const palette = resolvePalette(retired.get(`${value}Colors`));
-      if (palette && !next[`${value}Palette`]) next[`${value}Palette`] = palette;
-      if (retired.get(`${value}Invert`) === true && next[`${value}Mirror`] === undefined)
-        next[`${value}Mirror`] = true;
-    }
-    return next;
-  }
-
   const dim = $derived(
     Math.max(0, Math.min(100, colorPreferences.outOfBandTransparency ?? 90))
   );
@@ -185,16 +154,13 @@
     low: colorPreferences[scaleKeys.low],
     high: colorPreferences[scaleKeys.high],
   });
-  /** Personal: no palettes or mirroring; a saved palette or mirror is kept but not drawn. */
   const scale = $derived(
     selectedMetric === "avgGlucose"
       ? glucoseScale(
           colorPreferences.avgGlucoseBand,
           colorPreferences.avgGlucoseBoundaries,
           dim,
-          scaleEnds,
-          {},
-          colorPreferences.avgGlucoseColorRange
+          scaleEnds
         )
       : intensityScale(
           METRIC_CSS_VARS[selectedMetric],
@@ -203,9 +169,7 @@
           colorPreferences[scaleKeys.band],
           colorPreferences[scaleKeys.boundaries],
           dim,
-          scaleEnds,
-          {},
-          colorPreferences[scaleKeys.range]
+          scaleEnds
         )
   );
 
@@ -225,11 +189,6 @@
       if (boundaries) next[`${value}Boundaries`] = boundaries;
       if (low) next[`${value}LowColor`] = low;
       if (high) next[`${value}HighColor`] = high;
-      const palette = resolvePalette(colorPreferences[`${value}Palette`]);
-      if (palette) next[`${value}Palette`] = palette;
-      if (colorPreferences[`${value}Mirror`] === true) next[`${value}Mirror`] = true;
-      const range = colorPreferences[`${value}ColorRange`];
-      if (range) next[`${value}ColorRange`] = range;
     }
     change(next);
     yearOverviewColors.current = next;
@@ -239,13 +198,6 @@
     saveColorPreferences((next) => {
       if (focusWindow) next[scaleKeys.band] = [...focusWindow];
       else delete next[scaleKeys.band];
-    });
-  }
-
-  function setScaleRange(range: ColorFocusRange | null) {
-    saveColorPreferences((next) => {
-      if (range) next[scaleKeys.range] = [...range];
-      else delete next[scaleKeys.range];
     });
   }
 
@@ -275,12 +227,9 @@
   function resetScale() {
     saveColorPreferences((next) => {
       delete next[scaleKeys.band];
-      delete next[scaleKeys.range];
       delete next[scaleKeys.boundaries];
       delete next[scaleKeys.low];
       delete next[scaleKeys.high];
-      delete next[scaleKeys.palette];
-      delete next[scaleKeys.mirror];
     });
   }
 
@@ -295,6 +244,7 @@
     "Notes",
     "DeviceEvents",
     "TempBasals",
+    "BasalInjections",
     "StateSpans",
     "Activity",
     "DeviceStatus",
@@ -409,7 +359,7 @@
     metadataLoading = true;
     metadataRequest = (async () => {
       try {
-        const result = await getAvailableYears().run();
+        const result = await fresh(getAvailableYears());
         if (disposed) return;
         availableYears = result.years ?? [];
         availableDataSources = result.availableDataSources ?? [];
@@ -431,10 +381,10 @@
   const yearLoader = new YearLoader(
     {
       summary: (year, sources) =>
-        getYearSummary({
+        fresh(getYearSummary({
           year,
           dataSources: sources.length ? sources : undefined,
-        }).run(),
+        })),
     },
     {
       daily: (year, result) => {
@@ -471,12 +421,7 @@
       throw new Error("Year overview is unavailable");
     const sources = [...selectedDataSources].sort().join(",");
     for (const year of sortedYears) {
-      if (
-        !(await (failedYears.has(year)
-          ? yearLoader.retry(year)
-          : loadYearData(year)))
-      )
-        throw new Error("Year overview is incomplete");
+      if (!await (failedYears.has(year) ? yearLoader.retry(year) : loadYearData(year))) throw new Error("Year overview is incomplete");
     }
     if (disposed || sources !== [...selectedDataSources].sort().join(",")) {
       throw new Error("Year overview filters changed");
@@ -599,7 +544,7 @@
   }
 
   function navigateToDayInReview(dateStr: string) {
-    goto(resolve(`/reports/day-in-review?date=${dateStr}`));
+    goto(resolve(`reports/day-in-review?date=${dateStr}`));
   }
 
   // =========================================================================
@@ -607,15 +552,13 @@
   // =========================================================================
 
   onMount(() => {
-    // `.run()` rejects when called during the render/effect flush, so defer the
-    // bootstrap to a microtask — onMount's synchronous body still counts as render.
-    queueMicrotask(async () => {
+    void (async () => {
       await loadMetadata();
       if (disposed) return;
       if (sortedYears.length > 0) {
         loadYearData(sortedYears[0]);
       }
-    });
+    })();
     return () => {
       disposed = true;
       yearLoader.dispose();
@@ -676,12 +619,12 @@
     <div class="print:hidden">
       <YearOverviewFilters
         disabled={printContext?.printing ?? false}
-        {availableDataSources}
+        availableDataSources={availableDataSources}
         bind:selectedDataSources
-        {presentDataTypes}
-        {hiddenDataTypes}
-        {toggleDataType}
-        {showAllDataTypes}
+        presentDataTypes={presentDataTypes}
+        hiddenDataTypes={hiddenDataTypes}
+        toggleDataType={toggleDataType}
+        showAllDataTypes={showAllDataTypes}
       />
     </div>
 
@@ -689,17 +632,16 @@
     <HeatmapLegend
       bind:selectedMetric
       metricOptions={METRIC_OPTIONS}
-      {units}
+      units={units}
       unit={METRIC_UNITS[selectedMetric]}
-      {scale}
+      scale={scale}
       limits={scaleLimits}
       onWindowChange={setScaleWindow}
-      onRangeChange={setScaleRange}
       onBoundariesChange={setScaleBoundaries}
       onEndsChange={setScaleEnds}
       onDimChange={setDim}
       onReset={resetScale}
-      {glucoseBands}
+      glucoseBands={glucoseBands}
     />
 
     <!-- Loading state for metadata -->
@@ -729,27 +671,22 @@
         class="flex items-center justify-center py-20"
         in:fade={{ duration: 300 }}
       >
-        <div class="max-w-md space-y-4 text-center">
-          <Artwork
-            artwork="calendar"
-            palette="moonlight"
-            motion="auto"
-            autoplay="once"
-            class="mx-auto size-48"
-          />
-          <h2 class="text-xl font-semibold">No data available</h2>
-          <p class="text-muted-foreground">
-            There is no data to display yet. Connect a data source in your
-            settings to get started.
-          </p>
-          <Button
-            href="/settings/connectors"
-            variant="outline"
-            class="print:hidden"
-          >
-            Configure data sources
-          </Button>
-        </div>
+        <EmptyState
+          art="calendar"
+          title="No data available"
+          headingLevel={2}
+          body="There is no data to display yet. Connect a data source in your settings to get started."
+        >
+          {#snippet action()}
+            <Button
+              href="/settings/connectors"
+              variant="outline"
+              class="print:hidden"
+            >
+              Configure data sources
+            </Button>
+          {/snippet}
+        </EmptyState>
       </div>
     {/if}
 
@@ -758,22 +695,22 @@
       <div class="space-y-10">
         {#each sortedYears as year, yearIndex (year)}
           <YearHeatmap
-            {year}
-            {yearIndex}
-            {loadingYears}
+            year={year}
+            yearIndex={yearIndex}
+            loadingYears={loadingYears}
             failed={failedYears.has(year)}
             onRetry={() => yearLoader.retry(year)}
-            {yearData}
-            {transformYearData}
-            {getCellFill}
-            {getCellHatch}
-            {navigateToDayInReview}
-            {glucoseColorScale}
-            {glucoseBands}
-            {units}
-            {unitLabel}
-            {formatUnits}
-            {getVisibleCounts}
+            yearData={yearData}
+            transformYearData={transformYearData}
+            getCellFill={getCellFill}
+            getCellHatch={getCellHatch}
+            navigateToDayInReview={navigateToDayInReview}
+            glucoseColorScale={glucoseColorScale}
+            glucoseBands={glucoseBands}
+            units={units}
+            unitLabel={unitLabel}
+            formatUnits={formatUnits}
+            getVisibleCounts={getVisibleCounts}
             bind:sentinelElement={sentinelElements[year]}
           />
 

@@ -15,6 +15,7 @@ namespace Nocturne.API.Tests.Integration.Analytics;
 /// <c>GET /api/v4/loop-analysis/prediction-accuracy</c> end to end on PostgreSQL: a week of Loop
 /// predictions every five minutes against flat glucose in Sydney, compared with the week before.
 /// </summary>
+[Collection(ApiIntegrationShards.Three)]
 [Trait("Category", "Integration")]
 public class LoopAnalysisPredictionAccuracyIntegrationTests(ApiIntegrationTestFixture fixture, ITestOutputHelper output)
     : LoopAnalysisIntegrationTestBase(fixture, output)

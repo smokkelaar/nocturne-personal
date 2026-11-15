@@ -3,6 +3,7 @@ using Nocturne.Core.Contracts.V4.Repositories;
 using Nocturne.Core.Models.V4;
 using Nocturne.Core.Models;
 using Nocturne.Infrastructure.Data.Entities;
+using Nocturne.Infrastructure.Data.Entities.V4;
 
 namespace Nocturne.Infrastructure.Data.Extensions;
 
@@ -22,18 +23,15 @@ public sealed record GroupRestore<TEntity>(
 /// soft-deletable row.
 /// </summary>
 /// <remarks>
-/// Parameterless <c>IgnoreQueryFilters()</c> drops <see cref="NocturneDbContext.TenantFilterKey"/>
-/// along with the soft-delete filter, so the tenant predicate is re-applied by hand — without it a
-/// restore would reach across tenants. The key is read through <see cref="EF.Property{TProperty}"/>
-/// because <c>PatientDeviceEntity</c> and <c>PatientInsulinEntity</c> declare it on no interface.
+/// The key is read through <see cref="EF.Property{TProperty}"/> because <c>PatientDeviceEntity</c>
+/// and <c>PatientInsulinEntity</c> declare it on no interface.
 /// </remarks>
 public static class SoftDeleteRestoreExtensions
 {
     private const string IdProperty = "Id";
-    private const string LegacyIdProperty = nameof(IV4Entity.LegacyId);
+    private const string LegacyIdProperty = nameof(ILegacyIdentified.LegacyId);
     private const string DataSourceProperty = nameof(ISyncDedupable.DataSource);
     private const string SyncIdentifierProperty = nameof(ISyncDedupable.SyncIdentifier);
-    private const string OriginalIdProperty = nameof(IOriginalIdentified.OriginalId);
 
     /// <summary>
     /// Clears <see cref="ISoftDeletable.DeletedAt"/> on this tenant's soft-deleted row with the given
@@ -83,9 +81,7 @@ public static class SoftDeleteRestoreExtensions
     /// and its key is returned in <see cref="BulkRestoreResult{T}.Conflicts"/>.
     /// </summary>
     /// <exception cref="RecreationBlockedException">
-    /// The save lost the race <see cref="SaveRestoreAsync"/> describes, which only a unique index can
-    /// report, so not for a key in <see cref="NocturneDbContext.OriginalIdKeyedEntities"/>. The whole
-    /// batch stays deleted.
+    /// The save lost the race <see cref="SaveRestoreAsync"/> describes. The whole batch stays deleted.
     /// </exception>
     public static async Task<BulkRestoreResult<TEntity>> RestoreDeletedAsync<TEntity>(
         this NocturneDbContext ctx, IEnumerable<Guid> ids, string recordType, CancellationToken ct = default)
@@ -136,7 +132,7 @@ public static class SoftDeleteRestoreExtensions
     /// group they belong to reads as it did before the delete. A user's delete of one record deleted
     /// every copy in its group at one <see cref="ISoftDeletable.DeletedAt"/>
     /// (<see cref="DuplicateDelete.EveryCopy"/>), and reads show a group only through its primary
-    /// (<see cref="ReadVisibilityFilter.ExcludeNonPrimary{TEntity}"/>); restoring one non-primary copy
+    /// (<see cref="ReadVisibilityFilter.ExcludeDuplicates{TEntity}"/>); restoring one non-primary copy
     /// alone would bring back a row no read shows, so a dose would not count in IOB/COB. The group's
     /// copies deleted at the restored row's instant come back with it, unless a live row holds a
     /// unique key one would take. A group still left without a live primary, because its primary was
@@ -165,11 +161,15 @@ public static class SoftDeleteRestoreExtensions
             List<TEntity> copies = [];
             if (dedup is { } type && restoring.Count > 0)
             {
+                await DuplicateGroupPrimaries.LockGroupsOfAsync(ctx, type, [.. restoring.Select(ctx.IdOf)], token);
                 var candidates = await ctx.CoDeletedCopiesAsync(type, restoring, token);
                 var clashes = await ctx.FindLiveKeyClashesAsync([.. restoring, .. candidates], token);
                 copies = candidates.Where((_, i) => clashes[restoring.Count + i] is null).ToList();
             }
 
+            using var wide = typeof(TEntity) == typeof(SensorGlucoseEntity)
+                ? await GlucoseStreamFlags.DeferIfWideAsync(ctx, restoring.Count + copies.Count, token)
+                : null;
             foreach (var entity in restoring.Concat(copies))
                 entity.DeletedAt = null;
             await ctx.SaveRestoreAsync(recordType, token);
@@ -179,6 +179,8 @@ public static class SoftDeleteRestoreExtensions
                     ctx, restoredType, [.. restoring.Concat(copies).Select(ctx.IdOf)],
                     NocturneDbContext.UtcNowAtStoredPrecision(), token)
                 : [];
+            if (typeof(TEntity) == typeof(SensorGlucoseEntity))
+                await GlucoseStreamFlags.AfterRowsChangedAsync(ctx, [.. restoring.Concat(copies).Select(ctx.IdOf)], token);
 
             return new GroupRestore<TEntity>(restoring, conflicts, copies, promoted);
         }, ct: ct);
@@ -248,9 +250,8 @@ public static class SoftDeleteRestoreExtensions
     /// For each of <paramref name="candidates"/>, the unique key restoring it would clash on, or null
     /// when it restores cleanly. The keys are those the partial unique indexes over
     /// <c>deleted_at IS NULL</c> enforce: the legacy id on
-    /// <see cref="NocturneDbContext.V4LegacyIdRecordEntities"/> and the sync key on
-    /// <see cref="NocturneDbContext.SyncDedupedEntities"/>, and the original id on
-    /// <see cref="NocturneDbContext.OriginalIdKeyedEntities"/>, which no index enforces. A key is held
+    /// <see cref="NocturneDbContext.LegacyIdKeyedEntities"/> and the sync key on
+    /// <see cref="NocturneDbContext.SyncDedupedEntities"/>. A key is held
     /// by a live row of this tenant, or by an earlier candidate that restores cleanly.
     /// </summary>
     private static async Task<string?[]> FindLiveKeyClashesAsync<TEntity>(
@@ -258,14 +259,13 @@ public static class SoftDeleteRestoreExtensions
         where TEntity : class, ITenantScoped, ISoftDeletable
     {
         var clashes = new string?[candidates.Count];
-        var byLegacyId = NocturneDbContext.V4LegacyIdRecordEntities.Contains(typeof(TEntity));
+        var byLegacyId = NocturneDbContext.LegacyIdKeyedEntities.Contains(typeof(TEntity));
         var bySyncKey = NocturneDbContext.SyncDedupedEntities.Contains(typeof(TEntity));
-        var byOriginalId = NocturneDbContext.OriginalIdKeyedEntities.Contains(typeof(TEntity));
-        if (candidates.Count == 0 || (!byLegacyId && !bySyncKey && !byOriginalId))
+        if (candidates.Count == 0 || (!byLegacyId && !bySyncKey))
             return clashes;
 
-        var live = ctx.Set<TEntity>().IgnoreQueryFilters().AsNoTracking()
-            .Where(e => e.TenantId == ctx.TenantId && e.DeletedAt == null);
+        var live = ctx.Set<TEntity>().IncludingDeleted().AsNoTracking()
+            .Where(e => e.DeletedAt == null);
 
         var keys = candidates.Select(c =>
         {
@@ -276,8 +276,7 @@ public static class SoftDeleteRestoreExtensions
                 && ctx.KeyValue(c, SyncIdentifierProperty) is { } syncIdentifier
                     ? (dataSource, syncIdentifier)
                     : null;
-            var originalId = byOriginalId ? ctx.KeyValue(c, OriginalIdProperty) : null;
-            return (LegacyId: legacyId, SyncKey: syncKey, OriginalId: originalId);
+            return (LegacyId: legacyId, SyncKey: syncKey);
         }).ToList();
 
         var heldLegacyIds = new HashSet<string>(StringComparer.Ordinal);
@@ -287,17 +286,6 @@ public static class SoftDeleteRestoreExtensions
             heldLegacyIds.UnionWith(await live
                 .Select(e => EF.Property<string>(e, LegacyIdProperty))
                 .Where(legacyId => wantedLegacyIds.Contains(legacyId))
-                .ToListAsync(ct));
-        }
-
-        var heldOriginalIds = new HashSet<string>(StringComparer.Ordinal);
-        var wantedOriginalIds = keys.Select(k => k.OriginalId).OfType<string>().Distinct().ToList();
-        if (wantedOriginalIds.Count > 0)
-        {
-            heldOriginalIds.UnionWith(await live
-                .Select(e => EF.Property<string?>(e, OriginalIdProperty))
-                .Where(originalId => originalId != null && wantedOriginalIds.Contains(originalId))
-                .Select(originalId => originalId!)
                 .ToListAsync(ct));
         }
 
@@ -319,7 +307,7 @@ public static class SoftDeleteRestoreExtensions
 
         for (var i = 0; i < candidates.Count; i++)
         {
-            var (legacyId, syncKey, originalId) = keys[i];
+            var (legacyId, syncKey) = keys[i];
 
             if (legacyId != null && heldLegacyIds.Contains(legacyId))
             {
@@ -329,18 +317,12 @@ public static class SoftDeleteRestoreExtensions
             {
                 clashes[i] = RecreationBlockedException.SyncKeyIdentity(held.DataSource, held.SyncIdentifier);
             }
-            else if (originalId != null && heldOriginalIds.Contains(originalId))
-            {
-                clashes[i] = RecreationBlockedException.OriginalIdIdentity(originalId);
-            }
             else
             {
                 if (legacyId != null)
                     heldLegacyIds.Add(legacyId);
                 if (syncKey is { } taken)
                     heldSyncKeys.Add(taken);
-                if (originalId != null)
-                    heldOriginalIds.Add(originalId);
             }
         }
 
@@ -372,6 +354,6 @@ public static class SoftDeleteRestoreExtensions
 
     private static IQueryable<TEntity> DeletedRows<TEntity>(this NocturneDbContext ctx)
         where TEntity : class, ITenantScoped, ISoftDeletable
-        => ctx.Set<TEntity>().IgnoreQueryFilters()
-            .Where(e => e.TenantId == ctx.TenantId && e.DeletedAt != null);
+        => ctx.Set<TEntity>().IncludingDeleted()
+            .Where(e => e.DeletedAt != null);
 }

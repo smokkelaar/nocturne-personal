@@ -1,12 +1,11 @@
 <script lang="ts">
-  import * as Dialog from "$lib/components/ui/dialog";
-  import { Button } from "$lib/components/ui/button";
-  import { toast } from "svelte-sonner";
-  import { useToastSubmission } from "$lib/forms";
-  import type { Food } from "$lib/api";
+  import * as Dialog from "#lib/components/ui/dialog/index.js";
+  import { Button } from "#lib/components/ui/button/index.js";
+  import { toastSaved, useToastSubmission } from "#lib/forms/index.js";
+  import type { Food } from "#lib/api/index.js";
   import FoodFields from "./FoodFields.svelte";
   import { DEFAULT_PORTION, DEFAULT_UNIT, DEFAULT_GI, type FoodCategoryMap } from "./food-constants";
-  import { createFood, updateFood } from "$api/generated/foods.generated.remote";
+  import { createFood, updateFood } from "#lib/api/generated/foods.generated.remote.js";
 
   interface Props {
     /** Whether the dialog is open */
@@ -79,7 +78,7 @@
         ? await updateFood({ foodId: editingFoodId, request: payload })
         : await createFood(payload);
 
-      toast.success(editingFoodId ? "Food updated successfully" : "Food created successfully");
+      toastSaved(editingFoodId ? "Food updated successfully" : "Food created successfully");
       onSave?.(result);
       onOpenChange(false);
     });

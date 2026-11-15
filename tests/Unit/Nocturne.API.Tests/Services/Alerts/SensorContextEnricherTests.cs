@@ -1,3 +1,4 @@
+using Nocturne.Core.Contracts.Repositories;
 using Nocturne.Core.Clinical.LoopAnalysis;
 using Nocturne.API.Services.Caching;
 using Nocturne.API.Tests.Infrastructure;
@@ -12,7 +13,7 @@ using Nocturne.API.Configuration;
 using Nocturne.API.Services.Alerts;
 using Nocturne.API.Services.Devices;
 using Nocturne.API.Services.Glucose;
-using Nocturne.API.Services.Treatments;
+using Nocturne.API.Services.Analytics;
 using Nocturne.API.Tests.Services.Profiles.Resolvers;
 using Nocturne.Core.Contracts.Alerts;
 using Nocturne.Core.Contracts.Glucose;
@@ -58,7 +59,7 @@ public class SensorContextEnricherTests
         // The repo never returns null; default the new DND-windows fetch to empty so the
         // unconditional enrichment block is exercised. Per-test setups override this.
         _alertRepository
-            .Setup(r => r.GetUnexpiredDndWindowsAsync(It.IsAny<Guid>(), It.IsAny<DateTime>(), It.IsAny<CancellationToken>()))
+            .Setup(r => r.GetUnexpiredDndWindowsAsync(It.IsAny<DateTime>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Array.Empty<DndWindowSnapshot>());
     }
 
@@ -68,7 +69,7 @@ public class SensorContextEnricherTests
         var enricher = BuildEnricher();
         var rule = MakeRule(AlertConditionType.Threshold, """{"direction":"above","value":180}""");
 
-        await enricher.EnrichAsync(BaseContext(trendRate: 1.5m), new[] { rule }, _tenantId, CancellationToken.None);
+        await enricher.EnrichAsync(BaseContext(trendRate: 1.5m), new[] { rule }, CancellationToken.None);
 
         _treatmentService.Verify(s => s.GetTreatmentsByRangeAsync(It.IsAny<long>(), It.IsAny<long>(), It.IsAny<CancellationToken>()), Times.Never);
         _iobCalculator.Verify(s => s.CalculateTotalAsync(It.IsAny<List<Bolus>>(), It.IsAny<List<TempBasal>?>(), It.IsAny<long>(), It.IsAny<long?>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()), Times.Never);
@@ -76,7 +77,8 @@ public class SensorContextEnricherTests
         _predictionService.Verify(s => s.GetPredictionsAsync(It.IsAny<string?>(), It.IsAny<DateTimeOffset?>(), It.IsAny<CancellationToken>()), Times.Never);
         _pumpSnapshotRepository.Verify(s => s.GetAsync(It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()), Times.Never);
         _deviceEventRepository.Verify(s => s.GetLatestByEventTypeAsync(It.IsAny<DeviceEventType>(), It.IsAny<DateTime?>(), It.IsAny<CancellationToken>()), Times.Never);
-        _alertRepository.Verify(s => s.GetActiveAlertSnapshotsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
+        _deviceEventRepository.Verify(s => s.GetLatestOfAnyTypeAsync(It.IsAny<IReadOnlyCollection<DeviceEventType>>(), It.IsAny<DateTime?>(), It.IsAny<CancellationToken>()), Times.Never);
+        _alertRepository.Verify(s => s.GetActiveAlertSnapshotsAsync(It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
@@ -85,7 +87,7 @@ public class SensorContextEnricherTests
         var enricher = BuildEnricher();
         var rule = MakeRule(AlertConditionType.Trend, """{"bucket":"rising_fast"}""");
 
-        var enriched = await enricher.EnrichAsync(BaseContext(trendRate: 4.5m), new[] { rule }, _tenantId, CancellationToken.None);
+        var enriched = await enricher.EnrichAsync(BaseContext(trendRate: 4.5m), new[] { rule }, CancellationToken.None);
 
         enriched.TrendBucket.Should().Be(TrendBucket.RisingFast);
         _treatmentService.Verify(s => s.GetTreatmentsByRangeAsync(It.IsAny<long>(), It.IsAny<long>(), It.IsAny<CancellationToken>()), Times.Never);
@@ -114,7 +116,7 @@ public class SensorContextEnricherTests
         """;
         var rule = MakeRule(AlertConditionType.Composite, json);
 
-        var enriched = await enricher.EnrichAsync(BaseContext(), new[] { rule }, _tenantId, CancellationToken.None);
+        var enriched = await enricher.EnrichAsync(BaseContext(), new[] { rule }, CancellationToken.None);
 
         enriched.IobUnits.Should().Be(1.5m);
         enriched.CobGrams.Should().Be(24.0m);
@@ -148,7 +150,7 @@ public class SensorContextEnricherTests
         }
         """);
 
-        var enriched = await enricher.EnrichAsync(BaseContext(), new[] { rule }, _tenantId, CancellationToken.None);
+        var enriched = await enricher.EnrichAsync(BaseContext(), new[] { rule }, CancellationToken.None);
 
         enriched.IobUnits.Should().Be(1.5m);
         enriched.CobGrams.Should().Be(24.0m);
@@ -172,7 +174,7 @@ public class SensorContextEnricherTests
         }
         """);
 
-        var enriched = await enricher.EnrichAsync(BaseContext(), new[] { rule }, _tenantId, CancellationToken.None);
+        var enriched = await enricher.EnrichAsync(BaseContext(), new[] { rule }, CancellationToken.None);
 
         enriched.IobUnits.Should().Be(1.5m);
         enriched.CobGrams.Should().BeNull();
@@ -192,7 +194,7 @@ public class SensorContextEnricherTests
         """);
 
         await enricher.EnrichAsOfAsync(
-            BaseContext(), new[] { rule }, _tenantId, new DateTime(2026, 3, 22, 10, 0, 0, DateTimeKind.Utc), CancellationToken.None);
+            BaseContext(), new[] { rule }, new DateTime(2026, 3, 22, 10, 0, 0, DateTimeKind.Utc), CancellationToken.None);
 
         _cobCalculator.Verify(s => s.CalculateTotalAsync(
             It.IsAny<List<CarbIntake>>(), It.IsAny<List<Bolus>?>(), It.IsAny<List<TempBasal>?>(),
@@ -241,7 +243,7 @@ public class SensorContextEnricherTests
         var expectedMills = new DateTimeOffset(tick).ToUnixTimeMilliseconds();
 
         await enricher.EnrichAsOfAsync(
-            BaseContext(), new[] { rule }, _tenantId, tick, CancellationToken.None);
+            BaseContext(), new[] { rule }, tick, CancellationToken.None);
 
         capturedIobTime.Should().Be(expectedMills);
         capturedCobTime.Should().Be(expectedMills);
@@ -264,7 +266,7 @@ public class SensorContextEnricherTests
         var enricher = BuildEnricher(includePredictionService: false);
         var rule = MakeRule(AlertConditionType.Predicted, """{"operator":"<","value":70,"within_minutes":30}""");
 
-        var enriched = await enricher.EnrichAsync(BaseContext(), new[] { rule }, _tenantId, CancellationToken.None);
+        var enriched = await enricher.EnrichAsync(BaseContext(), new[] { rule }, CancellationToken.None);
 
         enriched.Predictions.Should().BeEmpty();
     }
@@ -277,7 +279,7 @@ public class SensorContextEnricherTests
             .ThrowsAsync(new InvalidOperationException("no readings available"));
         var rule = MakeRule(AlertConditionType.Predicted, """{"operator":"<","value":70,"within_minutes":30}""");
 
-        var enriched = await enricher.EnrichAsync(BaseContext(), new[] { rule }, _tenantId, CancellationToken.None);
+        var enriched = await enricher.EnrichAsync(BaseContext(), new[] { rule }, CancellationToken.None);
 
         enriched.Predictions.Should().BeEmpty();
     }
@@ -294,7 +296,7 @@ public class SensorContextEnricherTests
             });
         var rule = MakeRule(AlertConditionType.Predicted, """{"operator":"<","value":70,"within_minutes":30}""");
 
-        var enriched = await enricher.EnrichAsync(BaseContext(), new[] { rule }, _tenantId, CancellationToken.None);
+        var enriched = await enricher.EnrichAsync(BaseContext(), new[] { rule }, CancellationToken.None);
 
         enriched.Predictions.Should().HaveCount(3);
         enriched.Predictions[0].OffsetMinutes.Should().Be(5);
@@ -324,7 +326,7 @@ public class SensorContextEnricherTests
         var tick = new DateTime(2026, 3, 22, 10, 0, 0, DateTimeKind.Utc);
 
         var enriched = await enricher.EnrichAsOfAsync(
-            BaseContext(), new[] { rule }, _tenantId, tick, CancellationToken.None);
+            BaseContext(), new[] { rule }, tick, CancellationToken.None);
 
         enriched.Predictions.Should().HaveCount(1);
         capturedAsOf.Should().NotBeNull();
@@ -339,7 +341,7 @@ public class SensorContextEnricherTests
             .ReturnsAsync(new ReservoirEstimate(42.5m, IsLowerBound: false, IsEstimated: true));
         var rule = MakeRule(AlertConditionType.Reservoir, """{"operator":"<","value":50}""");
 
-        var enriched = await enricher.EnrichAsync(BaseContext(), new[] { rule }, _tenantId, CancellationToken.None);
+        var enriched = await enricher.EnrichAsync(BaseContext(), new[] { rule }, CancellationToken.None);
 
         enriched.ReservoirUnits.Should().Be(42.5m);
         enriched.ReservoirIsLowerBound.Should().BeFalse();
@@ -353,7 +355,7 @@ public class SensorContextEnricherTests
             .ReturnsAsync(new ReservoirEstimate(50m, IsLowerBound: true, IsEstimated: false));
         var rule = MakeRule(AlertConditionType.Reservoir, """{"operator":"<","value":50}""");
 
-        var enriched = await enricher.EnrichAsync(BaseContext(), new[] { rule }, _tenantId, CancellationToken.None);
+        var enriched = await enricher.EnrichAsync(BaseContext(), new[] { rule }, CancellationToken.None);
 
         enriched.ReservoirUnits.Should().Be(50m);
         enriched.ReservoirIsLowerBound.Should().BeTrue();
@@ -367,7 +369,7 @@ public class SensorContextEnricherTests
             .ReturnsAsync((ReservoirEstimate?)null);
         var rule = MakeRule(AlertConditionType.Reservoir, """{"operator":"<","value":50}""");
 
-        var enriched = await enricher.EnrichAsync(BaseContext(), new[] { rule }, _tenantId, CancellationToken.None);
+        var enriched = await enricher.EnrichAsync(BaseContext(), new[] { rule }, CancellationToken.None);
 
         enriched.ReservoirUnits.Should().BeNull();
         enriched.ReservoirIsLowerBound.Should().BeFalse();
@@ -378,14 +380,33 @@ public class SensorContextEnricherTests
     {
         var enricher = BuildEnricher();
         var siteChangeAt = new DateTime(2026, 3, 20, 8, 0, 0, DateTimeKind.Utc);
-        _deviceEventRepository.Setup(r => r.GetLatestByEventTypeAsync(DeviceEventType.SiteChange, It.IsAny<DateTime?>(), It.IsAny<CancellationToken>()))
+        _deviceEventRepository.Setup(r => r.GetLatestOfAnyTypeAsync(
+                It.Is<IReadOnlyCollection<DeviceEventType>>(t => t.Contains(DeviceEventType.SiteChange)),
+                It.IsAny<DateTime?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new DeviceEvent { Timestamp = siteChangeAt, EventType = DeviceEventType.SiteChange });
         var rule = MakeRule(AlertConditionType.SiteAge, """{"operator":">","value":72}""");
 
-        var enriched = await enricher.EnrichAsync(BaseContext(), new[] { rule }, _tenantId, CancellationToken.None);
+        var enriched = await enricher.EnrichAsync(BaseContext(), new[] { rule }, CancellationToken.None);
 
         enriched.LastSiteChangeAt.Should().Be(siteChangeAt);
         _deviceEventRepository.Verify(r => r.GetLatestByEventTypeAsync(DeviceEventType.SensorStart, It.IsAny<DateTime?>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    /// <summary>A pod change is a new site, however the pump reports it.</summary>
+    [Fact]
+    public async Task SiteAge_follows_pod_changes_and_activations()
+    {
+        var enricher = BuildEnricher();
+        IReadOnlyCollection<DeviceEventType>? asked = null;
+        _deviceEventRepository.Setup(r => r.GetLatestOfAnyTypeAsync(
+                It.IsAny<IReadOnlyCollection<DeviceEventType>>(), It.IsAny<DateTime?>(), It.IsAny<CancellationToken>()))
+            .Callback((IReadOnlyCollection<DeviceEventType> types, DateTime? _, CancellationToken _) => asked = types)
+            .ReturnsAsync((DeviceEvent?)null);
+        var rule = MakeRule(AlertConditionType.SiteAge, """{"operator":">","value":72}""");
+
+        await enricher.EnrichAsync(BaseContext(), new[] { rule }, CancellationToken.None);
+
+        asked.Should().Contain([DeviceEventType.SiteChange, DeviceEventType.PodChange, DeviceEventType.PodActivated]);
     }
 
     [Fact]
@@ -394,16 +415,16 @@ public class SensorContextEnricherTests
         var enricher = BuildEnricher();
         var snapshot = new ActiveAlertSnapshot("firing", new DateTime(2026, 3, 22, 11, 50, 0, DateTimeKind.Utc), null);
         var dict = new Dictionary<Guid, ActiveAlertSnapshot> { [Guid.NewGuid()] = snapshot };
-        _alertRepository.Setup(r => r.GetActiveAlertSnapshotsAsync(_tenantId, It.IsAny<CancellationToken>()))
+        _alertRepository.Setup(r => r.GetActiveAlertSnapshotsAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(dict);
 
         var json = $$"""{"alert_id":"{{Guid.NewGuid()}}","state":"firing"}""";
         var rule = MakeRule(AlertConditionType.AlertState, json);
 
-        var enriched = await enricher.EnrichAsync(BaseContext(), new[] { rule }, _tenantId, CancellationToken.None);
+        var enriched = await enricher.EnrichAsync(BaseContext(), new[] { rule }, CancellationToken.None);
 
         enriched.ActiveAlerts.Should().BeSameAs(dict);
-        _alertRepository.Verify(r => r.GetActiveAlertSnapshotsAsync(_tenantId, It.IsAny<CancellationToken>()), Times.Once);
+        _alertRepository.Verify(r => r.GetActiveAlertSnapshotsAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Theory]
@@ -420,9 +441,9 @@ public class SensorContextEnricherTests
     {
         var enricher = BuildEnricher();
         var rule = MakeRule(AlertConditionType.Trend, """{"bucket":"flat"}""");
-        decimal? rate = rateInput is null ? null : (decimal)rateInput.Value;
+        decimal? rate = rateInput?.ToDecimal();
 
-        var enriched = await enricher.EnrichAsync(BaseContext(trendRate: rate), new[] { rule }, _tenantId, CancellationToken.None);
+        var enriched = await enricher.EnrichAsync(BaseContext(trendRate: rate), new[] { rule }, CancellationToken.None);
 
         enriched.TrendBucket.Should().Be(expected);
     }
@@ -438,7 +459,7 @@ public class SensorContextEnricherTests
             .ReturnsAsync(lastCycle);
         var rule = MakeRule(AlertConditionType.LoopStale, """{"operator":">","minutes":15}""");
 
-        var enriched = await enricher.EnrichAsync(BaseContext(), new[] { rule }, _tenantId, CancellationToken.None);
+        var enriched = await enricher.EnrichAsync(BaseContext(), new[] { rule }, CancellationToken.None);
 
         enriched.LastApsCycleAt.Should().Be(lastCycle);
         enriched.HasEverApsCycled.Should().BeTrue();
@@ -463,7 +484,7 @@ public class SensorContextEnricherTests
             .ReturnsAsync(now.AddMinutes(-3));
         var rule = MakeRule(AlertConditionType.LoopEnactionStale, """{"operator":">","minutes":15}""");
 
-        var enriched = await enricher.EnrichAsync(BaseContext(), new[] { rule }, _tenantId, CancellationToken.None);
+        var enriched = await enricher.EnrichAsync(BaseContext(), new[] { rule }, CancellationToken.None);
 
         enriched.HasEverApsCycled.Should().BeTrue("the enricher must populate the cold-start guard for LoopEnactionStale's evaluator");
         enriched.LastApsEnactedAt.Should().NotBeNull();
@@ -487,7 +508,7 @@ public class SensorContextEnricherTests
             });
         var rule = MakeRule(AlertConditionType.PumpSuspended, """{"is_active":true}""");
 
-        var enriched = await enricher.EnrichAsync(BaseContext(), new[] { rule }, _tenantId, CancellationToken.None);
+        var enriched = await enricher.EnrichAsync(BaseContext(), new[] { rule }, CancellationToken.None);
 
         enriched.HasEverPumpSnapshot.Should().BeTrue();
         enriched.PumpBatteryPercent.Should().Be(65m);
@@ -518,7 +539,7 @@ public class SensorContextEnricherTests
             });
         var rule = MakeRule(AlertConditionType.PumpSuspended, """{"is_active":true}""");
 
-        var enriched = await enricher.EnrichAsync(BaseContext(), new[] { rule }, _tenantId, CancellationToken.None);
+        var enriched = await enricher.EnrichAsync(BaseContext(), new[] { rule }, CancellationToken.None);
 
         enriched.HasEverPumpSnapshot.Should().BeTrue();
         enriched.ActivePumpSuspension.Should().BeNull();
@@ -551,7 +572,7 @@ public class SensorContextEnricherTests
         var rule = MakeRule(AlertConditionType.StateSpanActive,
             $"{{\"category\":\"Profile\"{stateJson},\"is_active\":true}}");
 
-        var enriched = await enricher.EnrichAsync(BaseContext(), new[] { rule }, _tenantId, CancellationToken.None);
+        var enriched = await enricher.EnrichAsync(BaseContext(), new[] { rule }, CancellationToken.None);
 
         enriched.ActiveStateSpans.Should().ContainKey((StateSpanCategory.Profile, state));
         enriched.ActiveStateSpans[(StateSpanCategory.Profile, state)].StartedAt.Should().Be(now.AddMinutes(-40));
@@ -572,7 +593,7 @@ public class SensorContextEnricherTests
         var rule = MakeRule(AlertConditionType.StateSpanActive,
             """{"category":"Profile","state":"Exercise","is_active":true}""");
 
-        var enriched = await enricher.EnrichAsync(BaseContext(), new[] { rule }, _tenantId, CancellationToken.None);
+        var enriched = await enricher.EnrichAsync(BaseContext(), new[] { rule }, CancellationToken.None);
 
         enriched.ActiveStateSpans.Should().NotContainKey((StateSpanCategory.Profile, "Exercise"));
     }
@@ -597,7 +618,7 @@ public class SensorContextEnricherTests
             });
         var rule = MakeRule(AlertConditionType.OverrideActive, """{"is_active":true}""");
 
-        var enriched = await enricher.EnrichAsync(BaseContext(), new[] { rule }, _tenantId, CancellationToken.None);
+        var enriched = await enricher.EnrichAsync(BaseContext(), new[] { rule }, CancellationToken.None);
 
         enriched.ActiveOverride.Should().NotBeNull();
         enriched.ActiveOverride!.Multiplier.Should().Be(1.5m);
@@ -622,7 +643,7 @@ public class SensorContextEnricherTests
         var rule = MakeRule(AlertConditionType.TempBasal,
             """{"metric":"rate","operator":">","value":1.0}""");
 
-        var enriched = await enricher.EnrichAsync(BaseContext(), new[] { rule }, _tenantId, CancellationToken.None);
+        var enriched = await enricher.EnrichAsync(BaseContext(), new[] { rule }, CancellationToken.None);
 
         enriched.ActiveTempBasal.Should().NotBeNull();
         enriched.ActiveTempBasal!.Rate.Should().Be(1.2m);
@@ -639,7 +660,7 @@ public class SensorContextEnricherTests
             .ReturnsAsync(0.85m);
         var rule = MakeRule(AlertConditionType.SensitivityRatio, """{"operator":"<","value":0.9}""");
 
-        var enriched1 = await enricher1.EnrichAsync(BaseContext(), new[] { rule }, _tenantId, CancellationToken.None);
+        var enriched1 = await enricher1.EnrichAsync(BaseContext(), new[] { rule }, CancellationToken.None);
 
         enriched1.SensitivityRatio.Should().Be(0.85m);
         enriched1.HasEverApsSensitivity.Should().BeTrue();
@@ -650,7 +671,8 @@ public class SensorContextEnricherTests
             .ReturnsAsync((decimal?)null);
         var deps2 = new SensorContextEnricherDependencies(
             new IobCobReader(_iobCalculator.Object, _cobCalculator.Object, _bolusRepository.Object,
-                _tempBasalRepository.Object, _carbIntakeRepository.Object, TestTenantCache.Create(partition: null),
+                _tempBasalRepository.Object, _carbIntakeRepository.Object, Mock.Of<ITherapyTimelineResolver>(), Mock.Of<IStateSpanRepository>(), Mock.Of<IApsSnapshotRepository>(), Mock.Of<IPumpSnapshotRepository>(),
+                TestTenantCache.Create(partition: null),
                 NullLogger<IobCobReader>.Instance),
             _iobCalculator.Object, _cobCalculator.Object, _treatmentService.Object,
             _deviceEventRepository.Object, _pumpSnapshotRepository.Object,
@@ -669,7 +691,7 @@ public class SensorContextEnricherTests
             new ServiceCollection().BuildServiceProvider(),
             _timeProvider, new NullLogger<SensorContextEnricher>());
 
-        var enriched2 = await enricher2.EnrichAsync(BaseContext(), new[] { rule }, _tenantId, CancellationToken.None);
+        var enriched2 = await enricher2.EnrichAsync(BaseContext(), new[] { rule }, CancellationToken.None);
 
         enriched2.SensitivityRatio.Should().BeNull();
         enriched2.HasEverApsSensitivity.Should().BeFalse();
@@ -693,7 +715,7 @@ public class SensorContextEnricherTests
         """;
         var rule = MakeRule(AlertConditionType.Composite, json);
 
-        var enriched = await enricher.EnrichAsync(BaseContext(), new[] { rule }, _tenantId, CancellationToken.None);
+        var enriched = await enricher.EnrichAsync(BaseContext(), new[] { rule }, CancellationToken.None);
 
         enriched.HasEverApsCycled.Should().BeFalse();
         enriched.HasEverPumpSnapshot.Should().BeFalse();
@@ -707,7 +729,7 @@ public class SensorContextEnricherTests
         var enricher = BuildEnricher();
         var rule = MakeRule(AlertConditionType.Threshold, """{"direction":"above","value":180}""");
 
-        await enricher.EnrichAsync(BaseContext(), new[] { rule }, _tenantId, CancellationToken.None);
+        await enricher.EnrichAsync(BaseContext(), new[] { rule }, CancellationToken.None);
 
         _apsSnapshotRepository.Verify(r => r.GetLatestTimestampAsOfAsync(It.IsAny<DateTime?>(), It.IsAny<CancellationToken>()), Times.Never);
         _apsSnapshotRepository.Verify(r => r.GetLatestEnactedTimestampAsync(It.IsAny<DateTime?>(), It.IsAny<CancellationToken>()), Times.Never);
@@ -740,7 +762,7 @@ public class SensorContextEnricherTests
             });
         var rule = MakeRule(AlertConditionType.PumpSuspended, """{"is_active":true}""");
 
-        var enriched = await enricher.EnrichAsync(BaseContext(), new[] { rule }, _tenantId, CancellationToken.None);
+        var enriched = await enricher.EnrichAsync(BaseContext(), new[] { rule }, CancellationToken.None);
 
         enriched.ActivePumpSuspension.Should().NotBeNull();
         enriched.ActivePumpSuspension!.StartedAt.Should().Be(now.AddMinutes(-15));
@@ -762,7 +784,7 @@ public class SensorContextEnricherTests
         var rule = MakeRule(AlertConditionType.TempBasal,
             """{"metric":"rate","operator":">","value":0.5}""");
 
-        var enriched = await enricher.EnrichAsync(BaseContext(), new[] { rule }, _tenantId, CancellationToken.None);
+        var enriched = await enricher.EnrichAsync(BaseContext(), new[] { rule }, CancellationToken.None);
 
         enriched.ActiveTempBasal.Should().NotBeNull();
         enriched.ActiveTempBasal!.Rate.Should().Be(1.0m);
@@ -800,7 +822,7 @@ public class SensorContextEnricherTests
         var rule = MakeRule(AlertConditionType.GlucoseBucket, """{"buckets":["low"]}""");
         var baseContext = BaseContext() with { LatestValue = 75m };
 
-        var enriched = await enricher.EnrichAsOfAsync(baseContext, new[] { rule }, _tenantId, tickUtc, CancellationToken.None);
+        var enriched = await enricher.EnrichAsOfAsync(baseContext, new[] { rule }, tickUtc, CancellationToken.None);
 
         enriched.GlucoseBucket.Should().Be(Nocturne.Core.Models.Alerts.GlucoseBucket.Low);
     }
@@ -829,7 +851,7 @@ public class SensorContextEnricherTests
         var rule = MakeRule(AlertConditionType.GlucoseBucket, """{"buckets":["low"]}""");
         var baseContext = BaseContext() with { LatestValue = 75m };
 
-        var enriched = await enricher.EnrichAsOfAsync(baseContext, new[] { rule }, _tenantId, tickUtc, CancellationToken.None);
+        var enriched = await enricher.EnrichAsOfAsync(baseContext, new[] { rule }, tickUtc, CancellationToken.None);
 
         enriched.GlucoseBucket.Should().Be(Nocturne.Core.Models.Alerts.GlucoseBucket.Low);
     }
@@ -841,7 +863,7 @@ public class SensorContextEnricherTests
     {
         var now = _timeProvider.GetUtcNow().UtcDateTime;
         _alertRepository
-            .Setup(r => r.GetUnexpiredDndWindowsAsync(_tenantId, It.IsAny<DateTime>(), It.IsAny<CancellationToken>()))
+            .Setup(r => r.GetUnexpiredDndWindowsAsync(It.IsAny<DateTime>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<DndWindowSnapshot>
             {
                 new(DndScope.Lows, StartedAt: now.AddMinutes(-5), EndsAt: null, ClearedAt: null, CreatedAt: now.AddMinutes(-5)),
@@ -850,7 +872,7 @@ public class SensorContextEnricherTests
         var enricher = BuildEnricher();
         var rule = MakeRule(AlertConditionType.Threshold, """{"direction":"below","value":70}""");
 
-        var enriched = await enricher.EnrichAsync(BaseContext(), new[] { rule }, _tenantId, CancellationToken.None);
+        var enriched = await enricher.EnrichAsync(BaseContext(), new[] { rule }, CancellationToken.None);
 
         enriched.ActiveDndScopes.Should().BeEquivalentTo(new[] { DndScope.Lows });
         // lows/highs windows feed the gate only — they never trip the do_not_disturb condition.
@@ -863,7 +885,7 @@ public class SensorContextEnricherTests
         var now = _timeProvider.GetUtcNow().UtcDateTime;
         var startedAt = now.AddMinutes(-30);
         _alertRepository
-            .Setup(r => r.GetUnexpiredDndWindowsAsync(_tenantId, It.IsAny<DateTime>(), It.IsAny<CancellationToken>()))
+            .Setup(r => r.GetUnexpiredDndWindowsAsync(It.IsAny<DateTime>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<DndWindowSnapshot>
             {
                 new(DndScope.All, StartedAt: startedAt, EndsAt: null, ClearedAt: null, CreatedAt: startedAt),
@@ -872,7 +894,7 @@ public class SensorContextEnricherTests
         var enricher = BuildEnricher();
         var rule = MakeRule(AlertConditionType.Threshold, """{"direction":"below","value":70}""");
 
-        var enriched = await enricher.EnrichAsync(BaseContext(), new[] { rule }, _tenantId, CancellationToken.None);
+        var enriched = await enricher.EnrichAsync(BaseContext(), new[] { rule }, CancellationToken.None);
 
         enriched.ActiveDndScopes.Should().BeEquivalentTo(new[] { DndScope.All });
         enriched.ActiveDoNotDisturb.Should().NotBeNull();
@@ -886,7 +908,7 @@ public class SensorContextEnricherTests
         // FakeTimeProvider is 2026-03-22 12:00 UTC; a 00:00–23:00 schedule (UTC fallback, no tz)
         // is active, so scheduled DND is tenant-wide == scope=all.
         _alertRepository
-            .Setup(r => r.GetTenantAlertSettingsAsync(_tenantId, It.IsAny<CancellationToken>()))
+            .Setup(r => r.GetTenantAlertSettingsAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(new TenantAlertSettingsSnapshot(
                 DndScheduleEnabled: true,
                 DndScheduleStart: new TimeOnly(0, 0),
@@ -895,7 +917,7 @@ public class SensorContextEnricherTests
         var enricher = BuildEnricher();
         var rule = MakeRule(AlertConditionType.Threshold, """{"direction":"below","value":70}""");
 
-        var enriched = await enricher.EnrichAsync(BaseContext(), new[] { rule }, _tenantId, CancellationToken.None);
+        var enriched = await enricher.EnrichAsync(BaseContext(), new[] { rule }, CancellationToken.None);
 
         enriched.ActiveDndScopes.Should().Contain(DndScope.All);
         enriched.ActiveDoNotDisturb.Should().NotBeNull();
@@ -910,13 +932,13 @@ public class SensorContextEnricherTests
         var now = _timeProvider.GetUtcNow().UtcDateTime;
         var manualStartedAt = now.AddMinutes(-90);
         _alertRepository
-            .Setup(r => r.GetTenantAlertSettingsAsync(_tenantId, It.IsAny<CancellationToken>()))
+            .Setup(r => r.GetTenantAlertSettingsAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(new TenantAlertSettingsSnapshot(
                 DndScheduleEnabled: true,
                 DndScheduleStart: new TimeOnly(0, 0),
                 DndScheduleEnd: new TimeOnly(23, 0)));
         _alertRepository
-            .Setup(r => r.GetUnexpiredDndWindowsAsync(_tenantId, It.IsAny<DateTime>(), It.IsAny<CancellationToken>()))
+            .Setup(r => r.GetUnexpiredDndWindowsAsync(It.IsAny<DateTime>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<DndWindowSnapshot>
             {
                 new(DndScope.All, StartedAt: manualStartedAt, EndsAt: null, ClearedAt: null, CreatedAt: manualStartedAt),
@@ -925,7 +947,7 @@ public class SensorContextEnricherTests
         var enricher = BuildEnricher();
         var rule = MakeRule(AlertConditionType.Threshold, """{"direction":"below","value":70}""");
 
-        var enriched = await enricher.EnrichAsync(BaseContext(), new[] { rule }, _tenantId, CancellationToken.None);
+        var enriched = await enricher.EnrichAsync(BaseContext(), new[] { rule }, CancellationToken.None);
 
         enriched.ActiveDndScopes.Should().Contain(DndScope.All);
         enriched.ActiveDoNotDisturb.Should().NotBeNull();
@@ -954,6 +976,7 @@ public class SensorContextEnricherTests
         var deps = new SensorContextEnricherDependencies(
             new IobCobReader(_iobCalculator.Object, _cobCalculator.Object, _bolusRepository.Object,
                 _tempBasalRepository.Object, _carbIntakeRepository.Object,
+                Mock.Of<ITherapyTimelineResolver>(), Mock.Of<IStateSpanRepository>(), Mock.Of<IApsSnapshotRepository>(), Mock.Of<IPumpSnapshotRepository>(),
                 iobCobCache ?? TestTenantCache.Create(partition: null), NullLogger<IobCobReader>.Instance),
             _iobCalculator.Object,
             _cobCalculator.Object,

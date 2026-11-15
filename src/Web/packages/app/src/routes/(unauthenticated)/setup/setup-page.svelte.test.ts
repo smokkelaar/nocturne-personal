@@ -1,7 +1,7 @@
 import { render } from "vitest-browser-svelte";
 import { page } from "vitest/browser";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { remoteQuery } from "$lib/test-stubs/remote-resource";
+import { remoteQuery } from "#lib/test-stubs/remote-resource.js";
 
 // Only the wizard's own navigation is under test; every step body it can reach is stood down.
 const { markSetupComplete } = vi.hoisted(() => ({ markSetupComplete: vi.fn() }));
@@ -10,8 +10,14 @@ vi.mock("$app/navigation", async (importOriginal) => ({
   ...(await importOriginal<object>()),
   goto: vi.fn(() => Promise.resolve()),
 }));
+vi.mock("water-ui", async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  Artwork: (await import("#lib/test-stubs/Artwork.test-stub.svelte")).default,
+  hostSurface: () => "light",
+  watchSurface: () => () => {},
+}));
 const migrationHistory = vi.hoisted(() => ({ jobs: [] as { id: string; state: MigrationJobState }[] }));
-vi.mock("$api/generated/migrations.generated.remote", () => ({
+vi.mock("#lib/api/generated/migrations.generated.remote.js", () => ({
   getHistory: () => remoteQuery(() => migrationHistory.jobs),
   startFromConnector: vi.fn(),
 }));
@@ -29,7 +35,7 @@ const unitsAnswer = vi.hoisted(() => ({
   asked: [] as unknown[],
   set: vi.fn(),
 }));
-vi.mock("$api/generated/tenantSettings.generated.remote", () => ({
+vi.mock("#lib/api/generated/tenantSettings.generated.remote.js", () => ({
   getPatientRelationship: () => remoteQuery(() => relationship.stored),
   setPatientRelationship: relationship.set,
   getUnitsAndTimezone: (args: unknown) => {
@@ -39,36 +45,36 @@ vi.mock("$api/generated/tenantSettings.generated.remote", () => ({
   setUnitsAndTimezone: unitsAnswer.set,
 }));
 const { applyPreferences } = vi.hoisted(() => ({ applyPreferences: vi.fn() }));
-vi.mock("$lib/stores/appearance-store.svelte", async (importOriginal) => ({
+vi.mock("#lib/stores/appearance-store.svelte.js", async (importOriginal) => ({
   ...(await importOriginal<object>()),
   applyPreferences,
 }));
-vi.mock("$api/generated/services.generated.remote", () => ({
+vi.mock("#lib/api/generated/services.generated.remote.js", () => ({
   getServicesOverview: () => remoteQuery(() => null),
   getActiveDataSources: () => remoteQuery(() => []),
   getUploaderSetup: () => remoteQuery(() => null),
 }));
 const { emptyStub } = vi.hoisted(() => ({
   emptyStub: async () => ({
-    default: (await import("$lib/test-stubs/Empty.test-stub.svelte")).default,
+    default: (await import("#lib/test-stubs/Empty.test-stub.svelte")).default,
   }),
 }));
 vi.mock("./steps/TenantIdentity.svelte", emptyStub);
 vi.mock("./steps/AccountCreation.svelte", emptyStub);
 vi.mock("./steps/NightscoutConnect.svelte", async () => ({
-  default: (await import("$lib/test-stubs/Complete.test-stub.svelte")).default,
+  default: (await import("#lib/test-stubs/Complete.test-stub.svelte")).default,
 }));
 vi.mock("./steps/ImportProgress.svelte", async () => ({
-  default: (await import("$lib/test-stubs/ImportProgress.test-stub.svelte")).default,
+  default: (await import("#lib/test-stubs/ImportProgress.test-stub.svelte")).default,
 }));
 vi.mock("./steps/Finish.svelte", emptyStub);
-vi.mock("$lib/components/connectors/DataSourceSelectionView.svelte", emptyStub);
-vi.mock("$lib/components/connectors/ConnectorSetup.svelte", emptyStub);
-vi.mock("$lib/components/connectors/UploaderSetupView.svelte", emptyStub);
+vi.mock("#lib/components/connectors/DataSourceSelectionView.svelte", emptyStub);
+vi.mock("#lib/components/connectors/ConnectorSetup.svelte", emptyStub);
+vi.mock("#lib/components/connectors/UploaderSetupView.svelte", emptyStub);
 
-import { startFromConnector } from "$api/generated/migrations.generated.remote";
+import { startFromConnector } from "#lib/api/generated/migrations.generated.remote.js";
 import { goto } from "$app/navigation";
-import { MigrationJobState } from "$api";
+import { MigrationJobState } from "#lib/api/index.js";
 import SetupPage from "./SetupWizard.svelte";
 
 const freshCard = () =>
@@ -115,16 +121,16 @@ describe("setup who-for step", () => {
     expect(group.getByRole("radio").elements()).toHaveLength(3);
     await expect.element(page.getByText("Step 01 / 06")).toBeVisible();
     await expect
-      .element(page.getByTestId("step-icon"))
-      .toHaveAttribute("data-art", "who");
+      .element(page.getByTestId("artwork"))
+      .toHaveAttribute("data-artwork", "people-group");
   });
 
-  it("shows the step's icon inside the card, and folds the step list away on a phone", async () => {
+  it("paints the step's artwork inside the card, and folds the step list away on a phone", async () => {
     await page.viewport(360, 800);
     render(SetupPage);
 
-    await expect.element(page.getByTestId("step-icon")).toBeVisible();
-    expect(document.querySelector("section [data-testid=step-icon]")).not.toBeNull();
+    await expect.element(page.getByTestId("artwork")).toBeVisible();
+    expect(document.querySelector("section [data-testid=artwork]")).not.toBeNull();
     await expect
       .element(page.getByRole("button", { name: "Finish", exact: true }))
       .not.toBeInTheDocument();
@@ -300,19 +306,19 @@ describe("setup chrome", () => {
     expect(container.querySelector(".dark")).toBeNull();
   });
 
-  it("shows each step's icon beside it", async () => {
+  it("shows each step's artwork beside it", async () => {
     await renderAtPath();
 
-    const icon = page.getByTestId("step-icon");
-    await expect.element(icon).toHaveAttribute("data-art", "welcome");
+    const artwork = page.getByTestId("artwork");
+    await expect.element(artwork).toHaveAttribute("data-artwork", "crescent-moon");
 
     await continueButton().click();
 
-    await expect.element(icon).toHaveAttribute("data-art", "units");
+    await expect.element(artwork).toHaveAttribute("data-artwork", "world-globe");
 
     await skipButton().click();
 
-    await expect.element(icon).toHaveAttribute("data-art", "source");
+    await expect.element(artwork).toHaveAttribute("data-artwork", "plug");
   });
 
   // Leaving marks onboarding complete on the server, but nothing past the

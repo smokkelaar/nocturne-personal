@@ -134,6 +134,9 @@ public class TrackerRepository : ITrackerRepository
         existing.Category = updated.Category;
         existing.Icon = updated.Icon;
         existing.TriggerEventTypes = updated.TriggerEventTypes;
+        existing.EndEventTypes = updated.EndEventTypes;
+        existing.Covers = updated.Covers;
+        existing.DeviceComponent = updated.DeviceComponent;
         existing.TriggerNotesContains = updated.TriggerNotesContains;
         existing.LifespanHours = updated.LifespanHours;
         existing.IsFavorite = updated.IsFavorite;
@@ -518,6 +521,61 @@ public class TrackerRepository : ITrackerRepository
             .Where(i => reopenedIds.Contains(i.Id))
             .ToListAsync(cancellationToken);
         return new TrackerStartRevert(removed, reopened);
+    }
+
+    /// <inheritdoc />
+    public virtual async Task<List<Guid>> GetDefinitionsCompletedByAsync(
+        IReadOnlyCollection<string> completeTreatmentIds,
+        CancellationToken cancellationToken = default
+    )
+    {
+        if (completeTreatmentIds.Count == 0)
+            return [];
+
+        await using var lease = await OpenAsync(cancellationToken);
+        var ids = completeTreatmentIds.ToList();
+        return await lease.Context.TrackerInstances
+            .Where(i => i.CompleteTreatmentId != null && ids.Contains(i.CompleteTreatmentId))
+            .Select(i => i.DefinitionId)
+            .Distinct()
+            .ToListAsync(cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public virtual async Task<List<TrackerInstanceEntity>> ReopenCompletedByAsync(
+        Guid definitionId,
+        IReadOnlyCollection<string> completeTreatmentIds,
+        CancellationToken cancellationToken = default
+    )
+    {
+        if (completeTreatmentIds.Count == 0)
+            return [];
+
+        await using var lease = await OpenAsync(cancellationToken);
+        var db = lease.Context;
+        var ids = completeTreatmentIds.ToList();
+        var ended = db.TrackerInstances
+            .Where(i => i.DefinitionId == definitionId
+                && i.CompleteTreatmentId != null && ids.Contains(i.CompleteTreatmentId))
+            .Where(i => !db.TrackerInstances.Any(
+                later => later.DefinitionId == definitionId && later.Id != i.Id && later.StartedAt > i.StartedAt));
+        var reopenedIds = await ended.Select(i => i.Id).ToListAsync(cancellationToken);
+        if (reopenedIds.Count == 0)
+            return [];
+
+        await db.TrackerInstances.Where(i => reopenedIds.Contains(i.Id)).ExecuteUpdateAsync(
+            s => s
+                .SetProperty(i => i.CompletedAt, (DateTime?)null)
+                .SetProperty(i => i.CompletionReason, (CompletionReason?)null)
+                .SetProperty(i => i.CompletionNotes, (string?)null)
+                .SetProperty(i => i.CompleteTreatmentId, (string?)null),
+            cancellationToken
+        );
+
+        return await db.TrackerInstances.AsNoTracking()
+            .Include(i => i.Definition).ThenInclude(d => d.NotificationThresholds)
+            .Where(i => reopenedIds.Contains(i.Id))
+            .ToListAsync(cancellationToken);
     }
 
     private const int SuccessionLockClass = 0x4E54_524B;

@@ -167,6 +167,26 @@ public interface ITrackerRepository
         CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// The definitions with a run whose <see cref="TrackerInstanceEntity.CompleteTreatmentId"/> is one
+    /// of <paramref name="completeTreatmentIds"/>.
+    /// </summary>
+    Task<List<Guid>> GetDefinitionsCompletedByAsync(
+        IReadOnlyCollection<string> completeTreatmentIds,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Undoes an end: reopens the runs of <paramref name="definitionId"/> that one of
+    /// <paramref name="completeTreatmentIds"/> completed, except a run a later run of the definition
+    /// has followed, which makes it history. Call it under the definition's lock
+    /// (<see cref="ExecuteUnderDefinitionLockAsync{T}"/>).
+    /// </summary>
+    /// <returns>The reopened runs; empty when nothing was reopened.</returns>
+    Task<List<TrackerInstanceEntity>> ReopenCompletedByAsync(
+        Guid definitionId,
+        IReadOnlyCollection<string> completeTreatmentIds,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Runs <paramref name="work"/> in one transaction holding the definition's lock, so that
     /// writers succeeding one tracker's run take turns.
     /// </summary>

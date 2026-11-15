@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Time.Testing;
 using Moq;
 using Nocturne.API.Services.Analytics;
 using Nocturne.API.Tests.Infrastructure;
@@ -64,7 +65,7 @@ public class DataOverviewServiceTimeZoneTests : IDisposable
 
     public void Dispose() => _seed.Dispose();
 
-    private DataOverviewService ServiceOn(string? timezoneId, bool share)
+    private DataOverviewService ServiceOn(string? timezoneId, bool share, TimeProvider? time = null)
     {
         var factory = new Mock<INocturneDbContextFactory>();
         factory
@@ -96,16 +97,50 @@ public class DataOverviewServiceTimeZoneTests : IDisposable
             new TenantClockResolver(settings.Object, category, NullLogger<TenantClockResolver>.Instance),
             statistics.Object,
             TestTenantCache.Create(),
+            time ?? TimeProvider.System,
             NullLogger<DataOverviewService>.Instance);
     }
 
     [Fact]
     public async Task GetAvailableYearsAsync_ListsTheTenantsLocalYears()
     {
-        var result = await ServiceOn("Australia/Sydney", share: false).GetAvailableYearsAsync();
+        var clock = new FakeTimeProvider(new DateTimeOffset(2026, 3, 1, 0, 0, 0, TimeSpan.Zero));
+
+        var result = await ServiceOn("Australia/Sydney", share: false, clock).GetAvailableYearsAsync();
 
         result.TimeZoneUnavailableReason.Should().BeNull();
         result.Years.Should().Equal(2024, 2025);
+    }
+
+    [Fact]
+    public async Task GetAvailableYearsAsync_StopsAtTheTenantsLocalYearOfTheClock()
+    {
+        var clock = new FakeTimeProvider(new DateTimeOffset(2024, 7, 1, 0, 0, 0, TimeSpan.Zero));
+
+        var result = await ServiceOn("Australia/Sydney", share: false, clock).GetAvailableYearsAsync();
+
+        result.Years.Should().Equal(2024);
+    }
+
+    [Fact]
+    public async Task GetAvailableYearsAsync_ReadsTheClockInTheTenantsZone()
+    {
+        var clock = new FakeTimeProvider(new DateTimeOffset(2024, 12, 31, 14, 0, 0, TimeSpan.Zero));
+
+        var result = await ServiceOn("Australia/Sydney", share: false, clock).GetAvailableYearsAsync();
+
+        result.Years.Should().Equal(2024, 2025);
+    }
+
+    [Fact]
+    public async Task GetEHbA1cTimelineAsync_EndsAtTheTenantsLocalDayOfTheClock()
+    {
+        var clock = new FakeTimeProvider(new DateTimeOffset(2024, 6, 20, 12, 0, 0, TimeSpan.Zero));
+
+        var result = await ServiceOn("Australia/Sydney", share: false, clock).GetEHbA1cTimelineAsync(2024);
+
+        result.Points.Select(p => p.Date).Should().Equal(
+            "2024-06-16", "2024-06-17", "2024-06-18", "2024-06-19", "2024-06-20");
     }
 
     [Theory]

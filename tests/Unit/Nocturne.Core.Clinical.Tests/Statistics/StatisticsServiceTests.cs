@@ -17,7 +17,7 @@ public class StatisticsServiceTests
 
     public StatisticsServiceTests()
     {
-        _statisticsService = new StatisticsService();
+        _statisticsService = new StatisticsService(TimeProvider.System);
     }
 
     #region Basic Statistics Tests

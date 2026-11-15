@@ -2,19 +2,19 @@
   import ChevronDown from "@lucide/svelte/icons/chevron-down";
   import ChevronUp from "@lucide/svelte/icons/chevron-up";
   import { PersistedState } from "runed";
-  import { Button } from "$lib/components/ui/button";
-  import * as Select from "$lib/components/ui/select";
-  import Headroom from "$lib/components/layout/Headroom.svelte";
-  import { formatGlucoseValue, getUnitLabel, type GlucoseUnits } from "$lib/utils/formatting";
+  import { Button } from "#lib/components/ui/button/index.js";
+  import * as Select from "#lib/components/ui/select/index.js";
+  import Headroom from "#lib/components/layout/Headroom.svelte";
+  import { formatGlucoseValue, getUnitLabel, type GlucoseUnits } from "#lib/utils/formatting.js";
   import ColorFocusRange from "./ColorFocusRange.svelte";
-  import ChartKey from "$lib/components/charts/print/ChartKey.svelte";
+  import ChartKey from "#lib/components/charts/print/ChartKey.svelte";
   import {
     scaleGradient,
     type ColorBoundary,
     type ColorEnds,
     type ColorFocusRange as Range,
     type MetricScale,
-  } from "$lib/utils/metric-color-focus";
+  } from "#lib/utils/metric-color-focus.js";
 
   let {
     selectedMetric = $bindable(),
@@ -24,7 +24,6 @@
     scale,
     limits,
     onWindowChange,
-    onRangeChange,
     onBoundariesChange,
     onEndsChange,
     onDimChange,
@@ -39,7 +38,6 @@
     scale: MetricScale;
     limits: Range;
     onWindowChange: (window: Range | null) => void;
-    onRangeChange: (range: Range | null) => void;
     onBoundariesChange: (boundaries: ColorBoundary[] | null) => void;
     onEndsChange: (ends: ColorEnds) => void;
     onDimChange: (dim: number) => void;
@@ -128,7 +126,6 @@
           {units}
           {unit}
           {onWindowChange}
-          {onRangeChange}
           {onBoundariesChange}
           {onEndsChange}
           {onDimChange}

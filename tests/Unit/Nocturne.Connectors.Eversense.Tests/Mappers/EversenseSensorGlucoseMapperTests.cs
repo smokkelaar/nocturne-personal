@@ -10,6 +10,8 @@ namespace Nocturne.Connectors.Eversense.Tests.Mappers;
 
 public class EversenseSensorGlucoseMapperTests
 {
+    private static readonly DateTime Now = new(2026, 4, 24, 13, 0, 0, DateTimeKind.Utc);
+
     private readonly EversenseSensorGlucoseMapper _mapper = new(NullLogger.Instance);
 
     [Fact]
@@ -17,7 +19,7 @@ public class EversenseSensorGlucoseMapperTests
     {
         var patient = CreatePatient(glucose: 120, trend: 3, units: 0, cgTime: "2026-04-24T12:00:00Z");
 
-        var result = _mapper.Map(patient);
+        var result = _mapper.Map(patient, Now);
 
         result.Should().NotBeNull();
         result!.Mgdl.Should().Be(120);
@@ -30,7 +32,7 @@ public class EversenseSensorGlucoseMapperTests
     {
         var patient = CreatePatient(glucose: 6, trend: 3, units: 1, cgTime: "2026-04-24T12:00:00Z");
 
-        var result = _mapper.Map(patient);
+        var result = _mapper.Map(patient, Now);
 
         result.Should().NotBeNull();
         result!.Mgdl.Should().BeApproximately(6 * 18.0182, 0.01);
@@ -49,7 +51,7 @@ public class EversenseSensorGlucoseMapperTests
     {
         var patient = CreatePatient(glucose: 100, trend: eversenseTrend, cgTime: "2026-04-24T12:00:00Z");
 
-        var result = _mapper.Map(patient);
+        var result = _mapper.Map(patient, Now);
 
         result.Should().NotBeNull();
         result!.Direction.Should().Be(expected);
@@ -60,7 +62,7 @@ public class EversenseSensorGlucoseMapperTests
     {
         var patient = CreatePatient(glucose: 100, trend: 99, cgTime: "2026-04-24T12:00:00Z");
 
-        var result = _mapper.Map(patient);
+        var result = _mapper.Map(patient, Now);
 
         result.Should().NotBeNull();
         result!.Direction.Should().Be(GlucoseDirection.None);
@@ -71,7 +73,7 @@ public class EversenseSensorGlucoseMapperTests
     {
         var patient = CreatePatient(glucose: 100, trend: 3, cgTime: "not-a-date");
 
-        var result = _mapper.Map(patient);
+        var result = _mapper.Map(patient, Now);
 
         result.Should().BeNull();
     }
@@ -81,7 +83,7 @@ public class EversenseSensorGlucoseMapperTests
     {
         var patient = CreatePatient(glucose: 100, trend: 3, cgTime: "2026-04-24T12:00:00Z");
 
-        var result = _mapper.Map(patient);
+        var result = _mapper.Map(patient, Now);
 
         result.Should().NotBeNull();
         var expectedMills = new DateTimeOffset(2026, 4, 24, 12, 0, 0, TimeSpan.Zero).ToUnixTimeMilliseconds();
@@ -93,7 +95,7 @@ public class EversenseSensorGlucoseMapperTests
     {
         var patient = CreatePatient(glucose: 0, trend: 0, cgTime: "0001-01-01T00:00:00");
 
-        var result = _mapper.Map(patient);
+        var result = _mapper.Map(patient, Now);
 
         result.Should().BeNull();
     }
@@ -111,7 +113,7 @@ public class EversenseSensorGlucoseMapperTests
             new() { EventTypeId = 1, Value = 120, EventDate = "2026-10-16T10:05:00" },
         };
 
-        var result = _mapper.MapHistory(events);
+        var result = _mapper.MapHistory(events, Now);
 
         result.Select(r => r.Mgdl).Should().Equal(110, 120);
         result.Should().OnlyContain(r => r.Direction == null && r.DataSource == DataSources.EversenseConnector);
@@ -125,17 +127,31 @@ public class EversenseSensorGlucoseMapperTests
             new() { EventTypeId = 1, Value = 110, EventDate = "2026-10-16T10:00:00" },
         };
 
-        var result = _mapper.MapHistory(events);
+        var result = _mapper.MapHistory(events, Now);
 
         result.Single().Timestamp.Should().Be(new DateTime(2026, 10, 16, 10, 0, 0, DateTimeKind.Utc));
+    }
+
+    [Fact]
+    public void MapHistory_StampsEveryRowWithTheGivenInstant()
+    {
+        var events = new List<EversenseUserEvent>
+        {
+            new() { EventTypeId = 1, Value = 110, EventDate = "2026-10-16T10:00:00" },
+            new() { EventTypeId = 1, Value = 120, EventDate = "2026-10-16T10:05:00" },
+        };
+
+        var result = _mapper.MapHistory(events, Now);
+
+        result.Should().OnlyContain(r => r.CreatedAt == Now && r.ModifiedAt == Now);
     }
 
     [Fact]
     public void MapHistory_SharesLegacyIdWithLatestReadingAtSameInstant()
     {
         var history = _mapper.MapHistory(
-            [new EversenseUserEvent { EventTypeId = 1, Value = 110, EventDate = "2026-10-16T10:00:00" }]);
-        var latest = _mapper.Map(CreatePatient(glucose: 110, cgTime: "2026-10-16T10:00:00"));
+            [new EversenseUserEvent { EventTypeId = 1, Value = 110, EventDate = "2026-10-16T10:00:00" }], Now);
+        var latest = _mapper.Map(CreatePatient(glucose: 110, cgTime: "2026-10-16T10:00:00"), Now);
 
         history.Single().LegacyId.Should().Be(latest!.LegacyId);
     }

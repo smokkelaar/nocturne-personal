@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { Button } from "$lib/components/ui/button";
-  import * as Avatar from "$lib/components/ui/avatar";
-  import * as Card from "$lib/components/ui/card";
-  import { Checkbox } from "$lib/components/ui/checkbox";
-  import { Label } from "$lib/components/ui/label";
+  import { Button } from "#lib/components/ui/button/index.js";
+  import UserAvatar from "#lib/components/account/UserAvatar.svelte";
+  import * as Card from "#lib/components/ui/card/index.js";
+  import { Checkbox } from "#lib/components/ui/checkbox/index.js";
+  import { Label } from "#lib/components/ui/label/index.js";
   import UserPlus from "@lucide/svelte/icons/user-plus";
   import Check from "@lucide/svelte/icons/check";
   import X from "@lucide/svelte/icons/x";
@@ -13,8 +13,8 @@
   import type {
     MembershipRequestDto,
     TenantRoleDto,
-  } from "$lib/api/generated/nocturne-api-client";
-  import { relativeAge } from "$lib/utils/formatting";
+  } from "#lib/api/generated/nocturne-api-client.js";
+  import { relativeAge } from "#lib/utils/formatting.js";
 
   interface Props {
     requests: MembershipRequestDto[];
@@ -31,17 +31,6 @@
   let selectedRoles = $state<Record<string, string[]>>({});
   let approvingIds = $state(new Set<string>());
   let denyingIds = $state(new Set<string>());
-
-  function getInitials(name: string | undefined): string {
-    if (!name) return "?";
-    return name
-      .split(" ")
-      .map((part) => part[0])
-      .filter(Boolean)
-      .slice(0, 2)
-      .join("")
-      .toUpperCase();
-  }
 
   function getSelectedRoles(requestId: string): string[] {
     return selectedRoles[requestId] ?? [];
@@ -89,12 +78,7 @@
       <Card.Content class="@container space-y-4 pt-6">
         <!-- Requester info -->
         <div class="flex items-start gap-3">
-          <Avatar.Root class="h-10 w-10 shrink-0">
-            <Avatar.Image src={request.avatarUrl} alt={request.subjectName} />
-            <Avatar.Fallback variant="primary" class="text-sm">
-              {getInitials(request.subjectName)}
-            </Avatar.Fallback>
-          </Avatar.Root>
+          <UserAvatar name={request.subjectName} src={request.avatarUrl} size="md" />
           <div class="flex-1 min-w-0 space-y-1">
             <p class="text-sm font-medium truncate">
               {request.subjectName ?? "Unknown"}

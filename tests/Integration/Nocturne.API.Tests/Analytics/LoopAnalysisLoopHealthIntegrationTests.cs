@@ -15,6 +15,7 @@ namespace Nocturne.API.Tests.Integration.Analytics;
 /// cycles every five minutes in Sydney, whose suggestions record no limits, with a gap across one
 /// midnight, a temp cut to maxSafeBasal and a microbolus at local 03:00 each day.
 /// </summary>
+[Collection(ApiIntegrationShards.Four)]
 [Trait("Category", "Integration")]
 public class LoopAnalysisLoopHealthIntegrationTests(ApiIntegrationTestFixture fixture, ITestOutputHelper output)
     : LoopAnalysisIntegrationTestBase(fixture, output)

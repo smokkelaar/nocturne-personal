@@ -1,8 +1,8 @@
 <script lang="ts">
   import ColorFocusRange from "./ColorFocusRange.svelte";
-  import { getGlucoseHeatmapFill } from "$lib/utils/chart-colors";
+  import { getGlucoseHeatmapFill } from "#lib/utils/chart-colors.js";
   import { convertToDisplayUnits } from "@nocturne/ui/glucose";
-  import { glucoseScale, GLUCOSE_LIMITS } from "$lib/utils/metric-color-focus";
+  import { glucoseScale, GLUCOSE_LIMITS } from "#lib/utils/metric-color-focus.js";
 </script>
 
 <div class="year-overview bg-card text-card-foreground p-4" data-testid="preview-card">
@@ -14,7 +14,6 @@
     scale={glucoseScale(null, null, 90)}
     limits={GLUCOSE_LIMITS}
     onWindowChange={() => {}}
-    onRangeChange={() => {}}
     onBoundariesChange={() => {}}
     onEndsChange={() => {}}
     onDimChange={() => {}}

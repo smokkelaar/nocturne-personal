@@ -1,23 +1,24 @@
 <script lang="ts">
-  import { Button } from "$lib/components/ui/button";
-  import * as Card from "$lib/components/ui/card";
-  import { ConfirmDialog } from "$lib/components/ui/confirm-dialog";
-  import { Badge } from "$lib/components/ui/badge";
+  import SuccessBanner from "#lib/forms/SuccessBanner.svelte";
+  import { Button } from "#lib/components/ui/button/index.js";
+  import * as Card from "#lib/components/ui/card/index.js";
+  import { ConfirmDialog } from "#lib/components/ui/confirm-dialog/index.js";
+  import { Badge } from "#lib/components/ui/badge/index.js";
   import Monitor from "@lucide/svelte/icons/monitor";
   import Smartphone from "@lucide/svelte/icons/smartphone";
   import Trash2 from "@lucide/svelte/icons/trash-2";
-  import Check from "@lucide/svelte/icons/check";
   import AlertTriangle from "@lucide/svelte/icons/triangle-alert";
   import Clock from "@lucide/svelte/icons/clock";
   import LoaderCircle from "@lucide/svelte/icons/loader-circle";
   import LogOut from "@lucide/svelte/icons/log-out";
-  import { formatMediumDateTime } from "$lib/utils/formatting";
+  import { EmptyState } from "#lib/components/shared/index.js";
+  import { formatMediumDateTime } from "#lib/utils/formatting.js";
   import {
     list,
     revoke,
     revokeOthers,
-  } from "$lib/api/generated/sessions.generated.remote";
-  import { describeSubmitError } from "$lib/forms/submit-error";
+  } from "#lib/api/generated/sessions.generated.remote.js";
+  import { describeSubmitError } from "#lib/forms/submit-error.js";
 
   type SessionInfo = {
     sessionId?: string;
@@ -158,31 +159,11 @@
   {/if}
 
   {#if successMessage}
-    <div
-      class="flex items-start gap-3 rounded-md border border-success/30 bg-success/10 p-3"
-    >
-      <Check class="mt-0.5 h-4 w-4 shrink-0 text-success" />
-      <p class="text-sm text-success">
-        {successMessage}
-      </p>
-    </div>
+    <SuccessBanner wash={false}>{successMessage}</SuccessBanner>
   {/if}
 
   {#if sessions.length === 0}
-    <Card.Root>
-      <Card.Content
-        class="flex flex-col items-center justify-center py-12 text-center"
-      >
-        <div
-          class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted"
-        >
-          <Monitor class="h-6 w-6 text-muted-foreground" />
-        </div>
-        <p class="text-sm text-muted-foreground max-w-sm">
-          No active sessions found.
-        </p>
-      </Card.Content>
-    </Card.Root>
+    <EmptyState art="phone" variant="card" title="No active sessions found" />
   {:else}
     {#each sessions as session (session.sessionId)}
       <Card.Root>

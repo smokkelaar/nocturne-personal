@@ -4,6 +4,7 @@ using System.Text.Json;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Nocturne.API.Tests.Integration.Infrastructure;
+using Nocturne.Core.Contracts.Treatments;
 using Nocturne.Core.Contracts.V4;
 using Nocturne.Core.Contracts.V4.Repositories;
 using Nocturne.Core.Models;
@@ -18,6 +19,7 @@ namespace Nocturne.API.Tests.Integration;
 /// their schedule-derived rates following later schedule and activation writes. Every test names its
 /// own profile store, so no profile version a test before it cached answers for it.
 /// </summary>
+[Collection(ApiIntegrationShards.Four)]
 [Trait("Category", "Integration")]
 public class PercentTempBasalIntegrationTests : ApiIntegrationTestBase
 {
@@ -187,8 +189,8 @@ public class PercentTempBasalIntegrationTests : ApiIntegrationTestBase
         var switchAt = DaysAgo(9);
         var createdAt = At(switchAt.AddMinutes(1));
 
-        Task Import(Treatment treatment) => WithTenantScopeAsync(sp => sp.GetRequiredService<ITreatmentDecomposer>()
-            .DecomposeBatchAsync([treatment], WriteOrigin.Backfill, CancellationToken.None));
+        Task Import(Treatment treatment) => WithTenantScopeAsync(sp => sp.GetRequiredService<ITreatmentService>()
+            .ImportTreatmentsAsync([treatment], CancellationToken.None));
 
         await Import(new Treatment
         {
@@ -219,8 +221,8 @@ public class PercentTempBasalIntegrationTests : ApiIntegrationTestBase
         var temporaryAt = permanentAt.AddHours(1);
         var createdAt = At(temporaryAt.AddMinutes(90));
 
-        Task Import(Treatment treatment) => WithTenantScopeAsync(sp => sp.GetRequiredService<ITreatmentDecomposer>()
-            .DecomposeBatchAsync([treatment], WriteOrigin.Backfill, CancellationToken.None));
+        Task Import(Treatment treatment) => WithTenantScopeAsync(sp => sp.GetRequiredService<ITreatmentService>()
+            .ImportTreatmentsAsync([treatment], CancellationToken.None));
 
         await Import(new Treatment
         {

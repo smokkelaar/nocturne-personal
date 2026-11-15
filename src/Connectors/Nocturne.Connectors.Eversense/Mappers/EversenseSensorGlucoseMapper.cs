@@ -35,7 +35,7 @@ public class EversenseSensorGlucoseMapper(ILogger logger)
     /// The patient's latest reading, or null when there is none: a patient whose app has not
     /// uploaded yet is listed with <c>CurrentGlucose</c> 0 and <c>CGTime</c> 0001-01-01.
     /// </summary>
-    public SensorGlucose? Map(EversensePatientDatum patient)
+    public SensorGlucose? Map(EversensePatientDatum patient, DateTime now)
     {
         try
         {
@@ -53,7 +53,7 @@ public class EversenseSensorGlucoseMapper(ILogger logger)
                 : (double)patient.CurrentGlucose;
 
             var direction = TrendDirections.GetValueOrDefault(patient.GlucoseTrend, GlucoseDirection.None);
-            return Build(timestamp, mgdl, direction);
+            return Build(timestamp, mgdl, direction, now);
         }
         catch (Exception ex) when (ConnectorFaults.IsMalformedRecord(ex))
         {
@@ -66,7 +66,7 @@ public class EversenseSensorGlucoseMapper(ILogger logger)
     /// Sensor glucose rows of a history feed. The feed carries no trend, so
     /// <see cref="SensorGlucose.Direction"/> is left unset.
     /// </summary>
-    public IReadOnlyList<SensorGlucose> MapHistory(IEnumerable<EversenseUserEvent> events)
+    public IReadOnlyList<SensorGlucose> MapHistory(IEnumerable<EversenseUserEvent> events, DateTime now)
     {
         var records = new List<SensorGlucose>();
         foreach (var e in events)
@@ -80,15 +80,14 @@ public class EversenseSensorGlucoseMapper(ILogger logger)
                 continue;
             }
 
-            records.Add(Build(timestamp, e.Value, direction: null));
+            records.Add(Build(timestamp, e.Value, direction: null, now));
         }
 
         return records;
     }
 
-    private static SensorGlucose Build(DateTimeOffset timestamp, double mgdl, GlucoseDirection? direction)
+    private static SensorGlucose Build(DateTimeOffset timestamp, double mgdl, GlucoseDirection? direction, DateTime now)
     {
-        var now = DateTime.UtcNow;
         return new SensorGlucose
         {
             Id = Guid.CreateVersion7(),

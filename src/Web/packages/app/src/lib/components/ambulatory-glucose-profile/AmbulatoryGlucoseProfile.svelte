@@ -1,16 +1,16 @@
 <script lang="ts">
-  import { tenantChartThresholds } from "$lib/stores/realtime-store.svelte";
+  import { tenantChartThresholds } from "#lib/stores/realtime-store.svelte.js";
   import { AreaChart, Tooltip } from "layerchart";
-  import BarChart3 from "@lucide/svelte/icons/chart-column";
+  import { EmptyState } from "#lib/components/shared/index.js";
   import {
     glucoseUnits,
     timeFormat,
-  } from "$lib/stores/appearance-store.svelte";
-  import { convertToDisplayUnits, bg, bgLabel, bgRange } from "$lib/utils/formatting";
-  import { CHART_TEXTURES, patternClass } from "$lib/components/charts/print/chart-print-patterns";
-  import ChartKey from "$lib/components/charts/print/ChartKey.svelte";
-  import { GLUCOSE_BANDS } from "$lib/components/reports/percentile-band-colors";
-  import type { AveragedStats, GlycemicThresholds } from "$lib/api";
+  } from "#lib/stores/appearance-store.svelte.js";
+  import { convertToDisplayUnits, bg, bgLabel, bgRange } from "#lib/utils/formatting.js";
+  import { CHART_TEXTURES, patternClass } from "#lib/components/charts/print/chart-print-patterns.js";
+  import ChartKey from "#lib/components/charts/print/ChartKey.svelte";
+  import { GLUCOSE_BANDS } from "#lib/components/reports/percentile-band-colors.js";
+  import type { AveragedStats, GlycemicThresholds } from "#lib/api/index.js";
   import {
     formatHour as _formatHour,
     transformStats,
@@ -239,13 +239,12 @@
   />
 </div>
 {:else}
-  <div
-    class="flex h-full w-full items-center justify-center text-muted-foreground"
-  >
-    <div class="text-center">
-      <BarChart3 class="mx-auto h-10 w-10 opacity-30" />
-      <p class="mt-2 font-medium">No pattern data</p>
-      <p class="text-sm">Need more readings to show your typical day</p>
-    </div>
+  <div class="flex h-full w-full items-center justify-center">
+    <EmptyState
+      art="report-pages"
+      size="compact"
+      title="No pattern data"
+      body="Need more readings to show your typical day"
+    />
   </div>
 {/if}

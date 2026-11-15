@@ -11,6 +11,7 @@ const TENANT_ID = '0198a3c4-7e21-7b10-9d2f-5c6e7f809a1b';
 /** The server, with `TENANT_ID` as the tenant every slug names. */
 function servingTenant(server: SocketIOServer): SocketIOServer {
   server.isCurrentTenant = async (_slug, id) => id === TENANT_ID;
+  server.holdsTenantNow = (_slug, id) => id === TENANT_ID;
   return server;
 }
 

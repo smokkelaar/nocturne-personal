@@ -162,6 +162,8 @@ public class V4WriteScopeGatingTests
         new Dictionary<string, string>(V4ScopeGuardExemptions.Controllers, StringComparer.Ordinal)
         {
             ["SubjectAdminController"] = V4ScopeGuardExemptions.PlatformAdminRole,
+            ["TenantCreationInviteAdminController"] = V4ScopeGuardExemptions.PlatformAdminRole,
+            ["PlatformPolicyController"] = V4ScopeGuardExemptions.PlatformAdminRole,
 
             ["DeduplicationController"] = NotDataCategory.SuperuserAttribute,
             ["MigrationController"] = NotDataCategory.SuperuserAttribute,
@@ -178,6 +180,7 @@ public class V4WriteScopeGatingTests
             ["SetupController"] = NotDataCategory.Setup,
             ["PlatformController"] = NotDataCategory.Setup,
             ["MyTenantsController"] = NotDataCategory.Setup,
+            ["TenantCreationInviteController"] = NotDataCategory.Setup,
 
             ["AvatarController"] = NotDataCategory.IdentityAndDelegation,
             ["ChatIdentityController"] = NotDataCategory.IdentityAndDelegation,
@@ -385,11 +388,6 @@ public class V4WriteScopeGatingTests
 
             // Controllers that gate with a per-action [RequireScope] rather than a declaration. Their
             // categories are their own dedicated tables.
-            // treatments: the baseline admitting an activity write, underneath the per-record
-            // ActivityWriteScopeGuard that gates the record's own category. The rationale for the
-            // category is on ActivityController itself.
-            ["ActivityController"] = Scope.TreatmentsReadWrite,
-
             ["SleepController"] = Scope.SleepReadWrite,
             ["HeartRateController"] = Scope.HeartRateReadWrite,
             ["StepCountController"] = Scope.StepCountReadWrite,
@@ -445,6 +443,13 @@ public class V4WriteScopeGatingTests
             ["SetupDevicesController.AddSetupTracker"] = Scope.AlertsReadWrite,
             ["SetupDevicesController.RemoveSetupInsulin"] = Scope.TherapyReadWrite,
             ["SetupDevicesController.RemoveSetupTracker"] = Scope.AlertsReadWrite,
+
+            // The baseline admitting an activity write, underneath the per-record
+            // ActivityWriteScopeGuard that gates the record's own category. Create and update also
+            // admit sleep.readwrite; the rationale is on ActivityController itself.
+            ["ActivityController.CreateActivities"] = Scope.TreatmentsReadWrite,
+            ["ActivityController.UpdateActivity"] = Scope.TreatmentsReadWrite,
+            ["ActivityController.DeleteActivity"] = Scope.TreatmentsReadWrite,
         };
 
     [Fact]

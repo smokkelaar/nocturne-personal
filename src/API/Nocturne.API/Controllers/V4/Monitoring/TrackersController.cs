@@ -8,10 +8,12 @@ using Nocturne.API.Authorization;
 using Nocturne.API.Controllers.V4.Base;
 using Nocturne.API.Extensions;
 using Nocturne.API.Services.Monitoring;
+using Nocturne.Connectors.Core.Constants;
 using Nocturne.Core.Contracts.Alerts;
 using Nocturne.Core.Contracts.Multitenancy;
 using Nocturne.Core.Models;
 using Nocturne.Core.Models.Authorization;
+using Nocturne.Core.Models.V4;
 using Nocturne.Infrastructure.Data.Entities;
 using Nocturne.Infrastructure.Data.Abstractions;
 using Nocturne.API.Services.Realtime;
@@ -47,6 +49,7 @@ public class TrackersController : ControllerBase, IWriteScopedController
     private readonly IAlertRepository _alerts;
     private readonly ITenantAccessor _tenantAccessor;
     private readonly IAlertAcknowledgementService _acknowledgementService;
+    private readonly TrackerDeviceEventWriter _deviceEvents;
     private readonly ILogger<TrackersController> _logger;
     private readonly TimeProvider _time;
 
@@ -61,6 +64,7 @@ public class TrackersController : ControllerBase, IWriteScopedController
     /// <param name="alerts">Finds the open excursions of a definition's managed rules.</param>
     /// <param name="tenantAccessor">The request's tenant.</param>
     /// <param name="acknowledgementService">Acknowledges alert excursions when a tracker is acked.</param>
+    /// <param name="deviceEvents">Records a definition's start and completion device events.</param>
     /// <param name="logger">Logger instance.</param>
     /// <param name="timeProvider">The clock a start or a range defaults from; the system clock when null.</param>
     public TrackersController(
@@ -70,6 +74,7 @@ public class TrackersController : ControllerBase, IWriteScopedController
         IAlertRepository alerts,
         ITenantAccessor tenantAccessor,
         IAlertAcknowledgementService acknowledgementService,
+        TrackerDeviceEventWriter deviceEvents,
         ILogger<TrackersController> logger,
         TimeProvider? timeProvider = null
     )
@@ -81,6 +86,7 @@ public class TrackersController : ControllerBase, IWriteScopedController
         _alerts = alerts;
         _tenantAccessor = tenantAccessor;
         _acknowledgementService = acknowledgementService;
+        _deviceEvents = deviceEvents;
         _logger = logger;
     }
 
@@ -91,16 +97,18 @@ public class TrackersController : ControllerBase, IWriteScopedController
 
     /// <summary>
     /// A manual start replaces the running instance, as a device-event start does; see
-    /// <see cref="TrackerSuccession"/>.
+    /// <see cref="TrackerSuccession"/>. A started run records the definition's start event
+    /// (<see cref="TrackerDeviceEventWriter"/>).
     /// </summary>
-    private Task<TrackerSuccessionResult> StartSuccessorAsync(
+    private async Task<TrackerSuccessionResult> StartSuccessorAsync(
         TrackerDefinitionEntity definition,
         string userId,
         string? startNotes,
         string? startTreatmentId,
         DateTime startedAt,
-        DateTime? scheduledAt) =>
-        TrackerSuccession.StartAsync(
+        DateTime? scheduledAt)
+    {
+        var succession = await TrackerSuccession.StartAsync(
             _repository,
             _broadcast,
             _logger,
@@ -120,6 +128,18 @@ public class TrackersController : ControllerBase, IWriteScopedController
             HttpContext.RequestAborted
         );
 
+        // The run is committed, so its event is owed even when the client has gone.
+        if (succession.Started is { } started)
+            await _deviceEvents.WriteAsync(
+                definition.StartEventType,
+                started.StartedAt,
+                startNotes,
+                $"{started.Id}:start",
+                CancellationToken.None);
+
+        return succession;
+    }
+
     private static string? NullIfBlank(string? value) =>
         string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
@@ -131,6 +151,25 @@ public class TrackersController : ControllerBase, IWriteScopedController
             statusCode: StatusCodes.Status409Conflict,
             title: "Conflict"
         );
+
+    private ObjectResult? EventTypeError(
+        string? requestedStart,
+        string? requestedCompletion,
+        out string? startEventType,
+        out string? completionEventType)
+    {
+        completionEventType = null;
+        if (!TrackerDeviceEventWriter.TryNormalise(requestedStart, "StartEventType", out startEventType, out var error)
+            || !TrackerDeviceEventWriter.TryNormalise(requestedCompletion, "CompletionEventType", out completionEventType, out error))
+            return Problem(detail: error, statusCode: 400, title: "Bad Request");
+        return null;
+    }
+
+    private static string? ResolveEventType(string? requested, string? normalised, string? stored) =>
+        string.IsNullOrWhiteSpace(requested) ? null : normalised ?? stored;
+
+    private static string? Changed(string? requested, string? stored) =>
+        string.Equals(requested?.Trim(), stored?.Trim(), StringComparison.OrdinalIgnoreCase) ? null : requested;
 
     private ObjectResult AlreadyCompleted() =>
         Problem(detail: "Instance already completed", statusCode: 400, title: "Bad Request");
@@ -167,11 +206,12 @@ public class TrackersController : ControllerBase, IWriteScopedController
     /// <summary>
     /// Validate the low-reservoir level threshold for a definition
     /// </summary>
-    private static string? ValidateLowReservoirUnits(double? units, TrackerCategory category)
+    private static string? ValidateLowReservoirUnits(
+        double? units, TrackerCategory category, IReadOnlySet<PumpCapability> covers)
     {
         if (units is not { } value) return null;
-        if (category != TrackerCategory.Reservoir)
-            return "Low reservoir units apply only to Reservoir category trackers";
+        if (!TrackerCoverage.HoldsInsulin(category, covers))
+            return "Low reservoir units apply only to trackers of a reservoir or of hardware that holds insulin";
         if (value <= 0)
             return "Low reservoir units must be greater than zero";
         if (value > 1000)
@@ -188,7 +228,7 @@ public class TrackersController : ControllerBase, IWriteScopedController
     {
         var tenantId = _tenantAccessor.TenantId;
         var excursions = await _alerts.GetUnacknowledgedExcursionIdsAsync(
-            tenantId, TrackerAlertRuleSyncService.ManagedByTag(definitionId), ct);
+            TrackerAlertRuleSyncService.ManagedByTag(definitionId), ct);
 
         foreach (var excursionId in excursions)
         {
@@ -231,6 +271,26 @@ public class TrackersController : ControllerBase, IWriteScopedController
     [ProducesResponseType(typeof(string[]), StatusCodes.Status200OK)]
     public ActionResult<string[]> GetTriggerEventTypes() =>
         Ok(TrackerTriggerService.TriggerableEventTypes.ToArray());
+
+    /// <summary>
+    /// The device event types a tracker can be set to end on, completing its run without starting
+    /// another.
+    /// </summary>
+    [HttpGet("end-event-types")]
+    [RemoteQuery]
+    [ProducesResponseType(typeof(string[]), StatusCodes.Status200OK)]
+    public ActionResult<string[]> GetEndEventTypes() =>
+        Ok(TrackerTriggerService.EndingEventTypes.ToArray());
+
+    /// <summary>
+    /// The device event types a definition can create when a run starts or completes: the Nightscout
+    /// names that map to a device event.
+    /// </summary>
+    [HttpGet("device-event-types")]
+    [RemoteQuery]
+    [ProducesResponseType(typeof(string[]), StatusCodes.Status200OK)]
+    public ActionResult<string[]> GetDeviceEventTypes() =>
+        Ok(TreatmentTypes.DeviceEventTypeMap.Keys.ToArray());
 
     /// <summary>
     /// Get a specific tracker definition
@@ -277,12 +337,22 @@ public class TrackersController : ControllerBase, IWriteScopedController
         if (request.Mode == TrackerMode.Event && request.LifespanHours.HasValue)
             return Problem(detail: "Event mode trackers should not have a lifespan", statusCode: 400, title: "Bad Request");
 
-        var lowReservoirError = ValidateLowReservoirUnits(request.LowReservoirUnits, request.Category);
+        if (!TrackerCoverage.TryNormalise(request.Covers, out var covers, out var coversError))
+            return Problem(detail: coversError, statusCode: 400, title: "Bad Request");
+
+        var lowReservoirError = ValidateLowReservoirUnits(
+            request.LowReservoirUnits, request.Category, (covers ?? []).ToHashSet());
         if (lowReservoirError != null)
             return Problem(detail: lowReservoirError, statusCode: 400, title: "Bad Request");
 
         if (!TrackerTriggerService.TryNormaliseTriggers(request.TriggerEventTypes, out var triggers, out var triggerError))
             return Problem(detail: triggerError, statusCode: 400, title: "Bad Request");
+
+        if (!TrackerTriggerService.TryNormaliseEnds(request.EndEventTypes, out var ends, out var endError))
+            return Problem(detail: endError, statusCode: 400, title: "Bad Request");
+
+        if (EventTypeError(request.StartEventType, request.CompletionEventType, out var startEventType, out var completionEventType) is { } eventTypeError)
+            return eventTypeError;
 
         var entity = new TrackerDefinitionEntity
         {
@@ -292,14 +362,16 @@ public class TrackersController : ControllerBase, IWriteScopedController
             Category = request.Category,
             Icon = request.Icon ?? "activity",
             TriggerEventTypes = JsonSerializer.Serialize(triggers ?? []),
+            EndEventTypes = JsonSerializer.Serialize(ends ?? []),
+            Covers = TrackerCoverage.Serialize(covers ?? []),
             TriggerNotesContains = NullIfBlank(request.TriggerNotesContains),
             LifespanHours = request.LifespanHours,
             LowReservoirUnits = request.LowReservoirUnits,
             LowReservoirUrgency = request.LowReservoirUrgency,
             IsFavorite = request.IsFavorite,
             DashboardVisibility = request.DashboardVisibility,
-            StartEventType = request.StartEventType,
-            CompletionEventType = request.CompletionEventType,
+            StartEventType = startEventType,
+            CompletionEventType = completionEventType,
             Mode = request.Mode,
         };
 
@@ -323,8 +395,8 @@ public class TrackersController : ControllerBase, IWriteScopedController
         var created = await _repository.CreateDefinitionAsync(entity, HttpContext.RequestAborted);
 
         // CancellationToken.None: the definition is already committed, so a client
-        // disconnect must not leave it without its managed rules until the next startup
-        // backfill.
+        // disconnect must not leave it without its managed rules until the daily
+        // TrackerAlertRuleBackfillJob.
         await _ruleSync.SyncDefinitionAsync(created.Id, CancellationToken.None);
         await _broadcast.BroadcastTrackerDefinitionUpdateAsync(created.Id);
 
@@ -347,7 +419,7 @@ public class TrackersController : ControllerBase, IWriteScopedController
     [HttpPut("definitions/{id:guid}")]
     [RequireDeclaredWriteScope]
     [Authorize]
-    [RemoteForm(Invalidates = ["GetDefinitions", "GetDefinition"])]
+    [RemoteForm(Invalidates = ["GetDefinitions", "GetDefinition", "GetActiveInstances", "GetInstanceHistory", "GetPresets"])]
     [ProducesResponseType(typeof(TrackerDefinitionDto), StatusCodes.Status200OK)]
     public async Task<ActionResult<TrackerDefinitionDto>> UpdateDefinition(
         Guid id,
@@ -373,12 +445,26 @@ public class TrackersController : ControllerBase, IWriteScopedController
             return Problem(detail: "Event mode trackers should not have a lifespan", statusCode: 400, title: "Bad Request");
 
         var category = request.Category ?? existing.Category;
-        var lowReservoirError = ValidateLowReservoirUnits(request.LowReservoirUnits, category);
+        if (!TrackerCoverage.TryNormalise(request.Covers, out var covers, out var coversError))
+            return Problem(detail: coversError, statusCode: 400, title: "Bad Request");
+        var coverage = covers?.ToHashSet() ?? TrackerCoverage.Parse(existing.Covers);
+        var lowReservoirError = ValidateLowReservoirUnits(request.LowReservoirUnits, category, coverage);
         if (lowReservoirError != null)
             return Problem(detail: lowReservoirError, statusCode: 400, title: "Bad Request");
 
         if (!TrackerTriggerService.TryNormaliseTriggers(request.TriggerEventTypes, out var triggers, out var triggerError))
             return Problem(detail: triggerError, statusCode: 400, title: "Bad Request");
+
+        if (!TrackerTriggerService.TryNormaliseEnds(request.EndEventTypes, out var ends, out var endError))
+            return Problem(detail: endError, statusCode: 400, title: "Bad Request");
+
+        // A stored name saved before device events were enforced passes when the editor re-posts it.
+        if (EventTypeError(
+                Changed(request.StartEventType, existing.StartEventType),
+                Changed(request.CompletionEventType, existing.CompletionEventType),
+                out var startEventType,
+                out var completionEventType) is { } eventTypeError)
+            return eventTypeError;
 
         existing.Name = request.Name ?? existing.Name;
         existing.Description = request.Description ?? existing.Description;
@@ -395,17 +481,23 @@ public class TrackersController : ControllerBase, IWriteScopedController
         {
             existing.TriggerNotesContains = NullIfBlank(request.TriggerNotesContains);
         }
+        if (ends != null)
+            existing.EndEventTypes = JsonSerializer.Serialize(ends);
+        if (covers != null)
+            existing.Covers = TrackerCoverage.Serialize(covers);
         existing.LifespanHours = request.LifespanHours ?? existing.LifespanHours;
         // Applied as-is (not null-means-keep): the tracker editor posts the whole
-        // definition, and null must clear the level rule. Forced null for any
-        // non-Reservoir category.
+        // definition, and null must clear the level rule. Forced null for a tracker
+        // that holds no insulin.
         existing.LowReservoirUnits =
-            category == TrackerCategory.Reservoir ? request.LowReservoirUnits : null;
+            TrackerCoverage.HoldsInsulin(category, coverage) ? request.LowReservoirUnits : null;
         existing.LowReservoirUrgency = request.LowReservoirUrgency ?? existing.LowReservoirUrgency;
         existing.IsFavorite = request.IsFavorite ?? existing.IsFavorite;
         existing.DashboardVisibility = request.DashboardVisibility ?? existing.DashboardVisibility;
-        existing.StartEventType = request.StartEventType ?? existing.StartEventType;
-        existing.CompletionEventType = request.CompletionEventType ?? existing.CompletionEventType;
+        // Applied as posted, like LowReservoirUnits: the editor posts the whole definition, so null or
+        // blank clears the event.
+        existing.StartEventType = ResolveEventType(request.StartEventType, startEventType, existing.StartEventType);
+        existing.CompletionEventType = ResolveEventType(request.CompletionEventType, completionEventType, existing.CompletionEventType);
         existing.Mode = request.Mode ?? existing.Mode;
 
         // Handle notification thresholds update (replaces all existing if provided)
@@ -449,7 +541,7 @@ public class TrackersController : ControllerBase, IWriteScopedController
     [HttpDelete("definitions/{id:guid}")]
     [RequireDeclaredWriteScope]
     [Authorize]
-    [RemoteCommand(Invalidates = ["GetDefinitions"])]
+    [RemoteCommand(Invalidates = ["GetDefinitions", "GetActiveInstances", "GetInstanceHistory", "GetPresets"])]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<ActionResult> DeleteDefinition(Guid id)
     {
@@ -547,7 +639,7 @@ public class TrackersController : ControllerBase, IWriteScopedController
     [HttpPost("instances")]
     [RequireDeclaredWriteScope]
     [Authorize]
-    [RemoteCommand(Invalidates = ["GetActiveInstances"])]
+    [RemoteCommand(Invalidates = ["GetActiveInstances", "GetInstanceHistory"])]
     [ProducesResponseType(typeof(TrackerInstanceDto), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<ActionResult<TrackerInstanceDto>> StartInstance(
@@ -619,6 +711,14 @@ public class TrackersController : ControllerBase, IWriteScopedController
         );
         if (completed is null)
             return AlreadyCompleted();
+
+        if (completed.CompletedAt is { } completedAt)
+            await _deviceEvents.WriteAsync(
+                existing.Definition.CompletionEventType,
+                completedAt,
+                completed.CompletionNotes,
+                $"{completed.Id}:completion",
+                CancellationToken.None);
 
         _logger.LogInformation(
             "Completed tracker instance {Id} with reason {Reason}",
@@ -762,7 +862,7 @@ public class TrackersController : ControllerBase, IWriteScopedController
     [HttpPost("presets/{id:guid}/apply")]
     [RequireDeclaredWriteScope]
     [Authorize]
-    [RemoteCommand(Invalidates = ["GetActiveInstances"])]
+    [RemoteCommand(Invalidates = ["GetActiveInstances", "GetInstanceHistory"])]
     [ProducesResponseType(typeof(TrackerInstanceDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<ActionResult<TrackerInstanceDto>> ApplyPreset(
@@ -863,12 +963,30 @@ public class TrackerDefinitionDto
     public TrackerCategory Category { get; set; }
     public string Icon { get; set; } = "activity";
     public List<string> TriggerEventTypes { get; set; } = [];
+
+    /// <summary>
+    /// Device event types that complete the running instance without starting another.
+    /// </summary>
+    public List<string> EndEventTypes { get; set; } = [];
+
+    /// <summary>
+    /// What the tracked hardware provides (<see cref="TrackerCoverage.Of(TrackerDefinitionEntity)"/>).
+    /// Empty when not known, and then what the tracker stands for is read from its triggers and
+    /// category.
+    /// </summary>
+    public List<PumpCapability> Covers { get; set; } = [];
+
+    /// <summary>
+    /// The catalog pump part the tracker follows, as the catalog id and the part's key
+    /// (e.g. "omnipod-5/pod"). Null for a tracker that follows no catalog part.
+    /// </summary>
+    public string? DeviceComponent { get; set; }
     public string? TriggerNotesContains { get; set; }
     public int? LifespanHours { get; set; }
 
     /// <summary>
-    /// Reservoir category only: units level below which the synced managed reservoir
-    /// rule fires. Null = no level rule.
+    /// For a tracker that holds insulin (a Reservoir category, or one covering Reservoir): units
+    /// level below which the synced managed reservoir rule fires. Null = no level rule.
     /// </summary>
     public double? LowReservoirUnits { get; set; }
 
@@ -919,6 +1037,14 @@ public class TrackerDefinitionDto
                     .Select(TrackerTriggerService.CanonicalTrigger)
                     .OfType<string>(),
             ],
+            EndEventTypes =
+            [
+                .. (JsonSerializer.Deserialize<List<string>>(entity.EndEventTypes) ?? [])
+                    .Select(TrackerTriggerService.CanonicalEnd)
+                    .OfType<string>(),
+            ],
+            Covers = [.. TrackerCoverage.Of(entity).Order()],
+            DeviceComponent = entity.DeviceComponent,
             TriggerNotesContains = entity.TriggerNotesContains,
             LifespanHours = entity.LifespanHours,
             LowReservoirUnits = entity.LowReservoirUnits,
@@ -972,12 +1098,22 @@ public class CreateTrackerDefinitionRequest
     public TrackerCategory Category { get; set; } = TrackerCategory.Consumable;
     public string? Icon { get; set; }
     public List<string>? TriggerEventTypes { get; set; }
+
+    /// <summary>
+    /// Device event types that complete the running instance without starting another.
+    /// </summary>
+    public List<string>? EndEventTypes { get; set; }
+
+    /// <summary>
+    /// <see cref="PumpCapability"/> names the tracked hardware provides.
+    /// </summary>
+    public List<string>? Covers { get; set; }
     public string? TriggerNotesContains { get; set; }
     public int? LifespanHours { get; set; }
 
     /// <summary>
-    /// Reservoir category only: units level below which the synced managed reservoir
-    /// rule fires. Null = no level rule.
+    /// For a tracker that holds insulin (a Reservoir category, or one covering Reservoir): units
+    /// level below which the synced managed reservoir rule fires. Null = no level rule.
     /// </summary>
     public double? LowReservoirUnits { get; set; }
 
@@ -1018,14 +1154,26 @@ public class UpdateTrackerDefinitionRequest
     public TrackerCategory? Category { get; set; }
     public string? Icon { get; set; }
     public List<string>? TriggerEventTypes { get; set; }
+
+    /// <summary>
+    /// Device event types that complete the running instance without starting another. Null keeps
+    /// the current list; an empty list clears it.
+    /// </summary>
+    public List<string>? EndEventTypes { get; set; }
+
+    /// <summary>
+    /// <see cref="PumpCapability"/> names the tracked hardware provides. Null keeps the current
+    /// list; an empty list clears it.
+    /// </summary>
+    public List<string>? Covers { get; set; }
     public string? TriggerNotesContains { get; set; }
     public int? LifespanHours { get; set; }
 
     /// <summary>
-    /// Reservoir category only: units level below which the synced managed reservoir
-    /// rule fires. The tracker editor posts the whole definition, so for a Reservoir
-    /// definition this value is applied as-is on every update — null clears the rule
-    /// (null-means-keep cannot express clearing).
+    /// For a tracker that holds insulin (a Reservoir category, or one covering Reservoir): units
+    /// level below which the synced managed reservoir rule fires. The tracker editor posts the
+    /// whole definition, so for such a definition this value is applied as-is on every update —
+    /// null clears the rule (null-means-keep cannot express clearing).
     /// </summary>
     public double? LowReservoirUnits { get; set; }
 
@@ -1044,12 +1192,14 @@ public class UpdateTrackerDefinitionRequest
     public DashboardVisibility? DashboardVisibility { get; set; }
 
     /// <summary>
-    /// Event type to create when tracker is started (for Nightscout compatibility)
+    /// Event type to create when tracker is started (for Nightscout compatibility). Applied as
+    /// posted: null or blank clears it.
     /// </summary>
     public string? StartEventType { get; set; }
 
     /// <summary>
-    /// Event type to create when tracker is completed (for Nightscout compatibility)
+    /// Event type to create when tracker is completed (for Nightscout compatibility). Applied as
+    /// posted: null or blank clears it.
     /// </summary>
     public string? CompletionEventType { get; set; }
 

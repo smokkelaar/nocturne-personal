@@ -1,14 +1,9 @@
 <script lang="ts">
-  import * as Sidebar from "$lib/components/ui/sidebar";
-  import { createRealtimeStore } from "$lib/stores/realtime-store.svelte";
+  import * as Sidebar from "#lib/components/ui/sidebar/index.js";
+  import { createRealtimeStore } from "#lib/stores/realtime-store.svelte.js";
   import AppSidebar from "./AppSidebar.svelte";
-  import MobileHeader from "./MobileHeader.svelte";
-  import type { AuthUser } from "$lib/stores/auth-store.svelte";
-  import { createHelpContext } from "$lib/help/help-context.svelte";
-  import HelpPageView from "$lib/components/help/HelpPageView.svelte";
-  import { Input } from "$lib/components/ui/input";
-  createHelpContext();
-  import type { TenantSwitcherTarget } from "$lib/utils/tenant-host";
+  import type { AuthUser } from "#lib/stores/auth-store.svelte.js";
+  import type { TenantSwitcherTarget } from "#lib/utils/tenant-host.js";
 
   const {
     user = null,
@@ -37,13 +32,4 @@
 
 <Sidebar.Provider>
   <AppSidebar {user} {isGuestSession} {currentSlug} {baseDomain} {tenantTargets} />
-  <Sidebar.Inset>
-    <MobileHeader />
-    <main>
-      <HelpPageView>
-        <p>Underlying report</p>
-        <Input aria-label="Report filter" />
-      </HelpPageView>
-    </main>
-  </Sidebar.Inset>
 </Sidebar.Provider>

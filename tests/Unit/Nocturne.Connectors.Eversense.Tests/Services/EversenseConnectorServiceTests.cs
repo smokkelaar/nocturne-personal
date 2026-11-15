@@ -4,6 +4,7 @@ using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Time.Testing;
 using Moq;
 using Nocturne.Connectors.Core.Interfaces;
 using Nocturne.Connectors.Core.Models;
@@ -510,6 +511,67 @@ public class EversenseConnectorServiceTests
         windows[0].Start.Should().Be(now.AddDays(-EversenseConnectorConfiguration.MaxHistoryDays));
     }
 
+    [Fact]
+    public void InitialSyncFloor_IsOneDayBeforeTheClock()
+    {
+        var clock = new FakeTimeProvider(new DateTimeOffset(2026, 10, 16, 12, 0, 0, TimeSpan.Zero));
+        var fixture = new ServiceFixture(clock: clock);
+
+        fixture.FloorProbe.Floor.Should().Be(new DateTime(2026, 10, 15, 12, 0, 0, DateTimeKind.Utc));
+    }
+
+    [Fact]
+    public async Task SyncDataAsync_WithoutResumePoint_AsksForTheFourHoursBeforeTheClock()
+    {
+        var clock = new FakeTimeProvider(new DateTimeOffset(2026, 10, 16, 12, 0, 0, TimeSpan.Zero));
+        var fixture = new ServiceFixture(
+            httpResponses: new Dictionary<string, HttpResponseMessage>
+            {
+                [EversenseConstants.Endpoints.GetFollowingPatientList] =
+                    CreateJsonResponse(new List<EversensePatientDatum>
+                    {
+                        CreateFollowedPatient(userId: 42, glucose: 125, cgTime: "2026-10-16T11:58:00Z")
+                    }),
+                [EversenseConstants.Endpoints.GetFollowingUserSensorGlucose] =
+                    CreateJsonResponse(new List<EversenseUserEvent>())
+            },
+            publisher: CreatePublisher().Object,
+            clock: clock);
+
+        await fixture.Service.SyncDataAsync(
+            new SyncRequest { DataTypes = [SyncDataType.Glucose] }, fixture.Config, CancellationToken.None);
+
+        var history = fixture.RequestedUris.Should().ContainSingle(u =>
+            u.AbsolutePath == EversenseConstants.Endpoints.GetFollowingUserSensorGlucose).Subject;
+        history.Query.Should().Contain("startDate=2026-10-16T08%3A00%3A00")
+            .And.Contain("endDate=2026-10-16T12%3A05%3A00");
+    }
+
+    [Fact]
+    public async Task SyncDataAsync_StampsTheLatestReadingWithTheClock()
+    {
+        var clock = new FakeTimeProvider(new DateTimeOffset(2026, 10, 16, 12, 0, 0, TimeSpan.Zero));
+        IReadOnlyList<SensorGlucose>? published = null;
+        var fixture = new ServiceFixture(
+            httpResponses: new Dictionary<string, HttpResponseMessage>
+            {
+                [EversenseConstants.Endpoints.GetFollowingPatientList] =
+                    CreateJsonResponse(new List<EversensePatientDatum>
+                    {
+                        CreateFollowedPatient(userId: 42, glucose: 125, cgTime: "2026-10-16T11:58:00Z")
+                    }),
+                [EversenseConstants.Endpoints.GetFollowingUserSensorGlucose] =
+                    CreateJsonResponse(new List<EversenseUserEvent>())
+            },
+            publisher: CreatePublisher(records => published = records.ToList()).Object,
+            clock: clock);
+
+        await fixture.Service.SyncDataAsync(
+            new SyncRequest { DataTypes = [SyncDataType.Glucose] }, fixture.Config, CancellationToken.None);
+
+        published.Should().ContainSingle().Which.CreatedAt.Should().Be(clock.GetUtcNow().UtcDateTime);
+    }
+
     #endregion
 
     #region Test Infrastructure
@@ -627,6 +689,7 @@ public class EversenseConnectorServiceTests
         private readonly MockHttpMessageHandler _handler;
 
         public EversenseConnectorService Service { get; }
+        public FloorProbeService FloorProbe { get; }
         public EversenseConnectorConfiguration Config { get; }
         public IReadOnlyList<Uri> RequestedUris => _handler.RequestedUris;
 
@@ -636,7 +699,8 @@ public class EversenseConnectorServiceTests
             IConnectorPublisher? publisher = null,
             ILogger<EversenseConnectorService>? serviceLogger = null,
             string? patientUsername = null,
-            string server = "US")
+            string server = "US",
+            TimeProvider? clock = null)
         {
             Config = new EversenseConnectorConfiguration
             {
@@ -662,8 +726,28 @@ public class EversenseConnectorServiceTests
                 logger,
                 retryStrategy,
                 tokenProvider,
-                publisher);
+                publisher,
+                clock);
+            FloorProbe = new FloorProbeService(
+                httpClient,
+                new Nocturne.Connectors.Core.Services.ConnectorServerResolver<EversenseConnectorConfiguration>(null, null, null),
+                logger,
+                retryStrategy,
+                tokenProvider,
+                clock);
         }
+    }
+
+    private sealed class FloorProbeService(
+        HttpClient httpClient,
+        Nocturne.Connectors.Core.Interfaces.IConnectorServerResolver<EversenseConnectorConfiguration> serverResolver,
+        ILogger<EversenseConnectorService> logger,
+        IRetryDelayStrategy retryDelayStrategy,
+        EversenseAuthTokenProvider tokenProvider,
+        TimeProvider? clock)
+        : EversenseConnectorService(httpClient, serverResolver, logger, retryDelayStrategy, tokenProvider, null, clock)
+    {
+        public DateTime? Floor => InitialSyncFloor;
     }
 
     #endregion

@@ -180,6 +180,7 @@ export async function setupBridge(
 
   socketIOServer.onTenantAdmitted = (slug) => registry.ensure(slug);
   socketIOServer.isCurrentTenant = (slug, id) => registry.holds(slug, id);
+  socketIOServer.holdsTenantNow = (slug, id) => registry.holdsNow(slug, id);
   socketIOServer.onApexUnresolved = async () => {
     await registry.refresh();
   };

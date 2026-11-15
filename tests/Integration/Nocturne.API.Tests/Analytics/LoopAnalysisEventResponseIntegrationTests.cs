@@ -16,6 +16,7 @@ namespace Nocturne.API.Tests.Integration.Analytics;
 /// 45 g lunch at 12:00 and an unannounced rise at 19:00 each day, over an algorithm temp of
 /// 1.5 U/h against a 1.0 U/h schedule.
 /// </summary>
+[Collection(ApiIntegrationShards.Two)]
 [Trait("Category", "Integration")]
 public class LoopAnalysisEventResponseIntegrationTests(ApiIntegrationTestFixture fixture, ITestOutputHelper output)
     : LoopAnalysisIntegrationTestBase(fixture, output)

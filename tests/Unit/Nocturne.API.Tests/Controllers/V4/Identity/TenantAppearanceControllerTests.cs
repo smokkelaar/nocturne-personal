@@ -117,6 +117,7 @@ public sealed class TenantAppearanceControllerTests
             GlucoseUnits = "mmol",
             A1cName = "A1c",
             A1cUnits = "mmol/mol",
+            CarbRatioFormat = "U/10g",
             TimeFormat = "24",
             RegionFormat = "en-GB",
             EnergyUnit = "kJ",
@@ -135,7 +136,7 @@ public sealed class TenantAppearanceControllerTests
         var disclosed = everythingSet.ToPresentationOnly();
 
         SetPropertyNames(disclosed).Should().BeEquivalentTo(
-            "GlucoseUnits", "A1cName", "A1cUnits", "TimeFormat", "RegionFormat", "EnergyUnit", "EffectiveEnergyUnit",
+            "GlucoseUnits", "A1cName", "A1cUnits", "CarbRatioFormat", "TimeFormat", "RegionFormat", "EnergyUnit", "EffectiveEnergyUnit",
             "ColorTheme", "GlucoseRangePalette", "CalendarShowTirPercent", "Prediction", "Chart", "YearOverviewColors");
 
         // Both are carried whole rather than field by field, so the projection cannot withhold a
@@ -143,12 +144,12 @@ public sealed class TenantAppearanceControllerTests
         // declarations is what makes adding one a decision rather than a default.
         PropertyNames(typeof(YearOverviewColorPreferences)).Should().BeEquivalentTo(
             "OutOfBandTransparency",
-            "AvgGlucoseBand", "AvgGlucoseBoundaries", "AvgGlucoseLowColor", "AvgGlucoseHighColor", "AvgGlucosePalette", "AvgGlucoseMirror", "AvgGlucoseColorRange",
-            "TirBand", "TirBoundaries", "TirLowColor", "TirHighColor", "TirPalette", "TirMirror", "TirColorRange",
-            "BolusBand", "BolusBoundaries", "BolusLowColor", "BolusHighColor", "BolusPalette", "BolusMirror", "BolusColorRange",
-            "BasalBand", "BasalBoundaries", "BasalLowColor", "BasalHighColor", "BasalPalette", "BasalMirror", "BasalColorRange",
-            "TddBand", "TddBoundaries", "TddLowColor", "TddHighColor", "TddPalette", "TddMirror", "TddColorRange",
-            "CarbsBand", "CarbsBoundaries", "CarbsLowColor", "CarbsHighColor", "CarbsPalette", "CarbsMirror", "CarbsColorRange");
+            "AvgGlucoseBand", "AvgGlucoseBoundaries", "AvgGlucoseLowColor", "AvgGlucoseHighColor",
+            "TirBand", "TirBoundaries", "TirLowColor", "TirHighColor",
+            "BolusBand", "BolusBoundaries", "BolusLowColor", "BolusHighColor",
+            "BasalBand", "BasalBoundaries", "BasalLowColor", "BasalHighColor",
+            "TddBand", "TddBoundaries", "TddLowColor", "TddHighColor",
+            "CarbsBand", "CarbsBoundaries", "CarbsLowColor", "CarbsHighColor");
         PropertyNames(typeof(YearOverviewColorBoundary)).Should().BeEquivalentTo("Value", "Position", "Color");
         PropertyNames(typeof(PredictionPreferences)).Should().BeEquivalentTo(
             "Enabled", "Minutes", "DisplayMode");

@@ -17,7 +17,7 @@ public class StatisticsServiceClinicalAccuracyTests
 
     public StatisticsServiceClinicalAccuracyTests()
     {
-        _sut = new StatisticsService();
+        _sut = new StatisticsService(TimeProvider.System);
     }
 
     #region GMI (Glucose Management Indicator) Tests

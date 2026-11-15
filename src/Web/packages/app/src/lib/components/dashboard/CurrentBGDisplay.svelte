@@ -1,25 +1,33 @@
 <script lang="ts">
   import { page } from "$app/state";
-  import { lazyComponent } from "$lib/utils/lazy-component.svelte";
-  import { RailItemId, TrackerCategory } from "$lib/api";
-  import { Badge } from "$lib/components/ui/badge";
-  import StatusRail from "$lib/components/status-pills/StatusRail.svelte";
-  import { effectiveRail } from "$lib/components/status-pills/rail";
-  import { GlucoseValueIndicator } from "$lib/components/shared";
-  import { getRealtimeStore } from "$lib/stores/realtime-store.svelte";
-  import { dashboardRail, glucoseUnits } from "$lib/stores/appearance-store.svelte";
-  import { getUiSettings } from "$api/ui-settings.remote";
-  import { STALE_THRESHOLD_MS } from "$lib/constants/staleness";
+  import { lazyComponent } from "#lib/utils/lazy-component.svelte.js";
+  import { RailItemId, TrackerCategory } from "#lib/api/index.js";
+  import { Badge } from "#lib/components/ui/badge/index.js";
+  import StatusRail from "#lib/components/status-pills/StatusRail.svelte";
+  import { effectiveRail } from "#lib/components/status-pills/rail.js";
+  import { GlucoseValueIndicator } from "#lib/components/shared/index.js";
+  import { getRealtimeStore } from "#lib/stores/realtime-store.svelte.js";
+  import {
+    dashboardRail,
+    dashboardTopWidgets,
+    glucoseUnits,
+  } from "#lib/stores/appearance-store.svelte.js";
+  import { getUiSettings } from "#lib/api/ui-settings.remote.js";
+  import { STALE_THRESHOLD_MS } from "#lib/constants/staleness.js";
   import {
     formatGlucoseValue,
     formatGlucoseDelta,
     formatLocale,
     relativeAge,
     prefersHour12,
-  } from "$lib/utils/formatting";
+  } from "#lib/utils/formatting.js";
   import Clock from "@lucide/svelte/icons/clock";
-  import { displayedGlucose } from "$lib/stores/current-glucose-status.svelte";
-  import { getGlucoseTileVariant } from "$lib/utils/glucose-status";
+  import { displayedGlucose } from "#lib/stores/current-glucose-status.svelte.js";
+  import { getGlucoseTileVariant } from "#lib/utils/glucose-status.js";
+  import { trackUnwashedFill } from "./glucose-tile-wash-state.svelte";
+  import { stillArtwork } from "#lib/watercolour-deferral.svelte.js";
+  import { showsCurrentGlucoseWidget } from "./top-widget-ids";
+  import LogEventButton from "#lib/components/entries/LogEventButton.svelte";
 
   interface ComponentProps {
     /** Show the status pills besides the tracker pills. */
@@ -39,6 +47,10 @@
   const railItems = $derived(
     showPills ? rail : rail.filter((item) => item === RailItemId.Trackers)
   );
+
+  // The widget carries the reading (and its wash) when it is showing, which frees this row for
+  // the pills; otherwise the tile stays here so the reading never leaves the desktop dashboard.
+  const readingInWidget = $derived(showsCurrentGlucoseWidget(dashboardTopWidgets.current));
 
   const glucose = displayedGlucose(realtimeStore);
   const rawCurrentBG = $derived(glucose.currentBG);
@@ -67,6 +79,15 @@
   const isLoading = $derived(
     rawCurrentBG === 0 && realtimeStore.entries.length === 0
   );
+  // Over the flat range fill, so the tile reads the same until it arrives.
+  const tileWash = stillArtwork(() => import("./GlucoseTileWash.svelte"));
+  trackUnwashedFill(() => ({
+    loading: isLoading,
+    stale: isStale,
+    disconnected: isDisconnected,
+    variant: tileVariant,
+    washed: tileWash.component !== null,
+  }));
 
   function formatTimeSinceLastReading(): string {
     return relativeAge(lastUpdated, {
@@ -92,33 +113,27 @@
     })
   );
 
-  // The desktop key predates the mobile rail, so rows stored before it still apply.
-  const tenantSlug = $derived(page.data.tenantSlug ?? "");
-  const desktopRowsKey = $derived(`nocturne:status-pill-rows:${tenantSlug}`);
-  const mobileRowsKey = $derived(`nocturne:status-pill-rows:mobile:${tenantSlug}`);
+  const pillRows = $derived(page.data.pillRows);
 
   // Tracker Completion Dialog State
   const trackerCompletionDialog = lazyComponent(
-    () => import("$lib/components/trackers/TrackerCompletionDialog.svelte"),
+    () => import("#lib/components/trackers/TrackerCompletionDialog.svelte"),
   );
   let completingInstanceId = $state<string | null>(null);
   let completingInstanceName = $state("");
   let completingCategory = $state<TrackerCategory | undefined>(undefined);
   let completingDefinitionId = $state<string | undefined>(undefined);
-  let completingCompletionEventType = $state<string | undefined>(undefined);
 
   function handleTrackerComplete(
     instanceId: string,
     instanceName: string,
     category: TrackerCategory,
-    definitionId: string,
-    completionEventType?: string
+    definitionId: string
   ) {
     completingInstanceId = instanceId;
     completingInstanceName = instanceName;
     completingCategory = category;
     completingDefinitionId = definitionId;
-    completingCompletionEventType = completionEventType;
     trackerCompletionDialog.open = true;
   }
 
@@ -128,33 +143,42 @@
     completingInstanceName = "";
     completingCategory = undefined;
     completingDefinitionId = undefined;
-    completingCompletionEventType = undefined;
   }
 </script>
+
+{#snippet rangeWash()}
+  {#if tileWash.component}
+    <tileWash.component mills={glucose.mills} variant={tileVariant} delta={rawBgDelta} />
+  {/if}
+{/snippet}
 
 <!-- Desktop only: on mobile, MobileHeader carries the reading. -->
 <div class="@container">
   <h1 class="sr-only">Nocturne</h1>
   <div class="hidden @md:flex flex-wrap items-center gap-x-6 gap-y-3">
-    <div class="flex shrink-0 items-center gap-3">
-      <GlucoseValueIndicator
-        displayValue={displayCurrentBG}
-        variant={tileVariant}
-        {isLoading}
-        {isStale}
-        {isDisconnected}
-        {statusText}
-        {statusTooltip}
-        size="lg"
-      />
-      <div class="text-sm text-muted-foreground tabular-nums">
-        {displayBgDelta}
+    {#if !readingInWidget}
+      <div class="flex shrink-0 items-center gap-3">
+        <GlucoseValueIndicator
+          displayValue={displayCurrentBG}
+          variant={tileVariant}
+          {isLoading}
+          {isStale}
+          {isDisconnected}
+          {statusText}
+          {statusTooltip}
+          size="lg"
+          background={tileWash.component ? rangeWash : undefined}
+        />
+        <div class="text-sm text-muted-foreground tabular-nums">
+          {displayBgDelta}
+        </div>
       </div>
-    </div>
+    {/if}
 
     <StatusRail
       items={railItems}
-      rowsKey={desktopRowsKey}
+      rail="desktop"
+      initialRows={pillRows?.desktop}
       onTrackerComplete={handleTrackerComplete}
       class="flex-1 @max-xl:order-last @max-xl:basis-full"
       testid="status-pills"
@@ -169,16 +193,20 @@
       {/snippet}
     </StatusRail>
 
-    <div class="ml-auto flex shrink-0 items-center gap-1.5 text-sm text-muted-foreground tabular-nums">
-      <Clock class="size-4" aria-hidden="true" />
-      {formattedLocalTime}
+    <div class="ml-auto flex shrink-0 items-center gap-4">
+      <LogEventButton />
+      <div class="flex items-center gap-1.5 text-sm text-muted-foreground tabular-nums">
+        <Clock class="size-4" aria-hidden="true" />
+        {formattedLocalTime}
+      </div>
     </div>
   </div>
 </div>
 
 <StatusRail
   items={railItems}
-  rowsKey={mobileRowsKey}
+  rail="mobile"
+  initialRows={pillRows?.mobile}
   onTrackerComplete={handleTrackerComplete}
   hideWhenEmpty
   class="mt-2 @md:hidden"
@@ -192,7 +220,6 @@
     instanceName={completingInstanceName}
     category={completingCategory}
     definitionId={completingDefinitionId}
-    completionEventType={completingCompletionEventType}
     onClose={handleCompletionDialogClose}
   />
 {/if}

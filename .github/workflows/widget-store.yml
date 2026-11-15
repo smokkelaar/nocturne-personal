@@ -34,7 +34,9 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - uses: ./.github/actions/setup-dotnet
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: "11.0"
 
       # The multi-architecture .msixupload bundle requires full MSBuild (the
       # .NET SDK build engine does not drive the per-platform bundle build).

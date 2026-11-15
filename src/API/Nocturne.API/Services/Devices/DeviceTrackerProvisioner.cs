@@ -9,8 +9,9 @@ namespace Nocturne.API.Services.Devices;
 
 /// <summary>
 /// Gives a newly registered device the trackers its hardware wears out on: a sensor tracker for a CGM
-/// (and a transmitter tracker when the transmitter is separate), a pod tracker for a patch pump, and
-/// infusion-site and reservoir trackers for a tubed pump. Lifespans come from the device's
+/// (and a transmitter tracker when the transmitter is separate), and for a pump one tracker per
+/// <see cref="PumpComponent"/> that is <see cref="PumpComponent.TrackedByDefault"/> and has a
+/// lifespan, such as a pod, or an infusion site and a reservoir. Lifespans come from the device's
 /// <see cref="DeviceCatalogEntry"/>, so a device without a catalog id gets none.
 /// </summary>
 /// <remarks>
@@ -18,7 +19,7 @@ namespace Nocturne.API.Services.Devices;
 /// has a tracker of its name, so registering the same model twice reuses its trackers, or one that
 /// already does its job (<see cref="LegacyFallbackRules.Follows"/>), which a second tracker would
 /// duplicate: switching CGM models keeps the sensor tracker as it is, while switching between a
-/// tubed and a patch pump adds the new type's site tracker. The trackers have
+/// pump with a pod and one with an infusion set adds the new type's site tracker. The trackers have
 /// no notification thresholds; a member adds them. Each starts at the latest event that restarts it
 /// (<see cref="ConsumableTrackerWriter"/>), under the consumable lock the legacy conversion takes.
 /// </remarks>

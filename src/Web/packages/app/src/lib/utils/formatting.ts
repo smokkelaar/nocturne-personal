@@ -10,17 +10,19 @@
 
 import {
   glucoseUnits,
+  carbRatioFormat,
   timeFormat,
   regionFormat,
   preferredLanguage,
+  type CarbRatioFormat,
   type GlucoseUnits,
-} from "$lib/stores/appearance-store.svelte";
+} from "#lib/stores/appearance-store.svelte.js";
 import {
   relativeAge as sharedRelativeAge,
   relativeTime as sharedRelativeTime,
   type RelativeTimeOptions,
 } from "@nocturne/ui/relative-time";
-import type { OverallAverages, Treatment, TreatmentSummary } from "$api-clients";
+import type { OverallAverages, Treatment, TreatmentSummary } from "#lib/api/generated/nocturne-api-client.js";
 
 // Re-export for backward compatibility
 export type { GlucoseUnits, OverallAverages, Treatment, TreatmentSummary };
@@ -31,7 +33,7 @@ export type { GlucoseUnits, OverallAverages, Treatment, TreatmentSummary };
 
 // Pure unit conversion/formatting lives in the shared design system (@nocturne/ui/glucose) so the
 // web app and the desktop companion render glucose identically. Re-exported here so existing
-// import sites (`$lib/utils/formatting`) keep working unchanged.
+// import sites (`#lib/utils/formatting.js`) keep working unchanged.
 export {
   convertToDisplayUnits,
   convertFromDisplayUnits,
@@ -122,29 +124,6 @@ export function bgRange(lowMgdl: number, highMgdl: number): string {
  */
 export function bgValue(mgdl: number): number {
   return convertToDisplayUnits(mgdl, glucoseUnits.current);
-}
-
-/**
- * Get standard glucose range thresholds in user's preferred units
- * @returns Object with common threshold values
- */
-export function bgThresholds(): {
-  urgentLow: number;
-  low: number;
-  targetLow: number;
-  targetHigh: number;
-  high: number;
-  urgentHigh: number;
-} {
-  const units = glucoseUnits.current;
-  return {
-    urgentLow: convertToDisplayUnits(54, units),
-    low: convertToDisplayUnits(70, units),
-    targetLow: convertToDisplayUnits(70, units),
-    targetHigh: convertToDisplayUnits(180, units),
-    high: convertToDisplayUnits(180, units),
-    urgentHigh: convertToDisplayUnits(250, units),
-  };
 }
 
 // =============================================================================
@@ -562,9 +541,31 @@ export function formatCarbDisplay(carbs: number | undefined): string {
   return carbs.toFixed(0);
 }
 
-/** Formats an insulin-to-carb ratio, grams per unit, as `1:x.x`, or "–" when there is none. */
-export function formatInsulinToCarbRatio(gramsPerUnit: number | null | undefined): string {
-  return gramsPerUnit == null ? "–" : `1:${gramsPerUnit.toFixed(1)}`;
+export function formatInsulinToCarbRatio(
+  gramsPerUnit: number | null | undefined,
+  format: CarbRatioFormat = carbRatioFormat.current
+): string {
+  if (gramsPerUnit == null || !(gramsPerUnit > 0)) return "–";
+  switch (format) {
+    case "g/U":
+      return `${gramsPerUnit.toFixed(1)} g/U`;
+    case "U/10g":
+      return `${unitsPerTenGrams(gramsPerUnit).toFixed(2)} U/10 g`;
+    default:
+      return `1:${gramsPerUnit.toFixed(1)}`;
+  }
+}
+
+export function unitsPerTenGrams(gramsPerUnit: number): number {
+  return 10 / gramsPerUnit;
+}
+
+/**
+ * Kept out of the templates: the catalogue would translate the format's literal there, and the
+ * comparison would then fail in other locales.
+ */
+export function writesUnitsPerTenGrams(format: CarbRatioFormat = carbRatioFormat.current): boolean {
+  return format === "U/10g";
 }
 
 /**

@@ -3,8 +3,6 @@
   import Fingerprint from "@lucide/svelte/icons/fingerprint-pattern";
   import Loader2 from "@lucide/svelte/icons/loader-circle";
   import UserPlus from "@lucide/svelte/icons/user-plus";
-  import { Artwork } from "@nocturne/watercolour";
-  import { fingerprintArtwork } from "$lib/watercolour-icons";
   import {
     startRegistration,
     type PublicKeyCredentialCreationOptionsJSON,
@@ -13,7 +11,7 @@
     getAuthState,
     getOidcProviders,
     setAuthCookies,
-  } from "$routes/(unauthenticated)/auth/auth.remote";
+  } from "#routes/(unauthenticated)/auth/auth.remote.js";
   import {
     setupOwnerOptions,
     setupOwnerComplete,
@@ -25,15 +23,15 @@
     FormError,
     FormField,
     useAvailability,
-  } from "$lib/forms";
+  } from "#lib/forms/index.js";
   import {
     describePasskeyError,
     parseCeremonyOptions,
-  } from "$lib/components/auth/passkey-errors";
-  import RecoveryCodes from "$lib/components/auth/RecoveryCodes.svelte";
-  import OidcProviderButtons from "$lib/components/auth/OidcProviderButtons.svelte";
-  import { Button } from "$lib/components/ui/button";
-  import { Input } from "$lib/components/ui/input";
+  } from "#lib/components/auth/passkey-errors.js";
+  import RecoveryCodes from "#lib/components/auth/RecoveryCodes.svelte";
+  import OidcProviderButtons from "#lib/components/auth/OidcProviderButtons.svelte";
+  import { Button } from "#lib/components/ui/button/index.js";
+  import { Input } from "#lib/components/ui/input/index.js";
 
   let {
     onComplete,
@@ -167,13 +165,6 @@
 <div class="@container flex flex-col items-center gap-10 px-4 py-8">
   <!-- Heading -->
   <div class="flex flex-col items-center gap-4 text-center">
-    <Artwork
-      icon={fingerprintArtwork}
-      palette="water"
-      motion="auto"
-      autoplay="once"
-      class="size-56"
-    />
     <h1
       class="font-brand font-hairline leading-tight tracking-tight text-foreground text-3xl @lg:text-4xl @min-[40rem]:text-5xl"
     >

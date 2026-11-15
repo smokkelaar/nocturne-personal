@@ -1,14 +1,16 @@
 <script lang="ts">
-  import { Button } from "$lib/components/ui/button";
-  import { Badge } from "$lib/components/ui/badge";
-  import * as Dialog from "$lib/components/ui/dialog";
-  import { ConfirmDialog } from "$lib/components/ui/confirm-dialog";
-  import { Input } from "$lib/components/ui/input";
-  import { Label } from "$lib/components/ui/label";
-  import PermissionCategorySelector from "$lib/components/rbac/PermissionCategorySelector.svelte";
-  import PermissionSummary from "$lib/components/rbac/PermissionSummary.svelte";
-  import { describeSubmitError } from "$lib/forms/submit-error";
-  import FormError from "$lib/forms/FormError.svelte";
+  import SuccessBanner from "#lib/forms/SuccessBanner.svelte";
+  import { Button } from "#lib/components/ui/button/index.js";
+  import { Badge } from "#lib/components/ui/badge/index.js";
+  import * as Dialog from "#lib/components/ui/dialog/index.js";
+  import { ConfirmDialog } from "#lib/components/ui/confirm-dialog/index.js";
+  import { Input } from "#lib/components/ui/input/index.js";
+  import { Label } from "#lib/components/ui/label/index.js";
+  import { EmptyState } from "#lib/components/shared/index.js";
+  import PermissionCategorySelector from "#lib/components/rbac/PermissionCategorySelector.svelte";
+  import PermissionSummary from "#lib/components/rbac/PermissionSummary.svelte";
+  import { describeSubmitError } from "#lib/forms/submit-error.js";
+  import FormError from "#lib/forms/FormError.svelte";
   import Shield from "@lucide/svelte/icons/shield";
   import Ban from "@lucide/svelte/icons/ban";
   import Plus from "@lucide/svelte/icons/plus";
@@ -18,15 +20,13 @@
   import Loader2 from "@lucide/svelte/icons/loader-circle";
   import Users from "@lucide/svelte/icons/users";
   import Lock from "@lucide/svelte/icons/lock";
-  import AlertTriangle from "@lucide/svelte/icons/triangle-alert";
-  import Check from "@lucide/svelte/icons/check";
   import {
     getRoles,
     createRole,
     updateRole,
     deleteRole,
-  } from "$lib/api/generated/roles.generated.remote";
-  import type { TenantRoleDto } from "$lib/api/generated/nocturne-api-client";
+  } from "#lib/api/generated/roles.generated.remote.js";
+  import type { TenantRoleDto } from "#lib/api/generated/nocturne-api-client.js";
 
   // Query
   const rolesQuery = getRoles();
@@ -67,13 +67,11 @@
 
   // Messages
   let dialogError = $state<string | null>(null);
-  let errorMessage = $state<string | null>(null);
-  let successMessage = $state<string | null>(null);
+  let successMessage = $state<{ text: string; wash: boolean } | null>(null);
 
   function clearMessages() {
     setTimeout(() => {
       successMessage = null;
-      errorMessage = null;
     }, 3000);
   }
 
@@ -107,6 +105,7 @@
     deleteId = role.id ?? "";
     deleteName = role.name ?? "";
     deleteMemberCount = role.memberCount ?? 0;
+    dialogError = null;
     isDeleteOpen = true;
   }
 
@@ -119,7 +118,7 @@
         description: createDescription.trim() || undefined,
         permissions: createPermissions,
       });
-      successMessage = "Role created successfully.";
+      successMessage = { text: "Role created successfully.", wash: true };
       resetCreateForm();
       clearMessages();
     } catch (err) {
@@ -141,7 +140,7 @@
           permissions: editPermissions,
         },
       });
-      successMessage = "Role updated successfully.";
+      successMessage = { text: "Role updated successfully.", wash: true };
       isEditOpen = false;
       clearMessages();
     } catch (err) {
@@ -153,15 +152,14 @@
 
   async function handleDelete() {
     isDeleting = true;
-    errorMessage = null;
+    dialogError = null;
     try {
       await deleteRole(deleteId);
-      successMessage = "Role deleted successfully.";
+      successMessage = { text: "Role deleted successfully.", wash: false };
       isDeleteOpen = false;
       clearMessages();
     } catch (err) {
-      errorMessage = describeSubmitError(err, "Failed to delete role. Try again.");
-      clearMessages();
+      dialogError = describeSubmitError(err, "Failed to delete role. Try again.");
     } finally {
       isDeleting = false;
     }
@@ -180,18 +178,8 @@
     </Button>
   </div>
 
-  {#if errorMessage}
-    <div class="flex items-start gap-3 rounded-md border border-destructive/20 bg-destructive/5 p-3">
-      <AlertTriangle class="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
-      <p class="text-sm text-destructive">{errorMessage}</p>
-    </div>
-  {/if}
-
   {#if successMessage}
-    <div class="flex items-start gap-3 rounded-md border border-success/30 bg-success/10 p-3">
-      <Check class="mt-0.5 h-4 w-4 shrink-0 text-success" />
-      <p class="text-sm text-success">{successMessage}</p>
-    </div>
+    <SuccessBanner wash={successMessage.wash}>{successMessage.text}</SuccessBanner>
   {/if}
 
   <div class="space-y-2.5">
@@ -239,6 +227,7 @@
               <Button
                 variant="outline-destructive"
                 size="sm"
+                aria-label="Delete role"
                 onclick={() => openDeleteDialog(role)}
               >
                 <Trash2 class="h-3.5 w-3.5" />
@@ -250,14 +239,12 @@
     {/each}
 
     {#if roles.length === 0}
-      <div class="flex flex-col items-center justify-center rounded-xl border border-border py-12 text-center">
-        <div class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-          <Shield class="h-6 w-6 text-muted-foreground" />
-        </div>
-        <p class="max-w-sm text-sm text-muted-foreground">
-          No roles configured. Create a role to get started.
-        </p>
-      </div>
+      <EmptyState
+        art="shield"
+        variant="dashed"
+        title="No roles configured"
+        body="Create a role to get started."
+      />
     {/if}
   </div>
 </div>
@@ -355,6 +342,7 @@
 <!-- Delete Role Confirmation -->
 <ConfirmDialog
   bind:open={isDeleteOpen}
+  destructive
   title="Delete role"
   confirmLabel="Delete"
   busy={isDeleting}
@@ -367,4 +355,5 @@
       They will lose any permissions granted by this role.
     {/if}
   {/snippet}
+  <FormError issues={dialogError} focusOnShow />
 </ConfirmDialog>

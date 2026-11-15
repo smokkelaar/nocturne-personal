@@ -1,5 +1,5 @@
 import { BookOpen, Database, Flag, Megaphone, Rocket, Server } from 'lucide';
-import type { IconArtworkSource } from '@nocturne/watercolour';
+import type { IconArtworkSource } from 'water-ui';
 
 export const bookArtwork = { icon: BookOpen, name: 'book-open' } satisfies IconArtworkSource;
 export const databaseArtwork = { icon: Database, name: 'database' } satisfies IconArtworkSource;

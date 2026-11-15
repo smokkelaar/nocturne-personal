@@ -1,26 +1,26 @@
 <script lang="ts">
   import { untrack } from "svelte";
   import { resolve } from "$app/paths";
-  import { labelFor } from "$lib/components/ui/enum-value";
+  import { labelFor } from "#lib/components/ui/enum-value.js";
   import Activity from "@lucide/svelte/icons/activity";
   import Cpu from "@lucide/svelte/icons/cpu";
   import Syringe from "@lucide/svelte/icons/syringe";
   import Timer from "@lucide/svelte/icons/timer";
-  import { Badge } from "$lib/components/ui/badge";
-  import { Button } from "$lib/components/ui/button";
-  import { Label } from "$lib/components/ui/label";
-  import * as Select from "$lib/components/ui/select";
-  import { Switch } from "$lib/components/ui/switch";
-  import { Toggle } from "$lib/components/ui/toggle";
-  import * as Collapsible from "$lib/components/ui/collapsible";
-  import { FormError } from "$lib/forms";
-  import { describeSubmitError } from "$lib/forms/submit-error";
+  import { Badge } from "#lib/components/ui/badge/index.js";
+  import { Button } from "#lib/components/ui/button/index.js";
+  import { Label } from "#lib/components/ui/label/index.js";
+  import * as Select from "#lib/components/ui/select/index.js";
+  import { Switch } from "#lib/components/ui/switch/index.js";
+  import { Toggle } from "#lib/components/ui/toggle/index.js";
+  import * as Collapsible from "#lib/components/ui/collapsible/index.js";
+  import { FormError } from "#lib/forms/index.js";
+  import { describeSubmitError } from "#lib/forms/submit-error.js";
   import {
     InsulinActionTimeNote,
     PatientDeviceManager,
     PatientInsulinManager,
     aidAlgorithmLabels,
-  } from "$lib/components/patient";
+  } from "#lib/components/patient/index.js";
   import {
     getDeviceSetup,
     confirmSetupDevice,
@@ -29,10 +29,10 @@
     setTakesNoInsulin,
     addSetupTracker,
     removeSetupTracker,
-  } from "$api/generated/setupDevices.generated.remote";
-  import { getDevices, getInsulins } from "$api/generated/patientRecords.generated.remote";
-  import { getSetupHub } from "$api/generated/setupHubs.generated.remote";
-  import { getPatientRelationship } from "$api/generated/tenantSettings.generated.remote";
+  } from "#lib/api/generated/setupDevices.generated.remote.js";
+  import { getDevices, getInsulins } from "#lib/api/generated/patientRecords.generated.remote.js";
+  import { getSetupHub } from "#lib/api/generated/setupHubs.generated.remote.js";
+  import { getPatientRelationship } from "#lib/api/generated/tenantSettings.generated.remote.js";
   import {
     AidAlgorithm,
     DeviceCategory,
@@ -44,8 +44,8 @@
     type DeviceSlot,
     type InsulinChoice,
     type TrackerOffer,
-  } from "$api";
-  import { patientVoice } from "$lib/onboarding/patient-voice.svelte";
+  } from "#lib/api/index.js";
+  import { patientVoice } from "#lib/onboarding/patient-voice.svelte.js";
 
   const setupQuery = getDeviceSetup();
   const hubQuery = getSetupHub();
@@ -55,7 +55,7 @@
   const voice = $derived(patientVoice(relationshipQuery.current));
   const setup = $derived(setupQuery.current);
 
-  const trackerSettingsHref = resolve("/(authenticated)/settings/trackers");
+  const trackerSettingsHref = resolve("/(authenticated)/trackers");
   const alertsHref = resolve("/(authenticated)/alerts");
 
   // The device and insulin managers below write through their own remote functions, which
@@ -153,6 +153,8 @@
     [TrackerOfferKind.Pod]: "Pod changes",
     [TrackerOfferKind.InfusionSet]: "Infusion set changes",
     [TrackerOfferKind.Reservoir]: "Reservoir changes",
+    [TrackerOfferKind.Base]: "Pump base replacement",
+    [TrackerOfferKind.Controller]: "Controller replacement",
   };
 
   function trackerName(offer: TrackerOffer): string {
@@ -163,6 +165,10 @@
         return `${offer.deviceName} pod`;
       case TrackerOfferKind.InfusionSet:
         return `${offer.deviceName} infusion set`;
+      case TrackerOfferKind.Base:
+        return `${offer.deviceName} pump base`;
+      case TrackerOfferKind.Controller:
+        return `${offer.deviceName} controller`;
       default:
         return `${offer.deviceName} reservoir`;
     }
@@ -403,8 +409,8 @@
             Trackers
           </h2>
           <p class="text-sm text-muted-foreground">
-            A tracker counts how long a sensor, pod, infusion set or reservoir is in use, so it is
-            easy to see when the next change is due. It restarts when a change is logged. These are
+            A tracker counts how long a sensor, pod, infusion set, reservoir or pump part is in use. It shows
+            when the next change is due. It restarts when a change is logged. These are
             optional, and the wear time can be changed in <a class="underline" href={trackerSettingsHref}>tracker settings</a>.
           </p>
           <p class="text-sm text-muted-foreground">
@@ -417,6 +423,11 @@
             <div class="flex flex-col gap-0.5">
               <Label for="tracker-{offer.kind}">{trackerTitles[offer.kind!]}</Label>
               <span class="text-xs text-muted-foreground">{@render wearTime(offer)}</span>
+              {#if offer.startsByHand}
+                <span class="text-xs text-muted-foreground">
+                  Your devices do not report this change. Start the tracker in tracker settings when you replace the part.
+                </span>
+              {/if}
             </div>
             {#if offer.state === TrackerOfferState.AlreadyTracked}
               <div class="flex items-center gap-2 text-sm">

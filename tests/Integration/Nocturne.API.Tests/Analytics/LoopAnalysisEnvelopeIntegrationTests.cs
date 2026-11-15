@@ -10,6 +10,7 @@ namespace Nocturne.API.Tests.Integration.Analytics;
 /// <c>GET /api/v4/loop-analysis/envelope</c> end to end on PostgreSQL: what every Loop Analysis
 /// page shares, with no page's figures.
 /// </summary>
+[Collection(ApiIntegrationShards.Two)]
 [Trait("Category", "Integration")]
 public class LoopAnalysisEnvelopeIntegrationTests(ApiIntegrationTestFixture fixture, ITestOutputHelper output)
     : LoopAnalysisIntegrationTestBase(fixture, output)

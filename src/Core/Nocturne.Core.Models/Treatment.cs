@@ -542,12 +542,7 @@ public class Treatment : ProcessableDocumentBase
     [JsonPropertyName("relative")]
     public double? Relative
     {
-        // Nightscout's day-to-day report adds relative to bolus insulin even on temp basals.
-        get => string.Equals(EventType, "Temp Basal", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(EventType, "Temporary Basal", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(EventType, "TempBasal", StringComparison.OrdinalIgnoreCase)
-                ? null
-                : _relative ?? Rate;
+        get => _relative ?? Rate;
         set => _relative = value;
     }
 
@@ -824,22 +819,6 @@ public class Treatment : ProcessableDocumentBase
     /// </summary>
     [JsonExtensionData]
     public Dictionary<string, object>? AdditionalProperties { get; set; }
-
-    /// <summary>
-    /// Canonical group ID for deduplication.
-    /// Records with the same CanonicalId represent the same underlying event from different sources.
-    /// </summary>
-    [JsonPropertyName("canonicalId")]
-    [NocturneOnly]
-    public Guid? CanonicalId { get; set; }
-
-    /// <summary>
-    /// List of data sources that contributed to this unified record.
-    /// Only populated when returning merged/unified DTOs.
-    /// </summary>
-    [JsonPropertyName("sources")]
-    [NocturneOnly]
-    public string[]? Sources { get; set; }
 
     /// <summary>
     /// Snapshot of insulin pharmacokinetic properties at treatment delivery time.

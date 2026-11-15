@@ -15,6 +15,7 @@ namespace Nocturne.API.Tests.Integration.Analytics;
 /// <c>GET /api/v4/loop-analysis/daily-profile</c> end to end on PostgreSQL: a week of algorithm
 /// temp basals at 1.5 U/h against a 1.0 U/h schedule in Sydney, compared with another week.
 /// </summary>
+[Collection(ApiIntegrationShards.One)]
 [Trait("Category", "Integration")]
 public class LoopAnalysisDailyProfileIntegrationTests(ApiIntegrationTestFixture fixture, ITestOutputHelper output)
     : LoopAnalysisIntegrationTestBase(fixture, output)

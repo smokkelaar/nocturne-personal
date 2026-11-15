@@ -1,23 +1,24 @@
 <script lang="ts">
-  import { a1cLabel, formatA1c } from "$lib/utils/a1c-formatting";
+  import { a1cLabel, formatA1c } from "#lib/utils/a1c-formatting.js";
   import { PieChart, Text } from "layerchart";
-  import * as Card from "$lib/components/ui/card";
-  import * as Table from "$lib/components/ui/table";
-  import { Button } from "$lib/components/ui/button";
-  import { getReportsAnalysis } from "$api/reports.remote";
-  import HourlyGlucoseDistributionChart from "$lib/components/reports/HourlyGlucoseDistributionChart.svelte";
-  import ReliabilityBadge from "$lib/components/reports/ReliabilityBadge.svelte";
-  import FigureStrip from "$lib/components/reports/FigureStrip.svelte";
-  import ChartKey from "$lib/components/charts/print/ChartKey.svelte";
-  import TextureSwatch from "$lib/components/charts/print/TextureSwatch.svelte";
+  import * as Card from "#lib/components/ui/card/index.js";
+  import * as Table from "#lib/components/ui/table/index.js";
+  import { EmptyState } from "#lib/components/shared/index.js";
+  import { Button } from "#lib/components/ui/button/index.js";
+  import { getReportsAnalysis } from "#lib/api/reports.remote.js";
+  import HourlyGlucoseDistributionChart from "#lib/components/reports/HourlyGlucoseDistributionChart.svelte";
+  import ReliabilityBadge from "#lib/components/reports/ReliabilityBadge.svelte";
+  import FigureStrip from "#lib/components/reports/FigureStrip.svelte";
+  import ChartKey from "#lib/components/charts/print/ChartKey.svelte";
+  import TextureSwatch from "#lib/components/charts/print/TextureSwatch.svelte";
   import {
     CHART_TEXTURES,
     patternClass,
     type GlucoseRange,
-  } from "$lib/components/charts/print/chart-print-patterns";
-  import { requireDateParamsContext } from "$lib/hooks/date-params.svelte";
-  import { contextResource } from "$lib/hooks/resource-context.svelte";
-  import { bg, bgLabel, formatShortDate } from "$lib/utils/formatting";
+  } from "#lib/components/charts/print/chart-print-patterns.js";
+  import { requireDateParamsContext } from "#lib/hooks/date-params.svelte.js";
+  import { contextResource } from "#lib/hooks/resource-context.svelte.js";
+  import { bg, bgLabel, formatShortDate } from "#lib/utils/formatting.js";
   import { useSearchParams } from "runed/kit";
   import { z } from "zod";
 
@@ -104,15 +105,12 @@
     </header>
 
     {#if !hasReadings}
-      <Card.Root>
-        <Card.Content class="py-12 text-center">
-          <p class="font-medium">No readings in this date range</p>
-          <p class="mt-1 text-sm text-muted-foreground">
-            Distribution, {a1cLabel(true)} estimation and variability statistics need glucose
-            readings to be calculated. Try a wider date range.
-          </p>
-        </Card.Content>
-      </Card.Root>
+      <EmptyState
+        art="report-pages"
+        variant="card"
+        title="No readings in this date range"
+        body="Distribution, {a1cLabel(true)} estimation and variability statistics need glucose readings to be calculated. Try a wider date range."
+      />
     {:else}
       <FigureStrip
         figures={[
@@ -174,10 +172,8 @@
                   items={rangeStats.map((stat) => ({ texture: stat.texture, label: stat.key }))}
                 />
               {:else}
-                <div
-                  class="flex h-[300px] items-center justify-center text-muted-foreground"
-                >
-                  No data available
+                <div class="flex h-[300px] items-center justify-center">
+                  <EmptyState art="report-pages" size="compact" title="No data available" />
                 </div>
               {/if}
             </div>

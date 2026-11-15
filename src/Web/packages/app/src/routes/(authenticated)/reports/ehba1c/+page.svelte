@@ -6,41 +6,45 @@
   import Activity from "@lucide/svelte/icons/activity";
   import Plus from "@lucide/svelte/icons/plus";
   import Trash2 from "@lucide/svelte/icons/trash-2";
-  import * as Card from "$lib/components/ui/card";
-  import { Button } from "$lib/components/ui/button";
-  import { Input } from "$lib/components/ui/input";
-  import { Label } from "$lib/components/ui/label";
-  import { ConfirmDialog } from "$lib/components/ui/confirm-dialog";
+  import * as Card from "#lib/components/ui/card/index.js";
+  import { EmptyState } from "#lib/components/shared/index.js";
+  import { labResultArtwork } from "#lib/watercolour-icons.js";
+  import { Button } from "#lib/components/ui/button/index.js";
+  import { Input } from "#lib/components/ui/input/index.js";
+  import { Label } from "#lib/components/ui/label/index.js";
+  import { ConfirmDialog } from "#lib/components/ui/confirm-dialog/index.js";
   import {
     getAvailableYears,
     getEHbA1cTimeline,
-  } from "$api/generated/dataOverviews.generated.remote";
-  import * as labResultsApi from "$api/generated/labHbA1cs.generated.remote";
+  } from "#lib/api/generated/dataOverviews.generated.remote.js";
+  import * as labResultsApi from "#lib/api/generated/labHbA1cs.generated.remote.js";
   import type {
     EHbA1cPoint,
     LabHbA1cResult,
     A1cDisplayValue,
     A1cDisplayReferences,
     TimeZoneUnavailableReason,
-  } from "$api/generated/nocturne-api-client";
-  import { a1cUnits } from "$lib/stores/appearance-store.svelte";
+  } from "#lib/api/generated/nocturne-api-client.js";
+  import { a1cUnits } from "#lib/stores/appearance-store.svelte.js";
   import {
     a1cLabel,
     a1cUnitLabel,
     a1cDisplayValue,
     formatA1c,
     formatA1cNumber,
-  } from "$lib/utils/a1c-formatting";
-  import { bg, bgLabel, formatLongDate } from "$lib/utils/formatting";
-  import { describeSubmitError } from "$lib/forms/submit-error";
-  import { setReportPrintMeta } from "$lib/components/reports/print/report-print.svelte";
-  import ChartKey from "$lib/components/charts/print/ChartKey.svelte";
-  import TimeZoneNote from "$lib/components/reports/TimeZoneNote.svelte";
+  } from "#lib/utils/a1c-formatting.js";
+  import { bg, bgLabel, formatLongDate } from "#lib/utils/formatting.js";
+  import { startOfDay } from "#lib/utils/date-range.js";
+  import { describeSubmitError } from "#lib/forms/submit-error.js";
+  import { setReportPrintMeta } from "#lib/components/reports/print/report-print.svelte.js";
+  import ChartKey from "#lib/components/charts/print/ChartKey.svelte";
+  import TimeZoneNote from "#lib/components/reports/TimeZoneNote.svelte";
   import {
     CHART_TEXTURES,
     patternClass,
     type TextureKey,
-  } from "$lib/components/charts/print/chart-print-patterns";
+  } from "#lib/components/charts/print/chart-print-patterns.js";
+  import { fresh } from "#lib/api/fresh-query.js";
 
   type ChartPoint = {
     date: Date;
@@ -79,13 +83,9 @@
   let labResultError = $state<string | null>(null);
   let pendingDeleteLabResult = $state<LabHbA1cResult | null>(null);
 
-  /**
-   * A lab result's measuredAt is a calendar date stored at UTC midnight; this reads it as
-   * local midnight of that date, where the timeline's own points sit.
-   */
-  function toDate(value: Date | string | undefined): Date {
-    const utc = value instanceof Date ? value : new Date(value ?? 0);
-    return new Date(utc.getUTCFullYear(), utc.getUTCMonth(), utc.getUTCDate());
+  /** Local midnight of a lab result's calendar day, where the estimate points sit. */
+  function labDay(measuredAt: string | undefined): Date {
+    return startOfDay(measuredAt ?? "");
   }
 
   function dateKey(date: Date): string {
@@ -208,15 +208,15 @@
     error = null;
     try {
       const [{ years, timeZoneUnavailableReason }, results] = await Promise.all([
-        getAvailableYears().run(),
-        labResultsApi.getAll().run(),
+        fresh(getAvailableYears()),
+        fresh(labResultsApi.getAll()),
       ]);
       labResults = results ?? [];
       const timelineReasons: (TimeZoneUnavailableReason | undefined)[] = [];
       const pointResults = await Promise.all(
         (years?.length ? years : [new Date().getFullYear()]).map(
           async (year) => {
-            const response = await getEHbA1cTimeline({ year }).run();
+            const response = await fresh(getEHbA1cTimeline({ year }));
             references = response.a1cReferences;
             timelineReasons.push(response.timeZoneUnavailableReason);
             return [year, response.points ?? []] as const;
@@ -238,7 +238,7 @@
   const labChartPoints = $derived(
     labResults.map((r) => ({
       id: r.id,
-      date: toDate(r.measuredAt),
+      date: labDay(r.measuredAt),
       valuePercent: r.valuePercent ?? 0,
       a1cDisplay: r.a1cDisplay,
       displayValue: a1cDisplayValue(r.a1cDisplay) ?? 0,
@@ -247,7 +247,7 @@
   );
 
   /**
-   * Personal: CSS pixels around a lab marker, across and up or down, within which the tooltip shows
+   * CSS pixels around a lab marker, across and up or down, within which the tooltip shows
    * that lab draw. Kept tight so the days around a lab draw, and the date axis below it, stay
    * readable.
    */
@@ -255,29 +255,31 @@
   const coarsePointer = new MediaQuery("pointer: coarse");
 
   /**
-   * Personal: a lab draw is one day wide on a year of daily estimates, so the tooltip snaps to the
-   * nearest lab marker when the pointer is within {@link LAB_SNAP_PX} of it. `pointerY` is in the
-   * same plot coordinates as `yScale`.
+   * A lab draw is one day wide on a year of daily estimates, so the tooltip snaps to the
+   * nearest lab marker when the pointer is within {@link LAB_SNAP_PX} of it, and shows lab
+   * results only then. `pointerX` and `pointerY` are in the plot coordinates of the scales.
    */
-  function snapToLabDate(
+  function snapToLab(
     hovered: Date,
+    pointerX: number,
     pointerY: number,
     xScale: (value: Date) => number,
     yScale: (value: number) => number
-  ): Date {
-    const hoveredX = xScale(hovered);
+  ): { date: Date; labs: typeof labChartPoints } {
     const reach = coarsePointer.current ? LAB_SNAP_PX.coarse : LAB_SNAP_PX.fine;
-    let nearest = hovered;
+    let nearest: Date | null = null;
     let nearestDistance = reach;
     for (const labPoint of labChartPoints) {
       if (Math.abs(yScale(labPoint.displayValue) - pointerY) > reach) continue;
-      const distance = Math.abs(xScale(labPoint.date) - hoveredX);
+      const distance = Math.abs(xScale(labPoint.date) - pointerX);
       if (distance <= nearestDistance) {
         nearest = labPoint.date;
         nearestDistance = distance;
       }
     }
-    return nearest;
+    if (!nearest) return { date: hovered, labs: [] };
+    const key = dateKey(nearest);
+    return { date: nearest, labs: labChartPoints.filter((point) => dateKey(point.date) === key) };
   }
 
   function displayValueForChartDate(date: Date): number | null {
@@ -336,12 +338,12 @@
     labResultError = null;
     try {
       await labResultsApi.create({
-        measuredAt: new Date(`${newLabDate}T00:00:00.000Z`).toISOString(),
+        measuredAt: newLabDate,
         value,
         unit: a1cUnits.current,
         note: newLabNote || undefined,
       });
-      labResults = (await labResultsApi.getAll().run()) ?? [];
+      labResults = (await fresh(labResultsApi.getAll())) ?? [];
       newLabDate = "";
       newLabValue = "";
       newLabNote = "";
@@ -358,7 +360,7 @@
     if (!target?.id) return;
     try {
       await labResultsApi.remove(target.id);
-      labResults = (await labResultsApi.getAll().run()) ?? [];
+      labResults = (await fresh(labResultsApi.getAll())) ?? [];
     } catch (err) {
       labResultError = describeSubmitError(err, "Failed to delete lab result");
     }
@@ -408,9 +410,13 @@
           </TimeZoneNote>
         </p>
       {:else if chartData.length === 0}
-        <div class="flex h-[320px] items-center justify-center text-muted-foreground">
-          Not enough glucose history yet. Each point needs at least a month of readings within
-          the trailing 90 days.
+        <div class="flex h-[320px] items-center justify-center">
+          <EmptyState
+            art="report-pages"
+            size="compact"
+            title="Not enough glucose history yet"
+            body="Each point needs at least a month of readings within the trailing 90 days."
+          />
         </div>
       {:else}
         {#if latest && extremes}
@@ -459,15 +465,17 @@
             {#snippet tooltip({ context })}
               <Tooltip.Root {context} class="bg-popover text-popover-foreground rounded-md border p-3 shadow-lg">
                 {#snippet children({ data })}
-                  {@const hoveredDate = snapToLabDate(
+                  {@const snapped = snapToLab(
                     context.x(data),
+                    context.tooltip.x - context.padding.left,
                     context.tooltip.y - context.padding.top,
                     context.xScale,
                     context.yScale
                   )}
+                  {@const hoveredDate = snapped.date}
                   {@const hoveredDateKey = dateKey(hoveredDate)}
                   {@const eHbA1cPoint = chartData.find((point) => dateKey(point.date) === hoveredDateKey)}
-                  {@const labResultsForDate = labChartPoints.filter((point) => dateKey(point.date) === hoveredDateKey)}
+                  {@const labResultsForDate = snapped.labs}
                   <div class="mb-2 text-sm font-semibold">{formatLongDate(hoveredDate)}</div>
                   <div class="min-w-56 space-y-1.5 text-sm" data-testid="ehba1c-tooltip">
                     {#if eHbA1cPoint}
@@ -537,10 +545,10 @@
     </Card.Header>
     <Card.Content class="space-y-4">
       {#if labResults.length === 0}
-        <p class="text-sm text-muted-foreground">No lab results added yet.</p>
+        <EmptyState art={labResultArtwork} size="compact" title="No lab results added yet" />
       {:else}
         <ul class="divide-border divide-y">
-          {#each [...labResults].sort((a, b) => toDate(b.measuredAt).getTime() - toDate(a.measuredAt).getTime()) as result (result.id)}
+          {#each [...labResults].sort((a, b) => (b.measuredAt ?? "").localeCompare(a.measuredAt ?? "")) as result (result.id)}
             <li class="flex items-center justify-between gap-3 py-2">
               <div>
                 <div class="text-sm font-medium">
@@ -548,7 +556,7 @@
                   {#if result.note}<span class="text-muted-foreground font-normal"> — {result.note}</span>{/if}
                 </div>
                 <div class="text-xs text-muted-foreground">
-                  {formatLongDate(toDate(result.measuredAt))}
+                  {formatLongDate(labDay(result.measuredAt))}
                 </div>
               </div>
               <Button
@@ -633,7 +641,7 @@
   {#snippet description()}
     {#if pendingDeleteLabResult}
       Delete the {formatA1c(pendingDeleteLabResult.a1cDisplay)} lab result from
-      {formatLongDate(toDate(pendingDeleteLabResult.measuredAt))}.
+      {formatLongDate(labDay(pendingDeleteLabResult.measuredAt))}.
     {/if}
   {/snippet}
 </ConfirmDialog>

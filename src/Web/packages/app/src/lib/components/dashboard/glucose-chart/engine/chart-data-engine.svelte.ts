@@ -1,29 +1,30 @@
 import { untrack } from "svelte";
-import { getRealtimeStore } from "$lib/stores/realtime-store.svelte";
-import { getChartData } from "$api/chart-data.remote";
-import { remoteErrorMessage } from "$lib/api/remote-error";
-import { PREDICTIONS_UNAVAILABLE } from "$lib/api/predictions-messages";
+import { getRealtimeStore } from "#lib/stores/realtime-store.svelte.js";
+import { getChartData } from "#lib/api/chart-data.remote.js";
+import { remoteErrorMessage } from "#lib/api/remote-error.js";
+import { PREDICTIONS_UNAVAILABLE } from "#lib/api/predictions-messages.js";
 import {
   getPredictions,
   getPredictionStatus,
   type PredictionData,
-} from "$api/predictions.remote";
+} from "#lib/api/predictions.remote.js";
 import {
   predictionMinutes,
   predictionEnabled,
   glucoseChartLookback,
   GLUCOSE_CHART_FETCH_HOURS,
-} from "$lib/stores/appearance-store.svelte";
-import { resolveChartThresholds } from "$lib/constants/glucose-thresholds";
-import { mergeChartData, replaceWindow } from "$lib/utils/chart-data-merge";
-import type { TransformedChartData } from "$lib/utils/chart-data-transform";
-import { stableBy } from "$lib/utils/stable-by";
+} from "#lib/stores/appearance-store.svelte.js";
+import { resolveChartThresholds } from "#lib/constants/glucose-thresholds.js";
+import { mergeChartData, replaceWindow } from "#lib/utils/chart-data-merge.js";
+import type { TransformedChartData } from "#lib/utils/chart-data-transform.js";
+import { stableBy } from "#lib/utils/stable-by.js";
 import { mergeRealtimeGlucose } from "./merge-glucose";
 import {
   createChartDataView,
   type ChartDataEngine,
   type PredictionAvailability,
 } from "./chart-data-view.svelte";
+import { fresh } from "#lib/api/fresh-query.js";
 
 export * from "./chart-data-view.svelte";
 
@@ -45,9 +46,13 @@ export interface ChartDataEngineOptions {
   streamedHistoricalData?: Promise<TransformedChartData | null>;
   externalPredictionData?: PredictionData | null;
   enablePredictions?: boolean;
+  /**
+   * Whether the prediction service can forecast, as the server found when it rendered the page.
+   * The chart starts from it instead of "unknown", so its window does not widen for the forecast
+   * after the first draw; the client's own status check still runs and has the last word.
+   */
+  initialPredictionsAvailable?: boolean | null;
   demoMode?: boolean;
-  /** Fixed examples must never refresh from a patient API. */
-  staticData?: boolean;
   /**
    * How wide a window the consumer draws, and so how far the realtime merge may
    * reach. `"buffer"` is `fullDataRange` — `dateRange` when one was named, the
@@ -131,7 +136,13 @@ export function createChartDataEngine(
   let predictionData = $state.raw<PredictionData | null>(null);
   let predictionError = $state<string | null>(null);
   let chartDataError = $state<string | null>(null);
-  let predictionServiceStatus = $state<PredictionAvailability>("unknown");
+  let predictionServiceStatus = $state<PredictionAvailability>(
+    options.initialPredictionsAvailable == null
+      ? "unknown"
+      : options.initialPredictionsAvailable
+        ? "available"
+        : "unavailable"
+  );
   const predictionServiceAvailable = $derived(predictionServiceStatus === "available");
   let processedHistoricalPromise =
     $state<Promise<TransformedChartData | null> | null>(null);
@@ -236,14 +247,18 @@ export function createChartDataEngine(
 
   // Prediction fetch trigger (skipped when external predictions are provided)
   const predictionFetchTrigger = $derived.by(() => {
-    if (!isBrowser || hasExternalPredictions || options.staticData) return null;
+    if (!isBrowser || hasExternalPredictions) return null;
     const enabled = predictionEnabled.current;
     const latestEntryMills =
       serverChartData?.glucoseData?.[
         serverChartData.glucoseData.length - 1
       ]?.time?.getTime() ?? 0;
+    // Fetched while the service status is still unknown rather than after it: the status read and
+    // this one leave together, and an answer from an unavailable service is never drawn
+    // (effectiveShowPredictions gates the track and its error).
     if (
-      !effectiveShowPredictions ||
+      !(options.enablePredictions ?? true) ||
+      predictionServiceStatus === "unavailable" ||
       !enabled ||
       !serverChartData?.glucoseData?.length ||
       latestEntryMills === 0
@@ -309,7 +324,7 @@ export function createChartDataEngine(
 
   // Skip if we already have initial data from SSR streaming
   $effect(() => {
-    if (realtimeOnly || options.staticData) return;
+    if (realtimeOnly) return;
     if (options.initialChartData && untrack(() => serverChartData)) return;
 
     const range = stableFetchRange;
@@ -366,6 +381,9 @@ export function createChartDataEngine(
   let refreshSeq = 0;
   let seenFingerprint: string | null = null;
   let skippedWhileHidden = false;
+  // A frozen tab runs no timers, so it never records a skipped refresh; on return the age of
+  // the window decides instead.
+  let refreshedAt = Date.now();
   // svelte-ignore state_referenced_locally
   let seenInitialData = options.initialChartData;
 
@@ -391,10 +409,10 @@ export function createChartDataEngine(
 
     const seq = ++refreshSeq;
     const { startTime, endTime } = recentWindow();
-    getChartData({ startTime, endTime, intervalMinutes: 5 })
-      .run()
+    fresh(getChartData({ startTime, endTime, intervalMinutes: 5 }))
       .then((recent) => {
         if (seq !== refreshSeq) return;
+        refreshedAt = Date.now();
         const current = untrack(() => serverChartData);
         serverChartData = current ? replaceWindow(current, recent, startTime) : recent;
       })
@@ -410,6 +428,7 @@ export function createChartDataEngine(
     if (!next || next === seenInitialData) return;
     seenInitialData = next;
     refreshSeq++;
+    refreshedAt = Date.now();
     const current = untrack(() => serverChartData);
     serverChartData = current ? replaceWindow(
           current,
@@ -419,7 +438,7 @@ export function createChartDataEngine(
   });
 
   $effect(() => {
-    if (!isBrowser || options.staticData || dataFingerprint === null || !realtimeStore.isReady) return;
+    if (!isBrowser || dataFingerprint === null || !realtimeStore.isReady) return;
     // The store's own initial load rewrites these arrays; SSR data predates it by seconds.
     if (seenFingerprint === null) {
       seenFingerprint = dataFingerprint;
@@ -431,11 +450,12 @@ export function createChartDataEngine(
   });
 
   $effect(() => {
-    if (!isBrowser || options.staticData || !hasInitialData) return;
+    if (!isBrowser || !hasInitialData) return;
 
     fallbackTimer = setTimeout(refreshRecent, RECENT_REFRESH_FALLBACK_MS);
     const onVisible = () => {
-      if (document.visibilityState === "visible" && skippedWhileHidden) scheduleRefresh();
+      if (document.visibilityState !== "visible") return;
+      if (skippedWhileHidden || Date.now() - refreshedAt >= RECENT_REFRESH_FALLBACK_MS) scheduleRefresh();
     };
     document.addEventListener("visibilitychange", onVisible);
 
@@ -449,7 +469,7 @@ export function createChartDataEngine(
 
   // Check prediction service availability on mount
   $effect(() => {
-    if (!isBrowser || options.staticData || !(options.enablePredictions ?? true)) return;
+    if (!isBrowser || !(options.enablePredictions ?? true)) return;
 
     let cancelled = false;
     getPredictionStatus({})

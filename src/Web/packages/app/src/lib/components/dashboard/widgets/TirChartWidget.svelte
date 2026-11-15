@@ -1,30 +1,24 @@
 <script lang="ts">
-  import { dashboardExamples } from "../demo-context";
-  const examples = dashboardExamples();
-  import { formatNumber } from "$lib/utils/formatting";
+  import { formatNumber } from "#lib/utils/formatting.js";
   import { onMount } from "svelte";
   import WidgetCard from "./WidgetCard.svelte";
   import WidgetStatSkeleton from "./WidgetStatSkeleton.svelte";
-  import TIRStackedChart from "$lib/components/reports/TIRStackedChart.svelte";
-  import { getMultiPeriodStatistics } from "$api/generated/statistics.generated.remote";
-  import { Button } from "$lib/components/ui/button";
-  import ReliabilityBadge from "$lib/components/reports/ReliabilityBadge.svelte";
-  import { remoteErrorMessage } from "$lib/api/remote-error";
+  import TIRStackedChart from "#lib/components/reports/TIRStackedChart.svelte";
+  import { getMultiPeriodStatistics } from "#lib/api/generated/statistics.generated.remote.js";
+  import { Button } from "#lib/components/ui/button/index.js";
+  import ReliabilityBadge from "#lib/components/reports/ReliabilityBadge.svelte";
+  import { remoteErrorMessage } from "#lib/api/remote-error.js";
 
   // Toggle between today and 90-day average
   let showAverage = $state(false);
 
-  // Fetch on the client after hydration - the underlying API can be slow and
+  // Fetch on the client after hydration — the underlying API can be slow and
   // would otherwise block SSR (timing out and breaking hydration).
-  let statsPromise = $state<Promise<import("$lib/api").MultiPeriodStatistics> | null>(
+  let statsPromise = $state<ReturnType<typeof getMultiPeriodStatistics> | null>(
     null
   );
   onMount(() => {
-    if (!examples) statsPromise = getMultiPeriodStatistics();
-  });
-
-  $effect(() => {
-    if (examples) statsPromise = Promise.resolve(examples.statistics);
+    statsPromise = getMultiPeriodStatistics();
   });
 
   function toggleView() {

@@ -12,6 +12,7 @@ namespace Nocturne.API.Tests.Integration.Parity.V1;
 /// Parity tests for /api/v1/profile endpoints.
 /// Covers: GET, POST, GET/current, GET/{spec}
 /// </summary>
+[Collection(ParityShards.Two)]
 public class ProfileParityTests : ParityTestBase
 {
     public ProfileParityTests(ParityTestFixture fixture, ITestOutputHelper output)

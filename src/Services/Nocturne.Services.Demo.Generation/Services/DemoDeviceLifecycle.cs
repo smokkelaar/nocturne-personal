@@ -48,22 +48,21 @@ public static class DemoDeviceLifecycle
         Kinds.Select(k => k.Tracker).ToList();
 
     /// <summary>
-    /// All device changes in the window, chronological. One extra cycle before
-    /// the window is included per kind so every age has a defined start even on
-    /// short backfills. <paramref name="localToday"/> is a local midnight;
-    /// timestamps are UTC.
+    /// All device changes in the window up to <paramref name="localNow"/>, chronological. One extra
+    /// cycle before the window is included per kind so every age has a defined start even on short
+    /// backfills. Timestamps are UTC.
     /// </summary>
-    public static List<DeviceChangeEvent> GenerateSchedule(DateTime localToday, int backfillDays)
+    public static List<DeviceChangeEvent> GenerateSchedule(DateTime localNow, int backfillDays, DemoClock clock)
     {
         var events = new List<DeviceChangeEvent>();
         foreach (var kind in Kinds)
         {
             for (var d = backfillDays + kind.CycleDays; d >= 0; d--)
             {
-                var local = ChangeTimeOn(localToday.AddDays(-d), kind.Tracker.TriggerEventType);
-                if (local is null || local > DateTime.Now)
+                var local = ChangeTimeOn(localNow.Date.AddDays(-d), kind.Tracker.TriggerEventType);
+                if (local is null || local > localNow)
                     continue;
-                events.Add(new DeviceChangeEvent(kind.Tracker.TriggerEventType, local.Value.ToUniversalTime()));
+                events.Add(new DeviceChangeEvent(kind.Tracker.TriggerEventType, clock.ToUtc(local.Value)));
             }
         }
 

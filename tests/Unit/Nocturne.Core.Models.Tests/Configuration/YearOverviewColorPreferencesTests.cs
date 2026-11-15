@@ -18,7 +18,6 @@ public class YearOverviewColorPreferencesTests
             {
                 TddBand = [10, 70],
                 AvgGlucoseBand = [70, 180],
-                AvgGlucoseColorRange = [60, 250],
                 AvgGlucoseBoundaries = [Pin(100, 0.3), Pin(200, 0.6)],
             },
         };
@@ -70,9 +69,6 @@ public class YearOverviewColorPreferencesTests
         new YearOverviewColorPreferences { AvgGlucoseBand = [40, 351] }.Validate().Should().NotBeNull();
         new YearOverviewColorPreferences { AvgGlucoseBand = [100, 80] }.Validate().Should().NotBeNull();
         new YearOverviewColorPreferences { TirBand = [70, 100], TddBand = [0, 1000], AvgGlucoseBand = [40, 350] }.Validate().Should().BeNull();
-        new YearOverviewColorPreferences { AvgGlucoseColorRange = [39, 180] }.Validate().Should().NotBeNull();
-        new YearOverviewColorPreferences { TirColorRange = [80, 70] }.Validate().Should().NotBeNull();
-        new YearOverviewColorPreferences { AvgGlucoseColorRange = [70, 180], AvgGlucoseBand = [40, 350] }.Validate().Should().BeNull();
     }
 
     public static TheoryData<YearOverviewColorBoundary[]> InvalidBoundaries => new()
@@ -134,36 +130,4 @@ public class YearOverviewColorPreferencesTests
         new YearOverviewColorPreferences { CarbsBoundaries = [new() { Value = 5, Position = 0.5, Color = color }] }
             .Validate().Should().NotBeNull();
     }
-
-    [Fact]
-    public void A_palette_and_mirror_round_trip()
-    {
-        var colors = new YearOverviewColorPreferences
-        {
-            AvgGlucosePalette = ["#440154", "#21908d", "#fde725"],
-            AvgGlucoseMirror = true,
-            TddPalette = ["#000000", "#FFFFFF"],
-        };
-        var restored = UserDisplayPreferences.Deserialize(new UserDisplayPreferences { YearOverviewColors = colors }.Serialize());
-        restored.YearOverviewColors.Should().BeEquivalentTo(colors);
-        restored.Validate().Should().BeNull();
-    }
-
-    public static TheoryData<string[]> InvalidPalettes => new()
-    {
-        Array.Empty<string>(),
-        new[] { "#000000" },
-        new[] { "#000000", "#fff" },
-        new[] { "#000000", "red" },
-        Enumerable.Repeat("#000000", YearOverviewColorPreferences.MaxPaletteColors + 1).ToArray(),
-    };
-
-    [Theory]
-    [MemberData(nameof(InvalidPalettes))]
-    public void A_palette_holds_two_to_eight_hex_colors(string[] palette)
-    {
-        new YearOverviewColorPreferences { CarbsPalette = palette }.Validate().Should().NotBeNull();
-        new YearOverviewColorPreferences { AvgGlucosePalette = palette }.Validate().Should().NotBeNull();
-    }
 }
-

@@ -21,6 +21,7 @@ namespace Nocturne.API.Tests.Integration.Auth;
 /// Each test anchors on a cold-cache share read, which only the database answers, and expects the
 /// share's read after the owner's to match it.
 /// </remarks>
+[Collection(ApiIntegrationShards.One)]
 [Trait("Category", "Integration")]
 public class ShareReadsOwnerCacheIntegrationTests(ApiIntegrationTestFixture fixture, ITestOutputHelper output)
     : ApiIntegrationTestBase(fixture, output)

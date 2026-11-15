@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { dashboardExamples } from "../demo-context";
-  const examples = dashboardExamples();
   import WidgetCard from "./WidgetCard.svelte";
   import BatteryCharging from "@lucide/svelte/icons/battery-charging";
   import BatteryFull from "@lucide/svelte/icons/battery-full";
@@ -8,10 +6,10 @@
   import BatteryMedium from "@lucide/svelte/icons/battery-medium";
   import BatteryWarning from "@lucide/svelte/icons/battery-warning";
   import { onMount } from "svelte";
-  import { relativeAge, time } from "$lib/utils/formatting";
-  import { Now } from "$lib/hooks/now.svelte";
-  import { getRealtimeStore } from "$lib/stores/realtime-store.svelte";
-  import { getCurrentBatteryStatus } from "$api/generated/batteries.generated.remote";
+  import { relativeAge, time } from "#lib/utils/formatting.js";
+  import { Now } from "#lib/hooks/now.svelte.js";
+  import { getRealtimeStore } from "#lib/stores/realtime-store.svelte.js";
+  import { getCurrentBatteryStatus } from "#lib/api/generated/batteries.generated.remote.js";
 
   interface Props {
     /** Override lastUpdated from props instead of realtime store */
@@ -26,16 +24,16 @@
   // `relativeAge` reads the clock once, so the age has to be re-derived on a tick
   // or it stays at whatever it said when the widget first rendered.
   const now = new Now();
-  const age = $derived(relativeAge(displayLastUpdated, { now: examples?.now ?? now.current, fallback: "Unknown" }));
+  const age = $derived(relativeAge(displayLastUpdated, { now: now.current, fallback: "Unknown" }));
 
   // Awaiting a remote query in the template reads the hydration cache during
   // hydration and throws hydratable_missing_but_required; creating the query in
   // onMount defers the fetch past hydration, as TddWidget does.
-  let batteryStatusPromise = $state<Promise<import("$lib/api").CurrentBatteryStatus> | null>(null);
+  let batteryStatusPromise = $state<ReturnType<
+    typeof getCurrentBatteryStatus
+  > | null>(null);
   onMount(() => {
-    batteryStatusPromise = examples
-      ? Promise.resolve(examples.battery)
-      : getCurrentBatteryStatus({ recentMinutes: 30 });
+    batteryStatusPromise = getCurrentBatteryStatus({ recentMinutes: 30 });
   });
 
   // Get battery icon component based on level

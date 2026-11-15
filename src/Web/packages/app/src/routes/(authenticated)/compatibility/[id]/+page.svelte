@@ -3,10 +3,11 @@
   import { goto } from "$app/navigation";
   import { resolve } from "$app/paths";
   import { getAnalysisDetail } from "../data.remote";
-  import { formatDateTimeCompact } from "$lib/utils/formatting";
-  import { formatElapsedMs } from "$lib/utils/duration";
-  import { getMatchTypeDisplay } from "$lib/utils/compatibility-match";
-  import { Button } from "$lib/components/ui/button";
+  import { formatDateTimeCompact } from "#lib/utils/formatting.js";
+  import { formatElapsedMs } from "#lib/utils/duration.js";
+  import { getMatchTypeDisplay } from "#lib/utils/compatibility-match.js";
+  import { Button } from "#lib/components/ui/button/index.js";
+  import { EmptyState } from "#lib/components/shared/index.js";
 
   // Get ID from route params (guaranteed to exist in [id] route)
   const analysisId = $derived(page.params.id ?? "");
@@ -49,9 +50,11 @@
 <div class="@container container mx-auto p-3 @md:p-6 space-y-6">
   <!-- Header with Back Button -->
   <div class="flex items-center gap-4">
-    <Button variant="secondary" onclick={() => goto(resolve("/compatibility"))}>
-      ← Back
-    </Button>
+    <Button
+      variant="secondary"
+      onclick={() => goto(resolve('compatibility'))}
+    >← Back</Button>
+
     <h1 class="text-3xl font-bold">Request analysis detail</h1>
   </div>
 
@@ -364,9 +367,12 @@
   {:else}
     <div class="bg-card rounded-lg shadow p-6">
       <h2 class="text-xl font-semibold mb-4">Discrepancies</h2>
-      <p class="text-muted-foreground">
-        No discrepancies found. The responses match.
-      </p>
+      <EmptyState
+        art="confirmation-mark"
+        size="compact"
+        title="No discrepancies found"
+        body="The responses match."
+      />
     </div>
   {/if}
 

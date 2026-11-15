@@ -2,7 +2,7 @@ import { render } from "vitest-browser-svelte";
 import { page } from "vitest/browser";
 import { describe, it, expect, vi } from "vitest";
 import OidcProvidersTabContent from "./oidc-providers-tab-content-test-wrapper.svelte";
-import type { OidcProviderResponse } from "$lib/api/generated/nocturne-api-client";
+import type { OidcProviderResponse } from "#lib/api/generated/nocturne-api-client.js";
 
 function make_provider(
 	overrides: Partial<OidcProviderResponse> = {},
@@ -86,7 +86,7 @@ describe("OidcProvidersTabContent", () => {
 		render(OidcProvidersTabContent, default_props({ providers: [] }));
 
 		await expect
-			.element(page.getByText("No identity providers configured."))
+			.element(page.getByText("No identity providers configured"))
 			.toBeVisible();
 	});
 

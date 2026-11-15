@@ -68,8 +68,13 @@ export default class TenantRegistry<C extends TenantConnection> {
 
   /** Whether `slug` names the tenant `id`, reading the tenant list again first when it names no tenant or another. */
   async holds(slug: string, id: string): Promise<boolean> {
-    if (this.bySlug.get(slug)?.id === id) return true;
+    if (this.holdsNow(slug, id)) return true;
     await this.refresh();
+    return this.holdsNow(slug, id);
+  }
+
+  /** Whether `slug` names the tenant `id` in the list as last applied, with no read. */
+  holdsNow(slug: string, id: string): boolean {
     return this.bySlug.get(slug)?.id === id;
   }
 

@@ -1,14 +1,14 @@
 <script lang="ts">
   import { Tooltip, getChartContext } from "layerchart";
-  import { cn } from "$lib/utils";
-  import { BasalDeliveryOrigin, ChartSpanKind } from "$api-clients";
+  import { cn } from "#lib/utils/index.js";
+  import { BasalDeliveryOrigin, ChartSpanKind } from "#lib/api/generated/nocturne-api-client.js";
   import {
     bg,
     bgLabel,
     formatCarbDisplay,
     formatInsulinDisplay,
     time,
-  } from "$lib/utils/formatting";
+  } from "#lib/utils/formatting.js";
   import { getGlucoseChartContext } from "./chart-context.svelte";
   import { isBasalAdjusted } from "./engine/basal-presentation";
   import type { GlucosePoint } from "./engine/chart-data-view.svelte";
@@ -69,7 +69,7 @@
 
 <Tooltip.Root
   context={chartCtx}
-  class="bg-popover/95 border border-border rounded-lg shadow-xl text-xs z-50 backdrop-blur-sm print:hidden"
+  class="border border-border rounded-lg shadow-xl text-xs z-50 print:hidden"
 >
   {#snippet children({ data })}
     {@const activeBasal = findBasal(data.time)}

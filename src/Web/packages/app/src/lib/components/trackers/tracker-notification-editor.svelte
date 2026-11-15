@@ -1,18 +1,19 @@
 <script lang="ts">
-  import { TrackerMode } from "$lib/api";
+  import { TrackerMode } from "#lib/api/index.js";
   import { page } from "$app/state";
-  import { satisfiesScope } from "$lib/authorization/scopes";
-  import { enumValue } from "$lib/components/ui/enum-value";
-  import { Button } from "$lib/components/ui/button";
-  import { Input } from "$lib/components/ui/input";
-  import { Label } from "$lib/components/ui/label";
-  import * as Select from "$lib/components/ui/select";
-  import { DurationInput } from "$lib/components/ui/duration-input";
+  import { satisfiesScope } from "#lib/authorization/scopes.js";
+  import { EmptyState } from "#lib/components/shared/index.js";
+  import { enumValue } from "#lib/components/ui/enum-value.js";
+  import { Button } from "#lib/components/ui/button/index.js";
+  import { Input } from "#lib/components/ui/input/index.js";
+  import { Label } from "#lib/components/ui/label/index.js";
+  import * as Select from "#lib/components/ui/select/index.js";
+  import { DurationInput } from "#lib/components/ui/duration-input/index.js";
   import Plus from "@lucide/svelte/icons/plus";
   import Trash2 from "@lucide/svelte/icons/trash-2";
   import Bell from "@lucide/svelte/icons/bell";
-  import { cn } from "$lib/utils";
-  import { NotificationUrgency } from "$api";
+  import { cn } from "#lib/utils/index.js";
+  import { NotificationUrgency } from "#lib/api/index.js";
   import type { TrackerNotification } from "./types";
 
   interface Props {
@@ -104,14 +105,13 @@
   </div>
 
   {#if notifications.length === 0}
-    <div
-      class="text-center py-4 text-muted-foreground text-sm border border-dashed rounded-lg"
-    >
-      <p>No notification thresholds configured</p>
-      <p class="text-xs mt-1">
-        Add thresholds to get notified as the tracker ages
-      </p>
-    </div>
+    <EmptyState
+      art="stopwatch"
+      size="compact"
+      variant="outline"
+      title="No notification thresholds configured"
+      body="Add thresholds to get notified as the tracker ages"
+    />
   {:else}
     <div class="space-y-3">
       <!-- eslint-disable-next-line svelte/require-each-key -- each notification is replaced on every edit and new ones have no id, so neither the object nor an id identifies a row -->

@@ -1,4 +1,4 @@
-import type { ArtworkId, PaletteId } from '@nocturne/watercolour';
+import type { ArtworkId, PaletteId } from 'water-ui';
 
 export interface DocsHero {
   artwork: ArtworkId;
@@ -18,6 +18,7 @@ export const DOCS_HERO: Record<string, DocsHero> = {
   '': { artwork: 'paint-palette', palette: 'dusk', wrap: false },
   'getting-started': { artwork: 'sunrise', palette: 'ember' },
   installation: { artwork: 'world-globe', palette: 'water' },
+  'installation/install-script': { artwork: 'spanner', palette: 'water' },
   'installation/docker-compose': { artwork: 'overlapping-shapes', palette: 'dusk' },
   'installation/portainer': { artwork: 'suitcase', palette: 'dusk' },
   'installation/oracle-cloud': { artwork: 'chat-bubble', palette: 'water' },
@@ -56,6 +57,7 @@ export const DOCS_HERO: Record<string, DocsHero> = {
   // Devices, data and operations
   'connecting-apps': { artwork: 'connected-shores', palette: 'water' },
   'connecting-apps/device-flow': { artwork: 'blood-drop', palette: 'ember' },
+  'connecting-apps/aid-app-keys': { artwork: 'key', palette: 'dusk' },
   'alerts/email': { artwork: 'alarm-bell', palette: 'moonlight' },
   configuration: { artwork: 'spanner', palette: 'slate', wrap: false },
   observability: { artwork: 'distant-mountains', palette: 'slate' },

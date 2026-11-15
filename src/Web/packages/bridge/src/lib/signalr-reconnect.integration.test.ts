@@ -75,6 +75,7 @@ it("recovers all real hubs after partial handshake failure and a prolonged outag
     url,
   );
   relay.isCurrentTenant = async (_slug, id) => id === TENANT_ID;
+  relay.holdsTenantNow = (_slug, id) => id === TENANT_ID;
   await relay.start();
   await new Promise<void>((resolve) =>
     downstream.listen(0, "127.0.0.1", resolve),

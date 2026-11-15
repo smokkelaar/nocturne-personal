@@ -12,7 +12,7 @@ namespace Nocturne.API.Tests.Services.Platform;
 [Parity("units.test.js")]
 public class UnitsTests
 {
-    private readonly StatisticsService _statisticsService = new();
+    private readonly StatisticsService _statisticsService = new(TimeProvider.System);
 
     [Fact]
     public void MgdlToMMOL_ShouldConvert99ToFivePointFive()

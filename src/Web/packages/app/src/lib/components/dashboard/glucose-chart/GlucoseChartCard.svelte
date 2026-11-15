@@ -1,17 +1,16 @@
 <script lang="ts">
-  import { lazyComponent } from "$lib/utils/lazy-component.svelte";
+  import { lazyComponent } from "#lib/utils/lazy-component.svelte.js";
   import { findNearbyEntries } from "./engine/nearby-entries";
-  import type { EntryRecord } from "$lib/constants/entry-categories";
+  import type { EntryRecord } from "#lib/constants/entry-categories.js";
   import {
     Card,
     CardContent,
     CardHeader,
     CardTitle,
-  } from "$lib/components/ui/card";
-  import { Button } from "$lib/components/ui/button";
-  import { Badge } from "$lib/components/ui/badge";
-  import { IsMobile } from "$lib/hooks/is-mobile.svelte";
-  import { getRealtimeStore } from "$lib/stores/realtime-store.svelte";
+  } from "#lib/components/ui/card/index.js";
+  import { Badge } from "#lib/components/ui/badge/index.js";
+  import { IsMobile } from "#lib/hooks/is-mobile.svelte.js";
+  import { getRealtimeStore } from "#lib/stores/realtime-store.svelte.js";
   import {
     predictionEnabled,
     predictionDisplayMode,
@@ -23,9 +22,9 @@
     chartShowPoints,
     chartAreaMode,
     chartAreaOpacity,
-  } from "$lib/stores/appearance-store.svelte";
-  import type { PredictionDisplayMode } from "$lib/stores/appearance-store.svelte";
-  import { BasalDeliveryOrigin, type SystemEventType } from "$lib/api";
+  } from "#lib/stores/appearance-store.svelte.js";
+  import type { PredictionDisplayMode } from "#lib/stores/appearance-store.svelte.js";
+  import { BasalDeliveryOrigin, type SystemEventType } from "#lib/api/index.js";
   import PredictionSettings from "../PredictionSettings.svelte";
   import MiniOverviewChart from "../MiniOverviewChart.svelte";
   import GlucoseChartShell from "./GlucoseChartShell.svelte";
@@ -33,11 +32,10 @@
   import ZoomIndicator from "./ZoomIndicator.svelte";
   import { createChartDataEngine } from "./engine/chart-data-engine.svelte";
   import { createPointInspection, syncInspectionDialogs } from "./engine/point-inspection.svelte";
-  import { getEntryByTreatmentId } from "$api/entries.remote";
   import type { LegendState } from "./chart-context.svelte";
-  import type { TransformedChartData } from "$lib/utils/chart-data-transform";
-  import type { PredictionData } from "$api/predictions.remote";
-  import { PrintMode } from "$lib/components/charts/print/print-mode.svelte";
+  import type { TransformedChartData } from "#lib/utils/chart-data-transform.js";
+  import type { PredictionData } from "#lib/api/predictions.remote.js";
+  import { PrintMode } from "#lib/components/charts/print/print-mode.svelte.js";
 
   // Tracks
   import BasalTrack from "./tracks/BasalTrack.svelte";
@@ -53,11 +51,14 @@
   import ChartTooltip from "./ChartTooltip.svelte";
   import { openDayInReview } from "./day-in-review";
 
-  import PointInspectionPicker from "./dialogs/PointInspectionPicker.svelte";
+  import ChartEntryActions from "./ChartEntryActions.svelte";
+  import { canLogEvents } from "#lib/components/entries/can-log-events.js";
   import BasalInjectionMarkers from "./markers/BasalInjectionMarkers.svelte";
   import BgCheckMarkers from "./markers/BgCheckMarkers.svelte";
-  import type { GlucoseUnits } from "$lib/stores/appearance-store.svelte";
-  import { afterNextPaint } from "$lib/utils/after-next-paint";
+  import type { GlucoseUnits } from "#lib/stores/appearance-store.svelte.js";
+  import { afterNextPaint } from "#lib/utils/after-next-paint.js";
+  import { plotPadding } from "./plot-padding";
+  import { writePlotSize } from "./plot-size";
 
   interface Props {
     dateRange?: { from: Date | string; to: Date | string };
@@ -66,11 +67,11 @@
     streamedHistoricalData?: Promise<TransformedChartData | null>;
     externalPredictionData?: PredictionData | null;
     showPredictions?: boolean;
+    /** Whether forecasts can be made, as the server found when it rendered the page. */
+    initialPredictionsAvailable?: boolean | null;
     defaultFocusHours?: number;
     heightClass?: string;
     demoMode?: boolean;
-    /** Draw fixed examples without API reads, record editing or persisted preferences. */
-    staticData?: boolean;
     /**
      * While true the main plot is left undrawn in its reserved space, and it is drawn a frame
      * after this turns false. The dashboard holds it until the realtime store's current reading
@@ -79,6 +80,13 @@
      */
     deferDrawing?: boolean;
     glucoseUnits?: GlucoseUnits;
+    /**
+     * The server's rendering of the plot (`#lib/server/plot-snapshot.js`), shown until the live plot
+     * is drawn.
+     */
+    plotSnapshot?: string | null;
+    /** Keep the plot's size where the server reads it, to render the next document's snapshot. */
+    recordsPlotSize?: boolean;
   }
 
   let {
@@ -88,12 +96,14 @@
     streamedHistoricalData,
     externalPredictionData,
     showPredictions = true,
+    initialPredictionsAvailable,
     defaultFocusHours,
     heightClass,
     demoMode,
-    staticData = false,
     deferDrawing = false,
     glucoseUnits,
+    plotSnapshot,
+    recordsPlotSize = false,
   }: Props = $props();
 
   const realtimeStore = getRealtimeStore();
@@ -107,6 +117,9 @@
   });
   const displayDemoMode = $derived(demoMode ?? realtimeStore.demoMode);
 
+  let plotWidth = $state(0);
+  let plotHeight = $state(0);
+
   // Narrower than 672px (@2xl), the card drops its chrome (container queries, so the chart is
   // never remounted) and the axis gutters narrow, so the chart can use the full width. Until
   // the card is measured, the viewport stands in for its width.
@@ -115,19 +128,12 @@
   const compact = $derived(cardWidth > 0 ? cardWidth < 672 : isMobile.current);
   const print = new PrintMode();
 
-  // Axis gutters. The desktop 48px each side is a quarter of a phone's width,
-  // so a phone gets only what the tick labels need. Left: a three-digit or
-  // one-decimal glucose value at 12px. Right: a one- or two-character
-  // basal/IOB tick at 9px plus its 4px tick mark. The overview strip shares
-  // the horizontal values so its brush lines up with the main plot. Paper
-  // widens the left gutter, where the track names print.
-  const chartPadding = $derived(
-    print.active
-      ? { left: 56, right: 48, top: 8, bottom: 30 }
-      : compact
-        ? { left: 36, right: 22, top: 8, bottom: 28 }
-        : { left: 48, right: 48, top: 8, bottom: 30 }
-  );
+  const chartPadding = $derived(plotPadding(compact, print.active));
+
+  $effect(() => {
+    if (!recordsPlotSize || print.active || plotWidth === 0 || plotHeight === 0 || cardWidth === 0) return;
+    writePlotSize({ width: plotWidth, height: plotHeight, compact });
+  });
 
   // ===== ENGINE =====
   const engine = createChartDataEngine({
@@ -138,8 +144,8 @@
     get streamedHistoricalData() { return streamedHistoricalData; },
     get externalPredictionData() { return externalPredictionData; },
     get enablePredictions() { return showPredictions; },
+    get initialPredictionsAvailable() { return initialPredictionsAvailable; },
     get demoMode() { return demoMode; },
-    get staticData() { return staticData; },
   });
 
   // ===== POINT INSPECTION =====
@@ -152,6 +158,7 @@
       basalData: () => engine.basalData,
     },
     () => glucoseUnits,
+    canLogEvents,
   );
 
   // ===== LEGEND STATE =====
@@ -223,7 +230,7 @@
       const spanHours = spanMs / (60 * 60 * 1000);
       const roundedSpan = Math.round(spanHours * 2) / 2;
       const clampedSpan = Math.max(1, Math.min(48, roundedSpan));
-      if (!staticData) glucoseChartLookback.current = clampedSpan;
+      glucoseChartLookback.current = clampedSpan;
       brushDomain = domain;
     } else {
       brushDomain = null;
@@ -247,14 +254,12 @@
   function handlePredictionModeChange(value: PredictionDisplayMode) {
     if (value && value !== predictionModeValue) {
       predictionModeValue = value;
-      if (!staticData) predictionDisplayMode.current = value;
+      predictionDisplayMode.current = value;
     }
   }
 
   // ===== ENTRY EDIT / MARKER CLICK =====
-  let selectedEntry = $state<EntryRecord | null>(null);
-  let correlatedRecords = $state<EntryRecord[]>([]);
-  let nearbyEntries = $state<EntryRecord[]>([]);
+  let entryActions = $state<ReturnType<typeof ChartEntryActions>>();
 
   function findAllNearbyEntries(time: Date): EntryRecord[] {
     return findNearbyEntries(
@@ -264,50 +269,8 @@
     );
   }
 
-  async function handleMarkerClick(treatmentId: string) {
-    if (staticData) return;
-    let entry: EntryRecord | null =
-      realtimeStore.findEntryByTreatmentId(treatmentId) ?? null;
-
-    if (!entry) {
-      const result = await getEntryByTreatmentId({ treatmentId }).run();
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- generated entry shape bridged to the app EntryRecord union
-      entry = result as EntryRecord | null;
-    }
-
-    if (!entry) {
-      console.warn(
-        `[GlucoseChartCard] No entry found for treatmentId: ${treatmentId}`,
-      );
-      return;
-    }
-
-    const time = new Date(entry.data.mills ?? 0);
-    const nearby = findAllNearbyEntries(time);
-
-    if (nearby.length <= 1) {
-      selectedEntry = entry;
-      correlatedRecords = realtimeStore.findCorrelatedEntries(entry);
-      entryEditDialog.open = true;
-    } else {
-      nearbyEntries = nearby;
-      disambiguationDialog.open = true;
-    }
-  }
-
-  function selectEntryFromList(entry: EntryRecord) {
-    disambiguationDialog.open = false;
-    nearbyEntries = [];
-    selectedEntry = entry;
-    correlatedRecords = realtimeStore.findCorrelatedEntries(entry);
-    entryEditDialog.open = true;
-  }
-
-  // ===== INSPECTION DIALOG STATE =====
-  let isPickerOpen = $derived(inspection.activeDialog === "picker");
-
-  function handleInspectionSelect(type: "glucose" | "delivery" | "treatment") {
-    inspection.selectDialog(type);
+  function handleMarkerClick(treatmentId: string) {
+    void entryActions?.editTreatment(treatmentId);
   }
 
   function closeAllInspections() {
@@ -342,12 +305,6 @@
     ),
   );
 
-  const entryEditDialog = lazyComponent(
-    () => import("$lib/components/entries/EntryEditDialog.svelte"),
-  );
-  const disambiguationDialog = lazyComponent(
-    () => import("./dialogs/TreatmentDisambiguationDialog.svelte"),
-  );
   const glucoseInspectionDialog = lazyComponent(
     () => import("./dialogs/GlucoseInspectionDialog.svelte"),
   );
@@ -386,15 +343,11 @@
           ? 'min-h-8 basis-full @lg:basis-auto'
           : ''}"
       >
-        {#if staticData}
-          <Button variant="outline" size="sm" onclick={() => handlePredictionModeChange(predictionModeValue === "lines" ? "cone" : "lines")}>{predictionModeValue === "lines" ? "Cone" : "Lines"}</Button>
-        {:else}
         <PredictionSettings
           showPredictions={effectiveShowPredictions}
           predictionMode={predictionModeValue}
           onPredictionModeChange={handlePredictionModeChange}
         />
-        {/if}
       </div>
     </div>
   </CardHeader>
@@ -408,11 +361,16 @@
     <!-- The basal, mode and IOB/COB tracks take fixed shares of the height, so
          a 320px chart left them 38px, 13px and 58px tall on a phone: too little
          for their labels. 400px is what a portrait phone shows above the fold. -->
-    <div class={heightClass ?? "h-[400px] @md:h-[450px]"} data-testid="glucose-plot">
+    <div
+      class={heightClass ?? "h-[400px] @md:h-[450px]"}
+      data-testid="glucose-plot"
+      bind:clientWidth={plotWidth}
+      bind:clientHeight={plotHeight}
+    >
       {#if plotDrawn}
         <GlucoseChartShell
           {engine}
-          inspection={staticData ? undefined : inspection}
+          {inspection}
           {legend}
           {glucoseUnits}
           brushDomain={brushDomain}
@@ -432,7 +390,7 @@
               areaOpacity={chartAreaOpacity.current}
             />
             {#if effectiveShowPredictions}
-              <PredictionTrack displayMode={staticData ? predictionModeValue : undefined} enabled={staticData ? true : undefined} />
+              <PredictionTrack />
             {/if}
             <IobCobTrack onMarkerClick={handleMarkerClick} />
             <DeviceEventMarkers onMarkerClick={handleMarkerClick} />
@@ -443,9 +401,14 @@
             <ChartHighlight />
           {/snippet}
           {#snippet overlays()}
-            <ChartTooltip onTimeClick={staticData ? undefined : openDayInReview} />
+            <ChartTooltip onTimeClick={openDayInReview} />
           {/snippet}
         </GlucoseChartShell>
+      {:else if plotSnapshot}
+        <div class="h-full w-full overflow-hidden" data-testid="plot-snapshot" aria-hidden="true">
+          <!-- eslint-disable-next-line svelte/no-at-html-tags -- the server's own render of this chart's components, no user input -->
+          {@html plotSnapshot}
+        </div>
       {/if}
     </div>
 
@@ -458,7 +421,7 @@
         expanded={true}
         onSelectionChange={(domain) => handleMiniChartBrush(domain)}
         predictionData={miniPredictionData}
-        showPredictions={effectiveShowPredictions && (staticData || predictionEnabled.current)}
+        showPredictions={effectiveShowPredictions && predictionEnabled.current}
         {isZoomed}
         thresholds={engine.thresholds}
         lineColorMode={chartLineColorMode.current}
@@ -528,40 +491,8 @@
   </Card>
 </div>
 
-<!-- Entry Edit Dialog -->
-{#if entryEditDialog.component}
-  <entryEditDialog.component
-    bind:open={entryEditDialog.open}
-    entry={selectedEntry}
-    {correlatedRecords}
-    onClose={() => {
-      entryEditDialog.open = false;
-      selectedEntry = null;
-      correlatedRecords = [];
-    }}
-  />
-{/if}
-
-<!-- Disambiguation Dialog -->
-{#if disambiguationDialog.component}
-  <disambiguationDialog.component
-    bind:open={disambiguationDialog.open}
-    entries={nearbyEntries}
-    onSelect={selectEntryFromList}
-    onClose={() => {
-      disambiguationDialog.open = false;
-      nearbyEntries = [];
-    }}
-  />
-{/if}
-
-<!-- Point Inspection Dialogs -->
-<PointInspectionPicker
-  bind:open={isPickerOpen}
-  options={inspection.pickerOptions}
-  onSelect={handleInspectionSelect}
-  onClose={closeAllInspections}
-/>
+<!-- The picker step of point inspection, marker disambiguation, and the entry editor. -->
+<ChartEntryActions bind:this={entryActions} {inspection} findNearby={findAllNearbyEntries} />
 
 {#if inspection.timestamp && inspection.glucosePoint && inspection.context}
   {#if glucoseInspectionDialog.component}
@@ -645,12 +576,11 @@
       onNavigateGlucose={() => inspection.navigateTo("glucose")}
       onNavigateDelivery={() => inspection.navigateTo("delivery")}
       onEditEntry={() => {
+        const treatmentId =
+          inspection.context?.nearbyBolus?.treatmentId ??
+          inspection.context?.nearbyCarbs?.treatmentId;
         closeAllInspections();
-        if (inspection.context?.nearbyBolus?.treatmentId) {
-          handleMarkerClick(inspection.context.nearbyBolus.treatmentId);
-        } else if (inspection.context?.nearbyCarbs?.treatmentId) {
-          handleMarkerClick(inspection.context.nearbyCarbs.treatmentId);
-        }
+        if (treatmentId) handleMarkerClick(treatmentId);
       }}
     />
   {/if}

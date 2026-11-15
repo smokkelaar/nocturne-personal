@@ -82,6 +82,9 @@ public interface IDeviceEventRepository : ILegacyKeyedRepository<DeviceEvent>, I
     Task<IReadOnlyList<DeviceEvent>> GetAllCopiesAsync(
         DateTime from, DateTime to, IReadOnlyCollection<DeviceEventType> eventTypes, CancellationToken ct = default);
 
+    /// <summary>The events with <paramref name="ids"/>, deleted ones included, in no particular order.</summary>
+    Task<IReadOnlyList<DeviceEvent>> GetIncludingDeletedAsync(IReadOnlyCollection<Guid> ids, CancellationToken ct = default);
+
     /// <summary>
     /// The events of <paramref name="eventTypes"/> in [<paramref name="from"/>, <paramref name="to"/>)
     /// that the user deleted, oldest first.
@@ -117,6 +120,13 @@ public interface IDeviceEventRepository : ILegacyKeyedRepository<DeviceEvent>, I
     /// <summary>Convenience overload returning the absolute latest event of the given type.</summary>
     Task<DeviceEvent?> GetLatestByEventTypeAsync(DeviceEventType eventType, CancellationToken ct = default)
         => GetLatestByEventTypeAsync(eventType, asOf: null, ct);
+
+    /// <summary>
+    /// As <see cref="GetLatestByEventTypeAsync(DeviceEventType, DateTime?, CancellationToken)"/>, for the
+    /// most recent event of any of <paramref name="eventTypes"/>.
+    /// </summary>
+    Task<DeviceEvent?> GetLatestOfAnyTypeAsync(
+        IReadOnlyCollection<DeviceEventType> eventTypes, DateTime? asOf, CancellationToken ct = default);
 
     /// <summary>
     /// Retrieve the most recent <see cref="DeviceEvent"/> matching any of the specified <see cref="DeviceEventType"/> values.

@@ -1,9 +1,8 @@
 <script lang="ts">
-  import { dashboardExamples } from "$lib/components/dashboard/demo-context";
-  import { Badge } from "$lib/components/ui/badge";
-  import { Button } from "$lib/components/ui/button";
-  import { getRealtimeStore } from "$lib/stores/realtime-store.svelte";
-  import { relativeAge, time } from "$lib/utils/formatting";
+  import { Badge } from "#lib/components/ui/badge/index.js";
+  import { Button } from "#lib/components/ui/button/index.js";
+  import { getRealtimeStore } from "#lib/stores/realtime-store.svelte.js";
+  import { relativeAge, time } from "#lib/utils/formatting.js";
 
   interface Props {
     /**
@@ -16,14 +15,13 @@
   let { detailed = false }: Props = $props();
 
   const realtimeStore = getRealtimeStore();
-  const examples = dashboardExamples();
 
-  const connection = $derived(examples ? (examples.connected ? "live" : "unavailable") : realtimeStore.connectionPresentation);
+  const connection = $derived(realtimeStore.connectionPresentation);
   const isConnected = $derived(connection === "live");
   const connectionError = $derived(
     connection === "unavailable" ? realtimeStore.connectionError : null
   );
-  const stats = $derived(examples ? { messageCount: 144, reconnectCount: 0 } : realtimeStore.connectionStats);
+  const stats = $derived(realtimeStore.connectionStats);
 
   const statusConfig = $derived.by(() => {
     switch (connection) {
@@ -59,7 +57,7 @@
   });
 
   const lastUpdateText = $derived(
-    examples ? "Just now" : realtimeStore.timeSinceUpdate
+    realtimeStore.timeSinceUpdate
       ? relativeAge(realtimeStore.lastUpdated, { now: realtimeStore.now })
       : "Never"
   );
@@ -77,7 +75,7 @@
     <Button
       variant="outline"
       size="xs"
-      onclick={() => { if (examples) examples.connected = true; else realtimeStore.reconnect(); }}
+      onclick={() => realtimeStore.reconnect()}
     >
       Retry
     </Button>

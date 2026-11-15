@@ -7,9 +7,8 @@
     value = $bindable(),
     orientation = "horizontal",
     class: className,
-    thumbLabel,
     ...restProps
-  }: WithoutChildrenOrChild<SliderPrimitive.RootProps> & { thumbLabel?: string } = $props();
+  }: WithoutChildrenOrChild<SliderPrimitive.RootProps> = $props();
 </script>
 
 <!-- eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- bits-ui types value as a union keyed by `type`, which destructuring for $bindable splits apart -->
@@ -40,7 +39,6 @@
     </span>
     {#each thumbs as thumb (thumb)}
       <SliderPrimitive.Thumb
-        aria-label={thumbLabel}
         data-slot="slider-thumb"
         index={thumb}
         class="border-primary bg-background ring-ring/50 focus-visible:outline-hidden block size-4 shrink-0 rounded-full border shadow-sm transition-[color,box-shadow] hover:ring-4 focus-visible:ring-4 disabled:pointer-events-none disabled:opacity-50"

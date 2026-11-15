@@ -11,6 +11,7 @@ using Nocturne.Core.Models.Authorization;
 using Nocturne.Infrastructure.Data;
 using Nocturne.Infrastructure.Data.Entities;
 using Nocturne.Tests.Shared.Infrastructure;
+using Nocturne.Infrastructure.Data.Repositories;
 
 namespace Nocturne.API.Tests.Services;
 
@@ -45,7 +46,7 @@ public class GuestLinkServiceTests : IDisposable
         _sessionCache = new GuestSessionCacheService(new MemoryCache(new MemoryCacheOptions()));
 
         _service = new GuestLinkService(
-            _dbContext.AsFactory(),
+            _dbContext.AsFactory(), new OAuthGrantRepository(_dbContext.AsFactory()),
             _sessionCache,
             new GrantRevocationService(_sessionCache),
             NullLogger<GuestLinkService>.Instance);
@@ -214,7 +215,10 @@ public class GuestLinkServiceTests : IDisposable
             _dataOwnerId, _creatorId, "Alias", "https://example.com",
             scopes: [Scope.HealthRead], creatorScopes: creator);
 
-        result.Info.Scopes.Should().Contain(Scope.HealthRead);
+        var grant = await _dbContext.OAuthGrants
+            .IgnoreQueryFilters()
+            .FirstAsync(g => g.Id == result.Info.Id);
+        grant.Scopes.Should().Contain(Scope.HealthRead);
     }
 
     [Fact]

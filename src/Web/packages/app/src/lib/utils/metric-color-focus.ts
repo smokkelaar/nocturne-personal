@@ -1,5 +1,4 @@
 import { GLUCOSE_HEATMAP_LEGEND_STOPS } from "./chart-colors";
-import { lookRamp, type RampLook } from "./metric-color-palette";
 
 export type ColorFocusRange = readonly [number, number];
 
@@ -42,10 +41,7 @@ export interface MetricScale {
   /** The theme ramp with the chosen colors in place. */
   ramp: readonly RampStop[];
   ends: ColorEnds;
-  /**
-   * The values the ramp spans; beyond it a value takes the end color. Personal: set apart from
-   * the window by the color range, so dimming and coloring move independently.
-   */
+  /** The values the ramp spans; beyond it a value takes the end color. */
   domain: ColorFocusRange;
   /** The extent of the slider and of the drawn scale. */
   axis: ColorFocusRange;
@@ -58,34 +54,29 @@ export interface MetricScale {
 
 export const GLUCOSE_LIMITS: ColorFocusRange = [GLUCOSE_COLOR_MIN, GLUCOSE_COLOR_MAX];
 
-/** Personal: a saved color range narrows the ramp; without one it keeps upstream's fixed mg/dL domain. */
+/** The glucose ramp keeps its fixed mg/dL domain, so a color means the same reading whatever the window. */
 export function glucoseScale(
   savedWindow: unknown,
   savedBoundaries: unknown,
   dim: number,
-  savedEnds: ColorEnds = {},
-  look: RampLook = {},
-  savedRange: unknown = null
+  savedEnds: ColorEnds = {}
 ): MetricScale {
   const boundaries = resolveColorBoundaries(savedBoundaries, GLUCOSE_LIMITS) ?? [];
   const ends = resolveColorEnds(savedEnds);
-  const window = resolveColorFocusRange(savedWindow, GLUCOSE_LIMITS) ?? GLUCOSE_LIMITS;
-  const domain = resolveColorFocusRange(savedRange, GLUCOSE_LIMITS) ?? GLUCOSE_LIMITS;
   return {
-    ramp: paintRamp(lookRamp(GLUCOSE_RAMP, look), ends, boundaries, domain),
+    ramp: paintRamp(GLUCOSE_RAMP, ends, boundaries, GLUCOSE_LIMITS),
     ends,
-    domain,
+    domain: GLUCOSE_LIMITS,
     axis: GLUCOSE_LIMITS,
-    window,
+    window: resolveColorFocusRange(savedWindow, GLUCOSE_LIMITS) ?? GLUCOSE_LIMITS,
     boundaries,
     dim,
   };
 }
 
 /**
- * A metric with no fixed meaning per value spans its ramp across zero through the largest value
- * seen. The axis reaches past a saved window or range that is smaller. Personal: the ramp spans
- * the color range rather than the window.
+ * A metric with no fixed meaning per value spans its ramp across the window, which defaults to
+ * zero through the largest value seen. The axis reaches past a saved window that is smaller.
  */
 export function intensityScale(
   cssVar: string,
@@ -94,9 +85,7 @@ export function intensityScale(
   savedWindow: unknown,
   savedBoundaries: unknown,
   dim: number,
-  savedEnds: ColorEnds = {},
-  look: RampLook = {},
-  savedRange: unknown = null
+  savedEnds: ColorEnds = {}
 ): MetricScale {
   const max = Number.isFinite(limits[1])
     ? limits[1]
@@ -105,20 +94,19 @@ export function intensityScale(
       : 1;
   const automatic: ColorFocusRange = [limits[0], max];
   const window = resolveColorFocusRange(savedWindow, limits) ?? automatic;
-  const domain = resolveColorFocusRange(savedRange, limits) ?? automatic;
-  // Checked against the limits, not the range: a boundary the range no longer reaches is
+  // Checked against the limits, not the window: a boundary the window no longer reaches is
   // kept, and only the ramp ignores it.
   const boundaries = resolveColorBoundaries(savedBoundaries, limits) ?? [];
   const ends = resolveColorEnds(savedEnds);
   return {
-    ramp: paintRamp(lookRamp(metricRamp(cssVar), look), ends, boundaries, domain),
+    ramp: paintRamp(metricRamp(cssVar), ends, boundaries, window),
     ends,
-    domain,
+    domain: window,
     axis: [
       limits[0],
       Number.isFinite(limits[1])
         ? limits[1]
-        : Math.max(max, window[1], domain[1], boundaries.at(-1)?.value ?? 0),
+        : Math.max(max, window[1], boundaries.at(-1)?.value ?? 0),
     ],
     window,
     boundaries,
@@ -159,9 +147,8 @@ export function resolveColorEnds(candidate: ColorEnds): ColorEnds {
 }
 
 /**
- * The base ramp with the end colors in place of its ends. Personal: once a boundary inside
- * `domain` has a color, the ramp runs only between the ends and the colored boundaries, so each
- * color blends straight into the next. A boundary the domain does not reach is ignored, as
+ * The base ramp with the end colors in place of its ends and each colored boundary inside
+ * `domain` as a stop of its own. A boundary the domain does not reach is ignored, as
  * {@link rampPosition} ignores it.
  */
 export function paintRamp(
@@ -174,22 +161,18 @@ export function paintRamp(
     (b): b is ColorBoundary & { color: string } =>
       b.color !== undefined && b.value > domain[0] && b.value < domain[1]
   );
-  if (pinned.length > 0) {
-    const first = base[0];
-    const last = base[base.length - 1];
-    return [
-      { position: first.position, color: ends.low ?? first.color },
-      ...pinned.map((b) => ({ position: b.position, color: b.color })),
-      { position: last.position, color: ends.high ?? last.color },
-    ];
-  }
-  if (!ends.low && !ends.high) return base;
-  return base.map((stop, i, all) =>
-    i === 0 && ends.low
-      ? { ...stop, color: ends.low }
-      : i === all.length - 1 && ends.high
-        ? { ...stop, color: ends.high }
-        : stop
+  if (!ends.low && !ends.high && pinned.length === 0) return base;
+  const stops = base
+    .filter((stop) => !pinned.some((b) => b.position === stop.position))
+    .map((stop, i, all) =>
+      i === 0 && ends.low
+        ? { ...stop, color: ends.low }
+        : i === all.length - 1 && ends.high
+          ? { ...stop, color: ends.high }
+          : stop
+    );
+  return [...stops, ...pinned.map((b) => ({ position: b.position, color: b.color }))].sort(
+    (a, b) => a.position - b.position
   );
 }
 
@@ -322,9 +305,8 @@ export function scaleGradient(scale: MetricScale): string {
 }
 
 /**
- * Pins the color currently drawn at the middle of the widest gap between the ends of the range
- * the window and domain share and the boundaries inside it, so adding a boundary leaves the
- * scale unchanged until it moves.
+ * Pins the color currently drawn at the middle of the widest gap between the window's ends
+ * and the boundaries inside it, so adding a boundary leaves the scale unchanged until it moves.
  */
 export function addColorBoundary(
   scale: MetricScale,
@@ -334,7 +316,6 @@ export function addColorBoundary(
   if (boundaries.length >= MAX_COLOR_BOUNDARIES) return null;
   const low = Math.max(scale.window[0], domain[0]);
   const high = Math.min(scale.window[1], domain[1]);
-  if (!(low < high)) return null;
   const edges = [low, ...boundaries.map((b) => b.value).filter((v) => v > low && v < high), high];
   let gap = 0;
   for (let i = 1; i < edges.length; i++) {

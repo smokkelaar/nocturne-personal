@@ -8,6 +8,7 @@ namespace Nocturne.API.Tests.Integration.Parity.V1;
 /// Parity tests for /api/v1/treatments endpoints.
 /// Covers: GET, GET/{id}, POST, PUT/{id}, DELETE/{id}, DELETE (bulk)
 /// </summary>
+[Collection(ParityShards.One)]
 public class TreatmentsParityTests : ParityTestBase
 {
     public TreatmentsParityTests(ParityTestFixture fixture, ITestOutputHelper output)

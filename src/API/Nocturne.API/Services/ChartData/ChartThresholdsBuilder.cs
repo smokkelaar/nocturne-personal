@@ -30,22 +30,20 @@ internal static class ChartThresholdsBuilder
     /// </summary>
     internal const double GlucoseYMaxCap = 400;
 
-    internal static ChartThresholdsDto ReferenceBands() => new()
-    {
-        VeryLow = VeryLow,
-        Low = Low,
-        High = High,
-        VeryHigh = VeryHigh,
-        GlucoseYMax = GlucoseYMaxCap,
-    };
-
     public static async Task<ChartThresholdsDto> BuildAsync(
         ITargetRangeResolver targetRangeResolver,
         bool hasProfile,
         long atMills,
         CancellationToken cancellationToken)
     {
-        var thresholds = ReferenceBands();
+        var thresholds = new ChartThresholdsDto
+        {
+            VeryLow = VeryLow,
+            Low = Low,
+            High = High,
+            VeryHigh = VeryHigh,
+            GlucoseYMax = GlucoseYMaxCap,
+        };
 
         if (!hasProfile)
             return thresholds;

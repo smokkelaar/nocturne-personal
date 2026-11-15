@@ -1,5 +1,5 @@
-import { a1cName, a1cUnits } from "$lib/stores/appearance-store.svelte";
-import type { A1cDisplayValue } from "$api/generated/nocturne-api-client";
+import { a1cName, a1cUnits } from "#lib/stores/appearance-store.svelte.js";
+import type { A1cDisplayValue } from "#lib/api/generated/nocturne-api-client.js";
 
 export function a1cLabel(estimated = false): string {
   return `${estimated ? "e" : ""}${a1cName.current}`;
@@ -21,7 +21,7 @@ export function formatA1cValue(
   return formatA1cNumber(a1cDisplayValue(value));
 }
 
-/** Personal: one decimal more than upstream, two for percent and one for mmol/mol. */
+/** One digit more than a lab report: two decimals for percent, one for mmol/mol. */
 function a1cDecimals(): number {
   return a1cUnits.current === "percent" ? 2 : 1;
 }

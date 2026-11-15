@@ -1,12 +1,12 @@
 <script lang="ts">
-  import * as Card from "$lib/components/ui/card";
-  import { Button } from "$lib/components/ui/button";
+  import * as Card from "#lib/components/ui/card/index.js";
+  import { Button } from "#lib/components/ui/button/index.js";
   import Loader2 from "@lucide/svelte/icons/loader-circle";
   import Check from "@lucide/svelte/icons/check";
   import AlertTriangle from "@lucide/svelte/icons/triangle-alert";
   import UserPlus from "@lucide/svelte/icons/user-plus";
-  import { Artwork } from "@nocturne/watercolour";
-  import { fingerprintArtwork } from "$lib/watercolour-icons";
+  import { Artwork } from "water-ui";
+  import { fingerprintArtwork } from "#lib/watercolour-icons.js";
   import {
     startRegistration,
     type PublicKeyCredentialCreationOptionsJSON,
@@ -17,25 +17,26 @@
   import {
     getInviteInfo,
     acceptInvite,
-  } from "$lib/api/generated/memberInvites.generated.remote";
+  } from "#lib/api/generated/memberInvites.generated.remote.js";
   import {
     inviteOptions,
     inviteComplete,
-  } from "$lib/api/generated/passkeys.generated.remote";
+  } from "#lib/api/generated/passkeys.generated.remote.js";
   import {
     getOidcProviders,
     setAuthCookies,
-  } from "$routes/(unauthenticated)/auth/auth.remote";
-  import RecoveryCodes from "$lib/components/auth/RecoveryCodes.svelte";
-  import OidcProviderButtons from "$lib/components/auth/OidcProviderButtons.svelte";
-  import PasskeyRegistrationForm from "$lib/components/auth/PasskeyRegistrationForm.svelte";
-  import InviteSummary from "$lib/components/members/InviteSummary.svelte";
+  } from "#routes/(unauthenticated)/auth/auth.remote.js";
+  import RecoveryCodes from "#lib/components/auth/RecoveryCodes.svelte";
+  import OidcProviderButtons from "#lib/components/auth/OidcProviderButtons.svelte";
+  import PasskeyRegistrationForm from "#lib/components/auth/PasskeyRegistrationForm.svelte";
+  import InviteSummary from "#lib/components/members/InviteSummary.svelte";
   import {
     describePasskeyError,
     parseCeremonyOptions,
-  } from "$lib/components/auth/passkey-errors";
-  import { FormError, describeSubmitError } from "$lib/forms";
-  import { retainQuery } from "$lib/api/retain-query.svelte";
+  } from "#lib/components/auth/passkey-errors.js";
+  import { FormError, describeSubmitError } from "#lib/forms/index.js";
+  import { retainQuery } from "#lib/api/retain-query.svelte.js";
+  import { withWelcome } from "#lib/components/members/welcome.js";
 
   // ── URL params ────────────────────────────────────────────────────
   const token = $derived(page.url.searchParams.get("token") ?? "");
@@ -79,7 +80,7 @@
     acceptError = null;
     try {
       await acceptInvite(token);
-      await goto(resolve("/"), { replaceState: true });
+      await goHome(true);
     } catch (err) {
       console.error("Accepting the invite failed:", err);
       acceptError = describeSubmitError(
@@ -157,8 +158,10 @@
     }
   }
 
-  function goHome() {
-    goto(resolve("/"), { replaceState: true });
+  function goHome(joined = false) {
+    const home = resolve("");
+    // eslint-disable-next-line svelte/no-navigation-without-resolve -- resolved above; the welcome marker only adds a query
+    return goto(joined ? withWelcome(home) : home, { replace: true });
   }
 </script>
 
@@ -207,7 +210,7 @@
       <Card.Content>
         <RecoveryCodes
           codes={recoveryCodes}
-          onContinue={goHome}
+          onContinue={() => goHome(true)}
           continueLabel="Continue to Nocturne"
         />
       </Card.Content>
@@ -227,7 +230,7 @@
       </Card.Header>
 
       <Card.Content>
-        <Button class="w-full" size="lg" onclick={goHome}>
+        <Button class="w-full" size="lg" onclick={() => goHome()}>
           Continue to Nocturne
         </Button>
       </Card.Content>

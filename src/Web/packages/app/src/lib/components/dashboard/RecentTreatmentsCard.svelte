@@ -1,22 +1,23 @@
 <script lang="ts">
   import { Key } from "@nocturne/ui/keys";
-  import { lazyComponent } from "$lib/utils/lazy-component.svelte";
-  import type { EntryRecord } from "$lib/constants/entry-categories";
-  import { ENTRY_CATEGORIES } from "$lib/constants/entry-categories";
+  import { lazyComponent } from "#lib/utils/lazy-component.svelte.js";
+  import type { EntryRecord } from "#lib/constants/entry-categories.js";
+  import { entryCategoryName } from "#lib/constants/entry-category-labels.svelte.js";
+  import { ENTRY_CATEGORIES } from "#lib/constants/entry-categories.js";
   import {
     Card,
     CardContent,
     CardHeader,
     CardTitle,
-  } from "$lib/components/ui/card";
-  import { Badge } from "$lib/components/ui/badge";
-  import { time } from "$lib/utils/formatting";
-  import { entryDetails, entryLabel } from "$lib/utils/entry-summary";
-  import { getRealtimeStore } from "$lib/stores/realtime-store.svelte";
+  } from "#lib/components/ui/card/index.js";
+  import { Badge } from "#lib/components/ui/badge/index.js";
+  import { EmptyState } from "#lib/components/shared/index.js";
+  import { time } from "#lib/utils/formatting.js";
+  import { entryDetails, entryLabel } from "#lib/utils/entry-summary.svelte.js";
+  import { getRealtimeStore } from "#lib/stores/realtime-store.svelte.js";
 
   interface ComponentProps {
     entries?: EntryRecord[];
-    preview?: boolean;
     maxEntries?: number;
     title?: string;
     subtitle?: string;
@@ -24,7 +25,6 @@
 
   let {
     entries,
-    preview = false,
     maxEntries = 5,
     title = "Recent treatments",
     subtitle = "Last 24 hours",
@@ -39,11 +39,10 @@
   let selectedEntry = $state<EntryRecord | null>(null);
   let correlatedRecords = $state<EntryRecord[]>([]);
   const entryEditDialog = lazyComponent(
-    () => import("$lib/components/entries/EntryEditDialog.svelte"),
+    () => import("#lib/components/entries/EntryEditDialog.svelte"),
   );
 
   function handleEntryClick(entry: EntryRecord) {
-    if (preview) return;
     selectedEntry = entry;
     correlatedRecords = realtimeStore.findCorrelatedEntries(entry);
     entryEditDialog.open = true;
@@ -72,10 +71,21 @@
           {#each displayEntries as entry, i (entry.data.id ?? `${entry.data.mills}-${i}`)}
             {@const category = ENTRY_CATEGORIES[entry.kind]}
             <li>
-            {#snippet rowContent()}
+            <div
+              class="-mx-2 flex cursor-pointer items-center justify-between rounded-md px-2 py-2.5 transition-colors hover:bg-accent/50"
+              onclick={() => handleEntryClick(entry)}
+              role="button"
+              tabindex="0"
+              onkeydown={(e) => {
+                if (e.key === Key.Enter || e.key === Key.Space) {
+                  e.preventDefault();
+                  handleEntryClick(entry);
+                }
+              }}
+            >
               <div class="flex items-center gap-2 @md:gap-3">
                 <Badge variant={category.badge}>
-                  {category.name}
+                  {entryCategoryName(entry.kind)}
                 </Badge>
                 <div>
                   <div class="font-medium">
@@ -92,30 +102,12 @@
               <div class="text-sm text-muted-foreground">
                 {entry.data.dataSource || ""}
               </div>
-            {/snippet}
-            {#if preview}
-              <div class="-mx-2 flex items-center justify-between rounded-md px-2 py-2.5">{@render rowContent()}</div>
-            {:else}
-              <div
-                class="-mx-2 flex cursor-pointer items-center justify-between rounded-md px-2 py-2.5 transition-colors hover:bg-accent/50"
-                onclick={() => handleEntryClick(entry)}
-                role="button"
-                tabindex="0"
-                onkeydown={(e) => {
-                  if (e.key === Key.Enter || e.key === Key.Space) {
-                    e.preventDefault();
-                    handleEntryClick(entry);
-                  }
-                }}
-              >{@render rowContent()}</div>
-            {/if}
+            </div>
             </li>
           {/each}
         </ul>
       {:else}
-        <p class="text-muted-foreground text-center py-8">
-          No recent entries
-        </p>
+        <EmptyState art="clock" size="compact" title="No recent entries" />
       {/if}
     </CardContent>
   </svelte:boundary>

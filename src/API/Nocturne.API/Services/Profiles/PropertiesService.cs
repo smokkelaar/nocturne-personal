@@ -1,5 +1,7 @@
 using System.Globalization;
 using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 using Microsoft.Extensions.Options;
 using Nocturne.API.Configuration;
 using Nocturne.Core.Clinical.Schedules;
@@ -12,9 +14,10 @@ using Nocturne.Core.Contracts.Treatments;
 using Nocturne.Core.Contracts.Glucose;
 using Nocturne.Core.Contracts.V4.Repositories;
 using Nocturne.Core.Models;
+using Nocturne.Core.Models.Battery;
 using Nocturne.Core.Models.V4;
 using Nocturne.API.Services.Glucose;
-using Nocturne.API.Services.Treatments;
+using Nocturne.API.Services.BolusWizard;
 
 namespace Nocturne.API.Services.Profiles;
 
@@ -32,6 +35,10 @@ public class PropertiesService : IPropertiesService
     private readonly IAr2Service _ar2Service;
     private readonly IDeviceAgeService _deviceAgeService;
     private readonly ITherapySettingsResolver _therapySettings;
+    private readonly ISensitivityResolver _sensitivity;
+    private readonly ITargetRangeResolver _targetRange;
+    private readonly IBolusWizardService _bolusWizard;
+    private readonly IOpenApsService _openAps;
     private readonly TimeProvider _time;
     private readonly DbSizeOptions _dbSize;
 
@@ -58,6 +65,10 @@ public class PropertiesService : IPropertiesService
         IAr2Service ar2Service,
         IDeviceAgeService deviceAgeService,
         ITherapySettingsResolver therapySettings,
+        ISensitivityResolver sensitivity,
+        ITargetRangeResolver targetRange,
+        IBolusWizardService bolusWizard,
+        IOpenApsService openAps,
         TimeProvider time,
         IOptions<DbSizeOptions> dbSize
     )
@@ -68,6 +79,10 @@ public class PropertiesService : IPropertiesService
         _ar2Service = ar2Service;
         _deviceAgeService = deviceAgeService;
         _therapySettings = therapySettings;
+        _sensitivity = sensitivity;
+        _targetRange = targetRange;
+        _bolusWizard = bolusWizard;
+        _openAps = openAps;
         _time = time;
         _dbSize = dbSize.Value;
     }
@@ -79,7 +94,27 @@ public class PropertiesService : IPropertiesService
     {
         try
         {
-            var properties = await BuildSandboxPropertiesAsync(cancellationToken);
+            var now = _time.GetUtcNow().ToUnixTimeMilliseconds();
+            var ddata = await _ddataService.GetDDataAsync(now, DDataCollections.All, cancellationToken);
+            return await GetAllPropertiesAsync(ddata, await ReadIobCobAsync(now), cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting all properties");
+            return new Dictionary<string, object>();
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<Dictionary<string, object>> GetAllPropertiesAsync(
+        DData ddata,
+        IobCobReading? iobCob,
+        CancellationToken cancellationToken = default
+    )
+    {
+        try
+        {
+            var properties = await BuildSandboxPropertiesAsync(ddata, iobCob, cancellationToken);
             return ApplySecurityFiltering(properties);
         }
         catch (Exception ex)
@@ -98,7 +133,11 @@ public class PropertiesService : IPropertiesService
         try
         {
             var requested = propertyNames as IReadOnlyCollection<string> ?? propertyNames.ToList();
-            var allProperties = await BuildSandboxPropertiesAsync(cancellationToken, requested);
+            var now = _time.GetUtcNow().ToUnixTimeMilliseconds();
+            var ddata = await _ddataService.GetDDataAsync(
+                now, PropertyDDataSources.For(requested), cancellationToken);
+            var allProperties = await BuildSandboxPropertiesAsync(
+                ddata, await ReadIobCobAsync(now), cancellationToken, requested);
             var filteredProperties = new Dictionary<string, object>();
 
             foreach (var propertyName in requested)
@@ -161,20 +200,20 @@ public class PropertiesService : IPropertiesService
     /// <remarks>
     /// When <paramref name="requested"/> is set, only those property names were asked for, and
     /// properties whose sources cost extra queries are skipped; null builds everything.
+    /// <paramref name="ddata"/> then holds only the collections <see cref="PropertyDDataSources"/> names
+    /// for them.
     /// </remarks>
     private async Task<Dictionary<string, object>> BuildSandboxPropertiesAsync(
+        DData ddata,
+        IobCobReading? iobCob,
         CancellationToken cancellationToken,
         IReadOnlyCollection<string>? requested = null
     )
     {
         var properties = new Dictionary<string, object>();
-        var timestamp = _time.GetUtcNow().ToUnixTimeMilliseconds();
 
         try
         {
-            // Get DData which contains the current state
-            var ddata = await _ddataService.GetDDataAsync(timestamp, cancellationToken);
-
             // Build properties that would be set by plugins
 
             // BGNow properties (most recent glucose entry)
@@ -187,12 +226,11 @@ public class PropertiesService : IPropertiesService
             SetDirectionProperties(properties, ddata);
 
             var now = _time.GetUtcNow().ToUnixTimeMilliseconds();
-            var iobCob = await ReadIobCobAsync(now);
             if (iobCob is not null)
             {
-                SetIobProperties(properties, iobCob.Iob, now);
+                SetIobProperties(properties, iobCob.Iob, ddata, now);
                 if (iobCob.Cob is not null)
-                    SetCobProperties(properties, iobCob.Cob, now);
+                    SetCobProperties(properties, iobCob.Cob, await CarbsPerHourAsync(iobCob.Cob, now, cancellationToken), ddata, now);
             }
 
             // Device status properties
@@ -218,11 +256,19 @@ public class PropertiesService : IPropertiesService
             // Profile properties
             SetProfileProperties(properties, ddata);
 
-            // Basal properties
-            if (requested == null || requested.Contains("basal"))
-            {
-                await SetBasalPropertiesAsync(properties, ddata, cancellationToken);
-            }
+            var wantsBasal = requested == null || requested.Contains("basal");
+            var wantsBwp = requested == null || requested.Contains("bwp");
+            var tempBasal = wantsBasal || wantsBwp
+                ? await CurrentTempBasalAsync(ddata, now, cancellationToken)
+                : null;
+
+            if (wantsBasal && tempBasal is not null)
+                SetBasalProperties(properties, tempBasal);
+
+            if (wantsBwp)
+                await SetBwpPropertiesAsync(properties, ddata, iobCob, tempBasal, now, cancellationToken);
+
+            SetDeviceStatusPluginProperties(properties, ddata, now, requested);
 
             // DB Size properties
             SetDbSizeProperties(properties, ddata);
@@ -344,23 +390,25 @@ public class PropertiesService : IPropertiesService
     /// Set IOB (Insulin on Board) properties. Emitted even with no insulin on board: legacy
     /// clients treat a missing <c>iob</c> as "server doesn't support it" rather than "zero".
     /// </summary>
-    private static void SetIobProperties(Dictionary<string, object> properties, IobResult iobResult, long now)
+    private static void SetIobProperties(
+        Dictionary<string, object> properties, IobResult iobResult, DData ddata, long now)
     {
-        var iob = Math.Round(iobResult.Iob, 2);
-        var display = IobResult.FormatDisplay(iob);
+        var lastBolus = iobResult.LastBolus;
 
         // NIGHTSCOUT-COMPAT: Nightscout derives iob and activity from boluses alone. Here both
         // include the net basal IOB of temp basals, as the chart does, so they can go negative.
         properties["iob"] = new Dictionary<string, object?>
         {
-            ["iob"] = iob,
-            ["display"] = display,
-            ["displayLine"] = iobResult.DisplayLine ?? $"IOB: {display}U",
+            ["iob"] = iobResult.Iob,
+            ["display"] = iobResult.Display,
+            ["displayLine"] = iobResult.DisplayLine,
             ["timestamp"] = now,
             ["source"] = iobResult.Source ?? "Care Portal",
             // Legacy calcTotal reports zeros rather than nulls for the numeric parts.
             ["activity"] = iobResult.Activity ?? 0,
-            ["lastBolus"] = iobResult.LastBolus?.Mills,
+            ["lastBolus"] = lastBolus is null
+                ? null
+                : ChartedTreatment(ddata, lastBolus, t => t.Mills == lastBolus.Mills && t.Insulin == lastBolus.Insulin),
             ["basalIob"] = iobResult.BasalIob ?? 0,
             ["treatmentIob"] = iobResult.TreatmentIob ?? 0,
         };
@@ -369,20 +417,95 @@ public class PropertiesService : IPropertiesService
     /// <summary>
     /// Set COB (Carbs on Board) properties, emitted even with no carbs on board, as IOB is.
     /// </summary>
-    private static void SetCobProperties(Dictionary<string, object> properties, CobResult cobResult, long now)
+    private static void SetCobProperties(
+        Dictionary<string, object> properties, CobResult cobResult, double? carbsHr, DData ddata, long now)
     {
-        var cob = Math.Round(cobResult.Cob);
-        var display = cobResult.Display ?? cob.ToString(CultureInfo.InvariantCulture);
-
-        properties["cob"] = new Dictionary<string, object?>
+        var cob = CobDetail(cobResult, carbsHr, ddata);
+        cob["cob"] = cobResult.Cob;
+        cob["display"] = cobResult.Display;
+        cob["displayLine"] = cobResult.DisplayLine;
+        cob["timestamp"] = now;
+        cob["source"] = cobResult.Source ?? "Care Portal";
+        cob["activity"] = cobResult.Activity ?? 0;
+        if (cobResult.TreatmentCOB is { } treatmentCob)
         {
-            ["cob"] = cob,
-            ["display"] = display,
-            ["displayLine"] = cobResult.DisplayLine ?? $"COB: {display}g",
-            ["timestamp"] = now,
-            ["source"] = cobResult.Source ?? "Care Portal",
-            ["activity"] = cobResult.Activity ?? 0,
-        };
+            var detail = CobDetail(treatmentCob, carbsHr, ddata);
+            detail["cob"] = treatmentCob.Cob;
+            cob["treatmentCOB"] = detail;
+        }
+
+        properties["cob"] = cob;
+    }
+
+    /// <summary>
+    /// The absorption rate Nightscout's <c>carbs_hr</c> shows beside a COB with no carbs, which the
+    /// calculator leaves unread; null for a device-reported COB, which has no decay fields.
+    /// </summary>
+    private async Task<double?> CarbsPerHourAsync(CobResult cob, long now, CancellationToken ct)
+    {
+        if (cob.IsDecaying is null)
+            return null;
+        if (cob.CarbsHr is { } carbsHr)
+            return carbsHr;
+        return await _therapySettings.GetCarbAbsorptionRateAsync(now, null, ct);
+    }
+
+    /// <summary>
+    /// The decay fields of Nightscout's <c>cob.fromTreatments</c>, none of which a device-reported
+    /// COB has.
+    /// </summary>
+    private static Dictionary<string, object?> CobDetail(CobResult cobResult, double? carbsHr, DData ddata)
+    {
+        var detail = new Dictionary<string, object?>();
+        if (cobResult.IsDecaying is not { } isDecaying)
+            return detail;
+
+        var decayedBy = cobResult.DecayedBy ?? 0;
+        detail["decayedBy"] = decayedBy > 0
+            ? DateTimeOffset.FromUnixTimeMilliseconds(decayedBy).ToString("yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture)
+            : 0;
+        detail["isDecaying"] = isDecaying;
+        detail["carbs_hr"] = cobResult.CarbsHr ?? carbsHr;
+        detail["rawCarbImpact"] = cobResult.RawCarbImpact ?? 0;
+        var lastCarbs = cobResult.LastCarbs;
+        detail["lastCarbs"] = lastCarbs is null
+            ? null
+            : ChartedTreatment(ddata, lastCarbs, t => t.Mills == lastCarbs.Mills && t.Carbs == lastCarbs.Carbs);
+
+        return detail;
+    }
+
+    private static readonly JsonSerializerOptions ChartedTreatmentJson = new()
+    {
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+    };
+
+    /// <summary>
+    /// The legacy treatment behind <paramref name="record"/>, carrying the <c>mgdl</c> Nightscout's
+    /// data loader gives a treatment without a glucose: the mean of the readings either side of it,
+    /// or 180 with none.
+    /// </summary>
+    private static JsonObject? ChartedTreatment(
+        DData ddata, IV4Record record, Func<Treatment, bool> sameRecord)
+    {
+        var treatment =
+            ddata.Treatments.FirstOrDefault(t =>
+                t.Id == record.Id.ToString() || (record.LegacyId is not null && t.Id == record.LegacyId))
+            ?? ddata.Treatments.FirstOrDefault(sameRecord);
+        if (treatment is null)
+            return null;
+
+        var node = JsonSerializer.SerializeToNode(treatment, ChartedTreatmentJson)!.AsObject();
+        if (treatment.Glucose is null)
+        {
+            var readings = ddata.Sgvs.Where(e => e.GlucoseMgdl() > 39).ToList();
+            var before = readings.Where(e => e.Mills <= treatment.Mills).MaxBy(e => e.Mills)?.GlucoseMgdl();
+            var after = readings.Where(e => e.Mills >= treatment.Mills).MinBy(e => e.Mills)?.GlucoseMgdl();
+            var mgdl = before is { } b && after is { } a ? (b + a) / 2 : before ?? after ?? 0;
+            node["mgdl"] = mgdl > 0 ? Math.Floor(mgdl + 0.5) : 180;
+        }
+
+        return node;
     }
 
     /// <summary>
@@ -403,6 +526,42 @@ public class PropertiesService : IPropertiesService
             ["uploaderBattery"] = latestDeviceStatus.Uploader?.Battery,
             ["created_at"] = latestDeviceStatus.CreatedAt,
         };
+    }
+
+    private static readonly string[] DeviceStatusPluginProperties = ["pump", "loop", "openaps"];
+
+    /// <summary>
+    /// Sets <c>pump</c>, <c>loop</c> and <c>openaps</c>. Nightscout offers all three on every
+    /// request, and the pump status carries the stamps the other two leave, so all three are
+    /// built whenever one is asked for.
+    /// </summary>
+    private void SetDeviceStatusPluginProperties(
+        Dictionary<string, object> properties, DData ddata, long now, IReadOnlyCollection<string>? requested)
+    {
+        var wanted = DeviceStatusPluginProperties
+            .Where(name => requested == null || requested.Contains(name))
+            .ToList();
+        if (wanted.Count == 0)
+            return;
+
+        try
+        {
+            var offline = _openAps.FindOfflineMarker(
+                ddata.Treatments ?? [], now.ToUtcDateTime()) is not null;
+            var built = DeviceStatusProperties.Build(ddata.DeviceStatus ?? [], now, new PumpPreferences(), offline);
+            var byName = new Dictionary<string, object>
+            {
+                ["pump"] = built.Pump,
+                ["loop"] = built.Loop,
+                ["openaps"] = built.OpenAps,
+            };
+            foreach (var name in wanted)
+                properties[name] = byName[name];
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error setting pump, loop and openaps properties");
+        }
     }
 
     /// <summary>
@@ -501,34 +660,32 @@ public class PropertiesService : IPropertiesService
         };
     }
 
-    /// <summary>
-    /// Set battery level properties
-    /// </summary>
     private void SetBatteryProperties(Dictionary<string, object> properties, DData ddata)
     {
+        var now = _time.GetUtcNow().ToUnixTimeMilliseconds();
+
         // Only statuses that actually carry an uploader battery: AID systems interleave
         // pump-only device statuses, and the newest record is often one of those.
         var batteryReports = (ddata.DeviceStatus ?? [])
             .Where(d => d.Uploader?.Battery != null)
             .ToList();
 
-        if (batteryReports.Count == 0)
+        var weakest = UploaderBatterySelection.Select(
+            batteryReports.Select(ToBatteryReading),
+            now);
+        if (weakest == null)
             return;
 
         // The most recent report from each uploader, weakest battery first. Legacy
         // clients read this list to show more than one phone.
-        var latestPerDevice = batteryReports
-            .GroupBy(d => string.IsNullOrEmpty(d.Device) ? "unknown" : d.Device)
+        var devices = batteryReports
+            .GroupBy(DeviceKey)
             .Select(g => g.OrderByDescending(d => d.Mills).First())
             .OrderBy(d => d.Uploader!.Battery)
-            .ToList();
-
-        var devices = latestPerDevice
             .Select(d => new Dictionary<string, object?>
             {
-                ["name"] = d.Uploader!.Name
-                    ?? (string.IsNullOrEmpty(d.Device) ? "unknown" : d.Device),
-                ["device"] = string.IsNullOrEmpty(d.Device) ? "unknown" : d.Device,
+                ["name"] = d.Uploader!.Name ?? DeviceKey(d),
+                ["device"] = DeviceKey(d),
                 ["value"] = d.Uploader.Battery,
                 ["voltage"] = d.Uploader.BatteryVoltage,
                 ["isCharging"] = d.Uploader.IsCharging,
@@ -537,21 +694,43 @@ public class PropertiesService : IPropertiesService
             })
             .ToList();
 
-        // `level` stays the newest reported battery, as before — not the weakest — so
-        // single-uploader setups keep their existing reading.
-        var batteryLevel = batteryReports
-            .OrderByDescending(d => d.Mills)
-            .First()
-            .Uploader!.Battery!.Value;
+        var upbat = new Dictionary<string, object> { ["devices"] = devices };
 
-        properties["upbat"] = new Dictionary<string, object>
+        if (UpbatLevel(weakest) is { } level)
         {
-            ["level"] = batteryLevel,
-            ["display"] = $"{batteryLevel}%",
-            ["displayLine"] = $"Battery: {batteryLevel}%",
-            ["devices"] = devices,
-        };
+            upbat["level"] = level;
+            var display = UpbatDisplay(weakest);
+            upbat["display"] = display;
+            upbat["displayLine"] = $"Battery: {display}";
+        }
+
+        properties["upbat"] = upbat;
     }
+
+    // Nightscout sets nothing for 0% without a voltage, and falls through to 25 for 0% with one.
+    internal static int? UpbatLevel(BatteryReading reading) =>
+        reading.Battery != 0 ? reading.Level
+        : reading.Voltage is > 0 ? 25
+        : null;
+
+    internal static string UpbatDisplay(BatteryReading reading) =>
+        reading.Battery == 0 && reading.Voltage is > 0
+            ? BatteryReading.FormatVoltage(reading.Voltage.Value)
+            : $"{reading.Battery}%";
+
+    private static string DeviceKey(DeviceStatus status) =>
+        string.IsNullOrEmpty(status.Device) ? "unknown" : status.Device;
+
+    internal static BatteryReading ToBatteryReading(DeviceStatus status) =>
+        new()
+        {
+            Device = DeviceKey(status),
+            Battery = status.Uploader!.Battery,
+            Voltage = status.Uploader.BatteryVoltage,
+            IsCharging = status.Uploader.IsCharging ?? false,
+            Temperature = status.Uploader.Temperature,
+            Mills = status.Mills,
+        };
 
     /// <summary>
     /// Set the legacy device-age plugin properties: cannula (cage), sensor (sage),
@@ -567,19 +746,23 @@ public class PropertiesService : IPropertiesService
             // Thresholds/display are per-plugin settings in legacy Nightscout; the
             // properties endpoint reports the service defaults.
             var prefs = new DeviceAgePreferences();
+            var insulinPrefs = new DeviceAgePreferences { Display = "days" };
 
-            var sensor = await _deviceAgeService.GetSensorAgeAsync(prefs, ct: cancellationToken);
+            // The sage plugin always shows days and hours.
+            var sensor = await _deviceAgeService.GetSensorAgeAsync(
+                new DeviceAgePreferences { Display = "days" },
+                ct: cancellationToken);
 
             properties["cage"] = ToAgeDictionary(
                 await _deviceAgeService.GetCannulaAgeAsync(prefs, ct: cancellationToken));
             properties["sage"] = new Dictionary<string, object?>
             {
-                ["Sensor Start"] = ToAgeDictionary(sensor.SensorStart),
-                ["Sensor Change"] = ToAgeDictionary(sensor.SensorChange),
+                ["Sensor Start"] = ToSensorDictionary(sensor.SensorStart, sensor.Min == "Sensor Start"),
+                ["Sensor Change"] = ToSensorDictionary(sensor.SensorChange, sensor.Min == "Sensor Change"),
                 ["min"] = sensor.Min,
             };
             properties["iage"] = ToAgeDictionary(
-                await _deviceAgeService.GetInsulinAgeAsync(prefs, ct: cancellationToken));
+                await _deviceAgeService.GetInsulinAgeAsync(insulinPrefs, ct: cancellationToken));
             properties["bage"] = ToAgeDictionary(
                 await _deviceAgeService.GetBatteryAgeAsync(prefs, ct: cancellationToken));
         }
@@ -598,20 +781,70 @@ public class PropertiesService : IPropertiesService
     /// <c>age</c>/<c>days</c>/<c>level</c> exactly when a site was just changed, and never
     /// emit <c>found: false</c>. Dictionary values are exempt from that condition.
     /// </summary>
-    private static Dictionary<string, object?> ToAgeDictionary(DeviceAgeInfo age) =>
-        new()
+    private static Dictionary<string, object?> ToAgeDictionary(DeviceAgeInfo age)
+    {
+        if (!age.Found)
         {
-            ["found"] = age.Found,
+            return new()
+            {
+                ["found"] = false,
+                ["age"] = 0,
+                ["treatmentDate"] = null,
+                ["checkForAlert"] = false,
+                ["level"] = age.Level,
+                // NIGHTSCOUT-COMPAT: Nightscout's trailing space.
+                ["display"] = "n/a ",
+            };
+        }
+
+        var result = FoundAgeFields(age);
+        result["checkForAlert"] = false;
+        result["level"] = age.Level;
+        result["display"] = age.Display;
+        if (age.Notification is not null)
+            result["notification"] = age.Notification;
+        return result;
+    }
+
+    /// <summary>
+    /// Projects one sage entry. Nightscout sets <c>level</c> and <c>notification</c> only on the
+    /// entry named by <c>min</c>, and gives an entry with nothing found no other field.
+    /// </summary>
+    private static Dictionary<string, object?> ToSensorDictionary(DeviceAgeInfo age, bool isMin)
+    {
+        var result = age.Found ? FoundAgeFields(age) : new Dictionary<string, object?> { ["found"] = false };
+        if (age.Found)
+        {
+            result["display"] = age.Display;
+            result["displayLong"] = age.Age >= 24
+                ? $"{age.Days} days {age.Hours} hours"
+                : $"{age.Hours} hours";
+        }
+
+        if (!isMin)
+            return result;
+
+        result["level"] = age.Level;
+        if (age.Notification is not null)
+            result["notification"] = age.Notification;
+        return result;
+    }
+
+    private static Dictionary<string, object?> FoundAgeFields(DeviceAgeInfo age)
+    {
+        var fields = new Dictionary<string, object?>
+        {
+            ["found"] = true,
+            ["treatmentDate"] = age.TreatmentDate,
             ["age"] = age.Age,
             ["days"] = age.Days,
             ["hours"] = age.Hours,
-            ["treatmentDate"] = age.TreatmentDate,
-            ["notes"] = age.Notes,
             ["minFractions"] = age.MinFractions,
-            ["level"] = age.Level,
-            ["display"] = age.Display,
-            ["notification"] = age.Notification,
         };
+        if (age.Notes is not null)
+            fields["notes"] = age.Notes;
+        return fields;
+    }
 
     /// <summary>
     /// Set profile properties
@@ -631,71 +864,142 @@ public class PropertiesService : IPropertiesService
     }
 
     /// <summary>
+    /// Nightscout's <c>profile.getTempBasal</c> now, from the newest profile's default store; null
+    /// when it has no basal schedule.
+    /// </summary>
+    private async Task<TempBasalResult?> CurrentTempBasalAsync(
+        DData ddata, long now, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var profile = ddata.Profiles?.OrderByDescending(p => p.Mills).FirstOrDefault();
+            if (profile?.Store == null
+                || !profile.Store.TryGetValue(profile.DefaultProfile ?? "Default", out var profileData)
+                || profileData?.Basal == null)
+                return null;
+
+            var zone = TimeZoneHelper.GetTimeZoneInfoFromId(
+                await _therapySettings.GetTimezoneAsync(ct: cancellationToken));
+            return CalculateTempBasal(now, profileData, ddata.Treatments ?? new List<Treatment>(), zone);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogError(ex, "Error calculating the current temp basal");
+            return null;
+        }
+    }
+
+    /// <summary>
     /// Set basal properties - exact 1:1 match with legacy basalprofile.js
     /// Provides current basal rate information including temp basal and combo bolus treatments
     /// </summary>
-    private async Task SetBasalPropertiesAsync(
+    private static void SetBasalProperties(Dictionary<string, object> properties, TempBasalResult tempBasalResult)
+    {
+        // Build temp markers like legacy: T for temp basal, C for combo bolus
+        var tempMark = "";
+        tempMark += tempBasalResult.Treatment != null ? "T" : "";
+        tempMark += tempBasalResult.ComboBolusTreatment != null ? "C" : "";
+        tempMark += !string.IsNullOrEmpty(tempMark) ? ": " : "";
+
+        properties["basal"] = new Dictionary<string, object>
+        {
+            ["display"] = $"{tempMark}{tempBasalResult.TotalBasal:F3}U",
+            ["current"] = new Dictionary<string, object>
+            {
+                ["basal"] = tempBasalResult.Basal,
+                ["treatment"] = tempBasalResult.Treatment ?? (object)null!,
+                ["combobolustreatment"] = tempBasalResult.ComboBolusTreatment ?? (object)null!,
+                ["tempbasal"] = tempBasalResult.TempBasal,
+                ["combobolusbasal"] = tempBasalResult.ComboBolusBasal,
+                ["totalbasal"] = tempBasalResult.TotalBasal,
+            },
+        };
+    }
+
+    /// <summary>
+    /// Sets <c>bwp</c> as <c>boluswizardpreview.js</c> does. With an error its <c>calc</c> returns
+    /// before any display field, so only the totals, the reading and the errors are sent.
+    /// </summary>
+    /// <remarks>
+    /// NIGHTSCOUT-COMPAT: the glucose fields (<c>scaledSGV</c>, <c>effect</c>, <c>outcome</c>, their
+    /// displays and <c>aimTarget</c>) are always mg/dl, where Nightscout gives them in the display
+    /// units. The insulin fields do not depend on units. A sensitivity or target the profile does
+    /// not give is sent as 0, Nightscout's falsy value, so the wizard reports the missing fields
+    /// rather than estimate a bolus from the resolvers' defaults.
+    /// </remarks>
+    private async Task SetBwpPropertiesAsync(
         Dictionary<string, object> properties,
         DData ddata,
+        IobCobReading? iobCob,
+        TempBasalResult? tempBasal,
+        long now,
         CancellationToken cancellationToken)
     {
         try
         {
-            _logger.LogDebug("SetBasalProperties: Starting");
-            var profile = ddata.Profiles?.OrderByDescending(p => p.Mills).FirstOrDefault();
-            _logger.LogDebug("SetBasalProperties: Profile found: {ProfileFound}", profile != null);
-            if (profile?.Store == null)
+            BwpProfile? profile = null;
+            if (await _therapySettings.HasDataAsync(cancellationToken))
             {
-                _logger.LogDebug("SetBasalProperties: No profile or store, returning");
-                return;
+                var targets = await _targetRange.FindBGTargetRangeAsync(now, ct: cancellationToken);
+                profile = new BwpProfile(
+                    await _sensitivity.FindSensitivityAsync(now, ct: cancellationToken) ?? 0,
+                    targets?.Low ?? 0,
+                    targets?.High ?? 0,
+                    tempBasal?.TotalBasal ?? 0);
             }
+            var sandbox = new BwpSandbox(
+                now,
+                ddata.Sgvs?.MaxBy(s => s.Mills),
+                iobCob?.Iob,
+                iobCob?.Inputs.CarbIntakes ?? [],
+                profile);
 
-            var defaultProfile = profile.DefaultProfile ?? "Default";
-            _logger.LogDebug("SetBasalProperties: Default profile: {DefaultProfile}", defaultProfile);
-            if (
-                !profile.Store.TryGetValue(defaultProfile, out var profileData)
-                || profileData?.Basal == null
-            )
+            var result = _bolusWizard.Calculate(sandbox);
+            var bwp = new Dictionary<string, object>
             {
-                _logger.LogDebug("SetBasalProperties: No profile data or basal, returning");
-                return;
-            }
-
-            var now = _time.GetUtcNow().ToUnixTimeMilliseconds();
-            var treatments = ddata.Treatments ?? new List<Treatment>();
-            _logger.LogDebug("SetBasalProperties: Now: {Now}, Treatments count: {TreatmentCount}", now, treatments.Count);
-
-            var zone = TimeZoneHelper.GetTimeZoneInfoFromId(
-                await _therapySettings.GetTimezoneAsync(ct: cancellationToken));
-            var tempBasalResult = CalculateTempBasal(now, profileData, treatments, zone);
-            _logger.LogDebug("SetBasalProperties: TempBasal result: Basal={Basal}, TotalBasal={TotalBasal}", tempBasalResult.Basal, tempBasalResult.TotalBasal);
-
-            // Build temp markers like legacy: T for temp basal, C for combo bolus
-            var tempMark = "";
-            tempMark += tempBasalResult.Treatment != null ? "T" : "";
-            tempMark += tempBasalResult.ComboBolusTreatment != null ? "C" : "";
-            tempMark += !string.IsNullOrEmpty(tempMark) ? ": " : "";
-
-            var displayValue = $"{tempMark}{tempBasalResult.TotalBasal:F3}U";
-            _logger.LogDebug("SetBasalProperties: Display value: {DisplayValue}", displayValue);
-
-            properties["basal"] = new Dictionary<string, object>
-            {
-                ["display"] = displayValue,
-                ["current"] = new Dictionary<string, object>
-                {
-                    ["basal"] = tempBasalResult.Basal,
-                    ["treatment"] = tempBasalResult.Treatment ?? (object)null!,
-                    ["combobolustreatment"] = tempBasalResult.ComboBolusTreatment ?? (object)null!,
-                    ["totalbasal"] = tempBasalResult.TotalBasal,
-                },
+                ["effect"] = result.Effect,
+                ["outcome"] = result.Outcome,
+                ["bolusEstimate"] = result.BolusEstimate,
             };
-            _logger.LogDebug("SetBasalProperties: Basal property set successfully");
+            if (result.ScaledSGV is { } scaled)
+                bwp["scaledSGV"] = scaled;
+
+            if (result.Errors is { Count: > 0 } errors)
+            {
+                bwp["errors"] = errors;
+                properties["bwp"] = bwp;
+                return;
+            }
+
+            bwp["iob"] = result.Iob;
+            bwp["belowLowTarget"] = result.BelowLowTarget;
+            bwp["bolusEstimateDisplay"] = result.BolusEstimateDisplay;
+            bwp["outcomeDisplay"] = result.OutcomeDisplay;
+            bwp["displayIOB"] = result.DisplayIOB;
+            bwp["effectDisplay"] = result.EffectDisplay;
+            bwp["displayLine"] = result.DisplayLine;
+            if (result.AimTarget is { } aimTarget)
+            {
+                bwp["aimTarget"] = aimTarget;
+                bwp["aimTargetString"] = result.AimTargetString!;
+            }
+            if (result.RecentCarbs is { } carbs
+                && ChartedTreatment(ddata, carbs, t => t.Mills == carbs.Mills && t.Carbs == carbs.Carbs) is { } treatment)
+                bwp["recentCarbs"] = treatment;
+            if (result.TempBasalAdjustment is { } adjustment)
+            {
+                bwp["tempBasalAdjustment"] = new Dictionary<string, object>
+                {
+                    ["thirtymin"] = adjustment.ThirtyMin,
+                    ["1hour"] = adjustment.OneHour,
+                };
+            }
+
+            properties["bwp"] = bwp;
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            _logger.LogError(ex, "SetBasalProperties failed");
-            // Don't throw, just skip setting basal properties
+            _logger.LogError(ex, "Error setting bwp properties");
         }
     }
 
@@ -713,6 +1017,7 @@ public class PropertiesService : IPropertiesService
 
         // Get base basal rate from profile for the current time
         result.Basal = GetBasalRateAtTime(time, profileData.Basal, zone);
+        result.TempBasal = result.Basal;
         result.TotalBasal = result.Basal;
 
         // Find active temp basal treatment - exact legacy search logic
@@ -737,8 +1042,6 @@ public class PropertiesService : IPropertiesService
                 result.TempBasal = absolute;
             else if (tempBasalTreatment.Percent is { } percent and not 0)
                 result.TempBasal = Nocturne.Core.Models.V4.TempBasal.RateRelativeTo(result.Basal, percent);
-            else
-                result.TempBasal = result.Basal;
 
             result.TotalBasal = result.TempBasal;
         }

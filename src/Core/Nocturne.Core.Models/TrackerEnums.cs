@@ -47,7 +47,12 @@ public enum TrackerCategory
     /// <summary>
     /// Battery: pump or CGM battery
     /// </summary>
-    Battery
+    Battery,
+
+    /// <summary>
+    /// A pump disposable that is the site and the reservoir together, such as an Omnipod pod
+    /// </summary>
+    Pod
 }
 
 /// <summary>

@@ -6,19 +6,18 @@
     predictionEnabled,
     predictionDisplayMode,
     type PredictionDisplayMode,
-  } from "$lib/stores/appearance-store.svelte";
+  } from "#lib/stores/appearance-store.svelte.js";
 
   interface Props {
     displayMode?: PredictionDisplayMode;
-    enabled?: boolean;
   }
 
-  let { displayMode, enabled }: Props = $props();
+  let { displayMode }: Props = $props();
 
   const ctx = getGlucoseChartContext();
 
   const showPredictions = $derived(
-    ctx.engine.effectiveShowPredictions && ctx.engine.predictionData !== null
+    ctx.engine.predictionServiceAvailable && ctx.engine.predictionData !== null
   );
   const effectiveDisplayMode = $derived(
     displayMode ?? predictionDisplayMode.current
@@ -29,7 +28,7 @@
   <PredictionVisualizations
     {showPredictions}
     predictionData={ctx.engine.predictionData}
-    predictionEnabled={enabled ?? predictionEnabled.current}
+    predictionEnabled={predictionEnabled.current}
     predictionDisplayMode={effectiveDisplayMode}
     predictionError={ctx.engine.predictionError}
     glucoseScale={ctx.layout.glucose.scale}

@@ -23,6 +23,6 @@ jobs:
       - name: Restore with advisories as errors
         run: |
           set -euo pipefail
-          sln="$RUNNER_TEMP/audit/audit.slnx"
+          sln="$GITHUB_WORKSPACE/audit.slnx"
           python3 scripts/create_test_solution.py "$sln" tests/Unit/*/*.csproj tests/Integration/*/*.csproj tests/Parity/*/*.csproj
           dotnet restore "$sln"

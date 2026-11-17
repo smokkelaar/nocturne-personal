@@ -1,6 +1,7 @@
 """Create a CI solution without dotnet sln add's implicit project references."""
 
 from collections import defaultdict
+import os
 from pathlib import Path
 import sys
 import xml.etree.ElementTree as ET
@@ -26,7 +27,8 @@ def main() -> None:
             continue
         folder = ET.SubElement(solution, 'Folder', Name=f'/{group}/')
         for project in sorted(groups[group]):
-            ET.SubElement(folder, 'Project', Path=project.as_posix())
+            relative_path = os.path.relpath(project.resolve(), output.parent.resolve())
+            ET.SubElement(folder, 'Project', Path=relative_path.replace(os.sep, '/'))
     if set(groups) - {'Unit', 'Integration', 'Parity'}:
         raise SystemExit('Unrecognized test project group')
     ET.indent(solution)

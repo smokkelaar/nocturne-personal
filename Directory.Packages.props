@@ -102,7 +102,7 @@
     <!-- Security fix: pin transitive dependency to patch CVE-2026-26127 (Base64Url DoS) -->
     <PackageVersion Include="Microsoft.Bcl.Memory" Version="9.0.14" />
     <!-- Security fix: pin StreamJsonRpc's transitive MessagePack (GHSA-hv8m-jj95-wg3x, GHSA-vh6j-jc39-fggf, GHSA-qhrr-8q5h-9q3h) -->
-    <PackageVersion Include="MessagePack" Version="2.5.303" />
+    <PackageVersion Include="MessagePack" Version="2.5.307" />
     <!-- Security fix: pin EF Core Sqlite's transitive SQLite native bundle (GHSA-2m69-gcr7-jv3q) -->
     <PackageVersion Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.1.13" />
     <!-- Cryptography packages -->
@@ -117,7 +117,7 @@
     <PackageVersion Include="NSwag.MSBuild" Version="14.6.3" />
     <PackageVersion Include="OpenTelemetry.Exporter.Console" Version="1.13.1" />
     <PackageVersion Include="Scalar.AspNetCore" Version="2.11.1" />
-    <PackageVersion Include="YamlDotNet" Version="17.0.1" />
+    <PackageVersion Include="YamlDotNet" Version="18.1.0" />
     <PackageVersion Include="Yarp.ReverseProxy" Version="2.3.0" />
     <!-- Extension packages -->
     <PackageVersion Include="Microsoft.Extensions.Caching.Abstractions" Version="10.0.13" />

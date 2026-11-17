@@ -35,6 +35,7 @@
     <PackageReference Include="Microsoft.Bcl.Memory" />
     <PackageReference Include="dotAPNS" />
     <PackageReference Include="Fido2.AspNet" />
+    <PackageReference Include="System.Formats.Cbor" />
     <PackageReference Include="FluentValidation.AspNetCore" />
     <PackageReference Include="HtmlSanitizer" />
     <PackageReference Include="Konscious.Security.Cryptography.Argon2" />

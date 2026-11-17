@@ -24,8 +24,5 @@ jobs:
         run: |
           set -euo pipefail
           sln="$RUNNER_TEMP/audit/audit.slnx"
-          dotnet new sln -n audit -o "$RUNNER_TEMP/audit" --format slnx
-          dotnet sln "$sln" add --include-references false --solution-folder Unit tests/Unit/*/*.csproj
-          dotnet sln "$sln" add --include-references false --solution-folder Integration tests/Integration/*/*.csproj
-          dotnet sln "$sln" add --include-references false --solution-folder Parity tests/Parity/*/*.csproj
+          python3 scripts/create_test_solution.py "$sln" tests/Unit/*/*.csproj tests/Integration/*/*.csproj tests/Parity/*/*.csproj
           dotnet restore "$sln"

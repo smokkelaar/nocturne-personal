@@ -172,11 +172,8 @@ jobs:
       # A solution of the test projects, built from the directories so a new one cannot be left
       # out, and so nocturne.sln's Windows-only projects (Desktop, Widgets) never build. One
       # solution means one restore and a parallel build, the API (and its codegen) built once.
-      # Unit and Integration each hold a Nocturne.API.Tests and a Nocturne.Infrastructure.Data.Tests,
-      # and `dotnet sln add` silently skips a second project of the same name in one folder, hence
-      # a folder each and the check that every test project produced its assembly.
-      # From the .NET 11 SDK `dotnet sln add` also adds each project's references, and fails on the
-      # second one of a name; the build finds them through the test projects.
+      # Unit and Integration each hold projects with the same name. Generate slnx directly so
+      # dotnet sln add cannot pull their shared references into conflicting solution folders.
       - name: Build
         run: |
           set -euo pipefail
@@ -185,10 +182,7 @@ jobs:
             exit 0
           fi
           sln="$RUNNER_TEMP/ci/ci.slnx"
-          dotnet new sln -n ci -o "$RUNNER_TEMP/ci" --format slnx
-          dotnet sln "$sln" add --include-references false --solution-folder Unit tests/Unit/*/*.csproj
-          dotnet sln "$sln" add --include-references false --solution-folder Integration tests/Integration/*/*.csproj
-          dotnet sln "$sln" add --include-references false --solution-folder Parity \
+          python3 scripts/create_test_solution.py "$sln" tests/Unit/*/*.csproj tests/Integration/*/*.csproj \
             tests/Parity/Nocturne.Alerts.Corpus/Nocturne.Alerts.Corpus.csproj
           dotnet build "$sln" -p:GenerateNSwagClient=true
           missing=0
@@ -258,8 +252,7 @@ jobs:
         run: |
           set -euo pipefail
           sln="$RUNNER_TEMP/unit/unit.slnx"
-          dotnet new sln -n unit -o "$RUNNER_TEMP/unit" --format slnx
-          dotnet sln "$sln" add --include-references false tests/Unit/*/*.csproj
+          python3 scripts/create_test_solution.py "$sln" tests/Unit/*/*.csproj
           dotnet test "$sln" --no-build \
             --filter "Category!=Integration" \
             --logger "trx;LogFileName=unit.trx" \
@@ -484,8 +477,7 @@ jobs:
         run: |
           set -euo pipefail
           sln="$RUNNER_TEMP/integration/integration.slnx"
-          dotnet new sln -n integration -o "$RUNNER_TEMP/integration" --format slnx
-          dotnet sln "$sln" add --include-references false \
+          python3 scripts/create_test_solution.py "$sln" \
             tests/Integration/Nocturne.Infrastructure.Data.Tests/Nocturne.Infrastructure.Data.Tests.csproj \
             tests/Integration/Nocturne.Connectors.Tests/Nocturne.Connectors.Tests.csproj
           dotnet test "$sln" --no-build \

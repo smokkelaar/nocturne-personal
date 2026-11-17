@@ -123,7 +123,7 @@ async function seedTenant(i: number): Promise<Omit<Seeded, "expected">> {
   if (await optional(() => call("POST", "/api/v4/share/rotate", h)) && i % 2 === 0) {
     await call("PUT", "/api/v4/share/full-history", { ...h, body: { fullHistory: true } });
   }
-  await call("PUT", "/api/v4/connectors/config/nightscout", { ...h, body: { url: "http://mocks:8080/nightscout", isActive: false } });
+  await call("PUT", "/api/v4/connectors/config/nightscout", { ...h, body: { url: "http://mocks:8080/nightscout", enabled: false } });
   await call("PUT", "/api/v4/connectors/config/nightscout/secrets", { ...h, body: { apiSecret: "e2e-fake-nightscout-secret" } });
   const grant = await call<{ token: string }>("POST", "/api/auth/direct-grants", { ...h, body: { label: "upgrade", scopes: ["*"] } });
   return { slug, accessToken: seeded.accessToken, apiToken: grant.token };

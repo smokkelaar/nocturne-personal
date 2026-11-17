@@ -48,6 +48,7 @@ jobs:
               - 'global.json'
             dotnet:
               - *shared
+              - 'scripts/create_test_solution.py'
               - 'src/**/*.cs'
               - 'src/**/*.csproj'
               - 'src/**/*.json'

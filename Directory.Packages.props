@@ -1,6 +1,7 @@
 <Project>
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
     <NuGetAudit>true</NuGetAudit>
     <NuGetAuditMode>all</NuGetAuditMode>
   </PropertyGroup>
@@ -11,13 +12,14 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- Aspire packages -->
-    <PackageVersion Include="Aspire.Hosting.Python" Version="13.5.4" />
-    <PackageVersion Include="Aspire.Hosting.Testing" Version="13.5.4" />
-    <PackageVersion Include="Aspire.Hosting.JavaScript" Version="13.5.4" />
-    <PackageVersion Include="Aspire.Hosting" Version="13.5.4" />
-    <PackageVersion Include="Aspire.Hosting.PostgreSQL" Version="13.5.4" />
-    <PackageVersion Include="Aspire.Hosting.Docker" Version="13.5.4" />
-    <PackageVersion Include="Aspire.Hosting.Yarp" Version="13.5.4" />
+    <PackageVersion Include="Aspire.Hosting.Python" Version="13.6.5" />
+    <PackageVersion Include="Aspire.Hosting.Testing" Version="13.6.5" />
+    <PackageVersion Include="Aspire.Hosting.JavaScript" Version="13.6.5" />
+    <PackageVersion Include="Aspire.Hosting" Version="13.6.5" />
+    <PackageVersion Include="Aspire.Hosting.PostgreSQL" Version="13.6.5" />
+    <PackageVersion Include="Aspire.Hosting.Docker" Version="13.6.5" />
+    <PackageVersion Include="Aspire.Hosting.Yarp" Version="13.6.5" />
+    <PackageVersion Include="System.Formats.Cbor" Version="9.0.24" />
     <PackageVersion Include="CommunityToolkit.Aspire.Hosting.NodeJS.Extensions" Version="9.9.0" />
     <PackageVersion Include="CommunityToolkit.Aspire.Hosting.Rust" Version="9.9.0" />
     <PackageVersion Include="Fido2.AspNet" Version="4.0.0" />

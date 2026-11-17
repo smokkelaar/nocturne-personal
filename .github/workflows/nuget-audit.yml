@@ -24,22 +24,6 @@ jobs:
         run: |
           set -euo pipefail
           sln="$GITHUB_WORKSPACE/audit.slnx"
-          # `dotnet sln add` also adds referenced source projects on the .NET 11
-          # runner, then fails when another test references the same project.
-          python3 - "$sln" <<'PY'
-          from pathlib import Path
-          import sys
-          import xml.etree.ElementTree as ET
-
-          solution = ET.Element('Solution')
-          for group in ('Unit', 'Integration', 'Parity'):
-              folder = ET.SubElement(solution, 'Folder', Name=f'/{group}/')
-              projects = sorted(Path('tests', group).glob('*/*.csproj'))
-              if not projects:
-                  raise SystemExit(f'No {group} test projects found')
-              for project in projects:
-                  ET.SubElement(folder, 'Project', Path=project.as_posix())
-          ET.indent(solution)
-          ET.ElementTree(solution).write(sys.argv[1], encoding='unicode')
-          PY
+          python3 scripts/create_test_solution.py "$sln" \
+            tests/Unit/*/*.csproj tests/Integration/*/*.csproj tests/Parity/*/*.csproj
           dotnet restore "$sln"

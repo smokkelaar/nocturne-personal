@@ -239,6 +239,19 @@ export const connectorPropertyMeta = {
     description: 'Maximum number of records to fetch per request',
     category: 'Advanced',
   },
+  HistoryDays: {
+    label: 'History to import',
+    description: 'How many days of history Nocturne imports the first time',
+    category: 'Sync',
+    optionLabels: {
+      30: 'Last 30 days',
+      90: 'Last 90 days',
+      365: 'Last year',
+      0: 'All history',
+    },
+    choiceDescription:
+      'How much history Nocturne imports the first time. A shorter range is imported sooner. To add older history later, run an import with a date range from Move from Nightscout in Settings.',
+  },
 
   // Glooko-specific
   UseV3Api: {
@@ -335,6 +348,12 @@ export const connectorPropertyMeta = {
     label: 'Ignore zero-unit basal',
     description: 'Skip basal entries that resolve to a near-zero rate',
     category: 'Advanced',
+  },
+  TimeZoneId: {
+    label: 'Pump time zone',
+    description:
+      'The IANA time zone of the pump clock, for example America/Los_Angeles. Daylight saving time changes apply automatically. If you leave this empty, the timezone offset applies.',
+    category: 'General',
   },
   // OAuth and Webhooks
   AccessToken: {

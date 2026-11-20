@@ -212,6 +212,10 @@ public class V4WriteScopeGatingTests
             // caller's categories, asserted by AlertReplayReadScopeTests.
             ["AlertReplayController"] = NotDataCategory.ComputesAndReturns,
 
+            // A saved report spec names datasets, ranges and chart bindings, no readings, and the
+            // taxonomy has no reports.readwrite. Writes need reports.read and the member's own
+            // sign-in ([RequireInteractiveSession]); Run computes and returns, persisting nothing.
+            ["CustomReportsController"] = NotDataCategory.PresentationState,
             ["CoachMarkController"] = NotDataCategory.PresentationState,
             ["UserPreferencesController"] = NotDataCategory.PresentationState,
 
@@ -348,6 +352,7 @@ public class V4WriteScopeGatingTests
             // configuration written from the Patient Record settings form alongside therapy settings.
             ["BodyWeightController"] = Scope.TherapyReadWrite,
             ["GoogleHealthController"] = Scope.TenantSettings,
+            ["OuraController"] = Scope.TenantSettings,
 
             // treatments: state_spans is the decomposed form of the legacy treatment events
             // (temporary target, profile switch, exercise, illness, travel) and of the temp-basal

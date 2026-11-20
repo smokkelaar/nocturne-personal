@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Nocturne.Connectors.Core.Extensions;
 using Nocturne.Connectors.Core.Interfaces;
@@ -9,6 +10,7 @@ using Nocturne.Connectors.Core.Models;
 using Nocturne.Connectors.Core.Services;
 using Nocturne.Connectors.Core.Utilities;
 using Nocturne.Connectors.Nightscout.Configurations;
+using Nocturne.Connectors.Nightscout.Services.WriteBack;
 using Nocturne.Core.Constants;
 using Nocturne.Core.Contracts.V4;
 using Nocturne.Core.Models;
@@ -47,6 +49,16 @@ public class NightscoutConnectorServiceBase<TConfig> : BaseConnectorService<TCon
     // source's entire history rather than the default bounded window — capping the first backfill
     // would silently drop older records. Catch-up syncs still resume from each type's own cursor.
     protected override DateTime? InitialSyncFloor => null;
+
+    /// <summary>
+    ///     Where a crawl with no lower bound stops: <see cref="NightscoutConnectorConfiguration.HistoryDays"/>
+    ///     before now, or null for the source's first record. Only an open lower bound is given
+    ///     one, so the limit shortens the backfill of a family with nothing stored and what such a
+    ///     crawl left owed. A catch-up keeps its resume point however old, so an outage longer than
+    ///     the limit loses nothing, and a sync of an explicit range is answered as asked.
+    /// </summary>
+    private DateTime? HistoryFloor(TConfig config) =>
+        NightscoutConnectorConfiguration.HistoryStart(config.HistoryDays, Clock.GetUtcNow().UtcDateTime);
 
 
     public override async Task<bool> AuthenticateAsync()
@@ -167,6 +179,9 @@ public class NightscoutConnectorServiceBase<TConfig> : BaseConnectorService<TCon
         // own resume point. Explicit ranged syncs (request.To set, e.g. a manual re-import) honour
         // request.From/To as-is.
         var openEnded = request.To is null;
+        var historyFloor = openEnded ? HistoryFloor(config) : null;
+
+        DateTime? Floored(DateTime? from) => from ?? historyFloor;
 
         // Each data type below streams fetch-page → publish-page rather than accumulating
         // the whole range first: a multi-year backfill of a high-volume collection held in
@@ -185,7 +200,7 @@ public class NightscoutConnectorServiceBase<TConfig> : BaseConnectorService<TCon
 
                 var outcome = await CrawlAndPublishAsync(
                     "Glucose", glucoseFrom, request.To,
-                    (from, to) => FetchGlucosePagesAsync(from, to, recent, cancellationToken),
+                    (from, to) => FetchGlucosePagesAsync(Floored(from), to, recent, cancellationToken),
                     timeOf: EntryTime,
                     publishAsync: p => PublishInBatchesAsync(p, config, cancellationToken),
                     config.MaxCount);
@@ -225,7 +240,7 @@ public class NightscoutConnectorServiceBase<TConfig> : BaseConnectorService<TCon
 
                 var outcome = await CrawlAndPublishAsync(
                     "Treatments", treatmentFrom, request.To,
-                    (from, to) => FetchTreatmentPagesAsync(from, to, recent, cancellationToken),
+                    (from, to) => FetchTreatmentPagesAsync(Floored(from), to, recent, cancellationToken),
                     timeOf: t => ParseCreatedAt(t.CreatedAt)?.UtcDateTime,
                     publishAsync: p => PublishInBatchesAsync(p, config, cancellationToken),
                     config.MaxCount);
@@ -277,7 +292,7 @@ public class NightscoutConnectorServiceBase<TConfig> : BaseConnectorService<TCon
                 var outcome = await CrawlAndPublishAsync(
                     "DeviceStatus", deviceStatusFrom, request.To,
                     (from, to) => FetchCreatedAtPagesAsync<DeviceStatus>(
-                        from, to, "devicestatus", d => d.CreatedAt, "FetchDeviceStatus", cancellationToken,
+                        Floored(from), to, "devicestatus", d => d.CreatedAt, "FetchDeviceStatus", cancellationToken,
                         observe: page => recent?.Collect(page)),
                     timeOf: d => ParseCreatedAt(d.CreatedAt)?.UtcDateTime,
                     publishAsync: p => PublishByRouteAsync(p, config, cancellationToken),
@@ -324,7 +339,7 @@ public class NightscoutConnectorServiceBase<TConfig> : BaseConnectorService<TCon
                 var outcome = await CrawlAndPublishAsync(
                     "Activity", activityFrom, request.To,
                     (from, to) => FetchCreatedAtPagesAsync<Activity>(
-                        from, to, "activity", a => a.CreatedAt, "FetchActivity", cancellationToken,
+                        Floored(from), to, "activity", a => a.CreatedAt, "FetchActivity", cancellationToken,
                         observe: page => recent?.Collect(page)),
                     timeOf: a => ParseCreatedAt(a.CreatedAt)?.UtcDateTime,
                     publishAsync: p => PublishByRouteAsync(p, config, cancellationToken),
@@ -653,6 +668,8 @@ public class NightscoutConnectorServiceBase<TConfig> : BaseConnectorService<TCon
             read.TryAdd(treatment.Id!, at);
             if (TreatmentClientId.Of(treatment) is { Length: > 0 } clientId)
                 read.TryAdd(clientId, at);
+            if (treatment.UpstreamIdentifier is { Length: > 0 } identifier)
+                read.TryAdd(identifier, at);
         }
 
         // Not a publish: the delete pass reads and removes stored rows, which no route covers.
@@ -670,7 +687,11 @@ public class NightscoutConnectorServiceBase<TConfig> : BaseConnectorService<TCon
     ///     deletes nothing and leaves the sync's result alone, as does more missing than
     ///     <see cref="MaxLookupsPerSync"/> or <see cref="FewMissing"/> allow.
     /// </summary>
-    /// <param name="read">The ids and client ids the read returned, each with its created_at.</param>
+    /// <param name="read">
+    ///     The ids, client ids and identifiers the read returned, each with its created_at. The
+    ///     identifier is where write-back put a record's own key, so a treatment Nocturne wrote back
+    ///     and stores under that key is recognised although the source gave it an <c>_id</c> of its own.
+    /// </param>
     private async Task DeleteTreatmentsGoneUpstreamAsync(
         ITreatmentPublisher treatments,
         DateTime windowStart,
@@ -754,20 +775,28 @@ public class NightscoutConnectorServiceBase<TConfig> : BaseConnectorService<TCon
     ///     moved it since (<see cref="ITreatmentPublisher.PublishTreatmentsAsync"/>). An id that is not
     ///     an ObjectId is therefore looked up by <c>id</c>. Asking for it by <c>_id</c> is an error on
     ///     Nightscout releases that cast the value to an ObjectId. An ObjectId-shaped id is looked up by
-    ///     <c>_id</c> and then by <c>id</c>. Neither field is indexed, so the lookup is bounded to the
+    ///     <c>_id</c> and then by <c>id</c>. Either is then looked up by <c>identifier</c>, where
+    ///     write-back put the key of a treatment Nocturne stores under it (see the <c>read</c> of
+    ///     <see cref="DeleteTreatmentsGoneUpstreamAsync"/>), in one query: as it is, and as
+    ///     <see cref="MongoObjectId.Coerce"/> of it, the uuid prefix or hash write-back has created under
+    ///     since. A row relabelled to the connector still holds the key it was stored under before. None
+    ///     of these fields is indexed, so the lookup is bounded to the
     ///     created_at range the treatment can sit in: <paramref name="at"/>, give or take
     ///     <see cref="BackwardTimePager.CreatedAtOffsetEnvelope"/> and <see cref="ReconcileReadMargin"/>.
     /// </summary>
     private async Task<bool> TreatmentExistsUpstreamAsync(string id, DateTime at, CancellationToken cancellationToken)
     {
         var reach = BackwardTimePager.CreatedAtOffsetEnvelope + ReconcileReadMargin;
-        return (IsObjectId(id) && await AnyAsync("_id")) || await AnyAsync("id");
+        string[] identifiers = [.. new[] { id, MongoObjectId.Coerce(id)! }.Distinct(StringComparer.Ordinal)];
+        return (IsObjectId(id) && await AnyAsync($"&find[_id]={Uri.EscapeDataString(id)}"))
+            || await AnyAsync($"&find[id]={Uri.EscapeDataString(id)}")
+            || await AnyAsync(string.Concat(identifiers.Select((value, i) =>
+                $"&find[identifier][$in][{i}]={Uri.EscapeDataString(value)}")));
 
-        async Task<bool> AnyAsync(string field)
+        async Task<bool> AnyAsync(string find)
         {
             const string operation = "LookUpTreatment";
-            var url = BuildCreatedAtUrl("treatments", at - reach, at + reach)
-                + $"&find[{field}]={Uri.EscapeDataString(id)}";
+            var url = BuildCreatedAtUrl("treatments", at - reach, at + reach) + find;
 
             var found = await FetchDataAsync<Treatment[]>(url, operation, cancellationToken) ?? throw FetchFailed(operation);
             return found.Length > 0;
@@ -839,7 +868,7 @@ public class NightscoutConnectorServiceBase<TConfig> : BaseConnectorService<TCon
 
         await response.EnsureSuccessWithBodyAsync(cancellationToken);
 
-        return await DeserializeResponseAsync<T>(response, cancellationToken);
+        return JsonSerializer.Deserialize<T>(await response.Content.ReadAsStringAsync(cancellationToken), UpstreamIdentityJson.ReadOptions);
     }
 
     private string BuildEntriesUrl(DateTime? from, DateTime? to, int count)

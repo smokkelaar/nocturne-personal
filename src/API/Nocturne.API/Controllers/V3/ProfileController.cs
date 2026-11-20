@@ -12,9 +12,12 @@ using Nocturne.Core.Models;
 namespace Nocturne.API.Controllers.V3;
 
 /// <summary>
-/// V3 Profile controller that provides full V3 API compatibility with Nightscout profile endpoints.
-/// Implements the /api/v3/profile endpoints with pagination, field selection, sorting, and advanced filtering.
+/// Nightscout profile documents, with paging, field selection, sorting and filtering. A client can list, read,
+/// create, update and delete profiles, and read changes since a given modified time.
 /// </summary>
+/// <remarks>
+/// Provides full V3 API compatibility with Nightscout profile endpoints, at /api/v3/profile.
+/// </remarks>
 /// <seealso cref="IProfileProjectionService"/>
 /// <seealso cref="IProfileWriteService"/>
 /// <seealso cref="Profile"/>
@@ -25,6 +28,12 @@ namespace Nocturne.API.Controllers.V3;
 [Authorize(Policy = PolicyNames.HasPermissions)]
 public class ProfileController : BaseV3Controller<Profile>
 {
+    /// <summary>
+    /// The most profiles one history page holds. Nightscout's cap is <see cref="BaseV3Controller{T}.MaxLimit"/>
+    /// for every collection; the gap is tracked apart from this controller.
+    /// </summary>
+    private const int ProfileHistoryMaxLimit = 100;
+
     private readonly IProfileProjectionService _projectionService;
     private readonly IProfileWriteService _writeService;
 
@@ -54,11 +63,6 @@ public class ProfileController : BaseV3Controller<Profile>
     [ErrorEnvelope]
     public async Task<ActionResult> GetProfiles(CancellationToken cancellationToken = default)
     {
-        _logger.LogDebug(
-            "V3 profile endpoint requested from {RemoteIpAddress}",
-            HttpContext?.Connection?.RemoteIpAddress?.ToString() ?? "unknown"
-        );
-
         try
         {
             var parameters = ParseV3QueryParameters();
@@ -119,33 +123,22 @@ public class ProfileController : BaseV3Controller<Profile>
     [ProducesResponseType(500)]
     [RequireScope(Scope.TherapyRead)]
     [ErrorEnvelope]
-    public async Task<ActionResult> GetProfileHistory(
+    public Task<ActionResult> GetProfileHistory(
         long lastModified,
         [FromQuery] int limit = 10,
         CancellationToken cancellationToken = default
     )
-    {
-        _logger.LogDebug(
-            "V3 profile history requested since {LastModified} with limit {Limit}",
-            lastModified,
-            limit
-        );
-
-        limit = Math.Min(Math.Max(limit, 1), 100);
-
-        // Ascending order: AAPS activates the LAST element of the page.
-        var page = await _projectionService.GetProfilesModifiedSinceAsync(
+        =>
+        CreateV3HistoryResponseAsync(
+            "profile",
             lastModified,
             limit,
-            cancellationToken
+            (since, take) =>
+                _projectionService.GetProfilesModifiedSinceAsync(since, take, cancellationToken),
+            records => records.Select(p => ToV3Document(p, p.Id)).ToList(),
+            echoRequestCursorWhenEmpty: true,
+            maxLimit: ProfileHistoryMaxLimit
         );
-
-        // Echo the request cursor on an empty page so conditional clients always see
-        // a parseable cursor ETag.
-        SetHistoryCursorHeaders(page.CursorMills ?? lastModified);
-
-        return CreateV3SuccessResponse(page.Records.Select(p => ToV3Document(p, p.Id)).ToList());
-    }
 
     /// <summary>
     /// Get a specific profile by ID with V3 format
@@ -210,10 +203,6 @@ public class ProfileController : BaseV3Controller<Profile>
         CancellationToken cancellationToken = default
     )
     {
-        _logger.LogDebug(
-            "V3 profile create endpoint requested from {RemoteIpAddress}",
-            HttpContext?.Connection?.RemoteIpAddress?.ToString() ?? "unknown"
-        );
         try
         {
             var profiles = ParseCreateRequestFromJsonElement(profileData);

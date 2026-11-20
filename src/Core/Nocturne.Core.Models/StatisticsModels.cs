@@ -983,9 +983,6 @@ public enum TimeZoneUnavailableReason
     /// <summary>The tenant's stored timezone is not one this server recognises; the owner can correct it.</summary>
     Unrecognised,
 
-    /// <summary>The request came through a public share, which cannot read the tenant's settings.</summary>
-    Share,
-
     /// <summary>Looking the timezone up failed.</summary>
     LookupFailed,
 }
@@ -2257,6 +2254,15 @@ public class AidSystemMetrics
     /// null when they followed the tenant's timezone.
     /// </summary>
     public TimeZoneUnavailableReason? TimeZoneUnavailableReason { get; set; }
+
+    /// <summary>
+    /// The caller may read only its last <see cref="HistoryWindowHours"/> hours and the period asked
+    /// for ends before them, so nothing was read.
+    /// </summary>
+    public bool RangeOutsideHistory { get; set; }
+
+    /// <summary>The hours of history a history-clamped caller may read.</summary>
+    public int HistoryWindowHours => Authorization.HistoryClamp.WindowHours;
 }
 
 /// <summary>

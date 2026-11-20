@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { dashboardExamples } from "../demo-context.js";
+  const examples = dashboardExamples();
   import WidgetCard from "./WidgetCard.svelte";
   import BatteryCharging from "@lucide/svelte/icons/battery-charging";
   import BatteryFull from "@lucide/svelte/icons/battery-full";
@@ -24,16 +26,16 @@
   // `relativeAge` reads the clock once, so the age has to be re-derived on a tick
   // or it stays at whatever it said when the widget first rendered.
   const now = new Now();
-  const age = $derived(relativeAge(displayLastUpdated, { now: now.current, fallback: "Unknown" }));
+  const age = $derived(relativeAge(displayLastUpdated, { now: examples?.now ?? now.current, fallback: "Unknown" }));
 
   // Awaiting a remote query in the template reads the hydration cache during
   // hydration and throws hydratable_missing_but_required; creating the query in
   // onMount defers the fetch past hydration, as TddWidget does.
-  let batteryStatusPromise = $state<ReturnType<
-    typeof getCurrentBatteryStatus
-  > | null>(null);
+  let batteryStatusPromise = $state<Promise<import("#lib/api/index.js").CurrentBatteryStatus> | null>(null);
   onMount(() => {
-    batteryStatusPromise = getCurrentBatteryStatus({ recentMinutes: 30 });
+    batteryStatusPromise = examples
+      ? Promise.resolve(examples.battery)
+      : getCurrentBatteryStatus({ recentMinutes: 30 });
   });
 
   // Get battery icon component based on level

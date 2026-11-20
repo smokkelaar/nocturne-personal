@@ -1,4 +1,10 @@
 using Microsoft.AspNetCore.Authorization;
+using System.Reflection;
+using Nocturne.Connectors.Core.Extensions;
+using Nocturne.Core.Constants;
+using Nocturne.API.Services.ChartData;
+using Nocturne.Connectors.GoogleHealth.Configurations;
+using Nocturne.Connectors.GoogleHealth.Services;
 using Microsoft.AspNetCore.Mvc;
 using OpenApi.Remote.Attributes;
 using Nocturne.API.Authorization;
@@ -20,8 +26,9 @@ namespace Nocturne.API.Controllers;
 /// </summary>
 /// <remarks>
 /// Most of these endpoints exist only to pull types into the generated client that no other endpoint
-/// reaches, and answer with a constant, usually an enum's values. Widget definitions serve real data:
-/// the widget catalogue.
+/// reaches — WebSocket event envelopes, connector configuration shapes, OAuth scope lists — and
+/// answer with a constant, usually an enum's values. Several serve real data: help references return shared application limits, widget definitions return
+/// the widget catalogue, and multitenancy answers from configuration and the resolved tenant.
 ///
 /// The class hides itself from the interactive API explorer with
 /// <see cref="ApiExplorerSettingsAttribute"/>, so an endpoint whose types must reach the generated
@@ -36,6 +43,33 @@ namespace Nocturne.API.Controllers;
 [AllowAnonymous]
 public class MetadataController : ControllerBase
 {
+    /// <summary>Get the same reference limits and import capabilities used by Nocturne.</summary>
+    [HttpGet("help-reference")]
+    [ApiExplorerSettings(IgnoreApi = false)]
+    [RemoteQuery]
+    [ProducesResponseType(typeof(HelpReferenceFacts), 200)]
+    public ActionResult<HelpReferenceFacts> GetHelpReference()
+    {
+        var google = new GoogleHealthConnectorConfiguration();
+        var history = typeof(GoogleHealthConnectorConfiguration)
+            .GetProperty(nameof(GoogleHealthConnectorConfiguration.HistoryDays))!
+            .GetCustomAttribute<ConnectorPropertyAttribute>()!;
+        return Ok(new HelpReferenceFacts
+        {
+            ReportBands = new GlycemicThresholds(),
+            ChartBands = ChartThresholdsBuilder.ReferenceBands(),
+            MgdlPerMmol = GlucoseConstants.MgdlPerMmol,
+            MaximumPlausibleGlucose = GlucoseConstants.MaxPlausibleMgdl,
+            GoogleHealthCallbackPath = GoogleHealthPlatformOptions.CallbackPath,
+            GoogleHealthSyncIntervalMinutes = google.SyncIntervalMinutes,
+            GoogleHealthDefaultHistoryDays = google.HistoryDays,
+            GoogleHealthMinimumHistoryDays = history.MinValue,
+            GoogleHealthMaximumHistoryDays = history.MaxValue,
+            GoogleHealthReadScopes = GoogleHealthClient.SupportedTypes.Select(GoogleHealthClient.ScopeFor).Distinct().ToArray(),
+            GoogleHealthCapabilities = GoogleHealthClient.Capabilities,
+        });
+    }
+
     /// <summary>
     /// Get widget definitions metadata
     /// This endpoint provides all available dashboard widget definitions for frontend configuration

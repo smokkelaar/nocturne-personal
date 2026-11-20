@@ -15,6 +15,9 @@
   import { onMount, onDestroy, type Snippet } from "svelte";
   import * as Sidebar from "#lib/components/ui/sidebar/index.js";
   import AppSidebar from "#lib/components/layout/AppSidebar.svelte";
+  import HelpBar from "#lib/components/help/HelpBar.svelte";
+  import HelpPageView from "#lib/components/help/HelpPageView.svelte";
+  import { createHelpContext } from "#lib/help/help-context.svelte.js";
   import MobileHeader from "#lib/components/layout/MobileHeader.svelte";
   import type { LayoutData } from "./$types";
   import { getTitleFaviconService } from "#lib/services/title-favicon-service.svelte.js";
@@ -22,7 +25,7 @@
   import type { AlarmVisualSettings } from "#lib/types/alarm-profile.js";
   import type { TitleFaviconSettings } from "#lib/stores/serverSettings.js";
   import { browser, dev } from "$app/env";
-  import { invalidate } from "$app/navigation";
+  import { beforeNavigate, invalidate } from "$app/navigation";
   import { refreshOnVisible } from "#lib/utils/refresh-on-return.svelte.js";
   import { SHELL_DATA_KEY, SHELL_REVALIDATE_INTERVAL_MS } from "#lib/constants/shell-data.js";
   import { createShellRevalidator } from "#lib/utils/shell-session.js";
@@ -64,6 +67,10 @@
   }
 
   const { data, children }: Props = $props();
+  const help = createHelpContext();
+  beforeNavigate(({ to, from }) => {
+    if (to && to.url.pathname !== from?.url.pathname) help.open = false;
+  });
 
   // WebSocket config - defaults, can be overridden in production. A share host has no realtime feed.
   // svelte-ignore state_referenced_locally
@@ -178,6 +185,7 @@
   );
 
   function handleCommandPaletteKeydown(e: KeyboardEvent) {
+    if (help.blocking) return;
     if ((e.metaKey || e.ctrlKey) && e.key === Key.K) {
       e.preventDefault();
       commandPalette.open = !commandPalette.open;
@@ -340,7 +348,9 @@
       <div
         class="@container z-40 md:sticky md:top-0"
         bind:offsetHeight={bannerStripHeight}
+        inert={help.blocking}
       >
+          <HelpBar />
           {#if data.isDemo}
             <DemoBanner nextResetAt={data.nextResetAt} />
           {/if}
@@ -368,6 +378,7 @@
         {#if joinWelcome.component}
           <joinWelcome.component />
         {/if}
+        <HelpPageView>
         <svelte:boundary>
           {@render children()}
 
@@ -391,6 +402,7 @@
             </Card.Root>
           {/snippet}
         </svelte:boundary>
+        </HelpPageView>
       </main>
     </Sidebar.Inset>
   </Sidebar.Provider>

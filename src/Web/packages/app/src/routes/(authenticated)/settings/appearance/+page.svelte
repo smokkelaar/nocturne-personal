@@ -1,4 +1,5 @@
 <script lang="ts">
+  import HelpPreferences from "#lib/components/help/HelpPreferences.svelte";
   import { GlucoseProcessing } from "#lib/api/index.js";
   import { a1cLabel } from "#lib/utils/a1c-formatting.js";
   import { time } from "#lib/utils/formatting.js";
@@ -206,6 +207,8 @@
       <p class="text-muted-foreground">Customize the look and feel of Nocturne</p>
     </div>
   </div>
+
+  <HelpPreferences />
 
   {#if uiSettingsQuery?.loading}
     <SettingsPageSkeleton cardCount={4} />

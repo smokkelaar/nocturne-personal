@@ -8,6 +8,7 @@
     CardHeader,
     CardTitle,
   } from "#lib/components/ui/card/index.js";
+  import { Button } from "#lib/components/ui/button/index.js";
   import { Badge } from "#lib/components/ui/badge/index.js";
   import { IsMobile } from "#lib/hooks/is-mobile.svelte.js";
   import { getRealtimeStore } from "#lib/stores/realtime-store.svelte.js";
@@ -60,6 +61,8 @@
     defaultFocusHours?: number;
     heightClass?: string;
     demoMode?: boolean;
+    /** Draw fixed examples without API reads, record editing or persisted preferences. */
+    staticData?: boolean;
     /**
      * While true the main plot is left undrawn in its reserved space, and it is drawn a frame
      * after this turns false. The dashboard holds it until the realtime store's current reading
@@ -88,6 +91,7 @@
     defaultFocusHours,
     heightClass,
     demoMode,
+    staticData = false,
     deferDrawing = false,
     glucoseUnits,
     plotSnapshot,
@@ -134,6 +138,7 @@
     get enablePredictions() { return showPredictions; },
     get initialPredictionsAvailable() { return initialPredictionsAvailable; },
     get demoMode() { return demoMode; },
+    get staticData() { return staticData; },
   });
 
   // ===== POINT INSPECTION =====
@@ -168,7 +173,7 @@
       const spanHours = spanMs / (60 * 60 * 1000);
       const roundedSpan = Math.round(spanHours * 2) / 2;
       const clampedSpan = Math.max(1, Math.min(48, roundedSpan));
-      glucoseChartLookback.current = clampedSpan;
+      if (!staticData) glucoseChartLookback.current = clampedSpan;
       brushDomain = domain;
     } else {
       brushDomain = null;
@@ -192,7 +197,7 @@
   function handlePredictionModeChange(value: PredictionDisplayMode) {
     if (value && value !== predictionModeValue) {
       predictionModeValue = value;
-      predictionDisplayMode.current = value;
+      if (!staticData) predictionDisplayMode.current = value;
     }
   }
 
@@ -208,6 +213,7 @@
   }
 
   function handleMarkerClick(treatmentId: string) {
+    if (staticData) return;
     void entryActions?.editTreatment(treatmentId);
   }
 
@@ -271,11 +277,15 @@
           ? 'min-h-8 basis-full @lg:basis-auto'
           : ''}"
       >
+        {#if staticData}
+          <Button variant="outline" size="sm" onclick={() => handlePredictionModeChange(predictionModeValue === "lines" ? "cone" : "lines")}>{predictionModeValue === "lines" ? "Cone" : "Lines"}</Button>
+        {:else}
         <PredictionSettings
           showPredictions={effectiveShowPredictions}
           predictionMode={predictionModeValue}
           onPredictionModeChange={handlePredictionModeChange}
         />
+        {/if}
       </div>
     </div>
   </CardHeader>
@@ -288,7 +298,7 @@
 
     <GlucoseChartView
       view={engine}
-      {inspection}
+      inspection={staticData ? undefined : inspection}
       {legend}
       glucoseUnits={glucoseUnits ?? glucoseUnitsPreference.current}
       rangePalette={glucoseRangePalette.current}
@@ -312,11 +322,11 @@
       }}
       predictions={{
         show: effectiveShowPredictions,
-        displayMode: predictionDisplayMode.current,
-        enabled: predictionEnabled.current,
+        displayMode: staticData ? predictionModeValue : predictionDisplayMode.current,
+        enabled: staticData || predictionEnabled.current,
       }}
       onMarkerClick={handleMarkerClick}
-      onTimeClick={openDayInReview}
+      onTimeClick={staticData ? undefined : openDayInReview}
     >
       {#snippet placeholder()}
         {#if plotSnapshot}
@@ -336,7 +346,7 @@
             expanded={true}
             onSelectionChange={(domain) => handleMiniChartBrush(domain)}
             predictionData={miniPredictionData}
-            showPredictions={effectiveShowPredictions && predictionEnabled.current}
+            showPredictions={effectiveShowPredictions && (staticData || predictionEnabled.current)}
             {isZoomed}
             thresholds={engine.thresholds}
             lineColorMode={chartLineColorMode.current}

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { dashboardExamples } from "#lib/components/dashboard/demo-context.js";
   import { Badge } from "#lib/components/ui/badge/index.js";
   import { Button } from "#lib/components/ui/button/index.js";
   import { getRealtimeStore } from "#lib/stores/realtime-store.svelte.js";
@@ -15,13 +16,14 @@
   let { detailed = false }: Props = $props();
 
   const realtimeStore = getRealtimeStore();
+  const examples = dashboardExamples();
 
-  const connection = $derived(realtimeStore.connectionPresentation);
+  const connection = $derived(examples ? (examples.connected ? "live" : "unavailable") : realtimeStore.connectionPresentation);
   const isConnected = $derived(connection === "live");
   const connectionError = $derived(
     connection === "unavailable" ? realtimeStore.connectionError : null
   );
-  const stats = $derived(realtimeStore.connectionStats);
+  const stats = $derived(examples ? { messageCount: 144, reconnectCount: 0 } : realtimeStore.connectionStats);
 
   const statusConfig = $derived.by(() => {
     switch (connection) {
@@ -57,7 +59,7 @@
   });
 
   const lastUpdateText = $derived(
-    realtimeStore.timeSinceUpdate
+    examples ? "Just now" : realtimeStore.timeSinceUpdate
       ? relativeAge(realtimeStore.lastUpdated, { now: realtimeStore.now })
       : "Never"
   );
@@ -75,7 +77,7 @@
     <Button
       variant="outline"
       size="xs"
-      onclick={() => realtimeStore.reconnect()}
+      onclick={() => { if (examples) examples.connected = true; else realtimeStore.reconnect(); }}
     >
       Retry
     </Button>

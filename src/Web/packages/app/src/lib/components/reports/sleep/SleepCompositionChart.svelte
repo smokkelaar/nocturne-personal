@@ -26,6 +26,8 @@
   interface Props {
     /** Nights already filtered to the selected date range / source. */
     nights: SleepNightSummary[];
+    /** Replaces the drill-down navigation, for charts embedded outside the report. */
+    onSelectNight?: (night: SleepNightSummary) => void;
     /** Every `YYYY-MM-DD` day the report covers, as the API served it, including gaps. */
     days: string[];
     meanDeepPct?: number | undefined;
@@ -35,8 +37,15 @@
     deepMinutesDelta?: number | undefined;
   }
 
-  let { nights, days, meanDeepPct, meanRemPct, referenceRanges, deepMinutesDelta }: Props =
-    $props();
+  let {
+    nights,
+    onSelectNight,
+    days,
+    meanDeepPct,
+    meanRemPct,
+    referenceRanges,
+    deepMinutesDelta,
+  }: Props = $props();
 
   type SegmentKey = (typeof SLEEP_COMPOSITION_SEGMENTS)[number]["key"];
 
@@ -113,6 +122,10 @@
   /** Navigate to a night's drill-down using the backend's authoritative display date. */
   function navigateToNight(row: DayRow | undefined) {
     if (!row?.night?.displayDate) return;
+    if (onSelectNight) {
+      onSelectNight(row.night);
+      return;
+    }
     goto(resolve("/(authenticated)/reports/sleep/[date]", { date: row.night.displayDate }));
   }
 
@@ -205,7 +218,7 @@
                   width={bandwidth}
                   height={context.height}
                   fill="transparent"
-                  role={row.night ? "link" : undefined}
+                  role={row.night ? (onSelectNight ? "button" : "link") : undefined}
                   tabindex={row.night ? 0 : undefined}
                   aria-label={row.night
                     ? `Sleep session on ${formatShortDate(row.date)}`

@@ -1182,11 +1182,9 @@ msgstr "<0/> Confirmar"
 msgid "No condition configured"
 msgstr "No hay ninguna condición configurada"
 
-#. 0: mins
 #. 0: minutes
 #. 0: minutes
 #. 0: toleranceMinutes
-#: src/lib/components/alerts/DndPanel.svelte
 #: src/lib/components/reports/custom/workspace/given.svelte.ts
 #: src/lib/components/reports/custom/workspace/workspace.svelte.ts
 #: src/routes/(authenticated)/reports/data-quality/cgm-comparison/+page.svelte
@@ -1194,11 +1192,9 @@ msgstr "No hay ninguna condición configurada"
 msgid "{0} minutes"
 msgstr "{0} minutos"
 
-#. 0: source.readingCount; 1: source.readingCount === 1 ? "" \\: "s"
-#: src/lib/components/patient/PatientDeviceManager.svelte
 #, python-brace-format
-msgid "{0} reading{1}"
-msgstr "{0} lectura{1}"
+#~ msgid "{0} reading{1}"
+#~ msgstr "{0} lectura{1}"
 
 #: src/routes/(authenticated)/settings/appearance/+page.svelte
 #: src/routes/(authenticated)/settings/appearance/+page.svelte
@@ -2006,15 +2002,9 @@ msgstr "Mostrar unidades"
 msgid "Hours"
 msgstr "Horas"
 
-#. 0: mins / 60; 1: mins > 60 ? "s" \\: ""
-#. 0: h; 1: h > 1 ? "s" \\: ""
-#. 0: h; 1: h > 1 ? "s" \\: ""
-#: src/lib/components/alerts/DndPanel.svelte
-#: src/lib/components/clock-builder/ElementInspector.svelte
-#: src/lib/components/clock-builder/ElementInspector.svelte
 #, python-brace-format
-msgid "{0} hour{1}"
-msgstr "{0} hora{1}"
+#~ msgid "{0} hour{1}"
+#~ msgstr "{0} hora{1}"
 
 #~ msgid "Format"
 #~ msgstr "Formato"
@@ -4526,13 +4516,9 @@ msgstr "Ninguna comida coincide con los filtros actuales."
 msgid "Insulin"
 msgstr "Insulina"
 
-#. 0: recentMeals.length; 1: recentMeals.length !== 1 ? "s" \\: ""
-#. 0: day.meals.length; 1: day.meals.length !== 1 ? "s" \\: ""
-#: src/lib/components/dashboard/widgets/MealsWidget.svelte
-#: src/lib/components/meals/MealsTable.svelte
 #, python-brace-format
-msgid "{0} meal{1}"
-msgstr "{0} comida{1}"
+#~ msgid "{0} meal{1}"
+#~ msgstr "{0} comida{1}"
 
 #: src/lib/components/meals/MealsTable.svelte
 msgid "Attributed"
@@ -5063,11 +5049,9 @@ msgstr "Creando..."
 #~ msgid "Create Profile"
 #~ msgstr "Crear perfil"
 
-#. 0: member.directPermissions.length; 1: member .directPermissions.length !== 1 ? "s" \\: ""
-#: src/lib/components/members/MemberCard.svelte
 #, python-brace-format
-msgid "{0} direct permission{1}"
-msgstr "{0} permiso{1} de acceso directo"
+#~ msgid "{0} direct permission{1}"
+#~ msgstr "{0} permiso{1} de acceso directo"
 
 #: src/lib/components/members/MemberCard.svelte
 msgid "Remove member"
@@ -5980,11 +5964,9 @@ msgstr "Ir al final"
 msgid "No scheduled basal rate data"
 msgstr "No hay datos de tasa basal programada"
 
-#. 0: info.lastChangedAt ? formatNumericDate(new Date(info.lastChangedAt)) \\: 'during period'; 1: info.changeCount; 2: info.changeCount === 1 ? '' \\: 's'
-#: src/lib/components/reports/ScheduleFooter.svelte
 #, python-brace-format
-msgid "Changed {0} ({1} change{2} during this period)"
-msgstr "Cambió {0} ({1} cambio{2} durante este periodo)"
+#~ msgid "Changed {0} ({1} change{2} during this period)"
+#~ msgstr "Cambió {0} ({1} cambio{2} durante este periodo)"
 
 #~ msgid "Correction Range"
 #~ msgstr "Intervalo de corrección"
@@ -7305,11 +7287,9 @@ msgstr "★ Favorito"
 msgid "· {0}h lifespan"
 msgstr "· {0} h de duración"
 
-#. 0: def.notificationThresholds.length; 1: def .notificationThresholds.length > 1 ? "s" \\: ""
-#: src/lib/components/trackers/TrackerDefinitionsTab.svelte
 #, python-brace-format
-msgid "· {0} threshold{1}"
-msgstr "· {0} umbral{1}"
+#~ msgid "· {0} threshold{1}"
+#~ msgstr "· {0} umbral{1}"
 
 #: src/lib/components/trackers/TrackerDefinitionsTab.svelte
 msgid "<0/> Start"
@@ -7492,11 +7472,9 @@ msgstr "Limpiar"
 msgid "<0/> Columns"
 msgstr "<0/> Columnas"
 
-#. 0: selectedCount; 1: selectedCount !== 1 ? "s" \\: ""
-#: src/lib/components/treatments/DataTableToolbar.svelte
 #, python-brace-format
-msgid "{0} record{1} selected"
-msgstr "{0} registro{1} seleccionado"
+#~ msgid "{0} record{1} selected"
+#~ msgstr "{0} registro{1} seleccionado"
 
 #~ msgid "<0/> Delete Selected"
 #~ msgstr "<0/> Eliminar seleccionados"
@@ -8271,11 +8249,9 @@ msgstr "por {0} {1}"
 #~ msgid "{0} kcal"
 #~ msgstr "{0} kcal"
 
-#. 0: attributionCount; 1: 'treatment' + (attributionCount === 1 ? '' \\: 's')
-#: src/routes/(authenticated)/food/InlineEditor.svelte
 #, python-brace-format
-msgid "Used in {0} {1}."
-msgstr "Usado en {0} {1}."
+#~ msgid "Used in {0} {1}."
+#~ msgstr "Usado en {0} {1}."
 
 #: src/routes/(authenticated)/food/InlineEditor.svelte
 msgid "Delete <0/>? <1/>"
@@ -10828,11 +10804,9 @@ msgstr "tiempo de carga"
 #~ msgid "In Progress"
 #~ msgstr "En curso"
 
-#. 0: allDevices.length; 1: allDevices.length !== 1 ? "s" \\: ""; 2: reportsParams.dayCount
-#: src/routes/(authenticated)/reports/battery/+page.svelte
 #, python-brace-format
-msgid "Data collected from {0} device{1} over {2} days"
-msgstr "Datos recopilados de {0} dispositivo{1} durante {2} días"
+#~ msgid "Data collected from {0} device{1} over {2} days"
+#~ msgstr "Datos recopilados de {0} dispositivo{1} durante {2} días"
 
 #~ msgid "Error Loading Data Quality Report"
 #~ msgstr "Error al cargar el informe de calidad de datos"
@@ -10875,11 +10849,9 @@ msgstr "Descartado"
 #~ msgid "{0} events"
 #~ msgstr ""
 
-#. 0: pendingCount; 1: pendingCount !== 1 ? 's' \\: ''
-#: src/routes/(authenticated)/reports/data-quality/+page.svelte
 #, python-brace-format
-msgid "You have {0} item{1} waiting for review"
-msgstr "Tienes {0} elemento{1} pendiente de revisión"
+#~ msgid "You have {0} item{1} waiting for review"
+#~ msgstr "Tienes {0} elemento{1} pendiente de revisión"
 
 #~ msgid "Review detected compression lows to improve your statistics accuracy"
 #~ msgstr ""
@@ -11714,11 +11686,9 @@ msgstr "No se pudo eliminar"
 #~ msgid "Delete {0} Records"
 #~ msgstr "Eliminar {0} registros"
 
-#. 0: rowsToDelete.length; 1: rowsToDelete.length !== 1 ? "s" \\: ""
-#: src/routes/(authenticated)/reports/treatments/+page.svelte
 #, python-brace-format
-msgid "Are you sure you want to delete {0} selected record{1}? This action cannot be undone."
-msgstr "¿Seguro que quieres eliminar {0} registro{1}? Esta acción no se puede deshacer."
+#~ msgid "Are you sure you want to delete {0} selected record{1}? This action cannot be undone."
+#~ msgstr "¿Seguro que quieres eliminar {0} registro{1}? Esta acción no se puede deshacer."
 
 #~ msgid "Selected Records"
 #~ msgstr "Registros seleccionados"
@@ -11733,11 +11703,9 @@ msgstr "... y {0} registros más"
 msgid "Failed to delete records"
 msgstr "No se pudieron eliminar los registros"
 
-#. 0: rowsToDelete.length; 1: rowsToDelete.length !== 1 ? "s" \\: ""
-#: src/routes/(authenticated)/reports/treatments/+page.svelte
 #, python-brace-format
-msgid "Delete {0} Record{1}"
-msgstr "Eliminar {0} registro{1}"
+#~ msgid "Delete {0} Record{1}"
+#~ msgstr "Eliminar {0} registro{1}"
 
 #: src/routes/(authenticated)/settings/access-requests/+page.svelte
 msgid "Access request approved."
@@ -12174,11 +12142,9 @@ msgstr "Valores predeterminados según la fuente de subida del cliente"
 msgid "No source rules configured. All uploads use the default processing."
 msgstr "No hay reglas de fuente configuradas. Todas las subidas utilizan el procesamiento predeterminado."
 
-#. 0: sourceDefaults.length; 1: sourceDefaults.length === 1 ? '' \\: 's'
-#: src/routes/(authenticated)/settings/appearance/+page.svelte
 #, python-brace-format
-msgid "{0} rule{1} configured"
-msgstr "{0} regla{1} configurada"
+#~ msgid "{0} rule{1} configured"
+#~ msgstr "{0} regla{1} configurada"
 
 #: src/routes/(authenticated)/settings/appearance/+page.svelte
 msgid "Configure"
@@ -12539,11 +12505,9 @@ msgstr "Comparaciones"
 #~ msgid "Recommendation on whether it is safe to stop using your Nightscout instance"
 #~ msgstr "Recomendación sobre si es seguro dejar de utilizar tu instancia de Nightscout"
 
-#. 0: status.recommendation.stabilityDaysRemaining; 1: status.recommendation.stabilityDaysRemaining === 1 ? "day" \\: "days"
-#: src/routes/(authenticated)/settings/migration/NightscoutTransitionStatus.svelte
 #, python-brace-format
-msgid "{0} stability {1} remaining"
-msgstr "Quedan {0} de estabilidad {1}"
+#~ msgid "{0} stability {1} remaining"
+#~ msgstr "Quedan {0} de estabilidad {1}"
 
 #: src/routes/(authenticated)/settings/migration/NightscoutTransitionStatus.svelte
 msgid "Blockers"
@@ -12738,19 +12702,13 @@ msgstr "Rol eliminado correctamente."
 msgid "<0/> Edit"
 msgstr "<0/> Editar"
 
-#. 0: role.permissions?.length ?? 0; 1: (role.permissions?.length ?? 0) !== 1 ? "s" \\: ""
-#: src/lib/components/members/RolesSection.svelte
 #, python-brace-format
-msgid "{0} permission{1}"
-msgstr "{0} permiso{1}"
+#~ msgid "{0} permission{1}"
+#~ msgstr "{0} permiso{1}"
 
-#. 0: role.memberCount ?? 0; 1: (role.memberCount ?? 0) !== 1 ? "s" \\: ""
-#. 0: memberCount; 1: memberCount !== 1 ? "s" \\: ""
-#: src/lib/components/members/RolesSection.svelte
-#: src/routes/(authenticated)/settings/members/+page.svelte
 #, python-brace-format
-msgid "<0/> {0} member{1}"
-msgstr "<0/> {0} miembro{1}"
+#~ msgid "<0/> {0} member{1}"
+#~ msgstr "<0/> {0} miembro{1}"
 
 #~ msgid "No roles configured. Create a role to get started."
 #~ msgstr "No hay roles configurados. Crea un rol para empezar."
@@ -13007,11 +12965,9 @@ msgstr "Gestiona los ajustes de tu perfil de terapia de diabetes"
 msgid "Your therapy settings and insulin parameters"
 msgstr "Tus ajustes de terapia y parámetros de insulina"
 
-#. 0: profileNames.length; 1: profileNames.length !== 1 ? "s" \\: ""
-#: src/routes/(authenticated)/settings/profile/+page.svelte
 #, python-brace-format
-msgid "<0/> {0} profile{1}"
-msgstr "<0/> {0} perfil{1}"
+#~ msgid "<0/> {0} profile{1}"
+#~ msgstr "<0/> {0} perfil{1}"
 
 #~ msgid "No Profile Found"
 #~ msgstr "No se encontró ningún perfil"
@@ -16428,11 +16384,9 @@ msgstr "<0/> Ver"
 #~ msgid "System roles are managed by Nocturne and can't be changed."
 #~ msgstr "Los roles del sistema los gestiona Nocturne y no se pueden modificar."
 
-#. 0: deleteMemberCount; 1: deleteMemberCount !== 1 ? "s" \\: ""
-#: src/lib/components/members/RolesSection.svelte
 #, python-brace-format
-msgid "This role is currently assigned to {0} member{1}. They will lose any permissions granted by this role."
-msgstr "Este rol está asignado actualmente a {0} miembro{1}. Perderán los permisos concedidos por este rol."
+#~ msgid "This role is currently assigned to {0} member{1}. They will lose any permissions granted by this role."
+#~ msgstr "Este rol está asignado actualmente a {0} miembro{1}. Perderán los permisos concedidos por este rol."
 
 #~ msgid "Introduce yourself to the site owner so they know who you are."
 #~ msgstr "Preséntate al propietario del sitio para que sepa quién eres."
@@ -16837,11 +16791,9 @@ msgstr "{0} min"
 msgid "Browser, screen size, route, and locale are always included. Toggle additional info below:"
 msgstr "El navegador, el tamaño de pantalla, la ruta y la configuración regional siempre se incluyen. Activa información adicional abajo:"
 
-#. 0: food.portions; 1: food.portions !== 1 ? "s" \\: ""
-#: src/lib/components/treatments/FoodEntryDetails.svelte
 #, python-brace-format
-msgid "{0} portion{1}"
-msgstr "{0} porción{1}"
+#~ msgid "{0} portion{1}"
+#~ msgstr "{0} porción{1}"
 
 #~ msgid "Add Record"
 #~ msgstr "Añadir registro"
@@ -18596,11 +18548,9 @@ msgstr "Buscar conectores"
 msgid "{0} coming soon"
 msgstr "{0} próximamente"
 
-#. 0: activeMatches; 1: activeMatches === 1 ? "" \\: "es"
-#: ../portal/src/lib/components/features/ConnectorsDemo.svelte
 #, python-brace-format
-msgid "{0} match{1}"
-msgstr "{0} coincidencia{1}"
+#~ msgid "{0} match{1}"
+#~ msgstr "{0} coincidencia{1}"
 
 #. 0: activeMatches
 #: ../portal/src/lib/components/features/ConnectorsDemo.svelte
@@ -20866,11 +20816,9 @@ msgstr "Samsung"
 msgid "{0} · includes estimated"
 msgstr "{0} · incluye estimados"
 
-#. 0: tirNightsCount; 1: tirNightsCount === 1 ? "" \\: "s"
-#: src/routes/(authenticated)/reports/sleep/+page.svelte
 #, python-brace-format
-msgid "{0} night{1} with CGM"
-msgstr "{0} noche{1} con CGM"
+#~ msgid "{0} night{1} with CGM"
+#~ msgstr "{0} noche{1} con CGM"
 
 #. 0: Math.round(sleepSummary?.coveragePct ?? 0)
 #. 0: Math.round(sleepSummary?.nightsWithHypoPct ?? 0)
@@ -21215,17 +21163,13 @@ msgstr "Vertical: {0} ({1})"
 msgid "Horizontal: {0} ({1})"
 msgstr "Horizontal: {0} ({1})"
 
-#. 0: week.totalHypoCount ?? 0; 1: week.totalHypoCount === 1 ? "" \\: "s"
-#: src/lib/components/reports/sleep/SleepWeeklyBreakdown.svelte
 #, python-brace-format
-msgid "{0} low{1}"
-msgstr "{0} bajo{1}"
+#~ msgid "{0} low{1}"
+#~ msgstr "{0} bajo{1}"
 
-#. 0: week.nightCount; 1: week.daysInRange; 2: week.daysInRange === 1 ? "" \\: "s"; 3: statsParts(week).join(" · ")
-#: src/lib/components/reports/sleep/SleepWeeklyBreakdown.svelte
 #, python-brace-format
-msgid "{0} of {1} night{2} · {3}"
-msgstr "{0} de {1} noche{2} · {3}"
+#~ msgid "{0} of {1} night{2} · {3}"
+#~ msgstr "{0} de {1} noche{2} · {3}"
 
 #: src/lib/components/reports/sleep/SleepWeeklyBreakdown.svelte
 msgid "No nights tracked"
@@ -22256,31 +22200,25 @@ msgstr "Guardando…"
 #~ msgid "<0/> Clear drafts"
 #~ msgstr "<0/> Borrar borradores"
 
-#. 0: drafts.size || ""; 1: drafts.size === 1 ? "" \\: "s"
-#: src/routes/(authenticated)/community/translations/[locale]/+page.svelte
 #, python-brace-format
-msgid "<0/> Submit {0} draft{1}"
-msgstr "<0/> Enviar {0} borrador{1}"
+#~ msgid "<0/> Submit {0} draft{1}"
+#~ msgstr "<0/> Enviar {0} borrador{1}"
 
 #: src/routes/(authenticated)/community/translations/[locale]/+page.svelte
 msgid "<0/> Loading catalogs…"
 msgstr "<0/> Cargando catálogos…"
 
-#. 0: submitResult.remaining; 1: submitResult.remaining === 1 ? "" \\: "s"
-#: src/routes/(authenticated)/community/translations/[locale]/+page.svelte
 #, python-brace-format
-msgid "· {0} draft{1} kept"
-msgstr "· {0} borrador{1} conservado"
+#~ msgid "· {0} draft{1} kept"
+#~ msgstr "· {0} borrador{1} conservado"
 
 #: src/routes/(authenticated)/community/translations/[locale]/+page.svelte
 msgid "Contribution submitted"
 msgstr "Contribución enviada"
 
-#. 0: submitResult.applied; 1: submitResult.applied === 1 ? "" \\: "s"
-#: src/routes/(authenticated)/community/translations/[locale]/+page.svelte
 #, python-brace-format
-msgid "{0} translation{1} proposed <0/>"
-msgstr "{0} traducción{1} propuesta <0/>"
+#~ msgid "{0} translation{1} proposed <0/>"
+#~ msgstr "{0} traducción{1} propuesta <0/>"
 
 #: src/routes/(authenticated)/community/translations/[locale]/+page.svelte
 msgid "View the pull request"
@@ -22320,11 +22258,9 @@ msgstr "<0/> Enviar"
 msgid "Clear all drafts?"
 msgstr "¿Borrar todos los borradores?"
 
-#. 0: drafts.size; 1: drafts.size === 1 ? "" \\: "s"; 2: languageLabel
-#: src/routes/(authenticated)/community/translations/[locale]/+page.svelte
 #, python-brace-format
-msgid "All {0} draft{1} for {2} will be deleted. This cannot be undone."
-msgstr "Se eliminarán los {0} borrador{1} de {2}. Esta acción no se puede deshacer."
+#~ msgid "All {0} draft{1} for {2} will be deleted. This cannot be undone."
+#~ msgstr "Se eliminarán los {0} borrador{1} de {2}. Esta acción no se puede deshacer."
 
 #: src/routes/(authenticated)/community/translations/[locale]/+page.svelte
 msgid "Clear drafts"
@@ -25396,11 +25332,9 @@ msgstr "Con borradores"
 msgid "{0} of {1} messages translated or drafted"
 msgstr "{0} de {1} mensajes traducidos o con borrador"
 
-#. 0: drafts.size; 1: drafts.size === 1 ? '' \\: 's'
-#: ../cms/src/translations/TranslationEditor.svelte
 #, python-brace-format
-msgid "{0} draft{1}"
-msgstr "{0} borrador{1}"
+#~ msgid "{0} draft{1}"
+#~ msgstr "{0} borrador{1}"
 
 #: ../cms/src/translations/TranslationEditor.svelte
 msgid "Search source text or translations"
@@ -27005,11 +26939,14 @@ msgstr "Tiempo no utilizado: {0}."
 #: src/lib/components/alerts/wizard/templates.svelte.ts
 #: src/lib/components/people/PeoplePage.svelte
 #: src/lib/components/people/attention-phrases.svelte.ts
+#: src/lib/components/reports/ReliabilityBadge.svelte
 #: src/lib/components/reports/loop-analysis/AggregateReadout.svelte
 #: src/lib/components/reports/loop-analysis/DailyProfileBody.svelte
 #: src/lib/components/reports/loop-analysis/LoopHealthBody.svelte
 #: src/lib/components/reports/loop-analysis/LoopHealthBody.svelte
 #: src/lib/components/reports/loop-analysis/LoopHealthBody.svelte
+#: src/routes/(authenticated)/reports/battery/+page.svelte
+#: src/routes/(authenticated)/time-spans/+page.svelte
 msgid "# day"
 msgid_plural "# days"
 msgstr[0] "# día"
@@ -27036,6 +26973,7 @@ msgid_plural "# loop cycles"
 msgstr[0] "# ciclo de Loop"
 msgstr[1] "# ciclos de Loop"
 
+#: src/lib/components/patient/PatientDeviceManager.svelte
 #: src/lib/components/reports/loop-analysis/AggregateReadout.svelte
 #: src/lib/components/reports/loop-analysis/DailyProfileBody.svelte
 msgid "# reading"
@@ -28018,6 +27956,7 @@ msgstr "IOB máximo"
 msgid "This figure shows only when the loop reports that max IOB limited a dose. The loop did not report this in this range."
 msgstr "Esta cifra solo muestra cuándo el algoritmo informa de que el IOB máximo limitó una dosis. No se notificó ningún caso en este intervalo."
 
+#: src/lib/components/alerts/DndPanel.svelte
 #: src/lib/components/alerts/summarizeCondition.svelte.ts
 #: src/lib/components/alerts/wizard/templates.svelte.ts
 #: src/lib/components/reports/loop-analysis/LoopHealthBody.svelte
@@ -29029,10 +28968,13 @@ msgstr "Esta página muestra cuánto tiempo estuvo el algoritmo en circuito cerr
 msgid "This page compares your profile settings with observations from your data. Speak to your diabetes care team before you change a setting."
 msgstr "Esta página compara los ajustes de tu perfil con lo observado en tus datos. Consulta con tu equipo médico antes de cambiar cualquier ajuste."
 
+#: src/lib/components/alerts/DndPanel.svelte
 #: src/lib/components/alerts/summarizeCondition.svelte.ts
 #: src/lib/components/alerts/summarizeCondition.svelte.ts
 #: src/lib/components/alerts/wizard/templates.svelte.ts
 #: src/lib/components/alerts/wizard/templates.svelte.ts
+#: src/lib/components/clock-builder/ElementInspector.svelte
+#: src/lib/components/clock-builder/ElementInspector.svelte
 #: src/lib/components/reports/loop-analysis/settings-evidence-labels.svelte.ts
 msgid "# hour"
 msgid_plural "# hours"
@@ -30167,11 +30109,9 @@ msgstr "Como alternativa, se ha abierto una pestaña nueva con un formulario de 
 msgid "What you expected to happen..."
 msgstr "Qué esperabas que ocurriera..."
 
-#. 0: recentFailureCount; 1: recentFailureCount === 1 ? "request" \\: "requests"
-#: src/lib/components/support/IssueCreatorDialog.svelte
 #, python-brace-format
-msgid "{0} failed {1}: time, status, page and message"
-msgstr "{0} falló {1}: hora, estado, página y mensaje"
+#~ msgid "{0} failed {1}: time, status, page and message"
+#~ msgstr "{0} falló {1}: hora, estado, página y mensaje"
 
 #~ msgid "Your report is filed as a public issue on GitHub. Anything you turn on here is published with it, and anyone can read it. Check the preview before you send."
 #~ msgstr ""
@@ -31409,11 +31349,9 @@ msgstr "Posponer durante {0} minutos"
 msgid "Snooze"
 msgstr "Posponer"
 
-#. 0: critical.length - 1; 1: critical.length === 2 ? "alert" \\: "alerts"
-#: src/lib/components/alerts/CriticalAlertTakeover.svelte
 #, python-brace-format
-msgid "{0} more critical {1}"
-msgstr "{0} alertas críticas más: {1}"
+#~ msgid "{0} more critical {1}"
+#~ msgstr "{0} alertas críticas más: {1}"
 
 #: src/lib/components/alerts/CriticalAlertTakeover.svelte
 msgid "Critical alert"
@@ -35924,11 +35862,9 @@ msgstr "Error al cargar los tratamientos"
 msgid "<0/> Add treatment"
 msgstr "<0/> Añadir tratamiento"
 
-#. 0: rowsToDelete.length
-#: src/routes/(authenticated)/reports/treatments/+page.svelte
 #, python-brace-format
-msgid "Delete {0} records"
-msgstr "Eliminar {0} registros"
+#~ msgid "Delete {0} records"
+#~ msgstr "Eliminar {0} registros"
 
 #: src/routes/(authenticated)/reports/treatments/+page.svelte
 msgid "Selected records"
@@ -37581,11 +37517,9 @@ msgstr "Esto descargará {0} desde {1} hasta ahora. El proceso se ejecuta mientr
 msgid "Days of data are counted on UTC days."
 msgstr "Los días con datos se cuentan según los días UTC."
 
-#. 0: daysOfData; 1: daysOfData === 1 ? "day" \\: "days"; 2: reliability.recommendedMinimumDays ?? 14
-#: src/lib/components/reports/ReliabilityBadge.svelte
 #, python-brace-format
-msgid "Based on {0} {1} of data ({2} recommended) <0/>"
-msgstr "Basado en {0} {1} de datos (se recomiendan {2}) <0/>"
+#~ msgid "Based on {0} {1} of data ({2} recommended) <0/>"
+#~ msgstr "Basado en {0} {1} de datos (se recomiendan {2}) <0/>"
 
 #: src/routes/(authenticated)/reports/+page.svelte
 msgid "Time in a personal target range that changes through the day is not shown. Days of data are counted on UTC days."
@@ -46458,4 +46392,250 @@ msgstr ""
 
 #: src/lib/components/people/PeoplePage.svelte
 msgid "Readings update as they arrive."
+msgstr ""
+
+#: ../cms/src/translations/TranslationEditor.svelte
+#: src/routes/(authenticated)/community/translations/[locale]/+page.svelte
+msgid "# draft"
+msgid_plural "# drafts"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/lib/components/alerts/CriticalAlertTakeover.svelte
+msgid "# more critical alert"
+msgid_plural "# more critical alerts"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/lib/components/dashboard/widgets/MealsWidget.svelte
+#: src/lib/components/meals/MealsTable.svelte
+msgid "# meal"
+msgid_plural "# meals"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/lib/components/members/MemberCard.svelte
+msgid "# direct permission"
+msgid_plural "# direct permissions"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/lib/components/members/PendingInvitesList.svelte
+msgid "# use"
+msgid_plural "# uses"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/lib/components/members/RolesSection.svelte
+msgid "# permission"
+msgid_plural "# permissions"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/lib/components/members/RolesSection.svelte
+#: src/routes/(authenticated)/settings/members/+page.svelte
+msgid "# member"
+msgid_plural "# members"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/lib/components/members/RolesSection.svelte
+msgid "This role is currently assigned to # member."
+msgid_plural "This role is currently assigned to # members."
+msgstr[0] ""
+msgstr[1] ""
+
+#. 0: plural(deleteMemberCount, [ "This role is currently assigned to # member.", "This role is currently assigned to # members.", ])
+#: src/lib/components/members/RolesSection.svelte
+msgid "{0} They will lose any permissions granted by this role."
+msgstr ""
+
+#. 0: plural(daysOfData, ["# day", "# days"]); 1: reliability.recommendedMinimumDays ?? 14
+#: src/lib/components/reports/ReliabilityBadge.svelte
+msgid "Based on {0} of data ({1} recommended) <0/>"
+msgstr ""
+
+#: src/lib/components/reports/ScheduleFooter.svelte
+msgid "# change during this period"
+msgid_plural "# changes during this period"
+msgstr[0] ""
+msgstr[1] ""
+
+#. 0: info.lastChangedAt ? formatNumericDate(new Date(info.lastChangedAt)) \\: 'during period'; 1: plural(info.changeCount, ['# change during this period', '# changes during this period'])
+#: src/lib/components/reports/ScheduleFooter.svelte
+msgid "Changed {0} ({1})"
+msgstr ""
+
+#: src/lib/components/support/IssueCreatorDialog.svelte
+msgid "# failed request: time, status, page and message"
+msgid_plural "# failed requests: time, status, page and message"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/lib/components/trackers/TrackerDefinitionsTab.svelte
+msgid "# threshold"
+msgid_plural "# thresholds"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/lib/components/treatments/DataTableToolbar.svelte
+msgid "# record selected"
+msgid_plural "# records selected"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/lib/components/treatments/FoodEntryDetails.svelte
+msgid "# portion"
+msgid_plural "# portions"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/routes/(authenticated)/food/InlineEditor.svelte
+msgid "Used in # treatment."
+msgid_plural "Used in # treatments."
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/routes/(authenticated)/time-spans/+page.svelte
+msgid "# version"
+msgid_plural "# versions"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/routes/(authenticated)/time-spans/+page.svelte
+msgid "# change"
+msgid_plural "# changes"
+msgstr[0] ""
+msgstr[1] ""
+
+#: ../portal/src/lib/components/features/ConnectorsDemo.svelte
+msgid "# match"
+msgid_plural "# matches"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/lib/components/reports/sensor-integrity/NoiseClusterStrips.svelte
+msgid "window"
+msgid_plural "windows"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/lib/components/reports/sleep/SleepWeeklyBreakdown.svelte
+msgid "# low"
+msgid_plural "# lows"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/lib/components/reports/sleep/SleepWeeklyBreakdown.svelte
+msgid "# night"
+msgid_plural "# nights"
+msgstr[0] ""
+msgstr[1] ""
+
+#. 0: week.nightCount; 1: plural(week.daysInRange ?? 0, ["# night", "# nights"]); 2: statsParts(week).join(" · ")
+#: src/lib/components/reports/sleep/SleepWeeklyBreakdown.svelte
+msgid "{0} of {1} · {2}"
+msgstr ""
+
+#: src/routes/(authenticated)/reports/battery/+page.svelte
+msgid "# warning"
+msgid_plural "# warnings"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/routes/(authenticated)/reports/battery/+page.svelte
+msgid "# device"
+msgid_plural "# devices"
+msgstr[0] ""
+msgstr[1] ""
+
+#. 0: plural(allDevices.length, ["# device", "# devices"]); 1: plural( reportsParams.dayCount ?? 0, ["# day", "# days"] )
+#: src/routes/(authenticated)/reports/battery/+page.svelte
+msgid "Data collected from {0} over {1}"
+msgstr ""
+
+#: src/routes/(authenticated)/reports/data-quality/+page.svelte
+msgid "You have # item waiting for review"
+msgid_plural "You have # items waiting for review"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/routes/(authenticated)/reports/sleep/+page.svelte
+msgid "avg of # scored night"
+msgid_plural "avg of # scored nights"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/routes/(authenticated)/reports/sleep/+page.svelte
+msgid "# night with CGM"
+msgid_plural "# nights with CGM"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/routes/(authenticated)/reports/treatments/+page.svelte
+msgid "Delete # record"
+msgid_plural "Delete # records"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/routes/(authenticated)/reports/treatments/+page.svelte
+msgid "Are you sure you want to delete # selected record? This action cannot be undone."
+msgid_plural "Are you sure you want to delete # selected records? This action cannot be undone."
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/routes/(authenticated)/reports/treatments/+page.svelte
+msgid "Delete # Record"
+msgid_plural "Delete # Records"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/routes/(authenticated)/settings/appearance/+page.svelte
+msgid "# rule configured"
+msgid_plural "# rules configured"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/routes/(authenticated)/settings/migration/NightscoutTransitionStatus.svelte
+msgid "# stability day remaining"
+msgid_plural "# stability days remaining"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/routes/(authenticated)/settings/profile/+page.svelte
+msgid "# profile"
+msgid_plural "# profiles"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/routes/(authenticated)/community/translations/[locale]/+page.svelte
+msgid "Submit # draft"
+msgid_plural "Submit # drafts"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/routes/(authenticated)/community/translations/[locale]/+page.svelte
+msgid "Submit drafts"
+msgstr ""
+
+#: src/routes/(authenticated)/community/translations/[locale]/+page.svelte
+msgid "# translation proposed"
+msgid_plural "# translations proposed"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/routes/(authenticated)/community/translations/[locale]/+page.svelte
+msgid "# draft kept"
+msgid_plural "# drafts kept"
+msgstr[0] ""
+msgstr[1] ""
+
+#~ msgid "The # draft for {languageLabel} will be deleted. This cannot be undone."
+#~ msgid_plural "All # drafts for {languageLabel} will be deleted. This cannot be undone."
+#~ msgstr[0] ""
+#~ msgstr[1] ""
+
+#. 0: plural(drafts.size, ["# draft", "# drafts"]); 1: languageLabel
+#: src/routes/(authenticated)/community/translations/[locale]/+page.svelte
+msgid "All {0} for {1} will be deleted. This cannot be undone."
 msgstr ""

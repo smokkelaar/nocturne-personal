@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { plural } from "#lib/utils/plural.js";
   import WidgetCard from "./WidgetCard.svelte";
   import { Badge } from "#lib/components/ui/badge/index.js";
   import { getRealtimeStore } from "#lib/stores/realtime-store.svelte.js";
@@ -31,7 +32,7 @@
       <div class="flex items-center justify-between">
         <span class="text-2xl font-bold">{totalCarbs}g</span>
         <Badge variant="secondary">
-          {recentMeals.length} meal{recentMeals.length !== 1 ? "s" : ""}
+          {plural(recentMeals.length, ["# meal", "# meals"])}
         </Badge>
       </div>
       <div class="text-xs text-muted-foreground">

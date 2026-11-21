@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { plural } from "#lib/utils/plural.js";
   import { formatLocale, formatNumericDate } from "#lib/utils/formatting.js";
   import {
     Card,
@@ -313,8 +314,7 @@
                   <div class="flex items-center gap-1 text-warning print:text-foreground">
                     <AlertTriangle class="h-4 w-4" />
                     <span>
-                      {stat?.warningEventCount ?? 0}
-                      {stat?.warningEventCount === 1 ? "warning" : "warnings"}
+                      {plural(stat?.warningEventCount ?? 0, ["# warning", "# warnings"])}
                     </span>
                   </div>
                 {/if}
@@ -393,9 +393,10 @@
 
     <div class="text-center text-xs text-muted-foreground space-y-1">
       <p>
-        Data collected from {allDevices.length} device{allDevices.length !== 1
-          ? "s"
-          : ""} over {reportsParams.dayCount} days
+        Data collected from {plural(allDevices.length, ["# device", "# devices"])} over {plural(
+          reportsParams.dayCount ?? 0,
+          ["# day", "# days"]
+        )}
       </p>
       <p class="text-muted-foreground/60">
         Battery statistics are calculated from device status reports sent by

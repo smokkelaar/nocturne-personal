@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { plural } from "#lib/utils/plural.js";
   import SuccessBanner from "#lib/forms/SuccessBanner.svelte";
   import { Button } from "#lib/components/ui/button/index.js";
   import { Badge } from "#lib/components/ui/badge/index.js";
@@ -209,11 +210,11 @@
               <Badge variant="outline" class="font-mono">{role.slug}</Badge>
             {/if}
             <Badge variant="secondary">
-              {role.permissions?.length ?? 0} permission{(role.permissions?.length ?? 0) !== 1 ? "s" : ""}
+              {plural(role.permissions?.length ?? 0, ["# permission", "# permissions"])}
             </Badge>
             <Badge variant="secondary">
               <Users class="mr-1 h-3 w-3" />
-              {role.memberCount ?? 0} member{(role.memberCount ?? 0) !== 1 ? "s" : ""}
+              {plural(role.memberCount ?? 0, ["# member", "# members"])}
             </Badge>
           </div>
         </div>
@@ -356,7 +357,10 @@
   {#snippet description()}
     Are you sure you want to delete the role "{deleteName}"?
     {#if deleteMemberCount > 0}
-      This role is currently assigned to {deleteMemberCount} member{deleteMemberCount !== 1 ? "s" : ""}.
+      {plural(deleteMemberCount, [
+        "This role is currently assigned to # member.",
+        "This role is currently assigned to # members.",
+      ])}
       They will lose any permissions granted by this role.
     {/if}
   {/snippet}

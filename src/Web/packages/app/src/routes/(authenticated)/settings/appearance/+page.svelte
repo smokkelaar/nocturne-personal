@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { plural } from "#lib/utils/plural.js";
   import { GlucoseProcessing } from "#lib/api/index.js";
   import { a1cLabel } from "#lib/utils/a1c-formatting.js";
   import { time } from "#lib/utils/formatting.js";
@@ -1097,7 +1098,7 @@
                 {#if sourceDefaults.length === 0}
                   No source rules configured. All uploads use the default processing.
                 {:else}
-                  {sourceDefaults.length} rule{sourceDefaults.length === 1 ? '' : 's'} configured
+                  {plural(sourceDefaults.length, ['# rule configured', '# rules configured'])}
                 {/if}
               </p>
             </div>

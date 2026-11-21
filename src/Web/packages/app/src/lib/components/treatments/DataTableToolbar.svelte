@@ -1,4 +1,5 @@
 <script lang="ts" generics="TData">
+  import { plural } from "#lib/utils/plural.js";
   import { Button } from "#lib/components/ui/button/index.js";
   import { Input } from "#lib/components/ui/input/index.js";
   import * as DropdownMenu from "#lib/components/ui/dropdown-menu/index.js";
@@ -71,7 +72,7 @@
       class="flex items-center justify-between rounded-md border bg-muted/50 px-4 py-2"
     >
       <span class="text-sm font-medium">
-        {selectedCount} record{selectedCount !== 1 ? "s" : ""} selected
+        {plural(selectedCount, ["# record selected", "# records selected"])}
       </span>
       <div class="flex items-center gap-2">
         <Button variant="outline" size="sm" onclick={onClearSelection}>

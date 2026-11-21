@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { plural } from "#lib/utils/plural.js";
   import SuccessBanner from "#lib/forms/SuccessBanner.svelte";
   import { page } from "$app/state";
   import { satisfiesScope } from "#lib/authorization/scopes.js";
@@ -218,7 +219,7 @@
       {#if canListMembers}
         <span class="inline-flex h-8 items-center gap-2 rounded-full bg-secondary px-3 text-xs font-medium">
           <Users class="h-3.5 w-3.5 text-muted-foreground" />
-          {memberCount} member{memberCount !== 1 ? "s" : ""}
+          {plural(memberCount, ["# member", "# members"])}
         </span>
       {/if}
     </div>

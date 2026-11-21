@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { plural } from "#lib/utils/plural.js";
   import * as Dialog from "#lib/components/ui/dialog/index.js";
   import { Button } from "#lib/components/ui/button/index.js";
   import { Input } from "#lib/components/ui/input/index.js";
@@ -626,7 +627,10 @@
                     <p class="text-xs text-muted-foreground">
                       {recentFailureCount === 0
                         ? "No failed requests recorded this session"
-                        : `${recentFailureCount} failed ${recentFailureCount === 1 ? "request" : "requests"}: time, status, page and message`}
+                        : plural(recentFailureCount, [
+                            "# failed request: time, status, page and message",
+                            "# failed requests: time, status, page and message",
+                          ])}
                     </p>
                   </div>
                   <Switch bind:checked={includeRecentLogs} disabled={recentFailureCount === 0} />

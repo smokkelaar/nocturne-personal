@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { plural } from "#lib/utils/plural.js";
   import type {
     ActiveProfileSchedules,
     ScheduleChangeInfo,
@@ -86,7 +87,7 @@
   {#if info?.changedDuringPeriod}
     <span
       class="inline-flex items-center text-muted-foreground ml-1"
-      title="Changed {info.lastChangedAt ? formatNumericDate(new Date(info.lastChangedAt)) : 'during period'} ({info.changeCount} change{info.changeCount === 1 ? '' : 's'} during this period)"
+      title="Changed {info.lastChangedAt ? formatNumericDate(new Date(info.lastChangedAt)) : 'during period'} ({plural(info.changeCount, ['# change during this period', '# changes during this period'])})"
     >
       <History class="w-3 h-3" />
     </span>

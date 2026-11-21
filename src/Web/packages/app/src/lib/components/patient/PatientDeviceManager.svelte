@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { plural } from "#lib/utils/plural.js";
   import { labelFor } from "#lib/components/ui/enum-value.js";
   import { formatMediumDate } from "#lib/utils/formatting.js";
   import { Button } from "#lib/components/ui/button/index.js";
@@ -501,7 +502,7 @@
                 {/if}
               </div>
               <div class="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
-                <span>{source.readingCount} reading{source.readingCount === 1 ? "" : "s"}</span>
+                <span>{plural(source.readingCount, ["# reading", "# readings"])}</span>
                 <span>Last seen {formatLastSeen(source.lastSeen)}</span>
               </div>
             </div>

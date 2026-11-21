@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { plural } from "#lib/utils/plural.js";
   import type { TreatmentFood } from "#lib/api/index.js";
 
   interface Props {
@@ -13,7 +14,7 @@
 
     // Only show portions if > 0
     if (food.portions) {
-      parts.push(`${food.portions} portion${food.portions !== 1 ? "s" : ""}`);
+      parts.push(plural(food.portions, ["# portion", "# portions"]));
     }
 
     // Always show carbs

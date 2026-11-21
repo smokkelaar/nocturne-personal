@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { plural } from "#lib/utils/plural.js";
   import { Button } from "#lib/components/ui/button/index.js";
   import CircleAlert from "@lucide/svelte/icons/circle-alert";
   import BellOff from "@lucide/svelte/icons/bell-off";
@@ -82,7 +83,7 @@
       </span>
       {#if critical.length > 1}
         <span class="text-sm opacity-90">
-          {critical.length - 1} more critical {critical.length === 2 ? "alert" : "alerts"}
+          {plural(critical.length - 1, ["# more critical alert", "# more critical alerts"])}
         </span>
       {/if}
     </div>

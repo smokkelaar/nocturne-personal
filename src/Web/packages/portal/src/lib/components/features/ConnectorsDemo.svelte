@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { plural } from "#lib/utils/plural.js";
   import Search from "@lucide/svelte/icons/search";
   import Check from "@lucide/svelte/icons/check";
   import Clock from "@lucide/svelte/icons/clock";
@@ -104,7 +105,7 @@
     <span class="text-xs tabular-nums shrink-0 flex items-center gap-1.5">
       {#if query}
         <span class="text-brand px-2.5 py-1 rounded-full bg-brand/15 border border-brand/30">
-          {activeMatches} match{activeMatches === 1 ? "" : "es"}
+          {plural(activeMatches, ["# match", "# matches"])}
         </span>
         {#if comingSoonMatches > 0}
           <span class="text-muted-foreground px-2.5 py-1 rounded-full bg-muted/30 border border-border">

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { plural } from "#lib/utils/plural.js";
   import { page } from "$app/state";
   import { browser } from "$app/env";
   import { beforeNavigate } from "$app/navigation";
@@ -369,7 +370,9 @@
             }}
           >
             <GitPullRequest class="mr-1 h-4 w-4" />
-            Submit {drafts.size || ""} draft{drafts.size === 1 ? "" : "s"}
+            {drafts.size
+              ? plural(drafts.size, ["Submit # draft", "Submit # drafts"])
+              : "Submit drafts"}
           </Button>
         </div>
       </div>
@@ -397,9 +400,9 @@
         <Dialog.Header>
           <Dialog.Title>Contribution submitted</Dialog.Title>
           <Dialog.Description>
-            {submitResult.applied} translation{submitResult.applied === 1 ? "" : "s"} proposed
+            {plural(submitResult.applied, ["# translation proposed", "# translations proposed"])}
             {#if submitResult.remaining > 0}
-              · {submitResult.remaining} draft{submitResult.remaining === 1 ? "" : "s"} kept
+              · {plural(submitResult.remaining, ["# draft kept", "# drafts kept"])}
             {/if}
           </Dialog.Description>
         </Dialog.Header>
@@ -473,7 +476,7 @@
       <AlertDialog.Header>
         <AlertDialog.Title>Clear all drafts?</AlertDialog.Title>
         <AlertDialog.Description>
-          All {drafts.size} draft{drafts.size === 1 ? "" : "s"} for
+          All {plural(drafts.size, ["# draft", "# drafts"])} for
           {languageLabel} will be deleted. This cannot be undone.
         </AlertDialog.Description>
       </AlertDialog.Header>

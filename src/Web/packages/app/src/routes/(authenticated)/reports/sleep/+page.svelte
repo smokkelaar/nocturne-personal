@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { plural } from "#lib/utils/plural.js";
   import {
     Card,
     CardAction,
@@ -151,13 +152,13 @@
 
   const scoredNightsCount = $derived(sleepSummary?.scoredNightCount ?? 0);
   const scoreCaption = $derived.by(() => {
-    const base = `avg of ${scoredNightsCount} scored night${scoredNightsCount === 1 ? "" : "s"}`;
+    const base = plural(scoredNightsCount, ["avg of # scored night", "avg of # scored nights"]);
     return sleepSummary?.includesEstimatedScore ? `${base} · includes estimated` : base;
   });
 
   const tirNightsCount = $derived(sleepSummary?.tirNightCount ?? 0);
   const tirCaption = $derived(
-    `${tirNightsCount} night${tirNightsCount === 1 ? "" : "s"} with CGM`
+    plural(tirNightsCount, ["# night with CGM", "# nights with CGM"])
   );
 
   const nightsTrackedCaption = $derived(

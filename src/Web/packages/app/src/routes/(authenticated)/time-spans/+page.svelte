@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { plural } from "#lib/utils/plural.js";
   import { page } from "$app/state";
   import { useSearchParams } from "runed/kit";
   import { z } from "zod";
@@ -120,7 +121,7 @@
     if (!overview?.history) return "";
     const versionCount = versions.length;
     const changeCount = changes.length;
-    return `${versionCount} ${versionCount === 1 ? "version" : "versions"}, ${changeCount} ${changeCount === 1 ? "change" : "changes"}`;
+    return `${plural(versionCount, ["# version", "# versions"])}, ${plural(changeCount, ["# change", "# changes"])}`;
   });
 </script>
 
@@ -202,7 +203,7 @@
                     size="sm"
                     pressed={Math.round(windowLength / DAY_MS) === days}
                     onPressedChange={() => (view.wd = days)}
-                    aria-label="{days} {days === 1 ? 'day' : 'days'}"
+                    aria-label={plural(days, ["# day", "# days"])}
                   >
                     {days} d
                   </Toggle>

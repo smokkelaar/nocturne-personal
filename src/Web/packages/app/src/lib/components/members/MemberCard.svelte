@@ -6,6 +6,7 @@
 </script>
 
 <script lang="ts">
+  import { plural } from "#lib/utils/plural.js";
   import { Button } from "#lib/components/ui/button/index.js";
   import { Badge } from "#lib/components/ui/badge/index.js";
   import * as Card from "#lib/components/ui/card/index.js";
@@ -146,10 +147,10 @@
           {/each}
           {#if member.directPermissions?.length}
             <Badge variant="outline">
-              {member.directPermissions.length} direct permission{member
-                .directPermissions.length !== 1
-                ? "s"
-                : ""}
+              {plural(member.directPermissions.length, [
+                "# direct permission",
+                "# direct permissions",
+              ])}
             </Badge>
           {/if}
         </Card.Title>

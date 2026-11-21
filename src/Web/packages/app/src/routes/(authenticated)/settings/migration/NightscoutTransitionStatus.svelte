@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { plural } from "#lib/utils/plural.js";
   import { formatMediumDateTime, formatNumber } from "#lib/utils/formatting.js";
   import {
     Card,
@@ -267,8 +268,10 @@
 
           {#if status.recommendation?.status === "almost-ready" && status.recommendation?.stabilityDaysRemaining != null}
             <span class="text-sm text-muted-foreground">
-              {status.recommendation.stabilityDaysRemaining} stability
-              {status.recommendation.stabilityDaysRemaining === 1 ? "day" : "days"} remaining
+              {plural(status.recommendation.stabilityDaysRemaining, [
+                "# stability day remaining",
+                "# stability days remaining",
+              ])}
             </span>
           {/if}
         </div>

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { plural } from "#lib/utils/plural.js";
   import type { MealSortColumn } from "./meal-sort";
   import { Badge } from "#lib/components/ui/badge/index.js";
   import { Button } from "#lib/components/ui/button/index.js";
@@ -176,7 +177,7 @@
                   <Calendar class="h-4 w-4 text-muted-foreground" />
                   {day.displayDate}
                   <Badge variant="outline" class="ml-2">
-                    {day.meals.length} meal{day.meals.length !== 1 ? "s" : ""}
+                    {plural(day.meals.length, ["# meal", "# meals"])}
                   </Badge>
                 </div>
               </Table.Cell>

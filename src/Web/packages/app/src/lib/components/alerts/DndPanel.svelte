@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { plural } from "#lib/utils/plural.js";
   import { formatLocale } from "#lib/utils/formatting.js";
   import { onMount } from "svelte";
   import { goto } from "$app/navigation";
@@ -147,7 +148,9 @@
           </div>
           {#each [30, 60, 120, 240] as mins (mins)}
             <DropdownMenu.Item disabled={saving} onSelect={() => setActive(true, mins)}>
-              {mins < 60 ? `${mins} minutes` : `${mins / 60} hour${mins > 60 ? "s" : ""}`}
+              {mins < 60
+                ? plural(mins, ["# minute", "# minutes"])
+                : plural(mins / 60, ["# hour", "# hours"])}
             </DropdownMenu.Item>
           {/each}
           <DropdownMenu.Item disabled={saving} onSelect={() => setActive(true)}>

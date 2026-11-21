@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { plural } from "#lib/utils/plural.js";
   import Info from "@lucide/svelte/icons/info";
   import { Badge } from "#lib/components/ui/badge/index.js";
   import * as Tooltip from "#lib/components/ui/tooltip/index.js";
@@ -29,7 +30,7 @@
   >
     <Info class="mt-px size-3 shrink-0" />
     <span class="min-w-0">
-      Based on {daysOfData} {daysOfData === 1 ? "day" : "days"} of data ({reliability.recommendedMinimumDays ??
+      Based on {plural(daysOfData, ["# day", "# days"])} of data ({reliability.recommendedMinimumDays ??
         14} recommended)
       {#if timeZoneUnavailableReason}
         {#if compact}

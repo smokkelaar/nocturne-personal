@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { plural } from "#lib/utils/plural.js";
   import { Button } from "#lib/components/ui/button/index.js";
   import { Label } from "#lib/components/ui/label/index.js";
   import { Checkbox } from "#lib/components/ui/checkbox/index.js";
@@ -121,7 +122,7 @@
           <Select.Content>
             {#each [1, 3, 6, 12, 24] as h (h)}
               <Select.Item value={String(h)}>
-                {h} hour{h > 1 ? "s" : ""}
+                {plural(h, ["# hour", "# hours"])}
               </Select.Item>
             {/each}
           </Select.Content>
@@ -325,7 +326,7 @@
             <Select.Content>
               {#each [1, 3, 6, 12, 24] as h (h)}
                 <Select.Item value={String(h)}>
-                  {h} hour{h > 1 ? "s" : ""}
+                  {plural(h, ["# hour", "# hours"])}
                 </Select.Item>
               {/each}
             </Select.Content>

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { plural } from './plural';
 	import { Button } from '@nocturne/ui/ui/button';
 	import { Input } from '@nocturne/ui/ui/input';
 	import { Progress } from '@nocturne/ui/ui/progress';
@@ -75,7 +76,7 @@
 	<div class="space-y-1">
 		<div class="flex items-center justify-between text-sm">
 			<span>{translatedCount} of {messages.length} messages translated or drafted</span>
-			<span class="text-muted-foreground">{drafts.size} draft{drafts.size === 1 ? '' : 's'}</span>
+			<span class="text-muted-foreground">{plural(drafts.size, ['# draft', '# drafts'])}</span>
 		</div>
 		<Progress value={messages.length === 0 ? 0 : (translatedCount / messages.length) * 100} />
 	</div>

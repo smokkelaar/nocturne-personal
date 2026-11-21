@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { plural } from "#lib/utils/plural.js";
   /**
    * Per-week rollup rows for the trends page, most recent week first. Each
    * tracked night is a weekday-keyed link to its single-night report.
@@ -63,7 +64,7 @@
     if (week.meanScore != null) parts.push(`score ${Math.round(week.meanScore)}`);
     if (week.meanTirPct != null) {
       parts.push(`TIR ${Math.round(week.meanTirPct)}%`);
-      parts.push(`${week.totalHypoCount ?? 0} low${week.totalHypoCount === 1 ? "" : "s"}`);
+      parts.push(plural(week.totalHypoCount ?? 0, ["# low", "# lows"]));
     }
     return parts;
   }
@@ -76,7 +77,7 @@
         <div class="text-sm font-medium">{week.label}</div>
         {#if (week.nightCount ?? 0) > 0}
           <div class="text-xs text-muted-foreground">
-            {week.nightCount} of {week.daysInRange} night{week.daysInRange === 1 ? "" : "s"}
+            {week.nightCount} of {plural(week.daysInRange ?? 0, ["# night", "# nights"])}
             · {statsParts(week).join(" · ")}
           </div>
         {:else}

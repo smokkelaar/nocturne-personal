@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { plural } from "#lib/utils/plural.js";
   /**
    * Daily small-multiples of the glucose trace with noise-cluster bands. One row per local day;
    * clicking a row selects that day for the expanded detail view.
@@ -63,7 +64,7 @@
         {#if bucket.clusterCount > 0}
           <span class="text-xs font-medium text-foreground">{bucket.clusterCount}</span>
           <span class="text-2xs text-muted-foreground">
-            {bucket.clusterCount === 1 ? "window" : "windows"}
+            {plural(bucket.clusterCount, ["window", "windows"])}
           </span>
         {:else}
           <span class="text-2xs text-muted-foreground">—</span>

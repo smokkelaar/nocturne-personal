@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { plural } from "#lib/utils/plural.js";
 	import { resolve } from "$app/paths";
 	import { Button } from '#lib/components/ui/button/index.js';
 	import { Input } from '#lib/components/ui/input/index.js';
@@ -175,7 +176,7 @@
 						<Clock class="h-5 w-5 text-warning" />
 						<div>
 							<p class="font-medium">
-								You have {pendingCount} item{pendingCount !== 1 ? 's' : ''} waiting for review
+								{plural(pendingCount, ['You have # item waiting for review', 'You have # items waiting for review'])}
 							</p>
 							<p class="text-sm text-muted-foreground">
 								Accept each one as a false low from pressure on the sensor, or dismiss it as a real

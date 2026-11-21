@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { plural } from "#lib/utils/plural.js";
   import { distinct } from "#lib/utils/collections.js";
   import { page } from "$app/state";
   import { resolve } from "$app/paths";
@@ -207,7 +208,7 @@
       </div>
       <Badge variant="secondary">
         <Clock class="h-3 w-3" />
-        {profileNames.length} profile{profileNames.length !== 1 ? "s" : ""}
+        {plural(profileNames.length, ["# profile", "# profiles"])}
       </Badge>
     </div>
 

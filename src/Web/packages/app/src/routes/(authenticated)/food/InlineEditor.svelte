@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { plural } from "#lib/utils/plural.js";
 	import type { Food } from '#lib/api/index.js';
 	import Trash2 from '@lucide/svelte/icons/trash-2';
 	import Check from '@lucide/svelte/icons/check';
@@ -49,7 +50,7 @@
 			<span class="text-sm">
 				Delete <strong>{food.name}</strong>?
 				{#if attributionCount > 0}
-					<span class="ml-1 text-muted-foreground">Used in {attributionCount} {'treatment' + (attributionCount === 1 ? '' : 's')}.</span>
+					<span class="ml-1 text-muted-foreground">{plural(attributionCount, ['Used in # treatment.', 'Used in # treatments.'])}</span>
 				{/if}
 			</span>
 			<div class="ml-auto flex items-center gap-2">

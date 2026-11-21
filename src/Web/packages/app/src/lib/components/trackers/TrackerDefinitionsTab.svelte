@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { plural } from "#lib/utils/plural.js";
   import { resolve } from "$app/paths";
   import * as Tabs from "#lib/components/ui/tabs/index.js";
   import {
@@ -91,10 +92,7 @@
                       · {def.lifespanHours}h lifespan
                     {/if}
                     {#if def.notificationThresholds && def.notificationThresholds.length > 0}
-                      · {def.notificationThresholds.length} threshold{def
-                        .notificationThresholds.length > 1
-                        ? "s"
-                        : ""}
+                      · {plural(def.notificationThresholds.length, ["# threshold", "# thresholds"])}
                     {/if}
                   </div>
                 </div>

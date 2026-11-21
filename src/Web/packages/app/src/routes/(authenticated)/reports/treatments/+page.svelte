@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { plural } from "#lib/utils/plural.js";
   import { page } from "$app/state";
   import { replaceState } from "$app/navigation";
   import { Debounced } from "runed";
@@ -573,12 +574,12 @@
   >
     <Card.Root class="w-full max-w-lg">
       <Card.Header>
-        <Card.Title>Delete {rowsToDelete.length} records</Card.Title>
+        <Card.Title>{plural(rowsToDelete.length, ["Delete # record", "Delete # records"])}</Card.Title>
         <Card.Description>
-          Are you sure you want to delete {rowsToDelete.length} selected record{rowsToDelete.length !==
-          1
-            ? "s"
-            : ""}? This action cannot be undone.
+          {plural(rowsToDelete.length, [
+            "Are you sure you want to delete # selected record? This action cannot be undone.",
+            "Are you sure you want to delete # selected records? This action cannot be undone.",
+          ])}
         </Card.Description>
       </Card.Header>
 
@@ -656,7 +657,7 @@
         >
           {isLoading
             ? "Deleting..."
-            : `Delete ${rowsToDelete.length} Record${rowsToDelete.length !== 1 ? "s" : ""}`}
+            : plural(rowsToDelete.length, ["Delete # Record", "Delete # Records"])}
         </Button>
       </Card.Footer>
     </Card.Root>

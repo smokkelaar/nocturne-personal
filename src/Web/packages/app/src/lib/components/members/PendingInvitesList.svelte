@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { plural } from "#lib/utils/plural.js";
   import { Button } from "#lib/components/ui/button/index.js";
   import { Badge } from "#lib/components/ui/badge/index.js";
   import * as Card from "#lib/components/ui/card/index.js";
@@ -47,8 +48,7 @@
             {#if invite.maxUses}
               &middot; {invite.useCount}/{invite.maxUses} uses
             {:else}
-              &middot; {invite.useCount}
-              {invite.useCount === 1 ? "use" : "uses"}
+              &middot; {plural(invite.useCount, ["# use", "# uses"])}
             {/if}
             {#if invite.limitTo24Hours}
               &middot; Last 24 hours only

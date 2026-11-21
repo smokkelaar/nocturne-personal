@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Nocturne.Core.Contracts.Repositories;
 using Nocturne.Infrastructure.Data.Entities;
 using Nocturne.Infrastructure.Data.Extensions;
+using Nocturne.Infrastructure.Data.Mappers;
 using Nocturne.Infrastructure.Data.Services;
 
 namespace Nocturne.Infrastructure.Data.Repositories.Health;
@@ -68,6 +69,31 @@ public abstract class HealthSeriesRepository<TModel, TEntity> : IHealthSeriesRep
         var db = lease.Context;
         var entity = await FindByIdAsync(db, id, ct);
         return entity is null ? null : ToDomain(entity);
+    }
+
+    /// <inheritdoc />
+    public async Task<bool> AnyObservedInAsync(DateTime from, DateTime to, CancellationToken ct = default)
+    {
+        await using var lease = await OpenAsync(ct);
+        return await ObservedIn(Set(lease.Context).AsNoTracking(), from, to).AnyAsync(ct);
+    }
+
+    /// <inheritdoc />
+    public async Task<int> CountObservedInAsync(DateTime from, DateTime to, CancellationToken ct = default)
+    {
+        await using var lease = await OpenAsync(ct);
+        return await ObservedIn(Set(lease.Context).AsNoTracking(), from, to).CountAsync(ct);
+    }
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<TModel>> GetObservedInNewestFirstAsync(
+        DateTime from, DateTime to, int count, CancellationToken ct = default)
+    {
+        await using var lease = await OpenAsync(ct);
+        var entities = await NewestFirst(ObservedIn(Set(lease.Context).AsNoTracking(), from, to))
+            .Take(count)
+            .ToListAsync(ct);
+        return entities.Select(ToDomain).ToList();
     }
 
     /// <inheritdoc />
@@ -199,7 +225,5 @@ public abstract class HealthSeriesRepository<TModel, TEntity> : IHealthSeriesRep
     }
 
     private Task<TEntity?> FindByIdAsync(NocturneDbContext db, string id, CancellationToken ct) =>
-        Guid.TryParse(id, out var guid)
-            ? Set(db).FirstOrDefaultAsync(e => e.Id == guid, ct)
-            : Set(db).FirstOrDefaultAsync(e => e.OriginalId == id, ct);
+        Set(db).FirstOrDefaultAsync(RecordIdKey.Matching<TEntity>(id), ct);
 }

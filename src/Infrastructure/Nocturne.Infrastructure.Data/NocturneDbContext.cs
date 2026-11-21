@@ -322,6 +322,9 @@ public class NocturneDbContext : DbContext, IDataProtectionKeyContext
     /// <summary>Manually-entered lab HbA1c results, compared against the computed eHbA1c estimate.</summary>
     public DbSet<LabHbA1cResultEntity> LabHbA1cResults { get; set; }
 
+    /// <summary>Saved custom reports: a name and a report spec each.</summary>
+    public DbSet<ReportSpecEntity> ReportSpecs { get; set; }
+
     public DbSet<DeviceEventEntity> DeviceEvents { get; set; }
 
     public DbSet<BolusCalculationEntity> BolusCalculations { get; set; }
@@ -911,6 +914,9 @@ public class NocturneDbContext : DbContext, IDataProtectionKeyContext
             EnforceTenantOwnership(entry, isAdded);
             StripNulCharacters(entry, isAdded, isRelational, ReportTruncation);
             ApplyUpstreamFingerprint(entry);
+            ApplyWrittenLive(entry);
+            if (isAdded && entry.Entity is IWriterStamped { WriterGrantId: null } written)
+                written.WriterGrantId = AuditContext?.WriterGrantId;
 
             // Update timestamps are stamped on insert and on real modifications only. An
             // unchanged tracked row is left alone rather than rewritten on every save, and a row
@@ -964,6 +970,15 @@ public class NocturneDbContext : DbContext, IDataProtectionKeyContext
         entry.Property(nameof(IUpstreamFingerprinted.UpstreamFingerprint)).CurrentValue = fingerprint;
     }
 
+    /// <summary>Marks a row a live write inserts or modifies, per <see cref="LiveWriteScope"/>.</summary>
+    private static void ApplyWrittenLive(EntityEntry entry)
+    {
+        if (entry.State is EntityState.Added or EntityState.Modified
+            && entry.Entity is IWriteBackTracked { WrittenLive: false }
+            && LiveWriteScope.IsOpen)
+            entry.Property(nameof(IWriteBackTracked.WrittenLive)).CurrentValue = true;
+    }
+
     /// <summary>
     /// Writes a timestamp through the change tracker, which is how a modified row's stamp reaches
     /// the UPDATE now that <see cref="DetectChangesOnceForSave"/> has turned auto-detection off.
@@ -999,6 +1014,7 @@ public class NocturneDbContext : DbContext, IDataProtectionKeyContext
             p.IsModified
             && p.Metadata.Name != nameof(ISystemTimestamped.SysUpdatedAt)
             && p.Metadata.Name != nameof(IEntityTimestamped.UpdatedAt)
+            && p.Metadata.Name != nameof(IWriteBackTracked.WrittenLive)
             && (countFingerprint || p.Metadata.Name != nameof(IUpstreamFingerprinted.UpstreamFingerprint)));
 
     /// <summary>

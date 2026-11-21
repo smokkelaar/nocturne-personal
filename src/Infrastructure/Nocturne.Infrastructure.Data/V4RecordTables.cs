@@ -49,7 +49,7 @@ internal static class V4RecordTables
     /// </summary>
     internal static readonly IReadOnlyList<V4RecordTable> All =
     [
-        TimeSeries<SensorGlucoseEntity>(SourceDataTypes.Glucose, typeof(SensorGlucose), V4RecordKind.Glucose, db => db.SensorGlucose, discovered: false)
+        TimeSeries<SensorGlucoseEntity>(SourceDataTypes.Glucose, typeof(SensorGlucose), V4RecordKind.Glucose, db => db.SensorGlucose, discovered: false, byWriter: true)
             .LinkedAs(RecordType.SensorGlucose, MatchCriteriaMapper.From),
         TimeSeries<MeterGlucoseEntity>(SourceDataTypes.ManualBG, typeof(MeterGlucose), V4RecordKind.Glucose, db => db.MeterGlucose),
         TimeSeries<CalibrationEntity>(SourceDataTypes.Calibrations, typeof(Calibration), V4RecordKind.Glucose, db => db.Calibrations, discovered: false),
@@ -73,8 +73,9 @@ internal static class V4RecordTables
         TimeSeries<BasalInjectionEntity>(SourceDataTypes.BasalInjections, typeof(BasalInjection), V4RecordKind.Treatment, db => db.BasalInjections),
         new V4RecordTable<StateSpanEntity>(
                 SourceDataTypes.StateSpans, typeof(StateSpan), V4RecordKind.StateSpan, db => db.StateSpans,
-                source => s => s.Source == source, s => s.Source, s => s.StartTimestamp, newestStamp: null,
-                StateSpanBuckets)
+                source => s => s.Source == source, source => [s => s.Source == source], s => s.Source,
+                s => s.StartTimestamp, newestStamp: null,
+                StateSpanBuckets, StateSpanWriterBuckets)
             .WithDeduplication(table => new DeduplicatedTable<StateSpanEntity>(
                 RecordType.StateSpan, table, s => s.CreatedAt, MatchCriteriaMapper.From,
                 s => new SpanEnd(s.SupersededById, s.EndTimestamp),
@@ -84,7 +85,8 @@ internal static class V4RecordTables
         TimeSeries<StepCountEntity>(SourceDataTypes.Steps, typeof(StepCount), V4RecordKind.Activity, db => db.StepCounts),
         new V4RecordTable<BodyWeightEntity>(
             SourceDataTypes.BodyWeight, typeof(BodyWeight), V4RecordKind.Activity, db => db.BodyWeights,
-            SourceFilter.For<BodyWeightEntity>, e => e.DataSource, eventTime: null, NewestStamp, BodyWeightBuckets),
+            SourceFilter.For<BodyWeightEntity>, SourceFilter.Parts<BodyWeightEntity>, e => e.DataSource,
+            eventTime: null, NewestStamp, BodyWeightBuckets, BodyWeightWriterBuckets),
         Profile<TherapySettingsEntity>(typeof(TherapySettings), db => db.TherapySettings),
         Profile<BasalScheduleEntity>(typeof(BasalSchedule), db => db.BasalSchedules),
         Profile<CarbRatioScheduleEntity>(typeof(CarbRatioSchedule), db => db.CarbRatioSchedules),
@@ -93,23 +95,23 @@ internal static class V4RecordTables
     ];
 
     /// <summary>
-    /// The extras rows of the device statuses <paramref name="source"/> holds a snapshot of, deleted or
+    /// The extras rows of the device statuses <paramref name="selector"/> names a snapshot of, deleted or
     /// not, that have no live snapshot left. An extras row has no source of its own: it is a part of its
     /// status, deleted and released with the status's last snapshot, as the delete of one status deletes
     /// it by its <see cref="DeviceStatusExtrasEntity.CorrelationId"/>.
     /// </summary>
     /// <remarks>
     /// Reading the deleted snapshots lifts the soft-delete filter for the whole query, so each live
-    /// test is written out. The source tests are correlated on the extras row, not a set of the
-    /// source's statuses: <see cref="AuditedBulkDeleteExtensions.AuditedSoftDeleteAsync{T}"/> runs
-    /// this query again for each chunk of ids, and a set would be rebuilt from the source's whole
-    /// history for every chunk.
+    /// test is written out. The selector's tests are correlated on the extras row, not a set of the
+    /// selected statuses: <see cref="AuditedBulkDeleteExtensions.AuditedSoftDeleteAsync{T}"/> runs
+    /// this query again for each chunk of ids, and a set would be rebuilt from the whole history of
+    /// the source or writers for every chunk.
     /// </remarks>
-    internal static IQueryable<DeviceStatusExtrasEntity> StatusExtrasLeftBy(NocturneDbContext db, string source)
+    internal static IQueryable<DeviceStatusExtrasEntity> StatusExtrasLeftBy(NocturneDbContext db, RecordSelector selector)
     {
-        var aps = ApsSnapshots.Owned(db, source).IncludingDeleted();
-        var pump = PumpSnapshots.Owned(db, source).IncludingDeleted();
-        var uploader = UploaderSnapshots.Owned(db, source).IncludingDeleted();
+        var aps = ApsSnapshots.SelectedPerRow(db, selector).IncludingDeleted();
+        var pump = PumpSnapshots.SelectedPerRow(db, selector).IncludingDeleted();
+        var uploader = UploaderSnapshots.SelectedPerRow(db, selector).IncludingDeleted();
         return db.DeviceStatusExtras.Where(e => e.TenantId == db.TenantId
             && (aps.Any(s => s.CorrelationId == e.CorrelationId)
                 || pump.Any(s => s.CorrelationId == e.CorrelationId)
@@ -249,19 +251,19 @@ internal static class V4RecordTables
 
     private static V4RecordTable<T> TimeSeries<T>(
         string dataType, Type model, V4RecordKind kind, Expression<Func<NocturneDbContext, DbSet<T>>> set,
-        bool discovered = true)
-        where T : class, ITenantScoped, ISoftDeletable, IIdentified, ISourcedEntity, IObservationTimestamped, ISystemTimestamped =>
-        new(dataType, model, kind, set, SourceFilter.For<T>, e => e.DataSource, e => e.Timestamp, NewestStamp,
-            discovered ? TimeSeriesBuckets : null);
+        bool discovered = true, bool? byWriter = null)
+        where T : class, ITenantScoped, ISoftDeletable, IIdentified, ISourcedEntity, IObservationTimestamped, ISystemTimestamped, IWriterStamped =>
+        new(dataType, model, kind, set, SourceFilter.For<T>, SourceFilter.Parts<T>, e => e.DataSource, e => e.Timestamp,
+            NewestStamp, discovered ? TimeSeriesBuckets : null, byWriter ?? discovered ? TimeSeriesWriterBuckets : null);
 
     private static V4RecordTable<T> Profile<T>(Type model, Expression<Func<NocturneDbContext, DbSet<T>>> set)
-        where T : class, IProfileScopedEntity, ISystemTimestamped =>
-        new(SourceDataTypes.Profiles, model, V4RecordKind.Profile, set, SourceFilter.For<T>, e => e.DataSource,
-            e => e.Timestamp, NewestStamp, buckets: null);
+        where T : class, IProfileScopedEntity, ISystemTimestamped, IWriterStamped =>
+        new(SourceDataTypes.Profiles, model, V4RecordKind.Profile, set, SourceFilter.For<T>, SourceFilter.Parts<T>,
+            e => e.DataSource, e => e.Timestamp, NewestStamp, buckets: null, writerBuckets: null);
 
     private static V4RecordTable<T> LinkedAs<T>(
         this V4RecordTable<T> table, RecordType recordType, Func<T, MatchCriteria> criteria)
-        where T : class, ITenantScoped, ISoftDeletable, IDuplicateFlagged, ISystemTimestamped =>
+        where T : class, ITenantScoped, ISoftDeletable, IDuplicateFlagged, ISystemTimestamped, IWriterStamped =>
         table.WithDeduplication(t => new DeduplicatedTable<T>(
             recordType, t, e => e.SysCreatedAt, criteria, spanEnd: null,
             DuplicateGroupPrimaries.ByUpdate, DuplicateGroupPrimaries.Touch));
@@ -331,6 +333,83 @@ internal static class V4RecordTables
             .ToList();
     }
 
+    private static async Task<List<WriterBucket>> TimeSeriesWriterBuckets<T>(
+        string type, IQueryable<T> rows, DateTime windowStart, DateTime last24HoursDate, CancellationToken ct)
+        where T : class, ISourcedEntity, IObservationTimestamped, IWriterStamped
+    {
+        var stats = await rows
+            .Where(e => e.Timestamp >= windowStart)
+            .GroupBy(e => new { e.WriterGrantId, e.DataSource, e.Device })
+            .Select(g => new
+            {
+                g.Key.WriterGrantId,
+                g.Key.DataSource,
+                g.Key.Device,
+                Count = g.LongCount(),
+                Count24H = g.Count(x => x.Timestamp >= last24HoursDate),
+                Latest = g.Max(x => x.Timestamp),
+                Oldest = g.Min(x => x.Timestamp),
+            })
+            .ToListAsync(ct);
+
+        return stats
+            .Select(s => new WriterBucket(
+                type, s.WriterGrantId, s.DataSource, s.Device, s.Count, s.Count24H, s.Latest, s.Oldest))
+            .ToList();
+    }
+
+    private static async Task<List<WriterBucket>> BodyWeightWriterBuckets(
+        string type, IQueryable<BodyWeightEntity> rows, DateTime windowStart, DateTime last24HoursDate,
+        CancellationToken ct)
+    {
+        var fromMills = new DateTimeOffset(windowStart, TimeSpan.Zero).ToUnixTimeMilliseconds();
+        var last24HoursMills = new DateTimeOffset(last24HoursDate, TimeSpan.Zero).ToUnixTimeMilliseconds();
+        var stats = await rows
+            .Where(e => e.Mills >= fromMills)
+            .GroupBy(e => new { e.WriterGrantId, e.DataSource, e.Device })
+            .Select(g => new
+            {
+                g.Key.WriterGrantId,
+                g.Key.DataSource,
+                g.Key.Device,
+                Count = g.LongCount(),
+                Count24H = g.Count(x => x.Mills >= last24HoursMills),
+                Latest = g.Max(x => x.Mills),
+                Oldest = g.Min(x => x.Mills),
+            })
+            .ToListAsync(ct);
+
+        return stats
+            .Select(s => new WriterBucket(
+                type, s.WriterGrantId, s.DataSource, s.Device, s.Count, s.Count24H,
+                s.Latest.ToUtcDateTime(), s.Oldest.ToUtcDateTime()))
+            .ToList();
+    }
+
+    private static async Task<List<WriterBucket>> StateSpanWriterBuckets(
+        string type, IQueryable<StateSpanEntity> rows, DateTime windowStart, DateTime last24HoursDate,
+        CancellationToken ct)
+    {
+        var stats = await rows
+            .Where(s => s.StartTimestamp >= windowStart)
+            .GroupBy(s => new { s.WriterGrantId, s.Source })
+            .Select(g => new
+            {
+                g.Key.WriterGrantId,
+                g.Key.Source,
+                Count = g.LongCount(),
+                Count24H = g.Count(x => x.StartTimestamp >= last24HoursDate),
+                Latest = g.Max(x => x.StartTimestamp),
+                Oldest = g.Min(x => x.StartTimestamp),
+            })
+            .ToListAsync(ct);
+
+        return stats
+            .Select(s => new WriterBucket(
+                type, s.WriterGrantId, null, s.Source, s.Count, s.Count24H, s.Latest, s.Oldest))
+            .ToList();
+    }
+
     // StateSpan records one undifferentiated origin: its writers populate Source from the
     // reported device string (DeviceStatusDecomposer) or from the row's data source, falling back
     // to the entering party (TreatmentDecomposer). It therefore names neither handle in
@@ -389,13 +468,22 @@ internal abstract class V4RecordTable(Type entity, string name, string dataType,
     public abstract Task<List<SourceBucket>> BucketsAsync(
         NocturneDbContext db, DateTime windowStart, DateTime last24HoursDate, CancellationToken ct);
 
+    /// <summary>The buckets connections are listed by, none for a table that is a part of another's record.</summary>
+    public abstract Task<List<WriterBucket>> WriterBucketsAsync(
+        NocturneDbContext db, DateTime windowStart, DateTime last24HoursDate, CancellationToken ct);
+
+    /// <summary>Whether a row's source column equals <paramref name="source"/> exactly.</summary>
+    public abstract Task<bool> HoldsDataSourceAsync(NocturneDbContext db, string source, CancellationToken ct);
+
     public abstract Task<long> CountAsync(NocturneDbContext db, string source, CancellationToken ct);
 
+    /// <summary>Soft-deletes the rows <paramref name="selector"/> names, under its <see cref="RecordSelector.Scope"/>.</summary>
     public abstract Task<int> SoftDeleteAsync(
-        NocturneDbContext db, string source, IAuditContext? audit, string scope, CancellationToken ct);
+        NocturneDbContext db, RecordSelector selector, IAuditContext? audit, CancellationToken ct);
 
+    /// <summary>Releases the user tombstones of the rows <paramref name="selector"/> names.</summary>
     public abstract Task<int> AllowReimportAsync(
-        NocturneDbContext db, string source, IAuditContext? audit, string scope, CancellationToken ct);
+        NocturneDbContext db, RecordSelector selector, IAuditContext? audit, CancellationToken ct);
 
     /// <summary>Hard-deletes the source's rows, soft-deleted ones included (<see cref="PurgeExtensions"/>).</summary>
     public abstract Task<int> PurgeAsync(NocturneDbContext db, string source, CancellationToken ct);
@@ -403,16 +491,20 @@ internal abstract class V4RecordTable(Type entity, string name, string dataType,
 
 /// <inheritdoc cref="V4RecordTable"/>
 /// <remarks>
-/// <c>ownedBy</c> selects the rows a source owns and <c>source</c> is the column a row's source is
-/// read from. <c>eventTime</c> is when a row's event happened, null for a table read by its Unix
-/// milliseconds alone, and <c>newestStamp</c> reads the newest <c>SysUpdatedAt</c>, null for a table
-/// whose rows carry none.
+/// <c>ownedBy</c> selects the rows a source owns and <c>ownedParts</c> the same rows as disjoint parts,
+/// which a read unions (<see cref="SourceFilter.Parts{TEntity}"/>); the first is the part an index
+/// leading on the source column serves. <c>source</c> is the column a row's source is read from.
+/// <c>eventTime</c> is when a row's event happened, null for a table read by its Unix milliseconds
+/// alone, and <c>newestStamp</c> reads the newest <c>SysUpdatedAt</c>, null for a table whose rows
+/// carry none.
 /// </remarks>
 internal sealed class V4RecordTable<T> : V4RecordTable
-    where T : class, ITenantScoped, ISoftDeletable, IIdentified
+    where T : class, ITenantScoped, ISoftDeletable, IIdentified, IWriterStamped
 {
     private readonly Func<string, Expression<Func<T, bool>>> _ownedBy;
+    private readonly Func<string, IReadOnlyList<Expression<Func<T, bool>>>> _ownedParts;
     private readonly Func<string, IQueryable<T>, DateTime, DateTime, CancellationToken, Task<List<SourceBucket>>>? _buckets;
+    private readonly Func<string, IQueryable<T>, DateTime, DateTime, CancellationToken, Task<List<WriterBucket>>>? _writerBuckets;
 
     public V4RecordTable(
         string dataType,
@@ -420,16 +512,20 @@ internal sealed class V4RecordTable<T> : V4RecordTable
         V4RecordKind kind,
         Expression<Func<NocturneDbContext, DbSet<T>>> set,
         Func<string, Expression<Func<T, bool>>> ownedBy,
+        Func<string, IReadOnlyList<Expression<Func<T, bool>>>> ownedParts,
         Expression<Func<T, string?>> source,
         Expression<Func<T, DateTime>>? eventTime,
         Func<IQueryable<T>, CancellationToken, Task<DateTime?>>? newestStamp,
-        Func<string, IQueryable<T>, DateTime, DateTime, CancellationToken, Task<List<SourceBucket>>>? buckets)
+        Func<string, IQueryable<T>, DateTime, DateTime, CancellationToken, Task<List<SourceBucket>>>? buckets,
+        Func<string, IQueryable<T>, DateTime, DateTime, CancellationToken, Task<List<WriterBucket>>>? writerBuckets)
         : base(typeof(T), V4RecordTables.MemberName(set), dataType, model, kind)
     {
         Set = set.Compile();
         Source = source;
         _ownedBy = ownedBy;
+        _ownedParts = ownedParts;
         _buckets = buckets;
+        _writerBuckets = writerBuckets;
         TimedTable = eventTime is null ? null : new TimedRecordTable<T>(this, eventTime);
         LastModifiedAsync = newestStamp is null ? null : (db, ct) => newestStamp(Set(db), ct);
     }
@@ -455,9 +551,26 @@ internal sealed class V4RecordTable<T> : V4RecordTable
         return this;
     }
 
-    public Expression<Func<T, bool>> OwnedBy(string by) => _ownedBy(by);
-
     public IQueryable<T> Owned(NocturneDbContext db, string by) => Set(db).Where(_ownedBy(by));
+
+    /// <summary>The rows of <see cref="Owned"/> as disjoint parts, each read off its own index.</summary>
+    public IReadOnlyList<IQueryable<T>> OwnedParts(NocturneDbContext db, string by) =>
+        [.. _ownedParts(by).Select(part => Set(db).Where(part))];
+
+    /// <summary>The rows of <see cref="Owned"/>, for a read: <see cref="OwnedParts"/> unioned.</summary>
+    public IQueryable<T> ReadOwned(NocturneDbContext db, string by) =>
+        OwnedParts(db, by).Aggregate(Queryable.Concat);
+
+    /// <summary>The rows <paramref name="selector"/> names, a source's read as <see cref="ReadOwned"/> reads them.</summary>
+    public IQueryable<T> Selected(NocturneDbContext db, RecordSelector selector) =>
+        Set(db).Selected(selector, _ownedParts);
+
+    /// <summary>
+    /// The rows <paramref name="selector"/> names, tested on each row, for a query correlated with
+    /// another row: a union of <see cref="OwnedParts"/> there would be rebuilt for every row it is tested for.
+    /// </summary>
+    public IQueryable<T> SelectedPerRow(NocturneDbContext db, RecordSelector selector) =>
+        Set(db).Where(SourceFilter.For(selector, _ownedBy));
 
     public override Task<List<SourceBucket>> BucketsAsync(
         NocturneDbContext db, DateTime windowStart, DateTime last24HoursDate, CancellationToken ct) =>
@@ -465,16 +578,29 @@ internal sealed class V4RecordTable<T> : V4RecordTable
             ? Task.FromResult(new List<SourceBucket>())
             : _buckets(DataType, Set(db), windowStart, last24HoursDate, ct);
 
+    public override Task<List<WriterBucket>> WriterBucketsAsync(
+        NocturneDbContext db, DateTime windowStart, DateTime last24HoursDate, CancellationToken ct) =>
+        _writerBuckets is null
+            ? Task.FromResult(new List<WriterBucket>())
+            : _writerBuckets(DataType, Set(db), windowStart, last24HoursDate, ct);
+
+    public override Task<bool> HoldsDataSourceAsync(NocturneDbContext db, string by, CancellationToken ct)
+    {
+        Expression<Func<string>> value = () => by;
+        var matches = Expression.Lambda<Func<T, bool>>(Expression.Equal(Source.Body, value.Body), Source.Parameters);
+        return Set(db).Where(matches).AnyAsync(ct);
+    }
+
     public override Task<long> CountAsync(NocturneDbContext db, string by, CancellationToken ct) =>
-        Owned(db, by).LongCountAsync(ct);
+        ReadOwned(db, by).LongCountAsync(ct);
 
     public override Task<int> SoftDeleteAsync(
-        NocturneDbContext db, string by, IAuditContext? audit, string scope, CancellationToken ct) =>
-        db.AuditedSoftDeleteAsync(Owned(db, by), audit, scope, ct);
+        NocturneDbContext db, RecordSelector selector, IAuditContext? audit, CancellationToken ct) =>
+        db.AuditedSoftDeleteAsync(Selected(db, selector), audit, selector.Scope, ct);
 
     public override Task<int> AllowReimportAsync(
-        NocturneDbContext db, string by, IAuditContext? audit, string scope, CancellationToken ct) =>
-        db.AuditedAllowReimportAsync(Owned(db, by), audit, scope, ct);
+        NocturneDbContext db, RecordSelector selector, IAuditContext? audit, CancellationToken ct) =>
+        db.AuditedAllowReimportAsync(Selected(db, selector), audit, selector.Scope, ct);
 
     public override Task<int> PurgeAsync(NocturneDbContext db, string by, CancellationToken ct) =>
         Set(db).PurgeAsync(_ownedBy(by), ct);
@@ -505,7 +631,7 @@ internal abstract class TimedRecordTable(V4RecordTable table)
 /// <inheritdoc cref="TimedRecordTable"/>
 internal sealed class TimedRecordTable<T>(V4RecordTable<T> table, Expression<Func<T, DateTime>> eventTime)
     : TimedRecordTable(table)
-    where T : class, ITenantScoped, ISoftDeletable, IIdentified
+    where T : class, ITenantScoped, ISoftDeletable, IIdentified, IWriterStamped
 {
     private readonly string _eventTimeName = V4RecordTables.MemberName(eventTime);
 
@@ -519,7 +645,7 @@ internal sealed class TimedRecordTable<T>(V4RecordTable<T> table, Expression<Fun
         var name = _eventTimeName;
         if (extent)
         {
-            var span = await table.Owned(db, by)
+            var span = await table.ReadOwned(db, by)
                 .GroupBy(_ => 1)
                 .Select(g => new
                 {
@@ -532,20 +658,28 @@ internal sealed class TimedRecordTable<T>(V4RecordTable<T> table, Expression<Fun
             return new SourceTypeStats(table.DataType, span?.Total ?? 0, span?.Last24H ?? 0, span?.Latest, span?.Oldest);
         }
 
-        var total = await table.Owned(db, by).LongCountAsync(ct);
+        var total = await table.ReadOwned(db, by).LongCountAsync(ct);
         var recent = total > 0
-            ? await table.Owned(db, by).Where(e => EF.Property<DateTime>(e, name) >= last24Hours).CountAsync(ct)
+            ? await table.ReadOwned(db, by).Where(e => EF.Property<DateTime>(e, name) >= last24Hours).CountAsync(ct)
             : 0;
         return new SourceTypeStats(table.DataType, total, recent);
     }
 
+    /// <remarks>
+    /// Only the first part is read in time order, off the index its source column leads. A part read in
+    /// time order with no index in that order is a walk of the tenant's rows by time until one matches,
+    /// which for a source that holds none of them is every row. The group keeps PostgreSQL from turning
+    /// the <c>max</c> or <c>min</c> over the union into that walk for every part.
+    /// </remarks>
     public override Task<DateTime?> EdgeAsync(NocturneDbContext db, string by, bool latest, CancellationToken ct)
     {
         var name = _eventTimeName;
-        var owned = table.Set(db).AsNoTracking().Where(table.OwnedBy(by));
-        return (latest ? owned.OrderByDescending(eventTime) : owned.OrderBy(eventTime))
-            .Select(e => (DateTime?)EF.Property<DateTime>(e, name))
-            .FirstOrDefaultAsync(ct);
+        IQueryable<DateTime?> Times(IQueryable<T> rows) => rows.Select(e => (DateTime?)EF.Property<DateTime>(e, name));
+
+        var parts = table.OwnedParts(db, by);
+        var nearest = (latest ? parts[0].OrderByDescending(eventTime) : parts[0].OrderBy(eventTime)).Take(1);
+        var edges = parts.Skip(1).Select(Times).Aggregate(Times(nearest), Queryable.Concat).GroupBy(_ => 1);
+        return (latest ? edges.Select(g => g.Max()) : edges.Select(g => g.Min())).FirstOrDefaultAsync(ct);
     }
 
     public override IDataOverviewTable ToOverview(bool attributed) =>
@@ -600,7 +734,7 @@ internal sealed class DeduplicatedTable<T>(
     Func<NocturneDbContext, DbSet<T>, RecordType, int, CancellationToken, IAsyncEnumerable<DisagreeingRow[]>> pages,
     Func<IQueryable<T>, IReadOnlyList<Guid>, DateTime, CancellationToken, Task<int>>? touch)
     : DeduplicatedTable(recordType)
-    where T : class, ITenantScoped, ISoftDeletable, IDuplicateFlagged
+    where T : class, ITenantScoped, ISoftDeletable, IDuplicateFlagged, IWriterStamped
 {
     private V4RecordTable<T> Table => timed.Table;
 

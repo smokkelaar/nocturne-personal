@@ -122,7 +122,7 @@ public class LoopAnalysisSettingsEvidenceIntegrationTests(ApiIntegrationTestFixt
         await SeedCarbsAsync(now.AddHours(-24.5), 30);
         using var clamped = await CreateHistoryClampedClientAsync();
 
-        var body = await GetOkAsync(clamped, Query($"{Week}&compare=previous"));
+        var body = await GetOkAsync(clamped, Query($"{RecentDays(3)}&compare=previous"));
 
         body.GetProperty("historyClamped").GetBoolean().Should().BeTrue();
         body.GetProperty("withheldReason").GetString().Should().Be("HistoryClamped");
@@ -166,7 +166,7 @@ public class LoopAnalysisSettingsEvidenceIntegrationTests(ApiIntegrationTestFixt
     }
 
     [Fact]
-    public async Task A_share_gets_its_reason_and_no_evidence()
+    public async Task A_share_gets_its_ranges_and_no_evidence()
     {
         await SeedProfileAsync("Australia/Sydney");
         await SeedDaysAsync(WeekStart, 7);
@@ -174,9 +174,9 @@ public class LoopAnalysisSettingsEvidenceIntegrationTests(ApiIntegrationTestFixt
 
         var body = await GetOkAsync(share, Query($"{Week}&compare=previous"));
 
-        body.GetProperty("timeZoneUnavailableReason").GetString().Should().Be("Share");
+        Absent(body, "timeZoneUnavailableReason").Should().BeTrue();
         body.GetProperty("withheldSeries").EnumerateArray().Select(s => s.GetString()).Should().Contain("SettingsEvidence");
-        Absent(body, "primaryRange").Should().BeTrue();
+        Absent(body, "primaryRange").Should().BeFalse();
         Absent(body, "primary").Should().BeTrue();
         Absent(body, "comparison").Should().BeTrue();
     }

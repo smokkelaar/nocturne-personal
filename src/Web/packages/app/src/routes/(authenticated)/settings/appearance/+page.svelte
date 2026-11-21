@@ -1,4 +1,5 @@
 <script lang="ts">
+  import HelpPreferences from "#lib/components/help/HelpPreferences.svelte";
   import { GlucoseProcessing } from "#lib/api/index.js";
   import { a1cLabel } from "#lib/utils/a1c-formatting.js";
   import { time } from "#lib/utils/formatting.js";
@@ -42,7 +43,7 @@
   import TitleFaviconSettings from "#lib/components/settings/TitleFaviconSettings.svelte";
   import DashboardWidgetConfigurator from "#lib/components/settings/DashboardWidgetConfigurator.svelte";
   import DashboardRailConfigurator from "#lib/components/settings/DashboardRailConfigurator.svelte";
-  import TextureSwatch from "#lib/components/charts/print/TextureSwatch.svelte";
+  import { TextureSwatch } from "@nocturne/charts/print";
   import LanguageSelector from "#lib/components/LanguageSelector.svelte";
   import CarbRatioFormatSelect from "#lib/components/settings/CarbRatioFormatSelect.svelte";
   import { updateLanguagePreference } from "#lib/api/user-preferences.remote.js";
@@ -206,6 +207,8 @@
       <p class="text-muted-foreground">Customize the look and feel of Nocturne</p>
     </div>
   </div>
+
+  <HelpPreferences />
 
   {#if uiSettingsQuery?.loading}
     <SettingsPageSkeleton cardCount={4} />

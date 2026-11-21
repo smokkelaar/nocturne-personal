@@ -14,19 +14,18 @@ import {
   glucoseChartLookback,
   GLUCOSE_CHART_FETCH_HOURS,
 } from "#lib/stores/appearance-store.svelte.js";
-import { resolveChartThresholds } from "#lib/constants/glucose-thresholds.js";
+import { resolveChartThresholds } from "@nocturne/charts/core";
 import { mergeChartData, replaceWindow } from "#lib/utils/chart-data-merge.js";
-import type { TransformedChartData } from "#lib/utils/chart-data-transform.js";
+import type { TransformedChartData } from "@nocturne/charts/core";
 import { stableBy } from "#lib/utils/stable-by.js";
 import { mergeRealtimeGlucose } from "./merge-glucose";
 import {
   createChartDataView,
-  type ChartDataEngine,
+  type ChartDataView,
   type PredictionAvailability,
-} from "./chart-data-view.svelte";
+} from "@nocturne/charts";
 import { fresh } from "#lib/api/fresh-query.js";
 
-export * from "./chart-data-view.svelte";
 
 // ===== Options & Interfaces =====
 
@@ -53,6 +52,8 @@ export interface ChartDataEngineOptions {
    */
   initialPredictionsAvailable?: boolean | null;
   demoMode?: boolean;
+  /** Fixed examples must never refresh from a patient API. */
+  staticData?: boolean;
   /**
    * How wide a window the consumer draws, and so how far the realtime merge may
    * reach. `"buffer"` is `fullDataRange` — `dateRange` when one was named, the
@@ -116,7 +117,7 @@ function shiftDate(date: Date, ms: number): Date {
 
 export function createChartDataEngine(
   options: ChartDataEngineOptions
-): ChartDataEngine {
+): ChartDataView {
   const realtimeStore = getRealtimeStore();
   const isBrowser = typeof window !== "undefined";
   const realtimeOnly = $derived(options.glucoseSource === "realtime");
@@ -247,7 +248,7 @@ export function createChartDataEngine(
 
   // Prediction fetch trigger (skipped when external predictions are provided)
   const predictionFetchTrigger = $derived.by(() => {
-    if (!isBrowser || hasExternalPredictions) return null;
+    if (!isBrowser || hasExternalPredictions || options.staticData) return null;
     const enabled = predictionEnabled.current;
     const latestEntryMills =
       serverChartData?.glucoseData?.[
@@ -273,7 +274,7 @@ export function createChartDataEngine(
     if (!trigger) return;
 
     let cancelled = false;
-    getPredictions({})
+    fresh(getPredictions({}))
       .then((data) => {
         if (!cancelled) {
           predictionData = data;
@@ -324,7 +325,7 @@ export function createChartDataEngine(
 
   // Skip if we already have initial data from SSR streaming
   $effect(() => {
-    if (realtimeOnly) return;
+    if (realtimeOnly || options.staticData) return;
     if (options.initialChartData && untrack(() => serverChartData)) return;
 
     const range = stableFetchRange;
@@ -438,7 +439,7 @@ export function createChartDataEngine(
   });
 
   $effect(() => {
-    if (!isBrowser || dataFingerprint === null || !realtimeStore.isReady) return;
+    if (!isBrowser || options.staticData || dataFingerprint === null || !realtimeStore.isReady) return;
     // The store's own initial load rewrites these arrays; SSR data predates it by seconds.
     if (seenFingerprint === null) {
       seenFingerprint = dataFingerprint;
@@ -450,7 +451,7 @@ export function createChartDataEngine(
   });
 
   $effect(() => {
-    if (!isBrowser || !hasInitialData) return;
+    if (!isBrowser || options.staticData || !hasInitialData) return;
 
     fallbackTimer = setTimeout(refreshRecent, RECENT_REFRESH_FALLBACK_MS);
     const onVisible = () => {
@@ -469,7 +470,7 @@ export function createChartDataEngine(
 
   // Check prediction service availability on mount
   $effect(() => {
-    if (!isBrowser || !(options.enablePredictions ?? true)) return;
+    if (!isBrowser || options.staticData || !(options.enablePredictions ?? true)) return;
 
     let cancelled = false;
     getPredictionStatus({})
@@ -539,7 +540,8 @@ export function createChartDataEngine(
       return chartDataError;
     },
     get predictionServiceAvailable() {
-      return predictionServiceAvailable;
+      // Fixed examples carry their own forecast and never ask the service.
+      return predictionServiceAvailable || (options.staticData === true && hasExternalPredictions);
     },
     get predictionAvailability() {
       return predictionAvailability;

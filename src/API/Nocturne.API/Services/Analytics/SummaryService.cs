@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
+using Nocturne.Core.Constants;
 using Nocturne.Core.Contracts.Analytics;
 using Nocturne.Core.Contracts.Legacy;
 using Nocturne.Core.Contracts.Profiles;
@@ -146,13 +147,13 @@ public class SummaryService : ISummaryService
 
         foreach (var treatment in treatments)
         {
-            if (treatment.EventType == "Temp Basal")
+            if (treatment.EventType == TreatmentTypes.TempBasal)
             {
                 tempBasals.Add(treatment);
                 continue;
             }
 
-            if (treatment.EventType == "Temporary Target")
+            if (treatment.EventType == TreatmentTypes.TemporaryTarget)
             {
                 result.Targets.Add(
                     new SummaryTarget

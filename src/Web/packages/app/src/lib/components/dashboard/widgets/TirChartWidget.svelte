@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { dashboardExamples } from "../demo-context.js";
+  const examples = dashboardExamples();
   import { formatNumber } from "#lib/utils/formatting.js";
   import { onMount } from "svelte";
   import WidgetCard from "./WidgetCard.svelte";
@@ -14,11 +16,15 @@
 
   // Fetch on the client after hydration — the underlying API can be slow and
   // would otherwise block SSR (timing out and breaking hydration).
-  let statsPromise = $state<ReturnType<typeof getMultiPeriodStatistics> | null>(
+  let statsPromise = $state<Promise<import("#lib/api/index.js").MultiPeriodStatistics> | null>(
     null
   );
   onMount(() => {
-    statsPromise = getMultiPeriodStatistics();
+    if (!examples) statsPromise = getMultiPeriodStatistics();
+  });
+
+  $effect(() => {
+    if (examples) statsPromise = Promise.resolve(examples.statistics);
   });
 
   function toggleView() {

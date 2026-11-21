@@ -8,12 +8,17 @@ namespace Nocturne.Infrastructure.Data.Entities;
 /// Maps to Nocturne.Core.Models.StateSpan
 /// </summary>
 [Table("state_spans")]
-public class StateSpanEntity : ILegacyIdentified, IAuditable, IEntityTimestamped, IDuplicateFlagged
+public class StateSpanEntity : ILegacyIdentified, IAuditable, IEntityTimestamped, IDuplicateFlagged, IWriterStamped, IWriteBackTracked
 {
     /// <inheritdoc />
     [AuditIgnored]
     [Column("is_duplicate")]
     public bool IsDuplicate { get; set; }
+
+    /// <inheritdoc />
+    [AuditIgnored]
+    [Column("written_live")]
+    public bool WrittenLive { get; set; }
 
     /// <summary>
     /// Identifier of the tenant this state span belongs to
@@ -58,6 +63,11 @@ public class StateSpanEntity : ILegacyIdentified, IAuditable, IEntityTimestamped
     [Column("source")]
     [MaxLength(50)]
     public string? Source { get; set; }
+
+    /// <inheritdoc />
+    [AuditIgnored]
+    [Column("writer_grant_id")]
+    public Guid? WriterGrantId { get; set; }
 
     /// <summary>
     /// Category-specific metadata (stored as JSON)

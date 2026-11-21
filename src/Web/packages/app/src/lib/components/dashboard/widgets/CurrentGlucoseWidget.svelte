@@ -1,12 +1,13 @@
 <script lang="ts">
   import WidgetCard from "./WidgetCard.svelte";
-  import { trackUnwashedFill } from "../glucose-tile-wash-state.svelte";
+  import { dashboardExamples } from "../demo-context.js";
+  import { trackUnwashedFill } from "../glucose-tile-wash-state.svelte.js";
   import { stillArtwork } from "#lib/watercolour-deferral.svelte.js";
   import { GlucoseValueIndicator } from "#lib/components/shared/index.js";
   import { getRealtimeStore } from "#lib/stores/realtime-store.svelte.js";
   import { glucoseUnits } from "#lib/stores/appearance-store.svelte.js";
   import { displayedGlucose } from "#lib/stores/current-glucose-status.svelte.js";
-  import { STALE_THRESHOLD_MS } from "#lib/constants/staleness.js";
+  import { STALE_THRESHOLD_MS } from "@nocturne/charts/core";
   import { getGlucoseTileVariant } from "#lib/utils/glucose-status.js";
   import { getDirectionInfo } from "#lib/utils/index.js";
   import {
@@ -29,24 +30,27 @@
   import WifiOff from "@lucide/svelte/icons/wifi-off";
 
   const realtimeStore = getRealtimeStore();
+  const examples = dashboardExamples();
 
   const units = $derived(glucoseUnits.current);
   const unitLabel = $derived(getUnitLabel(units));
   const glucose = displayedGlucose(realtimeStore);
   const tileVariant = $derived(getGlucoseTileVariant(glucose.status));
   const lastUpdated = $derived(realtimeStore.lastUpdated);
-  const now = $derived(realtimeStore.now);
+  const now = $derived(examples?.now ?? realtimeStore.now);
 
   const isLoading = $derived(glucose.currentBG === 0 && realtimeStore.entries.length === 0);
   const isStale = $derived(now - lastUpdated > STALE_THRESHOLD_MS);
-  const isDisconnected = $derived(realtimeStore.connectionUnavailable);
+  const isDisconnected = $derived(examples ? !examples.connected : realtimeStore.connectionUnavailable);
   const directionInfo = $derived(getDirectionInfo(glucose.direction));
   const DirectionIcon = $derived(directionInfo.icon);
   // Over the flat range fill, so the tile reads the same until it arrives.
   const tileWash = stillArtwork(() => import("../GlucoseTileWash.svelte"));
   trackUnwashedFill(() => ({ loading: isLoading, stale: isStale, disconnected: isDisconnected, variant: tileVariant, washed: tileWash.component !== null }));
 
-  const batteryStatusPromise = getCurrentBatteryStatus({ recentMinutes: 30 });
+  const batteryStatusPromise = examples
+    ? Promise.resolve(examples.battery)
+    : getCurrentBatteryStatus({ recentMinutes: 30 });
 
   function batteryIcon(level: number | undefined) {
     if (!level) return BatteryWarning;

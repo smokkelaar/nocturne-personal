@@ -219,6 +219,8 @@ public static class ServiceCollectionExtensions
     {
         services.AddScoped<IAlertTrackerRepository, AlertTrackerRepository>();
         services.AddScoped<IAlertRuleRepository, AlertRuleRepository>();
+        services.AddScoped<IDndWindowRepository, DndWindowRepository>();
+        services.AddScoped<ITenantAlertSettingsRepository, TenantAlertSettingsRepository>();
         services.AddScoped<ITrackerRepository, TrackerRepository>();
         services.AddScoped<IStateSpanRepository, StateSpanRepository>();
         services.AddScoped<ISleepSessionRepository, SleepSessionRepository>();
@@ -226,7 +228,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IActivityRecordRepository, ActivityRecordRepository>();
         services.AddScoped<IHeartRateRepository, HeartRateRepository>();
         services.AddScoped<IObservedHealthSeriesRepository<StepCount>, StepCountRepository>();
-        services.AddScoped<IHealthSeriesRepository<BodyWeight>, BodyWeightRepository>();
+        services.AddScoped<IBodyWeightRepository, BodyWeightRepository>();
+        services.AddScoped<IHealthSeriesRepository<BodyWeight>>(sp => sp.GetRequiredService<IBodyWeightRepository>());
         services.AddScoped<IHealthRecordTransactions, HealthRecordTransactions>();
         services.AddScoped<ISystemEventRepository, SystemEventRepository>();
         services.AddScoped<IUserFoodFavoriteRepository, UserFoodFavoriteRepository>();

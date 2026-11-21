@@ -48,7 +48,7 @@
             {#if invite.maxUses}
               &middot; {invite.useCount}/{invite.maxUses} uses
             {:else}
-              &middot; {plural(invite.useCount, ["# use", "# uses"])}
+              &middot; {plural(invite.useCount ?? 0, ["# use", "# uses"])}
             {/if}
             {#if invite.limitTo24Hours}
               &middot; Last 24 hours only

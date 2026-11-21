@@ -87,7 +87,7 @@
   {#if info?.changedDuringPeriod}
     <span
       class="inline-flex items-center text-muted-foreground ml-1"
-      title="Changed {info.lastChangedAt ? formatNumericDate(new Date(info.lastChangedAt)) : 'during period'} ({plural(info.changeCount, ['# change during this period', '# changes during this period'])})"
+      title="Changed {info.lastChangedAt ? formatNumericDate(new Date(info.lastChangedAt)) : 'during period'} ({plural(info.changeCount ?? 0, ['# change during this period', '# changes during this period'])})"
     >
       <History class="w-3 h-3" />
     </span>

@@ -502,7 +502,7 @@
                 {/if}
               </div>
               <div class="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
-                <span>{plural(source.readingCount, ["# reading", "# readings"])}</span>
+                <span>{plural(source.readingCount ?? 0, ["# reading", "# readings"])}</span>
                 <span>Last seen {formatLastSeen(source.lastSeen)}</span>
               </div>
             </div>

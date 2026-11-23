@@ -334,7 +334,7 @@ internal sealed class LabHbA1cDataset : IReportDataset
     public IReadOnlyList<ReportField> Fields { get; } =
     [
         new("day", "Day", ReportFieldKind.Day, null, "The local day it was measured: its midnight, Unix milliseconds."),
-        new("hba1c", "Lab HbA1c", ReportFieldKind.Percent, "%", "The HbA1c result, in percent (NGSP).", Color: ChartColor.GlucoseInRange, Aggregate: ReportAggregate.Last),
+        new("hba1c", "Lab HbA1c", ReportFieldKind.Number, ReportField.A1cUnit, "The HbA1c result, in percent (NGSP) or mmol/mol (IFCC).", Color: ChartColor.GlucoseInRange, Aggregate: ReportAggregate.Last),
     ];
 
     public IReadOnlyList<ReportPanelKind> PanelKinds { get; } = [ReportPanelKind.Table];
@@ -355,6 +355,7 @@ internal sealed class LabHbA1cDataset : IReportDataset
     public async Task<ReportDatasetOutput> RunAsync(ReportDatasetRequest request, CancellationToken cancellationToken)
     {
         var zone = await SeriesRows.ZoneAsync(request, cancellationToken);
+        var mmolMol = request.A1cMmolMol;
         var (start, end) = StoredDays(request.From, request.To, zone);
         await using var db = await request.Services.GetRequiredService<INocturneDbContextFactory>().CreateAsync(cancellationToken);
         var results = await db.LabHbA1cResults.AsNoTracking()
@@ -374,9 +375,9 @@ internal sealed class LabHbA1cDataset : IReportDataset
 
         var rows = results.Select(r => SeriesRows.Row(
             ("day", Midnight(DateOnly.FromDateTime(r.MeasuredAt), zone)),
-            ("hba1c", ScaledRounding.Round(r.ValuePercent, 1)))).ToList();
+            ("hba1c", ReportA1c.Value(r.ValuePercent, mmolMol)))).ToList();
         var latest = results[^1];
-        var sentence = $"Latest lab HbA1c: {ReportFacts.Number(latest.ValuePercent)}% on {request.Clock.Date(DateOnly.FromDateTime(latest.MeasuredAt))}, "
+        var sentence = $"Latest lab HbA1c: {ReportA1c.WithUnit(latest.ValuePercent, mmolMol)} on {request.Clock.Date(DateOnly.FromDateTime(latest.MeasuredAt))}, "
             + $"of {ReportFacts.Plural(results.Count, "result")} in this period.";
         string? cutNote = cut
             ? $"Only the first {Budget} results are shown, to {request.Clock.Date(DateOnly.FromDateTime(latest.MeasuredAt))}."
@@ -387,11 +388,11 @@ internal sealed class LabHbA1cDataset : IReportDataset
             CutNote = cutNote,
             Resolution = new ReportResolution(0, 0, stored, rows.Count, cut),
             Summary = sentence + (results.Count > 1
-                ? $"\nFrom {ReportFacts.Number(results.Min(r => r.ValuePercent))}% to {ReportFacts.Number(results.Max(r => r.ValuePercent))}%."
+                ? $"\nFrom {ReportA1c.WithUnit(results.Min(r => r.ValuePercent), mmolMol)} to {ReportA1c.WithUnit(results.Max(r => r.ValuePercent), mmolMol)}."
                 : "") + (cutNote is null ? "" : $"\n{cutNote}"),
             Facts =
             [
-                new ReportFact("Latest", ReportFacts.Number(latest.ValuePercent), "%", request.Clock.Date(DateOnly.FromDateTime(latest.MeasuredAt)), ["hba1c"]),
+                new ReportFact("Latest", ReportA1c.Text(latest.ValuePercent, mmolMol), ReportA1c.Unit(mmolMol), request.Clock.Date(DateOnly.FromDateTime(latest.MeasuredAt)), ["hba1c"]),
                 ReportFacts.Count("Results", results.Count).Of("hba1c"),
             ],
             Sentence = sentence,
@@ -435,7 +436,7 @@ internal sealed class EHbA1cDataset : IReportDataset
     public IReadOnlyList<ReportField> Fields { get; } =
     [
         new("day", "Day", ReportFieldKind.Day, null, "Local midnight at the start of the day, Unix milliseconds."),
-        new("ehba1c", "eHbA1c", ReportFieldKind.Percent, "%", "The estimated HbA1c, in percent (NGSP).", Color: ChartColor.Chart4, Aggregate: ReportAggregate.Mean),
+        new("ehba1c", "eHbA1c", ReportFieldKind.Number, ReportField.A1cUnit, "The estimated HbA1c, in percent (NGSP) or mmol/mol (IFCC).", Color: ChartColor.Chart4, Aggregate: ReportAggregate.Mean),
         new("weightedMean", "Weighted mean glucose", ReportFieldKind.Number, ReportField.GlucoseUnit,
             "The recency-weighted mean glucose of the 90 days the estimate reads.", Color: ChartColor.GlucoseInRange, Aggregate: ReportAggregate.Mean),
     ];
@@ -462,6 +463,7 @@ internal sealed class EHbA1cDataset : IReportDataset
         var last = DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(request.To.AddTicks(-1), zone).DateTime);
         var overview = request.Services.GetRequiredService<IDataOverviewService>();
 
+        var mmolMol = request.A1cMmolMol;
         var points = new List<(DateOnly Day, EHbA1cPoint Point)>();
         for (var year = first.Year; year <= last.Year; year++)
         {
@@ -480,23 +482,23 @@ internal sealed class EHbA1cDataset : IReportDataset
 
         var rows = points.Select(p => SeriesRows.Row(
             ("day", LabHbA1cDataset.Midnight(p.Day, zone)),
-            ("ehba1c", ScaledRounding.Round(p.Point.EstimatedA1cPercent, 2)),
+            ("ehba1c", ReportA1c.Value(p.Point.EstimatedA1cPercent, mmolMol)),
             ("weightedMean", ReportGlucose.Scale(p.Point.WeightedAverageGlucoseMgdl, request.UseMmol)))).ToList();
         var latest = points[^1];
         var values = points.Select(p => p.Point.EstimatedA1cPercent).ToList();
-        var sentence = $"Latest estimated HbA1c: {ReportFacts.Number(latest.Point.EstimatedA1cPercent, "0.0#")}% on {request.Clock.Date(latest.Day)}.";
+        var sentence = $"Latest estimated HbA1c: {ReportA1c.WithUnit(latest.Point.EstimatedA1cPercent, mmolMol)} on {request.Clock.Date(latest.Day)}.";
         return new ReportDatasetOutput
         {
             Rows = rows,
             Resolution = new ReportResolution(0, 0, rows.Count, rows.Count, false),
             Summary = sentence + (points.Count > 1
-                ? $"\nFrom {ReportFacts.Number(values.Min(), "0.0#")}% to {ReportFacts.Number(values.Max(), "0.0#")}%."
+                ? $"\nFrom {ReportA1c.WithUnit(values.Min(), mmolMol)} to {ReportA1c.WithUnit(values.Max(), mmolMol)}."
                 : ""),
             Facts =
             [
-                new ReportFact("Latest", ReportFacts.Number(latest.Point.EstimatedA1cPercent, "0.0#"), "%", request.Clock.Date(latest.Day), ["ehba1c"]),
-                new ReportFact("Lowest", ReportFacts.Number(values.Min(), "0.0#"), "%", null, ["ehba1c"]),
-                new ReportFact("Highest", ReportFacts.Number(values.Max(), "0.0#"), "%", null, ["ehba1c"]),
+                new ReportFact("Latest", ReportA1c.Text(latest.Point.EstimatedA1cPercent, mmolMol), ReportA1c.Unit(mmolMol), request.Clock.Date(latest.Day), ["ehba1c"]),
+                new ReportFact("Lowest", ReportA1c.Text(values.Min(), mmolMol), ReportA1c.Unit(mmolMol), null, ["ehba1c"]),
+                new ReportFact("Highest", ReportA1c.Text(values.Max(), mmolMol), ReportA1c.Unit(mmolMol), null, ["ehba1c"]),
             ],
             Sentence = sentence,
             SentenceAbout = ["ehba1c"],

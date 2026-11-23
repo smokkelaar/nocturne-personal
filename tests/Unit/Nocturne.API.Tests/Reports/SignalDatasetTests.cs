@@ -342,4 +342,34 @@ public class SignalDatasetTests
         output.Facts.Single(f => f.Label == "Latest").Value.Should().Be("6.5");
         log.Datasets.Should().Equal("glucose");
     }
+
+    [Fact]
+    public async Task Estimated_hba1c_is_in_mmol_per_mol_for_a_caller_who_reads_hba1c_in_mmol_per_mol()
+    {
+        var overview = new Mock<IDataOverviewService>();
+        overview.Setup(o => o.GetEHbA1cTimelineAsync(2026, null, It.IsAny<CancellationToken>())).ReturnsAsync(new EHbA1cTimelineResponse
+        {
+            Year = 2026,
+            Points = [new EHbA1cPoint { Date = "2026-01-02", EstimatedA1cPercent = 7, WeightedAverageGlucoseMgdl = 154 }],
+        });
+        var services = new ServiceCollection().AddSingleton(overview.Object).BuildServiceProvider();
+        var request = new ReportDatasetRequest(new EHbA1cParameters(), ReportPanelKind.Chart,
+            new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero), new DateTimeOffset(2026, 1, 3, 0, 0, 0, TimeSpan.Zero),
+            false, new HashSet<string> { Scope.GlucoseRead }, services, new ReportReadLog(), Zone: TimeZoneInfo.Utc, A1cMmolMol: true);
+
+        var output = await new EHbA1cDataset().RunAsync(request, CancellationToken.None);
+
+        output.Rows.Single()["ehba1c"].Should().Be(53.0);
+        output.Facts.Single(f => f.Label == "Latest").Should().Match<ReportFact>(f => f.Value == "53.0" && f.Unit == "mmol/mol");
+        output.Sentence.Should().Contain("53.0 mmol/mol");
+    }
+
+    [Theory]
+    [InlineData(false, "%")]
+    [InlineData(true, "mmol/mol")]
+    public void The_hba1c_fields_are_in_the_callers_hba1c_unit(bool mmolMol, string unit)
+    {
+        new EHbA1cDataset().Fields.Single(f => f.Name == "ehba1c").ResolveUnit(false, mmolMol).Unit.Should().Be(unit);
+        new LabHbA1cDataset().Fields.Single(f => f.Name == "hba1c").ResolveUnit(true, mmolMol).Unit.Should().Be(unit);
+    }
 }

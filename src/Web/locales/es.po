@@ -46023,10 +46023,8 @@ msgstr "Confiar en este dispositivo durante {0} días"
 msgid "You will not need a code on this device during that time. Select this only on a device that only you use."
 msgstr "Durante ese tiempo no necesitarás ningún código en este dispositivo. Selecciona esta opción solo si eres la única persona que usa el dispositivo."
 
-#. 0: otherSessionCount; 1: otherSessionCount === 1 ? "other session" \\: "other sessions"
-#: src/lib/components/settings/ActiveSessions.svelte
-msgid "Sign out {0} {1}? This device stays signed in. The other devices will need to sign in again, and Nocturne stops trusting them."
-msgstr "¿Cerrar la sesión en los demás dispositivos ({0} {1})? La sesión de este dispositivo seguirá abierta. Tendrás que volver a iniciar sesión en los demás y Nocturne dejará de confiar en ellos."
+#~ msgid "Sign out {0} {1}? This device stays signed in. The other devices will need to sign in again, and Nocturne stops trusting them."
+#~ msgstr "¿Cerrar la sesión en los demás dispositivos ({0} {1})? La sesión de este dispositivo seguirá abierta. Tendrás que volver a iniciar sesión en los demás y Nocturne dejará de confiar en ellos."
 
 #: src/lib/components/settings/TrustedDevices.svelte
 msgid "Device removed."
@@ -49813,7 +49811,7 @@ msgid_plural "# changes during this period"
 msgstr[0] ""
 msgstr[1] ""
 
-#. 0: info.lastChangedAt ? formatNumericDate(new Date(info.lastChangedAt)) \\: 'during period'; 1: plural(info.changeCount, ['# change during this period', '# changes during this period'])
+#. 0: info.lastChangedAt ? formatNumericDate(new Date(info.lastChangedAt)) \\: 'during period'; 1: plural(info.changeCount ?? 0, ['# change during this period', '# changes during this period'])
 #: src/lib/components/reports/ScheduleFooter.svelte
 msgid "Changed {0} ({1})"
 msgstr ""
@@ -49991,3 +49989,20 @@ msgstr[1] ""
 #: src/routes/(authenticated)/community/translations/[locale]/+page.svelte
 msgid "All {0} for {1} will be deleted. This cannot be undone."
 msgstr ""
+
+#: src/lib/components/settings/ActiveSessions.svelte
+msgid "Sign out # other session?"
+msgid_plural "Sign out # other sessions?"
+msgstr[0] ""
+msgstr[1] ""
+
+#. 0: plural(otherSessionCount, [ "Sign out # other session?", "Sign out # other sessions?", ])
+#: src/lib/components/settings/ActiveSessions.svelte
+msgid "{0} This device stays signed in. The other devices will need to sign in again, and Nocturne stops trusting them."
+msgstr ""
+
+#: src/routes/(authenticated)/reports/data-quality/sensor-integrity/+page.svelte
+msgid "# flagged window"
+msgid_plural "# flagged windows"
+msgstr[0] ""
+msgstr[1] ""

@@ -63,9 +63,9 @@
    * an overview strip, and boundary labels on the dashed rules or only in the key.
    */
   const CHART_DESIGN = {
-    lineMode: "zones",
-    zoomMode: "drag",
-    boundaryLabels: "inline",
+    lineMode: "blend",
+    zoomMode: "overview",
+    boundaryLabels: "key",
   } as const;
 
   const ZOOM_PRESETS: { key: string; label: string; months: number | null }[] = [

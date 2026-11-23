@@ -1,7 +1,8 @@
 <!--
   The eHbA1c timeline: one line in the colour of the zone each value falls in, a dashed rule in the
-  colour of the zone above each boundary with its label, lab results as triangles, and an overview
-  strip below the chart that picks the period shown.
+  colour of the zone above each boundary, the name and range of the zone on each side of a rule just
+  above and below it, lab results as triangles, and an overview strip below the chart that picks the
+  period shown.
 -->
 <script lang="ts">
   import type { Snippet } from "svelte";
@@ -14,8 +15,11 @@
 
   export type TimelinePoint = { date: Date; displayValue: number };
   export type LabPoint = { id?: string; date: Date; displayValue: number; title: string };
-  /** A zone boundary: values above `value` belong to the next zone up. */
-  export type ZoneBoundary = { key: string; label: string; value: number; valueLabel: string };
+  /**
+   * A zone boundary: values above `value` belong to the next zone up. `above` and `below` name the
+   * zones on each side of it.
+   */
+  export type ZoneBoundary = { key: string; value: number; above: string; below: string };
   export type Zone = { key: string; color: string };
 
   interface Props {
@@ -132,9 +136,20 @@
               <Text
                 x={context.width - 4}
                 y={context.yScale(boundary.value) - 4}
-                value={`${boundary.label} ${boundary.valueLabel}`}
+                value={boundary.above}
                 textAnchor="end"
+                verticalAnchor="end"
                 class="text-2xs fill-muted-foreground"
+                data-testid="ehba1c-boundary-above"
+              />
+              <Text
+                x={context.width - 4}
+                y={context.yScale(boundary.value) + 4}
+                value={boundary.below}
+                textAnchor="end"
+                verticalAnchor="start"
+                class="text-2xs fill-muted-foreground"
+                data-testid="ehba1c-boundary-below"
               />
             {/if}
           {/each}

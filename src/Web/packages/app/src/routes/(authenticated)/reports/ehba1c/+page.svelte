@@ -186,13 +186,13 @@
     ];
   });
 
-  /** The zone boundaries the dashed rules mark, low to high. */
+  /** The zone boundaries the dashed rules mark, low to high, with the zone on each side. */
   const boundaries = $derived(
-    zoneBands.slice(0, -1).map((band) => ({
+    zoneBands.slice(0, -1).map((band, i) => ({
       key: band.key,
-      label: `${band.label} up to`,
       value: band.yMax,
-      valueLabel: `${formatA1cNumber(band.yMax)}${a1cUnits.current === "percent" ? "" : " "}${a1cUnitLabel()}`,
+      below: `${band.label} ${formatZoneRange(band)}`,
+      above: `${zoneBands[i + 1].label} ${formatZoneRange(zoneBands[i + 1])}`,
     }))
   );
 

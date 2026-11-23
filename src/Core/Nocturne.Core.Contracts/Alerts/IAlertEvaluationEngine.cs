@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Nocturne.Core.Models;
+using Nocturne.Core.Models.Alerts;
 
 namespace Nocturne.Core.Contracts.Alerts;
 
@@ -42,6 +43,15 @@ public sealed record AlertEngineEvaluation
     /// </summary>
     public bool ConditionUnknown { get; init; }
 
+    /// <summary>
+    /// When <see cref="ConditionUnknown"/>, the facts whose unknown reached the root, each with
+    /// its reason (docs/alerts/engine-semantics.md §2.4); empty otherwise.
+    /// </summary>
+    public IReadOnlyList<HeldFact> UnknownFacts { get; init; } = [];
+
+    /// <summary>The evaluation's hold reached the engine's bound, once per hold (§6.4).</summary>
+    public bool HeldTooLong { get; init; }
+
     /// <summary>The excursion tracker transition produced by this evaluation.</summary>
     public ExcursionTransition Transition { get; init; } = new(ExcursionTransitionType.None);
 
@@ -72,6 +82,12 @@ public sealed record AlertEngineEvaluation
     /// unknown (docs/alerts/engine-semantics.md §5.4); empty when none was.
     /// </summary>
     public IReadOnlyList<ClockAnomaly> ClockAnomalies { get; init; } = [];
+
+    /// <summary>
+    /// What each true <c>predicted</c>, <c>eventual_glucose</c> and <c>carbs_required</c> condition of
+    /// the body met its comparison with (docs/alerts/engine-semantics.md §3); empty when none did.
+    /// </summary>
+    public IReadOnlyList<AlertMetPoint> MetBy { get; init; } = [];
 }
 
 /// <summary>

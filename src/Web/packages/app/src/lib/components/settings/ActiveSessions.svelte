@@ -1,5 +1,6 @@
 <script lang="ts">
   import SuccessBanner from "#lib/forms/SuccessBanner.svelte";
+  import { plural } from "#lib/utils/plural.js";
   import { Button } from "#lib/components/ui/button/index.js";
   import * as Card from "#lib/components/ui/card/index.js";
   import { ConfirmDialog } from "#lib/components/ui/confirm-dialog/index.js";
@@ -140,8 +141,10 @@
           </Button>
         {/snippet}
         {#snippet description()}
-          Sign out {otherSessionCount}
-          {otherSessionCount === 1 ? "other session" : "other sessions"}?
+          {plural(otherSessionCount, [
+            "Sign out # other session?",
+            "Sign out # other sessions?",
+          ])}
           This device stays signed in. The other devices will need to sign
           in again, and Nocturne stops trusting them.
         {/snippet}

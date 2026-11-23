@@ -4,10 +4,14 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 using Nocturne.API.Authorization;
 using Nocturne.API.Controllers.Authentication;
+using Nocturne.API.Controllers.V4.Analytics;
 using Nocturne.API.Controllers.V4.Identity;
+using Nocturne.API.Controllers.V4.Platform;
 using Nocturne.Core.Models.Authorization;
 using Xunit;
 
@@ -28,6 +32,13 @@ public class RequireInteractiveSessionTests
         { typeof(DirectGrantController), nameof(DirectGrantController.Create) },
         { typeof(DirectGrantController), nameof(DirectGrantController.List) },
         { typeof(DirectGrantController), nameof(DirectGrantController.Revoke) },
+        { typeof(DirectGrantController), nameof(DirectGrantController.Keep) },
+
+        { typeof(EmailConfirmationController), nameof(EmailConfirmationController.Send) },
+
+        { typeof(TrustedDevicesController), nameof(TrustedDevicesController.List) },
+        { typeof(TrustedDevicesController), nameof(TrustedDevicesController.Revoke) },
+        { typeof(TrustedDevicesController), nameof(TrustedDevicesController.RevokeAll) },
 
         { typeof(OAuthController), nameof(OAuthController.ApproveConsent) },
         { typeof(OAuthController), nameof(OAuthController.DeviceApprove) },
@@ -48,6 +59,11 @@ public class RequireInteractiveSessionTests
         { typeof(OidcController), nameof(OidcController.LinkCallback) },
         { typeof(OidcController), nameof(OidcController.UnlinkIdentity) },
 
+        { typeof(ChatIdentityController), nameof(ChatIdentityController.ClaimLink) },
+        { typeof(CustomReportsController), nameof(CustomReportsController.CreateCustomReport) },
+        { typeof(CustomReportsController), nameof(CustomReportsController.UpdateCustomReport) },
+        { typeof(CustomReportsController), nameof(CustomReportsController.DeleteCustomReport) },
+        { typeof(ServicesController), nameof(ServicesController.GetConnections) },
         { typeof(GuestLinkController), nameof(GuestLinkController.CreateGuestLink) },
         { typeof(ShareLinkController), nameof(ShareLinkController.RevealShareLink) },
         { typeof(ShareLinkController), nameof(ShareLinkController.RotateShareLink) },
@@ -56,6 +72,27 @@ public class RequireInteractiveSessionTests
         { typeof(MemberInviteController), nameof(MemberInviteController.CreateInvite) },
         { typeof(MemberInviteController), nameof(MemberInviteController.StepDown) },
         { typeof(MemberRecoveryController), nameof(MemberRecoveryController.IssueRecoveryCode) },
+        { typeof(RecoveryEmailController), nameof(RecoveryEmailController.GetRecoveryEmail) },
+        { typeof(RecoveryEmailController), nameof(RecoveryEmailController.SetRecoveryEmail) },
+        { typeof(RecoveryEmailController), nameof(RecoveryEmailController.DeleteRecoveryEmail) },
+
+        // A team is run by a person, never by a key or a device token.
+        { typeof(TeamsController), nameof(TeamsController.GetMyTeams) },
+        { typeof(TeamsController), nameof(TeamsController.CreateTeam) },
+        { typeof(TeamsController), nameof(TeamsController.GetTeam) },
+        { typeof(TeamsController), nameof(TeamsController.RenameTeam) },
+        { typeof(TeamsController), nameof(TeamsController.RemoveManager) },
+        { typeof(TeamsController), nameof(TeamsController.CreateManagerInvite) },
+        { typeof(TeamsController), nameof(TeamsController.RevokeManagerInvite) },
+        { typeof(TeamsController), nameof(TeamsController.GetInviteInfo) },
+        { typeof(TeamsController), nameof(TeamsController.AcceptInvite) },
+        { typeof(TeamsController), nameof(TeamsController.DeleteTeam) },
+        { typeof(TeamsController), nameof(TeamsController.CreateAccessLink) },
+        { typeof(TeamsController), nameof(TeamsController.RevokeAccessLink) },
+
+        // Giving a team access to a site is the owner's own decision, made in their own session.
+        { typeof(TeamsController), nameof(TeamsController.GetAccessLinkInfo) },
+        { typeof(TeamsController), nameof(TeamsController.ApproveAccessLink) },
     };
 
     [Theory]
@@ -67,6 +104,24 @@ public class RequireInteractiveSessionTests
         (method.GetCustomAttribute<RequireInteractiveSessionAttribute>() is not null
             || controller.GetCustomAttribute<RequireInteractiveSessionAttribute>() is not null)
             .Should().BeTrue($"{controller.Name}.{action} manages credentials or sign-in factors");
+    }
+
+    [Fact]
+    public void EveryActionCarryingTheAttribute_IsListed()
+    {
+        var carrying = typeof(RequireInteractiveSessionAttribute).Assembly.GetTypes()
+            .Where(t => typeof(ControllerBase).IsAssignableFrom(t) && !t.IsAbstract)
+            .SelectMany(t => t
+                .GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+                .Where(m => m.GetCustomAttributes<HttpMethodAttribute>().Any())
+                .Where(m => m.GetCustomAttribute<RequireInteractiveSessionAttribute>() is not null
+                    || t.GetCustomAttribute<RequireInteractiveSessionAttribute>() is not null)
+                .Select(m => (t, m.Name)))
+            .ToHashSet();
+
+        var listed = GatedEndpoints.Select(row => ((Type)row[0], (string)row[1])).ToHashSet();
+
+        carrying.Should().BeEquivalentTo(listed);
     }
 
     /// <summary>
@@ -81,7 +136,6 @@ public class RequireInteractiveSessionTests
             [AuthType.None] = false,
             [AuthType.SessionCookie] = true,
             [AuthType.LegacyJwt] = true,
-            [AuthType.OidcToken] = true,
             [AuthType.ApiKey] = false,
             [AuthType.DirectGrant] = false,
             [AuthType.OAuthAccessToken] = false,
@@ -116,6 +170,26 @@ public class RequireInteractiveSessionTests
     }
 
     /// <summary>
+    /// A session redeemed from a login code is a sign-in credential type that someone else
+    /// started, so it is refused, with the code the web answers by asking the member to sign in.
+    /// </summary>
+    [Theory]
+    [InlineData(AuthType.SessionCookie)]
+    [InlineData(AuthType.LegacyJwt)]
+    public void HandedOffSession_IsRefusedWithSignInRequired(AuthType authType)
+    {
+        var result = Run(new AuthContext
+        {
+            IsAuthenticated = true, AuthType = authType, SubjectId = Guid.CreateVersion7(), IsHandedOff = true,
+        });
+
+        var refusal = result.Should().BeOfType<ObjectResult>().Subject;
+        refusal.StatusCode.Should().Be(StatusCodes.Status403Forbidden);
+        refusal.Value.Should().BeOfType<ProblemDetails>()
+            .Which.Extensions["code"].Should().Be(RequireInteractiveSessionAttribute.SignInRequiredCode);
+    }
+
+    /// <summary>
     /// Left to the action: the recovery session a spent recovery code mints is not an
     /// authenticated credential, and the registration endpoints must still admit it.
     /// </summary>
@@ -125,7 +199,10 @@ public class RequireInteractiveSessionTests
 
     private static IActionResult? Run(AuthContext auth)
     {
-        var httpContext = new DefaultHttpContext();
+        var httpContext = new DefaultHttpContext
+        {
+            RequestServices = new ServiceCollection().AddMvcCore().Services.BuildServiceProvider(),
+        };
         httpContext.Items["AuthContext"] = auth;
 
         var context = new AuthorizationFilterContext(

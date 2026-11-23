@@ -9,6 +9,12 @@
           "rule_id": "00000000-0000-0000-0000-000000000001",
           "root": false,
           "unknown": true,
+          "unknown_facts": [
+            {
+              "fact": "insulin",
+              "reason": "absent"
+            }
+          ],
           "leaves": [
             {
               "leaf_id": 0,
@@ -16,7 +22,11 @@
               "unknown": true
             }
           ],
-          "transition": "none"
+          "transition": "none",
+          "tracker": {
+            "state": "idle",
+            "held_since": "2026-01-05T12:00:00Z"
+          }
         },
         {
           "rule_id": "00000000-0000-0000-0000-000000000002",
@@ -30,7 +40,6 @@
           "transition": "opened",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
             "excursion": 1
           }
         }
@@ -43,6 +52,12 @@
           "rule_id": "00000000-0000-0000-0000-000000000001",
           "root": false,
           "unknown": true,
+          "unknown_facts": [
+            {
+              "fact": "insulin",
+              "reason": "absent"
+            }
+          ],
           "leaves": [
             {
               "leaf_id": 0,
@@ -50,7 +65,11 @@
               "unknown": true
             }
           ],
-          "transition": "none"
+          "transition": "none",
+          "tracker": {
+            "state": "idle",
+            "held_since": "2026-01-05T12:00:00Z"
+          }
         },
         {
           "rule_id": "00000000-0000-0000-0000-000000000002",
@@ -64,7 +83,6 @@
           "transition": "continues",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
             "excursion": 1
           }
         }
@@ -84,8 +102,7 @@
           ],
           "transition": "none",
           "tracker": {
-            "state": "idle",
-            "confirmation_count": 0
+            "state": "idle"
           }
         },
         {
@@ -100,7 +117,6 @@
           "transition": "hysteresis_started",
           "tracker": {
             "state": "hysteresis",
-            "confirmation_count": 0,
             "excursion": 1,
             "hysteresis_started_at": "2026-01-05T12:10:00Z"
           },

@@ -22,6 +22,7 @@
     type TranslationMessage,
   } from "@nocturne/cms/translations";
   import * as translationsApi from "#lib/api/generated/translations.generated.remote.js";
+  import { describeSubmitError } from "#lib/forms/submit-error.js";
   import {
     getLanguageLabel,
     isSupportedLocale,
@@ -42,12 +43,6 @@
   const nativeLanguageLabel = $derived(
     supportedLocale ? getLanguageLabel(supportedLocale, supportedLocale) : ""
   );
-
-  function messageOf(e: unknown): string | undefined {
-    return e && typeof e === "object" && "message" in e && typeof e.message === "string"
-      ? e.message
-      : undefined;
-  }
 
   let messages = $state<TranslationMessage[]>([]);
   let catalogError = $state<string | null>(null);
@@ -292,7 +287,7 @@
       await draftsQuery?.refresh();
     } catch (e) {
       submitError =
-        messageOf(e) ?? "Failed to submit the contribution.";
+        describeSubmitError(e, "Failed to submit the contribution.");
     } finally {
       submitting = false;
     }
@@ -315,7 +310,7 @@
       clearOpen = false;
     } catch (e) {
       clearError =
-        messageOf(e) ?? "Failed to clear drafts.";
+        describeSubmitError(e, "Failed to clear drafts.");
     }
   }
 </script>

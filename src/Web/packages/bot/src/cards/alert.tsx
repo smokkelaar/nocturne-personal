@@ -1,8 +1,11 @@
 import { Card, CardText, Fields, Field, Actions, Button } from "chat";
-import type { ActiveExcursion, AlertPayload, AlertSeverity } from "../types.js";
+import { AlertConditionType, AlertPayloadKind, AlertRuleSeverity, type ActiveExcursionResponse } from "@nocturne/api-client";
+import type { AlertPayload } from "../types.js";
 import { formatGlucose, timeAgo, trendArrow } from "../lib/format.js";
 import { encodeActionValue } from "../lib/action-value.js";
 import { isKnownSeverity } from "../lib/severity.js";
+import { describeHeldFacts } from "../lib/held-facts.js";
+import { describeMetBy } from "../lib/met-by.js";
 
 /**
  * Card titles per severity. Every platform gets this, including the ones with
@@ -12,25 +15,31 @@ import { isKnownSeverity } from "../lib/severity.js";
  * Labels mirror `severity.ts` in `@nocturne/app`, and an unrecognised value
  * degrades to a neutral title as the app degrades to a muted style.
  */
-const SEVERITY_TITLES: Record<AlertSeverity, string> = {
-  critical: "CRITICAL",
-  warning: "Warning",
-  info: "Info",
+const SEVERITY_TITLES: Record<AlertRuleSeverity, string> = {
+  [AlertRuleSeverity.Critical]: "CRITICAL",
+  [AlertRuleSeverity.Warning]: "Warning",
+  [AlertRuleSeverity.Info]: "Info",
 };
 
 /**
  * The condition kinds that fire on readings stopping, so a payload of one with no glucose value
  * is an alert about having no reading rather than a reading the card failed to get.
  */
-const NO_READING_KINDS: ReadonlySet<string> = new Set(["signal_loss", "staleness"]);
+const NO_READING_KINDS: ReadonlySet<string> = new Set<AlertConditionType>([
+  AlertConditionType.SignalLoss,
+  AlertConditionType.Staleness,
+]);
 
 export function AlertCard(props: {
   payload: AlertPayload;
   unit?: "mg/dL" | "mmol/L";
 }) {
   const { payload, unit = "mg/dL" } = props;
-  if (payload.kind === "unevaluable") return UnevaluableCard({ payload });
-  const noReading = payload.glucoseValue == null && NO_READING_KINDS.has(payload.alertType);
+  if (payload.kind === AlertPayloadKind.Unevaluable) return UnevaluableCard({ payload });
+  if (payload.kind === AlertPayloadKind.Held || payload.kind === AlertPayloadKind.HeldClosed) {
+    return HeldCard({ payload, closed: payload.kind === AlertPayloadKind.HeldClosed });
+  }
+  const noReading = payload.glucoseValue == null && payload.alertType != null && NO_READING_KINDS.has(payload.alertType);
   const value =
     payload.glucoseValue != null
       ? formatGlucose(payload.glucoseValue, unit)
@@ -49,7 +58,7 @@ export function AlertCard(props: {
 
   return (
     <Card title={`${titlePrefix}: ${payload.ruleName}`}>
-      <CardText style={severity === "critical" ? "bold" : "plain"}>
+      <CardText style={severity === AlertRuleSeverity.Critical ? "bold" : "plain"}>
         {text}
       </CardText>
       <Fields>
@@ -65,6 +74,9 @@ export function AlertCard(props: {
             value={`${payload.trendRate > 0 ? "+" : ""}${payload.trendRate.toFixed(1)}/min`}
           />
         )}
+        {describeMetBy(payload.metBy, unit).map((met) => (
+          <Field key={met.key} label={met.label} value={met.value} />
+        ))}
       </Fields>
       <Actions>
         <Button id="ack_alert" value={target} style="primary">
@@ -89,6 +101,26 @@ function UnevaluableCard(props: { payload: AlertPayload }) {
   );
 }
 
+function HeldCard(props: { payload: AlertPayload; closed: boolean }) {
+  const { payload, closed } = props;
+  const severity = isKnownSeverity(payload.severity) ? payload.severity : undefined;
+  const titlePrefix = severity ? SEVERITY_TITLES[severity] : "Alert";
+  const text = closed
+    ? "This alert had no usable data for 24 hours, so Nocturne closes the alert. The rule cannot send alerts until usable data comes back."
+    : "This rule has waited 24 hours for usable data, so it cannot send alerts until usable data comes back.";
+
+  return (
+    <Card title={`${titlePrefix}: ${payload.ruleName}`}>
+      <CardText>{text}</CardText>
+      <Fields>
+        {describeHeldFacts(payload.heldFacts).map((fact) => (
+          <Field key={fact.label} label={fact.label} value={fact.value} />
+        ))}
+      </Fields>
+    </Card>
+  );
+}
+
 /**
  * Posted in the thread once Acknowledge is tapped. The alert card is left
  * standing rather than edited: an `ActionEvent` carries the message id but
@@ -103,7 +135,7 @@ export function AcknowledgedCard(props: { title?: string; detail: string }) {
   );
 }
 
-function status(excursion: ActiveExcursion): string {
+function status(excursion: ActiveExcursionResponse): string {
   if (excursion.acknowledgedAt) return "Acknowledged";
   if (excursion.snoozedUntil) {
     return `Snoozed until ${new Date(excursion.snoozedUntil).toLocaleTimeString()}`;
@@ -111,7 +143,7 @@ function status(excursion: ActiveExcursion): string {
   return "Firing";
 }
 
-export function ActiveAlertsCard(props: { excursions: ActiveExcursion[] }) {
+export function ActiveAlertsCard(props: { excursions: ActiveExcursionResponse[] }) {
   return (
     <Card title="Active alerts">
       <Fields>

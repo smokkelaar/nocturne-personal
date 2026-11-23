@@ -27,16 +27,16 @@ const reason = (err: string, body: string) =>
   `${body}?.detail ?? ${body}?.title ?? ${body}?.message ?? ${err}?.message`;
 
 export default {
-  openApiPath: './packages/app/src/lib/api/generated/openapi.json',
+  openApiPath: './packages/api-client/src/openapi.json',
   outputDir: './packages/app/src/lib',
   remoteFunctionsOutput: 'api/generated',
   apiClientOutput: 'api/api-client.generated.ts',
   imports: {
-    schemas: '#lib/api/generated/schemas.js',
+    schemas: '@nocturne/api-client/schemas',
     apiTypes: '#lib/api/index.js',
     server: '#lib/api/remote-server.js',
   },
-  nswagClientPath: './generated/nocturne-api-client',
+  nswagClientPath: '@nocturne/api-client',
   // Matches nswag.json: the client has no date reviver, so a date-time is the ISO
   // text the API sent, and is typed that way.
   dateTimeType: 'string',
@@ -76,6 +76,8 @@ export default {
     //
     // The refusal's `code` is forwarded beside the reason, so a page words a
     // `missing_scope` refusal itself instead of showing the server's English.
+    // A `sign_in_required` code opens nothing here: a refused write opens the
+    // sign-in prompt from its call site (`confirmIdentity.askAfterRefusal`).
     //
     // The generator emits this arm inside a block of its own, so it may declare
     // the locals the read order needs.

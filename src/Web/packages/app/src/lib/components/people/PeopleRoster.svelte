@@ -1,11 +1,12 @@
 <script lang="ts">
-  import type { TenantOverviewItem } from "#lib/api/generated/nocturne-api-client.js";
+  import type { TenantOverviewItem } from "@nocturne/api-client";
   import { bgLabel } from "#lib/utils/formatting.js";
   import PersonRow from "./PersonRow.svelte";
   import PersonSummary from "./PersonSummary.svelte";
   import ReviewRow from "./ReviewRow.svelte";
   import ReviewSummary from "./ReviewSummary.svelte";
   import { setPersonSelection } from "./person-selection.js";
+  import { isFlagged } from "./person.js";
   import { reviewCell, type ReviewState } from "./review-lens.js";
   import { REVIEW_ROW_GRID, ROW_GRID } from "./row-grid.js";
 
@@ -45,12 +46,8 @@
   /** At this many people or fewer, each person gets the large layout. */
   const LARGE_LAYOUT_MAX = 4;
 
-  const flagged = $derived(
-    people.filter((person) => (person.attention?.length ?? 0) > 0)
-  );
-  const others = $derived(
-    people.filter((person) => (person.attention?.length ?? 0) === 0)
-  );
+  const flagged = $derived(people.filter(isFlagged));
+  const others = $derived(people.filter((person) => !isFlagged(person)));
   const large = $derived(people.length <= LARGE_LAYOUT_MAX);
   const reviewByTenant = $derived(
     Object.fromEntries(

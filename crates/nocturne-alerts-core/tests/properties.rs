@@ -36,15 +36,17 @@ use nocturne_alerts_core::enums::{
 };
 use nocturne_alerts_core::eval::{Env, eval_payload};
 use nocturne_alerts_core::excursion::{
-    CloseReason, ExcursionTracker, TrackerRuleConfig, TrackerState, TrackerStateKind, Transition,
-    TransitionType,
+    CloseReason, ExcursionTracker, HOLD_BOUND, TrackerRuleConfig, TrackerState, TrackerStateKind,
+    Transition, TransitionType,
 };
+use nocturne_alerts_core::facts::ContextFact;
 use nocturne_alerts_core::model::{
     ConditionKind, Node, ParseError, Payload, Reason, parse_payload,
 };
 use nocturne_alerts_core::next_change::RESOLUTION;
-use nocturne_alerts_core::sustained::{TimerOp, TimerOpKind, TimerStore};
+use nocturne_alerts_core::sustained::{TimerOp, TimerOpKind, TimerState, TimerStore};
 use nocturne_alerts_core::truth::Truth;
+use nocturne_alerts_core::unknown::UnknownReason;
 use nocturne_alerts_core::validate::{validate_node, validate_rule};
 
 use clock::{clock_context, enabled_at, naming_the_context, word_or_unrecognised};
@@ -59,7 +61,6 @@ enum Action {
     Process {
         condition_met: bool,
         auto_resolve_met: bool,
-        confirmation_readings: i32,
         hysteresis_minutes: i32,
     },
     ForceClose(CloseReason),
@@ -83,12 +84,11 @@ fn action() -> impl Strategy<Value = Action> {
         CloseReason::RuleDisabled,
     ]);
     prop_oneof![
-        6 => (any::<bool>(), any::<bool>(), 0..4i32, -1..30i32).prop_map(
-            |(condition_met, auto_resolve_met, confirmation_readings, hysteresis_minutes)| {
+        6 => (any::<bool>(), any::<bool>(), -1..30i32).prop_map(
+            |(condition_met, auto_resolve_met, hysteresis_minutes)| {
                 Action::Process {
                     condition_met,
                     auto_resolve_met,
-                    confirmation_readings,
                     hysteresis_minutes,
                 }
             }
@@ -126,27 +126,18 @@ fn run(
         Action::Process {
             condition_met,
             auto_resolve_met,
-            confirmation_readings,
             hysteresis_minutes,
         } => tracker.process_evaluation(
             rule,
-            TrackerRuleConfig {
-                confirmation_readings,
-                hysteresis_minutes,
-            },
+            TrackerRuleConfig { hysteresis_minutes },
             condition_met,
             auto_resolve_met,
             now,
         ),
         Action::ForceClose(reason) => tracker.force_close(rule, reason, now),
-        Action::CloseElapsed { hysteresis_minutes } => tracker.close_elapsed_hysteresis(
-            rule,
-            TrackerRuleConfig {
-                confirmation_readings: 1,
-                hysteresis_minutes,
-            },
-            now,
-        ),
+        Action::CloseElapsed { hysteresis_minutes } => {
+            tracker.close_elapsed_hysteresis(rule, TrackerRuleConfig { hysteresis_minutes }, now)
+        }
     }
 }
 
@@ -154,8 +145,8 @@ fn run(
 #[derive(Default)]
 struct Ledger {
     open: HashMap<Uuid, u32>,
-    closed: BTreeSet<u32>,
-    last_opened: u32,
+    closed: BTreeSet<(Uuid, u32)>,
+    last_opened: HashMap<Uuid, u32>,
 }
 
 impl Ledger {
@@ -167,12 +158,10 @@ impl Ledger {
             }
             TransitionType::ExcursionOpened => {
                 let ordinal = t.excursion.expect("an opened excursion has an ordinal");
-                prop_assert!(
-                    ordinal > self.last_opened,
-                    "ordinal {ordinal} not increasing"
-                );
+                let last = self.last_opened.get(&rule).copied().unwrap_or(0);
+                prop_assert_eq!(ordinal, last + 1, "a rule numbers its excursions 1, 2, ...");
                 prop_assert!(!self.open.contains_key(&rule), "a second excursion opened");
-                self.last_opened = ordinal;
+                self.last_opened.insert(rule, ordinal);
                 self.open.insert(rule, ordinal);
             }
             TransitionType::ExcursionContinues
@@ -183,7 +172,10 @@ impl Ledger {
             TransitionType::ExcursionClosed => {
                 let ordinal = t.excursion.expect("a closed excursion has an ordinal");
                 prop_assert_eq!(self.open.remove(&rule), Some(ordinal));
-                prop_assert!(self.closed.insert(ordinal), "{ordinal} closed twice");
+                prop_assert!(
+                    self.closed.insert((rule, ordinal)),
+                    "{ordinal} closed twice"
+                );
                 prop_assert!(t.close_reason.is_some());
             }
             other => prop_assert!(false, "unhandled transition {other:?}"),
@@ -297,13 +289,12 @@ fn rebuilt(prev: &ExcursionTracker, rules: &[Uuid]) -> ExcursionTracker {
             fresh.restore_state(*rule, *state);
         }
     }
-    fresh.set_next_excursion_ordinal(prev.next_excursion_ordinal());
     fresh
 }
 
 proptest! {
     /// An excursion opens once and closes at most once, one is open per rule
-    /// at a time, ordinals only grow, the state's fields agree with its kind,
+    /// at a time, a rule numbers its excursions 1, 2, ..., the state's fields agree with its kind,
     /// and the re-arm hold and hysteresis window follow their rules.
     #[test]
     fn tracker_keeps_one_excursion_per_rule_and_follows_its_rules((rules, steps) in steps()) {
@@ -346,10 +337,6 @@ proptest! {
                     format!("{:?}", reloaded.state(*id))
                 );
             }
-            prop_assert_eq!(
-                continuous.next_excursion_ordinal(),
-                reloaded.next_excursion_ordinal()
-            );
         }
     }
 }
@@ -359,7 +346,7 @@ fn rule_from_wire(wire: Value) -> Rule {
     Rule::try_from(wire).expect("a known condition type")
 }
 
-fn snapshot(state: &EngineState) -> BTreeMap<String, DateTime<Utc>> {
+fn snapshot(state: &EngineState) -> BTreeMap<String, TimerState> {
     state
         .timers
         .snapshot_for_rule(RULE_ID)
@@ -372,19 +359,19 @@ fn context_of(tick: &Tick) -> SensorContext {
 }
 
 fn apply_ops(
-    mirror: &mut BTreeMap<String, DateTime<Utc>>,
+    mirror: &mut BTreeMap<String, TimerState>,
     ops: &[TimerOp],
 ) -> Result<(), TestCaseError> {
     for op in ops {
-        match op.kind {
-            TimerOpKind::Set => {
-                mirror.insert(op.path.clone(), op.at.expect("a set carries its instant"));
-            }
-            TimerOpKind::Clear => {
-                prop_assert!(mirror.remove(&op.path).is_some(), "cleared an unset timer");
-            }
-            other => prop_assert!(false, "unhandled op {other:?}"),
-        }
+        let state = match op.kind {
+            TimerOpKind::Set => TimerState::Running(op.at),
+            TimerOpKind::Clear => TimerState::NotTrue(op.at),
+            other => return Err(TestCaseError::fail(format!("unhandled op {other:?}"))),
+        };
+        prop_assert!(
+            mirror.insert(op.path.clone(), state) != Some(state),
+            "an op that changes nothing"
+        );
     }
     Ok(())
 }
@@ -404,10 +391,11 @@ fn model_since(now: DateTime<Utc>, anchor: DateTime<Utc>) -> Option<TimeDelta> {
 }
 
 /// The leaves and Kleene connectives of the generated trees, the reading
-/// freshness of §3, and the `sustained` rule of §3 stated as a run start per
-/// path.
+/// freshness of §3, and the `sustained` rule of §3 stated as each path's run
+/// start or last not-true evaluation. A node evaluates to its truth and, when
+/// true, the instant §3 says it has held since.
 struct Model {
-    run_starts: BTreeMap<String, DateTime<Utc>>,
+    run_starts: BTreeMap<String, TimerState>,
     glucose_freshness_minutes: i64,
 }
 
@@ -440,88 +428,140 @@ impl Model {
         })
     }
 
-    fn eval(&mut self, node: &Value, path: &str, ctx: &Value, now: DateTime<Utc>) -> Truth {
+    fn eval(
+        &mut self,
+        node: &Value,
+        path: &str,
+        ctx: &Value,
+        now: DateTime<Utc>,
+    ) -> (Truth, Option<DateTime<Utc>>) {
         let kind = node["type"].as_str().expect("a typed node");
         let payload = &node[kind];
         let child = |this: &mut Self, value: &Value, index: usize| {
             let own = format!("{path}[{index}].{}", value["type"].as_str().unwrap());
             this.eval(value, &own, ctx, now)
         };
+        let unheld = |truth: Truth| (truth, None);
         match kind {
             "threshold" => {
                 let value = payload["value"].as_i64().unwrap();
-                match ctx["latest_value"]
+                let truth = match ctx["latest_value"]
                     .as_i64()
                     .filter(|_| self.stale(ctx, now).is_false())
                 {
                     None => Truth::Unknown,
                     Some(latest) if payload["direction"] == "above" => (latest > value).into(),
                     Some(latest) => (latest < value).into(),
-                }
+                };
+                let read_at = ctx["latest_timestamp"]
+                    .as_str()
+                    .map(|at| at.parse::<DateTime<Utc>>().expect("an instant"));
+                (truth, read_at.filter(|_| truth.is_true()))
             }
             "iob" => {
                 let value = payload["value"].as_i64().unwrap();
                 let Some(iob) = ctx["iob_units"].as_i64() else {
-                    return Truth::Unknown;
+                    return unheld(Truth::Unknown);
                 };
-                match payload["operator"].as_str().unwrap() {
-                    ">" => iob > value,
-                    ">=" => iob >= value,
-                    "<" => iob < value,
-                    "<=" => iob <= value,
-                    "==" => iob == value,
-                    other => panic!("the generators produce no operator {other}"),
-                }
-                .into()
+                unheld(
+                    match payload["operator"].as_str().unwrap() {
+                        ">" => iob > value,
+                        ">=" => iob >= value,
+                        "<" => iob < value,
+                        "<=" => iob <= value,
+                        "==" => iob == value,
+                        other => panic!("the generators produce no operator {other}"),
+                    }
+                    .into(),
+                )
             }
-            "sleep_session_active" => {
-                (ctx["sleep_session_active"].as_bool() == payload["is_active"].as_bool()).into()
-            }
-            "not" => match child(self, &payload["child"], 0) {
+            "sleep_session_active" => unheld(
+                (ctx["sleep_session_active"].as_bool() == payload["is_active"].as_bool()).into(),
+            ),
+            "not" => unheld(match child(self, &payload["child"], 0).0 {
                 Truth::True => Truth::False,
                 Truth::False => Truth::True,
                 Truth::Unknown => Truth::Unknown,
-            },
+            }),
             "composite" => {
-                let results: Vec<Truth> = payload["conditions"]
+                let results: Vec<(Truth, Option<DateTime<Utc>>)> = payload["conditions"]
                     .as_array()
                     .unwrap()
                     .iter()
                     .enumerate()
                     .map(|(i, c)| child(self, c, i))
                     .collect();
-                let (decisive, otherwise) = if payload["operator"] == "and" {
+                let truths: Vec<Truth> = results.iter().map(|r| r.0).collect();
+                let and = payload["operator"] == "and";
+                let (decisive, otherwise) = if and {
                     (Truth::False, Truth::True)
                 } else {
                     (Truth::True, Truth::False)
                 };
-                if results.contains(&decisive) {
+                let truth = if truths.contains(&decisive) {
                     decisive
-                } else if results.contains(&Truth::Unknown) {
+                } else if truths.contains(&Truth::Unknown) {
                     Truth::Unknown
                 } else {
                     otherwise
-                }
+                };
+                let since = if and {
+                    results
+                        .iter()
+                        .map(|r| r.1)
+                        .collect::<Option<Vec<_>>>()
+                        .and_then(|s| s.into_iter().max())
+                } else {
+                    results
+                        .iter()
+                        .filter(|r| r.0.is_true())
+                        .filter_map(|r| r.1)
+                        .min()
+                };
+                (truth, since.filter(|_| truth.is_true()))
             }
-            "sustained" => match child(self, &payload["child"], 0) {
-                Truth::Unknown => Truth::Unknown,
-                Truth::False => {
-                    self.run_starts.remove(path);
-                    Truth::False
-                }
-                Truth::True => {
-                    let minutes = payload["minutes"].as_i64().unwrap();
-                    match self.run_starts.get(path) {
-                        None => {
-                            self.run_starts.insert(path.to_owned(), now);
-                            Truth::False
+            "sustained" => {
+                let (truth, since) = child(self, &payload["child"], 0);
+                match truth {
+                    Truth::Unknown => unheld(Truth::Unknown),
+                    Truth::False => {
+                        let leased = matches!(
+                            self.run_starts.get(path),
+                            Some(TimerState::NotTrue(last)) if now - *last < TimeDelta::minutes(5)
+                        );
+                        if !leased {
+                            self.run_starts
+                                .insert(path.to_owned(), TimerState::NotTrue(now));
                         }
-                        Some(first) => model_since(now, *first).map_or(Truth::Unknown, |passed| {
-                            (passed >= TimeDelta::minutes(minutes)).into()
-                        }),
+                        unheld(Truth::False)
+                    }
+                    Truth::True => {
+                        let minutes = TimeDelta::minutes(payload["minutes"].as_i64().unwrap());
+                        let start = match self.run_starts.get(path) {
+                            Some(TimerState::Running(first)) => *first,
+                            other => {
+                                let bound = match other {
+                                    Some(TimerState::NotTrue(last)) => {
+                                        (*last + TimeDelta::minutes(5)).min(now)
+                                    }
+                                    _ => now,
+                                };
+                                let start = since.unwrap_or(now).max(bound).min(now);
+                                self.run_starts
+                                    .insert(path.to_owned(), TimerState::Running(start));
+                                start
+                            }
+                        };
+                        match model_since(now, start) {
+                            None => unheld(Truth::Unknown),
+                            Some(passed) if passed >= minutes => {
+                                (Truth::True, Some(start + minutes))
+                            }
+                            Some(_) => unheld(Truth::False),
+                        }
                     }
                 }
-            },
+            }
             other => panic!("the generators produce no {other}"),
         }
     }
@@ -534,7 +574,7 @@ proptest! {
     fn timer_ops_replayed_give_the_stored_timers(spec in rule_spec(), ticks in skewed_ticks()) {
         let rule = rule_from_wire(spec.wire());
         let mut state = EngineState::new();
-        let mut mirror: BTreeMap<String, DateTime<Utc>> = BTreeMap::new();
+        let mut mirror: BTreeMap<String, TimerState> = BTreeMap::new();
         for tick in &ticks {
             let outcome = evaluate_rule(&rule, &context_of(tick), tick.now, &mut state, true);
             let evaluation = outcome.evaluation.expect("the body is evaluable");
@@ -552,7 +592,7 @@ proptest! {
     ) {
         let rule = rule_from_wire(spec.wire());
         let mut continuous = EngineState::new();
-        let mut mirror: BTreeMap<String, DateTime<Utc>> = BTreeMap::new();
+        let mut mirror: BTreeMap<String, TimerState> = BTreeMap::new();
         for tick in &ticks {
             let ctx = context_of(tick);
 
@@ -590,7 +630,7 @@ proptest! {
             let awaiting = state.tracker.awaiting_rearm(RULE_ID);
             let outcome = evaluate_rule(&rule, &context_of(tick), tick.now, &mut state, false);
             let evaluation = outcome.evaluation.expect("the body is evaluable");
-            let expected = model.eval(&body, "composite", &tick.context, tick.now);
+            let (expected, _) = model.eval(&body, "composite", &tick.context, tick.now);
             prop_assert_eq!(evaluation.root, expected);
             let open = evaluation.auto_resolved
                 || state.tracker.active_excursion_id(RULE_ID).is_some();
@@ -600,6 +640,391 @@ proptest! {
             prop_assert_eq!(snapshot(&state), model.run_starts.clone());
         }
     }
+}
+
+/// `spec`'s body wrapped in a root `sustained` of `minutes`, so the root's
+/// truth is that node's.
+fn sustained_root(spec: &generators::RuleSpec, minutes: i64) -> Rule {
+    let mut wire = spec.wire();
+    let body = node("composite", wire["condition_params"].clone());
+    wire["condition_type"] = "sustained".into();
+    wire["condition_params"] = json!({ "minutes": minutes, "child": body });
+    rule_from_wire(wire)
+}
+
+/// What one tick of a root-`sustained` run shows: how many `sustained` starts
+/// it set, how many began before `now`, how many of those its path's last
+/// not-true evaluation bounded, and whether the root held.
+#[derive(Debug, Default, Clone, Copy)]
+struct StartTally {
+    starts: usize,
+    earlier: usize,
+    bounded: usize,
+    roots_true: usize,
+}
+
+/// §3 `sustained`, checked on one tick from the ops it returned and the state
+/// before it: every start is at or before `now`, and at or after the end of
+/// its path's not-true lease, five minutes past the recorded instant, or
+/// `now` when that is earlier (or `now`, for a path with no state, the rule
+/// having no `enabled_at`); and the root holds only once `minutes` have passed
+/// since its run's start.
+fn check_starts(
+    before: &BTreeMap<String, TimerState>,
+    ops: &[TimerOp],
+    root: Truth,
+    after: &BTreeMap<String, TimerState>,
+    now: DateTime<Utc>,
+    minutes: i64,
+) -> Result<StartTally, TestCaseError> {
+    let mut tally = StartTally::default();
+    for op in ops.iter().filter(|op| op.kind == TimerOpKind::Set) {
+        tally.starts += 1;
+        prop_assert!(op.at <= now, "{} starts at {} after {now}", op.path, op.at);
+        let bound = match before.get(&op.path) {
+            Some(TimerState::NotTrue(last)) => (*last + TimeDelta::minutes(5)).min(now),
+            _ => now,
+        };
+        prop_assert!(
+            op.at >= bound,
+            "{} starts at {} before its bound {bound}",
+            op.path,
+            op.at
+        );
+        if op.at < now {
+            tally.earlier += 1;
+            if op.at == bound {
+                tally.bounded += 1;
+            }
+        }
+    }
+    if root.is_true() {
+        tally.roots_true += 1;
+        let Some(TimerState::Running(start)) = after.get("sustained") else {
+            return Err(TestCaseError::fail("a true root with no run"));
+        };
+        prop_assert!(
+            now - *start >= TimeDelta::minutes(minutes),
+            "true at {now} with a run started at {start}"
+        );
+    }
+    Ok(tally)
+}
+
+/// Runs a root-`sustained` rule over `ticks`, checking every tick.
+fn run_starts(
+    spec: &generators::RuleSpec,
+    minutes: i64,
+    ticks: &[Tick],
+) -> Result<StartTally, TestCaseError> {
+    let rule = sustained_root(spec, minutes);
+    let mut state = EngineState::new();
+    let mut total = StartTally::default();
+    for tick in ticks {
+        let before = snapshot(&state);
+        let evaluation = evaluate_rule(&rule, &context_of(tick), tick.now, &mut state, false)
+            .evaluation
+            .expect("the body is evaluable");
+        let tally = check_starts(
+            &before,
+            &evaluation.timer_ops,
+            evaluation.root,
+            &snapshot(&state),
+            tick.now,
+            minutes,
+        )?;
+        total.starts += tally.starts;
+        total.earlier += tally.earlier;
+        total.bounded += tally.bounded;
+        total.roots_true += tally.roots_true;
+    }
+    Ok(total)
+}
+
+/// A child whose truth and start the context states, and the instant it
+/// began to hold: a pump suspension started then, a low reading taken and
+/// received then, or a signal lost then (the last reading `timeout` before);
+/// or an `and` / `or` of a suspension and an override that begin at two
+/// instants, which holds from the later / the earlier of them.
+#[derive(Debug, Clone, Copy)]
+enum Begins {
+    Suspension,
+    LowReading,
+    SignalLoss,
+    AllOf,
+    AnyOf,
+}
+
+/// A child that is false at `base()`, the first evaluation, and true with one
+/// start from `began()` on (`base() + began_after`, or for a composite the
+/// instant its connective gives from that and `base() + second_after`); the minutes of the `sustained` over
+/// it; and the instants after `base()` it is evaluated at, as the seconds
+/// since `base()`, with the subset a sparser host evaluates at. No evaluation
+/// falls in the five minutes before the child begins: a not-true instant
+/// recorded there would bound the start by its lease, past where the child
+/// began, so the start would depend on which evaluations were made.
+#[derive(Debug, Clone)]
+struct CadenceCase {
+    begins: Begins,
+    began_after: i64,
+    second_after: i64,
+    minutes: i64,
+    evaluations: Vec<i64>,
+    sparse: Vec<bool>,
+}
+
+impl CadenceCase {
+    fn first(&self) -> DateTime<Utc> {
+        base() + TimeDelta::seconds(self.began_after)
+    }
+
+    fn second(&self) -> DateTime<Utc> {
+        base() + TimeDelta::seconds(self.second_after)
+    }
+
+    /// When the child begins to hold: an `and` once both have begun, an `or`
+    /// once either has.
+    fn began(&self) -> DateTime<Utc> {
+        match self.begins {
+            Begins::AllOf => self.first().max(self.second()),
+            Begins::AnyOf => self.first().min(self.second()),
+            Begins::Suspension | Begins::LowReading | Begins::SignalLoss => self.first(),
+        }
+    }
+
+    fn rule(&self) -> Rule {
+        let child = match self.begins {
+            Begins::Suspension => node("pump_suspended", json!({ "is_active": true })),
+            Begins::LowReading => node("threshold", json!({ "direction": "below", "value": 70 })),
+            Begins::SignalLoss => node(
+                "signal_loss",
+                json!({ "timeout_minutes": self.began_after / 60 }),
+            ),
+            Begins::AllOf | Begins::AnyOf => composite(
+                if matches!(self.begins, Begins::AllOf) {
+                    "and"
+                } else {
+                    "or"
+                },
+                vec![
+                    node("pump_suspended", json!({ "is_active": true })),
+                    node("override_active", json!({ "is_active": true })),
+                ],
+            ),
+        };
+        rule_from_wire(json!({
+            "id": RULE_ID.to_string(),
+            "condition_type": "sustained",
+            "condition_params": { "minutes": self.minutes, "child": child },
+            "glucose_freshness_minutes": 1440,
+        }))
+    }
+
+    fn context(&self, now: DateTime<Utc>) -> SensorContext {
+        let began = self.first();
+        let ctx = match self.begins {
+            Begins::Suspension => {
+                let mut ctx = json!({ "has_ever_pump_snapshot": true });
+                if now >= began {
+                    ctx["active_pump_suspension"] = json!({ "started_at": began.to_rfc3339() });
+                }
+                ctx
+            }
+            Begins::LowReading => {
+                let (at, value) = if now >= began {
+                    (began, 60)
+                } else {
+                    (base(), 150)
+                };
+                json!({
+                    "latest_value": value,
+                    "latest_timestamp": at.to_rfc3339(),
+                    "latest_received_at": at.to_rfc3339(),
+                    "last_reading_at": at.to_rfc3339(),
+                })
+            }
+            Begins::SignalLoss => json!({
+                "latest_value": 120,
+                "latest_timestamp": base().to_rfc3339(),
+                "last_reading_at": base().to_rfc3339(),
+            }),
+            Begins::AllOf | Begins::AnyOf => {
+                let mut ctx = json!({ "has_ever_pump_snapshot": true });
+                if now >= began {
+                    ctx["active_pump_suspension"] = json!({ "started_at": began.to_rfc3339() });
+                }
+                if now >= self.second() {
+                    ctx["active_override"] = json!({ "started_at": self.second().to_rfc3339() });
+                }
+                ctx
+            }
+        };
+        serde_json::from_value(ctx).expect("a context")
+    }
+
+    /// The root at each of `instants` after the false evaluation at `base()`,
+    /// and every timer op of the run.
+    fn run(&self, instants: &[DateTime<Utc>]) -> (Vec<(DateTime<Utc>, Truth)>, Vec<TimerOp>) {
+        let rule = self.rule();
+        let mut state = EngineState::new();
+        let first = evaluate_rule(&rule, &self.context(base()), base(), &mut state, false)
+            .evaluation
+            .expect("evaluable");
+        assert_eq!(first.root, Truth::False, "{self:?}");
+        let mut ops = first.timer_ops;
+        let roots = instants
+            .iter()
+            .map(|&at| {
+                let e = evaluate_rule(&rule, &self.context(at), at, &mut state, false)
+                    .evaluation
+                    .expect("evaluable");
+                ops.extend(e.timer_ops);
+                (at, e.root)
+            })
+            .collect();
+        (roots, ops)
+    }
+}
+
+fn cadence_case() -> impl Strategy<Value = CadenceCase> {
+    (
+        select(vec![
+            Begins::Suspension,
+            Begins::LowReading,
+            Begins::SignalLoss,
+            Begins::AllOf,
+            Begins::AnyOf,
+        ]),
+        (5..=60i64).prop_map(|m| m * 60),
+        (5..=60i64).prop_map(|m| m * 60),
+        1..=60i64,
+        vec(1..=7200i64, 1..=16),
+        vec(any::<bool>(), 16),
+    )
+        .prop_map(
+            |(begins, began_after, second_after, minutes, evaluations, sparse)| {
+                let mut case = CadenceCase {
+                    begins,
+                    began_after,
+                    second_after,
+                    minutes,
+                    evaluations,
+                    sparse,
+                };
+                let began = (case.began() - base()).num_seconds();
+                case.evaluations.retain(|&s| s >= began || s <= began - 300);
+                if case.evaluations.is_empty() {
+                    case.evaluations.push(began);
+                }
+                case.evaluations.sort_unstable();
+                case.evaluations.dedup();
+                case
+            },
+        )
+}
+
+proptest! {
+    /// §3 `sustained`: on every tick a start is never after `now` and never
+    /// before its path's last not-true evaluation, and a root `sustained`
+    /// holds only once its minutes have passed since its run's start, whose
+    /// clock steps back now and then.
+    #[test]
+    fn a_sustained_start_is_bounded_and_never_holds_early(
+        spec in rule_spec(),
+        minutes in 1..=30i64,
+        ticks in skewed_ticks(),
+    ) {
+        run_starts(&spec, minutes, &ticks)?;
+    }
+
+    /// §3 `sustained`: over a child that states since when it has held, how
+    /// many times it is evaluated in between does not change the outcome. The
+    /// run starts where the child began, whichever evaluations saw it, and an
+    /// evaluation every host makes reads the same root. For a composite that is
+    /// the later of its children's starts under `and` and the earlier under
+    /// `or`.
+    #[test]
+    fn a_sustained_run_does_not_depend_on_the_evaluation_cadence(case in cadence_case()) {
+        let instants: Vec<DateTime<Utc>> = case
+            .evaluations
+            .iter()
+            .map(|&s| base() + TimeDelta::seconds(s))
+            .collect();
+        let sparse: Vec<DateTime<Utc>> = instants
+            .iter()
+            .zip(&case.sparse)
+            .filter(|(_, keep)| **keep)
+            .map(|(at, _)| *at)
+            .chain(instants.last().copied())
+            .collect::<BTreeSet<_>>()
+            .into_iter()
+            .collect();
+        let (dense_roots, dense_ops) = case.run(&instants);
+        let (sparse_roots, sparse_ops) = case.run(&sparse);
+        let dense_at: BTreeMap<_, _> = dense_roots.into_iter().collect();
+        for (at, root) in &sparse_roots {
+            prop_assert_eq!(dense_at.get(at), Some(root), "at {}", at);
+        }
+        let starts = |ops: &[TimerOp]| {
+            ops.iter()
+                .filter(|op| op.kind == TimerOpKind::Set)
+                .map(|op| op.at)
+                .collect::<Vec<_>>()
+        };
+        let began = case.began();
+        for start in starts(&dense_ops).into_iter().chain(starts(&sparse_ops)) {
+            prop_assert_eq!(start, began);
+        }
+    }
+}
+
+/// The start properties are not vacuous. Over 256 sampled rules and skewed
+/// tick runs, 191 of 1211 starts begin before their evaluation, 60 of those at
+/// the end of their path's not-true lease, and 341 roots hold; in 51 of 256
+/// cadence cases a run completes on the first evaluation to see its child.
+/// The floors are about half.
+#[test]
+fn generated_sustained_starts_reach_earlier_and_bounded_starts() {
+    let mut total = StartTally::default();
+    for (spec, minutes, ticks) in sample(&(rule_spec(), 1..=30i64, skewed_ticks()), 256) {
+        let tally = run_starts(&spec, minutes, &ticks).expect("the property holds");
+        total.starts += tally.starts;
+        total.earlier += tally.earlier;
+        total.bounded += tally.bounded;
+        total.roots_true += tally.roots_true;
+    }
+    assert!(
+        total.earlier * 100 >= total.starts * EARLIER_START_FLOOR_PERCENT,
+        "{total:?}"
+    );
+    assert!(
+        total.bounded * 100 >= total.earlier * BOUNDED_START_FLOOR_PERCENT,
+        "{total:?}"
+    );
+    assert!(total.roots_true >= ROOTS_TRUE_FLOOR, "{total:?}");
+
+    let (mut cases, mut at_once) = (0usize, 0usize);
+    for case in sample(&cadence_case(), 256) {
+        cases += 1;
+        let instants: Vec<DateTime<Utc>> = case
+            .evaluations
+            .iter()
+            .map(|&s| base() + TimeDelta::seconds(s))
+            .collect();
+        let (roots, _) = case.run(&instants);
+        let completes = case.began() + TimeDelta::minutes(case.minutes);
+        if roots
+            .iter()
+            .find(|(at, _)| *at >= case.began())
+            .is_some_and(|(at, root)| *at >= completes && root.is_true())
+        {
+            at_once += 1;
+        }
+    }
+    assert!(
+        at_once * 100 >= cases * AT_ONCE_FLOOR_PERCENT,
+        "{at_once} of {cases} complete on the first evaluation to see the child"
+    );
 }
 
 /// §6.4: the root as the tracker reads it under `on_unknown`; `None` holds.
@@ -613,9 +1038,11 @@ fn model_met(on_unknown: &str, root: Truth) -> Option<bool> {
 }
 
 proptest! {
-    /// §6.4: an evaluation whose unknown root the rule holds leaves the
-    /// tracker as it was, `updated_at` included, except that a hysteresis
-    /// window that has elapsed closes the excursion.
+    /// §6.4: an evaluation whose unknown root the rule holds, before its
+    /// hold's bound, leaves the tracker as it was, `updated_at` included,
+    /// except that the first of a hold records its start (a rule with no state
+    /// then holds only that) and a hysteresis window that has elapsed closes
+    /// the excursion.
     #[test]
     fn a_held_evaluation_changes_nothing_but_an_elapsed_hysteresis_window(
         spec in rule_spec(),
@@ -632,6 +1059,30 @@ proptest! {
             if !(evaluation.root.is_unknown() && holds) {
                 continue;
             }
+            // §6.4: a stored hold this engine cannot have written restarts.
+            let trusted = before.and_then(|s| {
+                s.held_since.filter(|&since| {
+                    let bound = since + HOLD_BOUND;
+                    !((s.updated_at > since && s.updated_at < bound)
+                        || (s.updated_at >= bound && s.state == TrackerStateKind::Active))
+                })
+            });
+            let held_since = trusted.unwrap_or(tick.now);
+            if model_since(tick.now, held_since).is_none_or(|held| held >= HOLD_BOUND) {
+                continue;
+            }
+            let before = Some(match before {
+                Some(s) => TrackerState { held_since: Some(held_since), ..s },
+                None => TrackerState {
+                    state: TrackerStateKind::Idle,
+                    active_excursion: None,
+                    last_excursion: 0,
+                    updated_at: tick.now,
+                    hysteresis_started_at: None,
+                    awaiting_rearm: false,
+                    held_since: Some(tick.now),
+                },
+            });
             let window_elapsed = before.is_some_and(|s| {
                 s.state == TrackerStateKind::Hysteresis
                     && s.hysteresis_started_at
@@ -664,7 +1115,13 @@ proptest! {
     /// the ticks after it come out as they do without it. Both runs close an
     /// elapsed hysteresis window at that instant, as the sweep does whatever
     /// it evaluates (§6.1). Only instants where nothing else is due count:
-    /// another clock change there is a reason to evaluate of its own.
+    /// another clock change there is a reason to evaluate of its own. A held
+    /// evaluation that records a false child's not-true instant there moves
+    /// that path's lease (§3, §5.1), so only one that records nothing must
+    /// leave the ticks after it as they are. A held evaluation there also
+    /// begins the hold earlier than the next would (§6.4), so the ticks after
+    /// it are compared without the hold's start and next change, which the
+    /// missed run never has earlier, and only while no tick reaches the bound.
     #[test]
     fn under_hold_a_missed_evaluation_at_the_staleness_instant_changes_nothing_later(
         spec in rule_spec(),
@@ -675,7 +1132,6 @@ proptest! {
         let rule = rule_from_wire(wire);
         let bound = TimeDelta::minutes(spec.glucose_freshness_minutes.unwrap_or(11));
         let config = TrackerRuleConfig {
-            confirmation_readings: rule.confirmation_readings,
             hysteresis_minutes: rule.hysteresis_minutes,
         };
         for k in 0..ticks.len() {
@@ -707,10 +1163,10 @@ proptest! {
                 }
                 let _ = state.tracker.close_elapsed_hysteresis(RULE_ID, config, at);
                 let there = evaluate_there.then(|| {
-                    evaluate_rule(&rule, &ctx, at, &mut state, false)
+                    let e = evaluate_rule(&rule, &ctx, at, &mut state, false)
                         .evaluation
-                        .expect("the body is evaluable")
-                        .root
+                        .expect("the body is evaluable");
+                    (e.root, e.timer_ops.is_empty())
                 });
                 let later: Vec<Value> = ticks[k + 1..]
                     .iter()
@@ -718,14 +1174,43 @@ proptest! {
                     .collect();
                 (there, later)
             };
-            let (stale_root, evaluated) = run(true, stale_at);
-            let stale_root = stale_root.expect("evaluated");
+            let (stale, evaluated) = run(true, stale_at);
+            let (stale_root, recorded_nothing) = stale.expect("evaluated");
             if stale_root.is_unknown() {
+                if !recorded_nothing
+                    || ticks.last().is_some_and(|t| t.now >= stale_at + HOLD_BOUND)
+                {
+                    continue;
+                }
                 let (_, missed) = run(false, stale_at);
-                prop_assert_eq!(evaluated, missed);
+                for (e, m) in evaluated.iter().zip(&missed) {
+                    let since = |v: &Value| {
+                        v["tracker"]["held_since"]
+                            .as_str()
+                            .map(|s| DateTime::parse_from_rfc3339(s).expect("an instant"))
+                    };
+                    if let (Some(e), Some(m)) = (since(e), since(m)) {
+                        prop_assert!(e <= m, "the missed run began its hold earlier");
+                    }
+                }
+                let without_hold = |outcomes: Vec<Value>| -> Vec<Value> {
+                    outcomes
+                        .into_iter()
+                        .map(|mut v| {
+                            if let Some(o) = v.as_object_mut() {
+                                o.remove("next_change_at");
+                            }
+                            if let Some(t) = v["tracker"].as_object_mut() {
+                                t.remove("held_since");
+                            }
+                            v
+                        })
+                        .collect()
+                };
+                prop_assert_eq!(without_hold(evaluated), without_hold(missed));
             } else {
-                let (fresh_root, _) = run(true, stale_at - RESOLUTION);
-                prop_assert_eq!(Some(stale_root), fresh_root);
+                let (fresh, _) = run(true, stale_at - RESOLUTION);
+                prop_assert_eq!(Some(stale_root), fresh.map(|(root, _)| root));
             }
         }
     }
@@ -823,6 +1308,10 @@ const SKEWED_TICKS_FLOOR_PERCENT: usize = 1;
 const CLOCK_CASE_FLOOR_PERCENT: usize = 4;
 
 const UNKNOWN_FLOOR_PERCENT: usize = 15;
+const EARLIER_START_FLOOR_PERCENT: usize = 8;
+const BOUNDED_START_FLOOR_PERCENT: usize = 15;
+const ROOTS_TRUE_FLOOR: usize = 170;
+const AT_ONCE_FLOOR_PERCENT: usize = 10;
 const HELD_FLOOR_PERCENT: usize = 10;
 
 fn plain_tree() -> BoxedStrategy<Value> {
@@ -838,13 +1327,12 @@ fn plain_tree() -> BoxedStrategy<Value> {
 }
 
 fn auto_resolving_rule() -> impl Strategy<Value = (Value, Value, Value)> {
-    (plain_tree(), plain_tree(), 0..4i32, 0..10i32, on_unknown()).prop_map(
-        |(body, resolve, confirmation_readings, hysteresis_minutes, on_unknown)| {
+    (plain_tree(), plain_tree(), 0..10i32, on_unknown()).prop_map(
+        |(body, resolve, hysteresis_minutes, on_unknown)| {
             let wire = json!({
                 "id": RULE_ID.to_string(),
                 "condition_type": "composite",
                 "condition_params": composite("or", vec![body.clone()])["composite"],
-                "confirmation_readings": confirmation_readings,
                 "hysteresis_minutes": hysteresis_minutes,
                 "auto_resolve_enabled": true,
                 "auto_resolve_params": resolve,
@@ -876,8 +1364,8 @@ proptest! {
             let before = state.tracker.state(RULE_ID).copied();
             let outcome = evaluate_rule(&rule, &context_of(tick), tick.now, &mut state, false);
             let evaluation = outcome.evaluation.expect("the body is evaluable");
-            let body_truth = model.eval(&body, "composite", &tick.context, tick.now);
-            let resolve_truth = model.eval(&resolve, "auto_resolve", &tick.context, tick.now);
+            let (body_truth, _) = model.eval(&body, "composite", &tick.context, tick.now);
+            let (resolve_truth, _) = model.eval(&resolve, "auto_resolve", &tick.context, tick.now);
             prop_assert_eq!(evaluation.root, body_truth);
             let met = model_met(&on_unknown, body_truth);
             let keeps = match met {
@@ -1399,36 +1887,32 @@ proptest! {
     }
 }
 
-/// A tracker state a rule can be left in: each of the four, and idle
+/// A tracker state a rule can be left in: each of the three, and idle
 /// awaiting re-arm, last changed up to an hour before `now` or, by a clock
 /// that has since stepped back, up to 15 minutes after it.
 fn seeded_tracker(now: DateTime<Utc>) -> BoxedStrategy<Option<TrackerState>> {
     let kinds = select(vec![
         (TrackerStateKind::Idle, false),
         (TrackerStateKind::Idle, true),
-        (TrackerStateKind::Confirming, false),
         (TrackerStateKind::Active, false),
         (TrackerStateKind::Hysteresis, false),
     ]);
     let ago = prop_oneof![3 => 0..=3600i64, 1 => -900..=-1i64];
     option::of(
-        (kinds, 0..3i32, ago).prop_map(move |((state, awaiting_rearm), count, ago)| {
+        (kinds, ago).prop_map(move |((state, awaiting_rearm), ago)| {
             let since = now - TimeDelta::seconds(ago);
             TrackerState {
                 state,
-                confirmation_count: if state == TrackerStateKind::Confirming {
-                    count + 1
-                } else {
-                    0
-                },
                 active_excursion: matches!(
                     state,
                     TrackerStateKind::Active | TrackerStateKind::Hysteresis
                 )
                 .then_some(1),
+                last_excursion: 1,
                 updated_at: since,
                 hysteresis_started_at: (state == TrackerStateKind::Hysteresis).then_some(since),
                 awaiting_rearm,
+                held_since: None,
             }
         }),
     )
@@ -1452,7 +1936,6 @@ fn clock_case() -> impl Strategy<Value = ClockCase> {
         (
             tree(),
             option::of(tree()),
-            0..4i32,
             0..10i32,
             clock_context(now),
             seeded_tracker(now),
@@ -1465,7 +1948,6 @@ fn clock_case() -> impl Strategy<Value = ClockCase> {
                 move |(
                     body,
                     resolve,
-                    confirmation_readings,
                     hysteresis_minutes,
                     context,
                     tracker,
@@ -1482,7 +1964,6 @@ fn clock_case() -> impl Strategy<Value = ClockCase> {
                             "id": RULE_ID.to_string(),
                             "condition_type": kind,
                             "condition_params": body[&kind],
-                            "confirmation_readings": confirmation_readings,
                             "hysteresis_minutes": hysteresis_minutes,
                             "auto_resolve_enabled": resolve.is_some(),
                             "auto_resolve_params": resolve.map(naming_the_context),
@@ -1536,7 +2017,7 @@ proptest! {
 /// or one the crate has no member for.
 #[derive(Debug, Clone)]
 struct NamedFacts {
-    pump_mode: Option<&'static str>,
+    pump_modes: Vec<&'static str>,
     spans: Vec<(&'static str, Option<&'static str>)>,
     trend: Option<&'static str>,
     glucose: Option<&'static str>,
@@ -1552,7 +2033,7 @@ fn named_facts() -> impl Strategy<Value = NamedFacts> {
         .chain(["NotACategory"])
         .collect();
     (
-        option::of(word_or_unrecognised::<PumpMode>("Turbo")),
+        vec(word_or_unrecognised::<PumpMode>("Turbo"), 0..=3),
         vec(
             (select(categories), option::of(select(vec!["a", "b"]))),
             0..=3,
@@ -1560,8 +2041,8 @@ fn named_facts() -> impl Strategy<Value = NamedFacts> {
         option::of(word_or_unrecognised::<TrendBucket>("sideways")),
         option::of(word_or_unrecognised::<GlucoseBucket>("off_the_chart")),
     )
-        .prop_map(|(pump_mode, spans, trend, glucose)| NamedFacts {
-            pump_mode,
+        .prop_map(|(pump_modes, spans, trend, glucose)| NamedFacts {
+            pump_modes,
             spans,
             trend,
             glucose,
@@ -1574,7 +2055,7 @@ fn recognised<E: WireEnum>(name: Option<&str>) -> Option<E> {
 
 proptest! {
     /// §3, §4: a name the crate has no member for is unknown where it decides
-    /// the answer (`pump_state` over an active pump unless `for_minutes` has
+    /// the answer (`pump_state` over an active mode, with none named, unless `for_minutes` has
     /// not yet passed, `trend` and `glucose_bucket` over a bucket), and is
     /// ignored where it could only
     /// name a category no leaf can name (`state_span_active`).
@@ -1598,10 +2079,14 @@ proptest! {
         let started = (base() - TimeDelta::minutes(PUMP_SPAN_MINUTES.into())).to_rfc3339();
         let context: SensorContext = serde_json::from_value(generators::object(vec![
             (
-                "active_pump_state",
-                facts
-                    .pump_mode
-                    .map(|m| json!({ "mode": m, "started_at": started })),
+                "active_pump_modes",
+                Some(
+                    facts
+                        .pump_modes
+                        .iter()
+                        .map(|m| json!({ "mode": m, "started_at": started }))
+                        .collect(),
+                ),
             ),
             (
                 "active_state_spans",
@@ -1628,16 +2113,21 @@ proptest! {
             json!({ "mode": mode, "is_active": is_active, "for_minutes": for_minutes }),
         );
         let held = for_minutes.is_none_or(|m| m <= PUMP_SPAN_MINUTES);
-        let expected = match facts.pump_mode {
-            None => Truth::from(!is_active),
-            Some(active) if recognised::<PumpMode>(Some(active)).is_none() => {
-                if is_active && !held {
-                    Truth::False
-                } else {
-                    Truth::Unknown
-                }
+        let names_the_mode = facts.pump_modes.contains(&mode);
+        let unrecognised = facts
+            .pump_modes
+            .iter()
+            .any(|m| recognised::<PumpMode>(Some(*m)).is_none());
+        let expected = if names_the_mode {
+            Truth::from(is_active && held)
+        } else if unrecognised {
+            if is_active && !held {
+                Truth::False
+            } else {
+                Truth::Unknown
             }
-            Some(active) => Truth::from((active == mode) == is_active && (!is_active || held)),
+        } else {
+            Truth::from(!is_active)
         };
         prop_assert_eq!(pump, expected);
 
@@ -1665,5 +2155,159 @@ proptest! {
             _ => Truth::Unknown,
         };
         prop_assert_eq!(bucket_truth, expected);
+    }
+}
+
+/// The kinds of the leaves of a node's JSON in leaf-id order (engine-semantics.md §2.2).
+fn leaf_kinds(node: &Value) -> Vec<String> {
+    let kind = node["type"].as_str().unwrap();
+    let payload = &node[kind];
+    match kind {
+        "composite" => payload["conditions"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .flat_map(leaf_kinds)
+            .collect(),
+        "not" | "sustained" => leaf_kinds(&payload["child"]),
+        _ => vec![kind.to_owned()],
+    }
+}
+
+fn with_sensor_state(tick: &Tick, state: &str, since: Option<i64>) -> SensorContext {
+    let mut context = tick.context.clone();
+    let mut sensor = json!({ "state": state });
+    if let Some(ago) = since {
+        sensor["since"] = (tick.now - TimeDelta::seconds(ago)).to_rfc3339().into();
+    }
+    context["sensor_state"] = sensor;
+    serde_json::from_value(context).unwrap()
+}
+
+proptest! {
+    /// §3 sensor state: with no `sensor_state` leaf, a context whose sensor is ok, from any start,
+    /// evaluates byte for byte as one that says nothing of the sensor, tick after tick.
+    #[test]
+    fn an_ok_sensor_evaluates_as_no_sensor_state(
+        spec in rule_spec(),
+        ticks in skewed_ticks(),
+        since in option::of(-600..=7200i64),
+    ) {
+        let rule = rule_from_wire(spec.wire());
+        let (mut absent, mut ok) = (EngineState::new(), EngineState::new());
+        for tick in &ticks {
+            let a = evaluate_rule(&rule, &context_of(tick), tick.now, &mut absent, true);
+            let b = evaluate_rule(&rule, &with_sensor_state(tick, "ok", since), tick.now, &mut ok, true);
+            prop_assert_eq!(a.to_json(), b.to_json());
+        }
+    }
+
+    /// §3 sensor state: while the sensor is in any state but ok, or one the engine has no name
+    /// for, no `threshold` leaf is known, and no root is unknown by the glucose fact: the
+    /// sensor's state names why.
+    #[test]
+    fn a_sensor_that_is_not_ok_leaves_no_glucose_leaf_known(
+        spec in rule_spec(),
+        ticks in skewed_ticks(),
+        state in select(vec!["warming_up", "calibration_needed", "error", "expired", "no_value", "rebooting"]),
+    ) {
+        let rule = rule_from_wire(spec.wire());
+        let kinds = leaf_kinds(&node("composite", spec.wire()["condition_params"].clone()));
+        let reason = if state == "rebooting" {
+            UnknownReason::Unrecognised
+        } else {
+            UnknownReason::SensorNotOk
+        };
+        let mut engine = EngineState::new();
+        for tick in &ticks {
+            let ctx = with_sensor_state(tick, state, None);
+            let outcome = evaluate_rule(&rule, &ctx, tick.now, &mut engine, true);
+            let evaluation = outcome.evaluation.expect("the body is evaluable");
+            let leaves = evaluation.leaves.expect("the leaves were requested");
+            for (kind, truth) in kinds.iter().zip(&leaves) {
+                if kind == "threshold" {
+                    prop_assert!(truth.is_unknown(), "{kind} read {truth:?} under {state}");
+                }
+            }
+            for (fact, why) in evaluation.unknown.iter() {
+                prop_assert_ne!(fact, ContextFact::Glucose);
+                if fact == ContextFact::SensorState {
+                    prop_assert_eq!(why, reason);
+                }
+            }
+        }
+    }
+}
+
+fn forecast() -> BoxedStrategy<Value> {
+    vec(
+        (0..=60i32, 40..=300i32)
+            .prop_map(|(offset, mgdl)| json!({ "offset_minutes": offset, "mgdl": mgdl })),
+        0..=4,
+    )
+    .prop_map(Value::from)
+    .boxed()
+}
+
+fn curves_and_determination() -> BoxedStrategy<(Value, Value)> {
+    (
+        vec(option::of(forecast()), 6),
+        option::of((
+            -600..=1800i64,
+            option::of(40..=300i32),
+            option::of(0..=60i32),
+        )),
+    )
+        .prop_map(|(series, determination)| {
+            let names = ["iob", "cob", "uam", "zt", "default", "ar2"];
+            let curves: Map<String, Value> = names
+                .iter()
+                .zip(series)
+                .filter_map(|(name, s)| Some(((*name).to_owned(), s?)))
+                .collect();
+            let determination = determination.map_or(Value::Null, |(ago, eventual, carbs)| {
+                json!({
+                    "at": (base() - TimeDelta::seconds(ago)).to_rfc3339(),
+                    "eventual_mgdl": eventual,
+                    "carbs_required_grams": carbs,
+                })
+            });
+            (Value::Object(curves), determination)
+        })
+        .boxed()
+}
+
+proptest! {
+    /// §3 `predicted`, §4: a rule that names no curve and reads no determination evaluates byte
+    /// for byte the same whether or not the context carries named curves and a determination, tick
+    /// after tick: only `default` (`predictions`, the old wire shape) reaches it.
+    #[test]
+    fn named_curves_and_a_determination_move_no_rule_that_does_not_name_them(
+        spec in rule_spec(),
+        predicted in (select(vec!["<", "<=", ">", ">=", "=="]), 40..=300i32, 1..=60i32),
+        ticks in skewed_ticks(),
+        forecasts in vec((forecast(), curves_and_determination()), 24),
+    ) {
+        let body = spec.wire()["condition_params"].clone();
+        let (op, value, within) = predicted;
+        let mut wire = spec.wire();
+        wire["condition_params"] = json!({ "operator": "or", "conditions": [
+            node("composite", body),
+            node("predicted", json!({ "operator": op, "value": value, "within_minutes": within })),
+        ] });
+        let rule = rule_from_wire(wire);
+        let (mut without, mut with) = (EngineState::new(), EngineState::new());
+        for (tick, (default, (curves, determination))) in ticks.iter().zip(&forecasts) {
+            let mut old = tick.context.clone();
+            old["predictions"] = default.clone();
+            let mut new = old.clone();
+            new["prediction_curves"] = curves.clone();
+            new["aps_determination"] = determination.clone();
+            let old: SensorContext = serde_json::from_value(old).unwrap();
+            let new: SensorContext = serde_json::from_value(new).unwrap();
+            let a = evaluate_rule(&rule, &old, tick.now, &mut without, true);
+            let b = evaluate_rule(&rule, &new, tick.now, &mut with, true);
+            prop_assert_eq!(a.to_json(), b.to_json());
+        }
     }
 }

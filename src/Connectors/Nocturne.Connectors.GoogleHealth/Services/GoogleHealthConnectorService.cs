@@ -200,9 +200,9 @@ public sealed class GoogleHealthConnectorService(
     {
         var configuration = await LoadRuntimeStateAsync(ct);
         configuration[BackfillCursorKey] = state.CursorDate is { } cursor
-            ? JsonSerializer.SerializeToElement(cursor.UtcDateTime.ToString("o"))
+            ? JsonSerializer.SerializeToElement(cursor.UtcDateTime.ToString("o", CultureInfo.InvariantCulture))
             : JsonSerializer.SerializeToElement<string?>(null);
-        configuration[BackfillFloorKey] = JsonSerializer.SerializeToElement(state.FloorDate.UtcDateTime.ToString("o"));
+        configuration[BackfillFloorKey] = JsonSerializer.SerializeToElement(state.FloorDate.UtcDateTime.ToString("o", CultureInfo.InvariantCulture));
         configuration[BackfillCompleteKey] = JsonSerializer.SerializeToElement(state.Complete);
         if (state.ChunkDays is { } chunkDays)
             configuration[BackfillChunkDaysKey] = JsonSerializer.SerializeToElement(chunkDays);
@@ -216,7 +216,7 @@ public sealed class GoogleHealthConnectorService(
         var days = Math.Max(1, (int)Math.Ceiling((window.To - window.From).TotalDays / 2));
         try
         {
-            using var cleanup = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+            using var cleanup = new CancellationTokenSource(TimeSpan.FromSeconds(30), Clock);
             var state = await LoadBackfillStateAsync(cleanup.Token);
             await SaveBackfillStateAsync(state with { ChunkDays = days }, cleanup.Token);
             logger.LogWarning(
@@ -245,7 +245,7 @@ public sealed class GoogleHealthConnectorService(
                 DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var existingValue) &&
             existingValue >= to.UtcDateTime)
             return;
-        configuration[LastSyncedToKey] = JsonSerializer.SerializeToElement(to.UtcDateTime.ToString("o"));
+        configuration[LastSyncedToKey] = JsonSerializer.SerializeToElement(to.UtcDateTime.ToString("o", CultureInfo.InvariantCulture));
         await SaveRuntimeStateAsync(configuration, ct);
     }
 
@@ -516,7 +516,7 @@ public sealed class GoogleHealthConnectorService(
                 {
                     try
                     {
-                        using var cleanup = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+                        using var cleanup = new CancellationTokenSource(TimeSpan.FromSeconds(30), Clock);
                         await writer.AbandonReconciliationAsync(reconciliationRun, cleanup.Token);
                     }
                     catch (Exception cleanupException)

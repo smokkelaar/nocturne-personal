@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -144,6 +145,31 @@ public class TenantControllerLoginCodeTests : IDisposable
     }
 
     [Fact]
+    public async Task IssueLoginCode_ForAMemberWhoseAccessHasEnded_AnswersAsForANonMemberAndMintsNothing()
+    {
+        await _tenantContext.TenantMembers.Where(m => m.SubjectId == _memberSubjectId)
+            .ExecuteUpdateAsync(m => m.SetProperty(x => x.AccessEndsAt, DateTime.UtcNow.AddMinutes(-1)));
+
+        var ended = await InvokeAsync(_tenantId, _memberSubjectId);
+        var nonMember = await InvokeAsync(_tenantId, _outsiderSubjectId);
+
+        ended.Should().BeOfType<NotFoundResult>();
+        nonMember.Should().BeOfType<NotFoundResult>();
+        (await _tenantContext.LoginCodes.AnyAsync()).Should().BeFalse();
+        (await _auditContext.AuthAuditLog.AnyAsync(a => a.EventType == AuthAuditEventType.LoginCodeIssued))
+            .Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task IssueLoginCode_ForAMemberWhoseAccessEndsLater_IsIssued()
+    {
+        await _tenantContext.TenantMembers.Where(m => m.SubjectId == _memberSubjectId)
+            .ExecuteUpdateAsync(m => m.SetProperty(x => x.AccessEndsAt, DateTime.UtcNow.AddDays(1)));
+
+        await IssueAsync(_memberSubjectId);
+    }
+
+    [Fact]
     public async Task IssueLoginCode_OnAnInactiveTenant_IsRefusedAndMintsNothing()
     {
         _tenantService
@@ -169,6 +195,10 @@ public class TenantControllerLoginCodeTests : IDisposable
         row.ActorSubjectId.Should().BeNull();
         row.ActorCredential.Should().Be($"{AuthType.InstanceKey}:0123456789abcdef");
         row.TenantId.Should().Be(_tenantId);
+        var stored = await _tenantContext.LoginCodes.AsNoTracking().SingleAsync();
+        var details = JsonDocument.Parse(row.DetailsJson!).RootElement;
+        details.GetProperty("purpose").GetString().Should().Be(nameof(LoginCodePurpose.Login));
+        details.GetProperty("code_id").GetGuid().Should().Be(stored.Id);
     }
 
     [Fact]
@@ -216,7 +246,7 @@ public class TenantControllerLoginCodeTests : IDisposable
         (await _loginCodeService.RedeemAsync(_tenantContext, issued.Code, [LoginCodePurpose.Login], admits: null, withSpend: null, null, null))
             .Should().BeNull("a recovery code is not a sign-in");
         (await _loginCodeService.RedeemAsync(_tenantContext, issued.Code, LoginCodeService.RecoveryPurposes, admits: null, withSpend: null, null, null))
-            .Should().Be(new RedeemedLoginCode(_memberSubjectId, LoginCodePurpose.OperatorRecovery));
+            .Should().Be(new RedeemedLoginCode(_memberSubjectId, LoginCodePurpose.OperatorRecovery) { CodeId = stored.Id });
     }
 
     [Fact]
@@ -232,7 +262,7 @@ public class TenantControllerLoginCodeTests : IDisposable
     }
 
     [Fact]
-    public async Task IssueRecoveryCode_ForAMemberWhoCanStillSignIn_IsRefused()
+    public async Task IssueRecoveryCode_ForAMemberWithAPasskey_IsIssued()
     {
         _tenantContext.PasskeyCredentials.Add(new PasskeyCredentialEntity
         {
@@ -241,9 +271,73 @@ public class TenantControllerLoginCodeTests : IDisposable
         });
         await _tenantContext.SaveChangesAsync();
 
-        var result = await IssueRecoveryCodeAsync();
+        (await IssueRecoveryCodeAsync()).Should().BeOfType<OkObjectResult>();
+        (await _tenantContext.LoginCodes.AsNoTracking().SingleAsync()).Purpose.Should().Be(LoginCodePurpose.OperatorRecovery);
+    }
 
-        result.Should().BeOfType<ObjectResult>().Which.StatusCode.Should().Be(StatusCodes.Status409Conflict);
+    [Fact]
+    public async Task IssueRecoveryCode_ForAMemberWithAWorkingProviderIdentity_IsIssued()
+    {
+        var providerId = Guid.CreateVersion7();
+        _tenantContext.OidcProviders.Add(new OidcProviderEntity
+        {
+            Id = providerId, Name = "Provider", IssuerUrl = "https://idp.example.test", ClientId = "c", IsEnabled = true,
+        });
+        _tenantContext.SubjectOidcIdentities.Add(new SubjectOidcIdentityEntity
+        {
+            Id = Guid.CreateVersion7(), SubjectId = _memberSubjectId, OidcSubjectId = "sub", Issuer = "https://idp.example.test",
+            ProviderId = providerId, LinkedAt = DateTime.UtcNow,
+        });
+        await _tenantContext.SaveChangesAsync();
+
+        (await IssueRecoveryCodeAsync()).Should().BeOfType<OkObjectResult>();
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task IssueRecoveryCode_ForAMemberWithAConfirmedAddress_IsIssuedWhetherOrNotDeliveryIsConfigured(bool delivery)
+    {
+        var member = await _tenantContext.Subjects.FindAsync(_memberSubjectId);
+        member!.SetEmail("owner@example.test");
+        member.ConfirmEmail("owner@example.test", DateTime.UtcNow);
+        await _tenantContext.SaveChangesAsync();
+
+        (await IssueRecoveryCodeAsync(AccountLinkRoutes.Of(delivery))).Should().BeOfType<OkObjectResult>();
+    }
+
+    [Fact]
+    public async Task IssueRecoveryCode_ForASubjectWhoIsNotAMember_ReturnsNotFound()
+    {
+        (await IssueRecoveryCodeAsync(subjectId: _outsiderSubjectId)).Should().BeOfType<NotFoundResult>();
+        (await _tenantContext.LoginCodes.AnyAsync()).Should().BeFalse();
+    }
+
+    [Theory]
+    [InlineData("inactive")]
+    [InlineData("system")]
+    [InlineData("demo")]
+    public async Task IssueRecoveryCode_ForAMemberTheOperatorMayNotRecover_ReturnsNotFoundAndMintsNothing(string reason)
+    {
+        var member = await _tenantContext.Subjects.FindAsync(_memberSubjectId);
+        member!.IsActive = reason != "inactive";
+        member.IsSystemSubject = reason == "system";
+        member.IsDemoSubject = reason == "demo";
+        await _tenantContext.SaveChangesAsync();
+
+        (await IssueRecoveryCodeAsync()).Should().BeOfType<NotFoundResult>();
+        (await _tenantContext.LoginCodes.AnyAsync()).Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task IssueRecoveryCode_OnAnInactiveTenant_IsRefusedAndMintsNothing()
+    {
+        _tenantService
+            .Setup(s => s.GetByIdAsync(_tenantId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(() => TenantDetail(isActive: false));
+
+        (await IssueRecoveryCodeAsync()).Should().BeOfType<ObjectResult>()
+            .Which.StatusCode.Should().Be(StatusCodes.Status409Conflict);
         (await _tenantContext.LoginCodes.AnyAsync()).Should().BeFalse();
     }
 
@@ -276,10 +370,11 @@ public class TenantControllerLoginCodeTests : IDisposable
             null, null);
 
         await redeeming.Should().ThrowAsync<InvalidOperationException>();
-        (await _tenantContext.LoginCodes.AsNoTracking().SingleAsync()).ConsumedAt.Should().BeNull();
+        var stored = await _tenantContext.LoginCodes.AsNoTracking().SingleAsync();
+        stored.ConsumedAt.Should().BeNull();
         (await _loginCodeService.RedeemAsync(
                 _tenantContext, issued.Code, [LoginCodePurpose.Login], admits: null, withSpend: null, null, null))
-            .Should().Be(new RedeemedLoginCode(_memberSubjectId, LoginCodePurpose.Login));
+            .Should().Be(new RedeemedLoginCode(_memberSubjectId, LoginCodePurpose.Login) { CodeId = stored.Id });
     }
 
     [Fact]
@@ -292,12 +387,16 @@ public class TenantControllerLoginCodeTests : IDisposable
         (await _tenantContext.LoginCodes.AsNoTracking().SingleAsync()).ConsumedAt.Should().BeNull();
     }
 
-    private Task<IActionResult> IssueRecoveryCodeAsync()
+    private Task<IActionResult> IssueRecoveryCodeAsync(IAccountLinkRoute? linkRoute = null, Guid? subjectId = null)
     {
+        linkRoute ??= AccountLinkRoutes.Off;
         var contexts = _db.ContextFactory.AsNocturneFactory();
         return _controller.IssueRecoveryCode(
-            _tenantId, _memberSubjectId, contexts, _loginCodeService,
-            new MemberRecoveryEligibility(new TenantMemberService(new TenantMembershipRepository(contexts))), CancellationToken.None);
+            _tenantId, subjectId ?? _memberSubjectId, contexts, _loginCodeService,
+            new SubjectRepository(contexts, linkRoute),
+            new MemberRecoveryEligibility(
+                new TenantMemberService(new TenantMembershipRepository(contexts, linkRoute), TimeProvider.System), linkRoute),
+            CancellationToken.None);
     }
 
     private TenantDetailDto TenantDetail(bool isActive) => new(
@@ -305,13 +404,16 @@ public class TenantControllerLoginCodeTests : IDisposable
         [
             new TenantMemberDto(
                 Guid.CreateVersion7(), _memberSubjectId, "Owner", false, [], null, null, false,
-                null, DateTime.UtcNow, false),
+                null, DateTime.UtcNow, false, null, false, null, true, [], false),
         ]);
 
     private async Task<IActionResult> InvokeAsync(Guid tenantId, Guid subjectId) =>
         await _controller.IssueLoginCode(
             tenantId, subjectId, _db.ContextFactory.AsNocturneFactory(), _loginCodeService,
-            new SubjectRepository(_db.ContextFactory.AsNocturneFactory()), CancellationToken.None);
+            new SubjectRepository(_db.ContextFactory.AsNocturneFactory(), AccountLinkRoutes.Off),
+            new TenantMemberService(
+                new TenantMembershipRepository(_db.ContextFactory.AsNocturneFactory(), AccountLinkRoutes.Off), TimeProvider.System),
+            CancellationToken.None);
 
     private async Task<LoginCode> IssueAsync(Guid subjectId)
     {

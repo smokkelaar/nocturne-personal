@@ -71,8 +71,9 @@ public class TenantDirectGrantController : ControllerBase
         var result = await _directGrantService.CreateAsync(
             tenantId, request.SubjectId, request.Label, request.Scopes, request.ExpiresAt,
             request.LimitTo24Hours,
-            HttpContext.Connection.RemoteIpAddress?.ToString(),
+            HttpContext.GetClientAddress(),
             Request.Headers.UserAgent.ToString(),
+            createdBySubjectId: null,
             actor: Actor,
             ct: ct);
 
@@ -115,7 +116,7 @@ public class TenantDirectGrantController : ControllerBase
     {
         var found = await _directGrantService.RevokeAsync(
             tenantId, grantId, subjectId: null,
-            HttpContext.Connection.RemoteIpAddress?.ToString(),
+            HttpContext.GetClientAddress(),
             Request.Headers.UserAgent.ToString(),
             actor: Actor,
             ct: ct);

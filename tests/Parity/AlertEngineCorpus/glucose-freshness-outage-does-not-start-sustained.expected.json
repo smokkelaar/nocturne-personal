@@ -16,9 +16,15 @@
           ],
           "transition": "none",
           "tracker": {
-            "state": "idle",
-            "confirmation_count": 0
+            "state": "idle"
           },
+          "timer_ops": [
+            {
+              "op": "clear",
+              "path": "sustained",
+              "at": "2026-03-02T12:00:00Z"
+            }
+          ],
           "next_change_at": "2026-03-02T12:11:00Z"
         }
       ]
@@ -30,6 +36,12 @@
           "rule_id": "00000000-0000-0000-0000-000000000001",
           "root": false,
           "unknown": true,
+          "unknown_facts": [
+            {
+              "fact": "glucose",
+              "reason": "stale"
+            }
+          ],
           "leaves": [
             {
               "leaf_id": 0,
@@ -40,7 +52,7 @@
           "transition": "none",
           "tracker": {
             "state": "idle",
-            "confirmation_count": 0
+            "held_since": "2026-03-02T12:30:00Z"
           }
         }
       ]
@@ -59,8 +71,7 @@
           ],
           "transition": "none",
           "tracker": {
-            "state": "idle",
-            "confirmation_count": 0
+            "state": "idle"
           },
           "timer_ops": [
             {
@@ -88,7 +99,6 @@
           "transition": "opened",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
             "excursion": 1
           },
           "next_change_at": "2026-03-02T12:56:00Z"

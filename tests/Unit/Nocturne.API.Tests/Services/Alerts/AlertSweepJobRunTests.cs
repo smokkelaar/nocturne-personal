@@ -7,6 +7,7 @@ using Nocturne.API.Services.Alerts;
 using Nocturne.API.Services.Alerts.Conditions;
 using Nocturne.API.Services.Alerts.Engines;
 using Nocturne.Core.Contracts.Alerts;
+using Nocturne.Core.Contracts.Glucose;
 using Nocturne.Core.Contracts.Jobs;
 using Nocturne.Core.Contracts.Multitenancy;
 using Nocturne.Core.Models;
@@ -40,7 +41,7 @@ public class AlertSweepJobRunTests
 
         (await run.Should().ThrowAsync<InvalidOperationException>()).Which.Should().BeSameAs(first);
         _repository.Verify(r => r.GetExpiredSnoozedInstancesAsync(It.IsAny<DateTime>(), It.IsAny<CancellationToken>()), Times.Once);
-        _repository.Verify(r => r.GetEnabledRulesAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _repository.Verify(r => r.ReadEnabledRulesAsync(It.IsAny<CancellationToken>()), Times.Once);
         _repository.Verify(r => r.GetAutoResolveExcursionsAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -73,15 +74,15 @@ public class AlertSweepJobRunTests
                 """{"direction": "above", "value": 250}""", AlertRuleSeverity.Warning, "{}", 1, false, null),
         };
         _repository
-            .Setup(r => r.GetEnabledRulesAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(rules);
+            .Setup(r => r.ReadEnabledRulesAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new EnabledAlertRules(rules, []));
 
         await RunAsync(active: true);
 
         _notice.Verify(n => n.CheckAsync(
-            It.Is<IReadOnlyList<AlertRuleSnapshot>>(checkedRules => checkedRules.SequenceEqual(rules)),
+            It.Is<EnabledAlertRules>(checkedRules => checkedRules.Rules.SequenceEqual(rules)),
             It.IsAny<CancellationToken>()), Times.Once);
-        _repository.Verify(r => r.GetEnabledRulesAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _repository.Verify(r => r.ReadEnabledRulesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -106,7 +107,9 @@ public class AlertSweepJobRunTests
             .AddSingleton(TimeProvider.System)
             .AddSingleton(typeof(ILogger<>), typeof(NullLogger<>))
             .AddScoped<IUnevaluableRuleNotice, UnevaluableRuleNotice>()
+            .AddSingleton(NoHeldRules.Notice())
             .AddSingleton(Mock.Of<IClockAnomalyNotice>())
+            .AddSingleton(Mock.Of<IAlertChannelNotice>())
             .BuildServiceProvider();
         await new AlertSweepJob(NullLogger<AlertSweepJob>.Instance).RunAsync(services, Tenant, Now, active: true);
 
@@ -124,7 +127,10 @@ public class AlertSweepJobRunTests
         await using var services = new ServiceCollection()
             .AddSingleton(_repository.Object)
             .AddSingleton(_notice.Object)
+            .AddSingleton(Mock.Of<ICanonicalGlucoseService>())
+            .AddSingleton(NoHeldRules.Notice())
             .AddSingleton(Mock.Of<IClockAnomalyNotice>())
+            .AddSingleton(Mock.Of<IAlertChannelNotice>())
             .AddScoped(_ => Mock.Of<ITenantAccessor>())
             .BuildServiceProvider();
         return await new AlertSweepJob(NullLogger<AlertSweepJob>.Instance).RunAsync(services, Tenant, Now, active);

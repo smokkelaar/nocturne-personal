@@ -19,8 +19,9 @@ use uuid::Uuid;
 
 use nocturne_alerts_core::context::SensorContext;
 use nocturne_alerts_core::engine::{EngineState, Evaluation, Rule, WireRule};
-use nocturne_alerts_core::excursion::{TrackerState, TrackerStateKind, TransitionType};
+use nocturne_alerts_core::excursion::{HOLD_BOUND, TrackerState, TrackerStateKind};
 use nocturne_alerts_core::next_change::RESOLUTION;
+use nocturne_alerts_core::sustained::TimerState;
 
 #[path = "common/quiet.rs"]
 mod quiet;
@@ -50,21 +51,10 @@ fn rule(kind: &str, params: Value) -> Rule {
 }
 
 fn rule_with(kind: &str, params: Value, auto_resolve: Option<Value>, hysteresis: i32) -> Rule {
-    confirmed_rule(kind, params, auto_resolve, hysteresis, 1)
-}
-
-fn confirmed_rule(
-    kind: &str,
-    params: Value,
-    auto_resolve: Option<Value>,
-    hysteresis: i32,
-    confirmation_readings: i32,
-) -> Rule {
     let wire: WireRule = serde_json::from_value(json!({
         "id": RULE,
         "condition_type": kind,
         "condition_params": params,
-        "confirmation_readings": confirmation_readings,
         "hysteresis_minutes": hysteresis,
         "auto_resolve_enabled": auto_resolve.is_some(),
         "auto_resolve_params": auto_resolve,
@@ -80,15 +70,15 @@ fn ctx(v: Value) -> SensorContext {
 /// State seeded before the evaluation at `now`.
 #[derive(Clone, Default)]
 struct Seed {
-    timers: Vec<(&'static str, DateTime<Utc>)>,
+    timers: Vec<(&'static str, TimerState)>,
     tracker: Option<TrackerState>,
 }
 
 impl Seed {
     fn state(&self) -> EngineState {
         let mut state = EngineState::new();
-        for &(path, first) in &self.timers {
-            state.timers.seed(RULE, path, first);
+        for &(path, timer) in &self.timers {
+            state.timers.seed(RULE, path, timer);
         }
         if let Some(tracker) = self.tracker {
             state.tracker.restore_state(RULE, tracker);
@@ -100,11 +90,12 @@ impl Seed {
 fn tracker(kind: TrackerStateKind, hysteresis_started_at: Option<DateTime<Utc>>) -> TrackerState {
     TrackerState {
         state: kind,
-        confirmation_count: 0,
         active_excursion: (kind != TrackerStateKind::Idle).then_some(1),
+        last_excursion: 1,
         updated_at: now() - min(1),
         hysteresis_started_at,
         awaiting_rearm: false,
+        held_since: None,
     }
 }
 
@@ -142,6 +133,14 @@ impl Case {
     fn next_change(&self) -> Option<DateTime<Utc>> {
         self.evaluate(&mut self.seed.state(), self.now)
             .next_change_at
+    }
+
+    /// No node contributes: a known root has no next change, and a held one
+    /// only its hold's bound, which this evaluation began.
+    fn assert_contributes_nothing(&self, label: &str) {
+        let e = self.evaluate(&mut self.seed.state(), self.now);
+        let bound = e.root.is_unknown().then(|| self.now + HOLD_BOUND);
+        assert_eq!(e.next_change_at, bound, "{label}");
     }
 }
 
@@ -206,7 +205,7 @@ fn signal_loss_already_lost_or_cold_has_none() {
         rule("signal_loss", json!({ "timeout_minutes": 15 })),
         ctx(json!({})),
     );
-    assert_eq!(cold.next_change(), None);
+    cold.assert_contributes_nothing("cold");
 }
 
 #[test]
@@ -317,12 +316,28 @@ fn for_minutes_kinds_change_when_the_span_has_held() {
         (
             "pump_state",
             json!({ "mode": "Automatic", "is_active": true, "for_minutes": 10 }),
-            json!({ "active_pump_state": { "mode": "Automatic", "started_at": ago(min(4)) } }),
+            json!({ "active_pump_modes": [{ "mode": "Automatic", "started_at": ago(min(4)) }] }),
+        ),
+        (
+            "pump_state",
+            json!({ "mode": "Suspended", "is_active": true, "for_minutes": 10 }),
+            json!({ "active_pump_modes": [
+                { "mode": "Automatic", "started_at": ago(min(60)) },
+                { "mode": "Suspended", "started_at": ago(min(4)) }
+            ] }),
         ),
         (
             "pump_state",
             json!({ "mode": "Automatic", "is_active": true, "for_minutes": 10 }),
-            json!({ "active_pump_state": { "mode": "Turbo", "started_at": ago(min(4)) } }),
+            json!({ "active_pump_modes": [
+                { "mode": "Turbo", "started_at": ago(min(60)) },
+                { "mode": "Automatic", "started_at": ago(min(4)) }
+            ] }),
+        ),
+        (
+            "pump_state",
+            json!({ "mode": "Automatic", "is_active": true, "for_minutes": 10 }),
+            json!({ "active_pump_modes": [{ "mode": "Turbo", "started_at": ago(min(4)) }] }),
         ),
         (
             "state_span_active",
@@ -362,12 +377,12 @@ fn a_guard_that_holds_the_leaf_constant_contributes_nothing() {
         (
             "pump_state",
             json!({ "mode": "Automatic", "is_active": true }),
-            json!({ "active_pump_state": { "mode": "Turbo", "started_at": ago(min(4)) } }),
+            json!({ "active_pump_modes": [{ "mode": "Turbo", "started_at": ago(min(4)) }] }),
         ),
         (
             "pump_state",
             json!({ "mode": "Automatic", "is_active": false, "for_minutes": 10 }),
-            json!({ "active_pump_state": { "mode": "Turbo", "started_at": ago(min(4)) } }),
+            json!({ "active_pump_modes": [{ "mode": "Turbo", "started_at": ago(min(4)) }] }),
         ),
         (
             "time_since_last_carb",
@@ -390,8 +405,7 @@ fn a_guard_that_holds_the_leaf_constant_contributes_nothing() {
         ),
     ];
     for (kind, params, context) in cases {
-        let case = Case::new(rule(kind, params), ctx(context));
-        assert_eq!(case.next_change(), None, "{kind}");
+        Case::new(rule(kind, params), ctx(context)).assert_contributes_nothing(kind);
     }
 }
 
@@ -445,10 +459,36 @@ fn sustained_over_a_reading_driven_child_changes_when_its_window_ends() {
     );
     assert_eq!(case.next_change(), Some(now() + min(15)));
     let running = Case::new(case.rule.clone(), case.ctx.clone()).seeded(Seed {
-        timers: vec![("sustained", now() - min(5))],
+        timers: vec![("sustained", TimerState::Running(now() - min(5)))],
         tracker: None,
     });
     assert_next_change(&running, now() + min(10));
+}
+
+/// A run starts where its child began, so its window ends that many minutes
+/// on from there, not from the evaluation; the end of the path's not-true
+/// lease bounds the start.
+#[test]
+fn sustained_over_a_child_that_began_earlier_changes_when_the_window_from_its_start_ends() {
+    let suspended = |not_true: TimeDelta| {
+        Case::new(
+            rule(
+                "sustained",
+                json!({ "minutes": 30, "child": { "type": "pump_suspended", "pump_suspended": { "is_active": true } } }),
+            ),
+            ctx(json!({
+                "has_ever_pump_snapshot": true,
+                "active_pump_suspension": { "started_at": ago(min(20)) },
+            })),
+        )
+        .seeded(Seed {
+            timers: vec![("sustained", TimerState::NotTrue(now() - not_true))],
+            tracker: None,
+        })
+    };
+    assert_next_change(&suspended(min(25)), now() + min(10));
+    // Recorded 10 minutes ago, its lease ends 5 minutes ago: the run starts there.
+    assert_next_change(&suspended(min(10)), now() + min(25));
 }
 
 #[test]
@@ -461,25 +501,6 @@ fn sustained_over_a_false_child_has_only_its_childs() {
         ctx(json!({ "latest_value": 120 })),
     );
     assert_eq!(case.next_change(), None);
-}
-
-/// The hostile review's counterexample: the next evaluation, whatever its
-/// time, counts towards confirmation and opens the excursion.
-#[test]
-fn a_confirming_rule_changes_at_the_next_tick() {
-    let case = Case::new(
-        confirmed_rule("signal_loss", json!({ "timeout_minutes": 20 }), None, 0, 2),
-        ctx(json!({ "last_reading_at": ago(min(25)), "latest_timestamp": ago(min(25)) })),
-    );
-    let mut state = case.seed.state();
-    let first = case.evaluate(&mut state, now());
-    assert_eq!(
-        state.tracker.state(RULE).map(|t| t.state),
-        Some(TrackerStateKind::Confirming)
-    );
-    assert_eq!(first.next_change_at, Some(now() + RESOLUTION));
-    let then = case.evaluate(&mut state, now() + TimeDelta::seconds(30));
-    assert_eq!(then.transition.kind, TransitionType::ExcursionOpened);
 }
 
 /// The hostile review's counterexample: a flip in year 10240 is past what a
@@ -696,9 +717,38 @@ fn a_reading_exactly_the_bound_old_changes_at_the_next_tick() {
 #[test]
 fn a_stale_or_absent_glucose_fact_contributes_nothing() {
     for (kind, params, fact) in reading_driven_leaves() {
-        let stale = Case::new(rule(kind, params.clone()), with_reading(fact, min(12)));
-        assert_eq!(stale.next_change(), None, "{kind} stale");
-        let absent = Case::new(rule(kind, params), with_reading(json!({}), min(5)));
-        assert_eq!(absent.next_change(), None, "{kind} absent");
+        Case::new(rule(kind, params.clone()), with_reading(fact, min(12)))
+            .assert_contributes_nothing(&format!("{kind} stale"));
+        Case::new(rule(kind, params), with_reading(json!({}), min(5)))
+            .assert_contributes_nothing(&format!("{kind} absent"));
+    }
+}
+
+/// §5.3: a determination leaf with its value turns stale where the time since the determination
+/// passes the rule's freshness bound; one already stale, or without its value, contributes
+/// nothing; one beyond the tolerance ahead becomes known 5 minutes before it.
+#[test]
+fn a_determination_leaf_changes_where_its_determination_goes_stale() {
+    for kind in ["eventual_glucose", "carbs_required"] {
+        let leaf = rule(kind, json!({ "operator": ">", "value": 10 }));
+        let determination = |made: TimeDelta| {
+            ctx(json!({ "aps_determination": {
+                "at": ago(made), "eventual_mgdl": 60, "carbs_required_grams": 20
+            } }))
+        };
+        assert_next_change(
+            &Case::new(leaf.clone(), determination(min(4))),
+            now() - min(4) + min(11),
+        );
+        Case::new(leaf.clone(), determination(min(12))).assert_contributes_nothing(kind);
+        Case::new(
+            leaf.clone(),
+            ctx(json!({ "aps_determination": { "at": ago(min(4)) } })),
+        )
+        .assert_contributes_nothing(kind);
+        assert_next_change(
+            &Case::new(leaf, determination(-min(20))),
+            now() + min(20) - min(5),
+        );
     }
 }

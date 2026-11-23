@@ -115,10 +115,13 @@ public class AlertSweepJobSnoozeTests
         services.AddSingleton<TimeProvider>(clock);
         services.AddSingleton(_repository.Object);
         services.AddSingleton(_canonical.Object);
+        services.AddSingleton(EvaluatedReadings.EveryNewest(_canonical.Object, clock));
         services.AddSingleton(enricher.Object);
         services.AddSingleton(_orchestrator.Object);
         services.AddSingleton(Mock.Of<IUnevaluableRuleNotice>());
+        services.AddSingleton(NoHeldRules.Notice());
         services.AddSingleton(Mock.Of<IClockAnomalyNotice>());
+        services.AddSingleton(Mock.Of<IAlertChannelNotice>());
         services.AddSingleton<Nocturne.Core.Contracts.Repositories.IAlertTrackerRepository>(
             new InMemoryTrackerRepository(instances.Select(i => new AlertRule
             {
@@ -147,6 +150,7 @@ public class AlertSweepJobSnoozeTests
         services.AddMetrics();
         services.AddSingleton<AlertEngineErrors>();
         services.AddSingleton<ConditionVersionLog>();
+        services.AddSingleton<NotTrueRecordingFloor>();
         services.AddScoped<IAlertEvaluationEngine, RustBackedAlertEngine>();
 
         await using var provider = services.BuildServiceProvider();
@@ -361,11 +365,11 @@ public class AlertSweepJobSnoozeTests
     {
         _readings = [Reading(7, 82), Reading(2, 72)];
         _repository
-            .Setup(r => r.GetEnabledRulesAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync([
+            .Setup(r => r.ReadEnabledRulesAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new EnabledAlertRules([
                 new AlertRuleSnapshot(Guid.NewGuid(), Tenant, "Signal loss", AlertConditionType.SignalLoss,
                     """{"timeout_minutes": 15}""", AlertRuleSeverity.Warning, "{}", 0, false, null),
-            ]);
+            ], []));
         SensorContext? wallClock = null;
         _orchestrator
             .Setup(o => o.EvaluateRulesAsync(

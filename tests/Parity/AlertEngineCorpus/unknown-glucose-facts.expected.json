@@ -17,7 +17,6 @@
           "transition": "opened",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
             "excursion": 1
           }
         },
@@ -33,7 +32,6 @@
           "transition": "opened",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
             "excursion": 2
           }
         },
@@ -49,7 +47,6 @@
           "transition": "opened",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
             "excursion": 3
           }
         },
@@ -65,7 +62,6 @@
           "transition": "opened",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
             "excursion": 4
           }
         },
@@ -81,7 +77,6 @@
           "transition": "opened",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
             "excursion": 5
           },
           "next_change_at": "2026-01-05T12:10:00Z"
@@ -97,8 +92,7 @@
           ],
           "transition": "none",
           "tracker": {
-            "state": "idle",
-            "confirmation_count": 0
+            "state": "idle"
           },
           "next_change_at": "2026-01-05T12:01:00Z"
         }
@@ -111,6 +105,12 @@
           "rule_id": "00000000-0000-0000-0000-000000000001",
           "root": false,
           "unknown": true,
+          "unknown_facts": [
+            {
+              "fact": "glucose",
+              "reason": "absent"
+            }
+          ],
           "leaves": [
             {
               "leaf_id": 0,
@@ -121,14 +121,20 @@
           "transition": "none",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
-            "excursion": 1
+            "excursion": 1,
+            "held_since": "2026-01-05T12:05:00Z"
           }
         },
         {
           "rule_id": "00000000-0000-0000-0000-000000000002",
           "root": false,
           "unknown": true,
+          "unknown_facts": [
+            {
+              "fact": "glucose",
+              "reason": "absent"
+            }
+          ],
           "leaves": [
             {
               "leaf_id": 0,
@@ -139,14 +145,20 @@
           "transition": "none",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
-            "excursion": 2
+            "excursion": 2,
+            "held_since": "2026-01-05T12:05:00Z"
           }
         },
         {
           "rule_id": "00000000-0000-0000-0000-000000000003",
           "root": false,
           "unknown": true,
+          "unknown_facts": [
+            {
+              "fact": "glucose",
+              "reason": "absent"
+            }
+          ],
           "leaves": [
             {
               "leaf_id": 0,
@@ -157,14 +169,20 @@
           "transition": "none",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
-            "excursion": 3
+            "excursion": 3,
+            "held_since": "2026-01-05T12:05:00Z"
           }
         },
         {
           "rule_id": "00000000-0000-0000-0000-000000000004",
           "root": false,
           "unknown": true,
+          "unknown_facts": [
+            {
+              "fact": "glucose",
+              "reason": "absent"
+            }
+          ],
           "leaves": [
             {
               "leaf_id": 0,
@@ -175,14 +193,20 @@
           "transition": "none",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
-            "excursion": 4
+            "excursion": 4,
+            "held_since": "2026-01-05T12:05:00Z"
           }
         },
         {
           "rule_id": "00000000-0000-0000-0000-000000000005",
           "root": false,
           "unknown": true,
+          "unknown_facts": [
+            {
+              "fact": "glucose",
+              "reason": "absent"
+            }
+          ],
           "leaves": [
             {
               "leaf_id": 0,
@@ -193,14 +217,20 @@
           "transition": "none",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
-            "excursion": 5
+            "excursion": 5,
+            "held_since": "2026-01-05T12:05:00Z"
           }
         },
         {
           "rule_id": "00000000-0000-0000-0000-000000000006",
           "root": false,
           "unknown": true,
+          "unknown_facts": [
+            {
+              "fact": "glucose",
+              "reason": "absent"
+            }
+          ],
           "leaves": [
             {
               "leaf_id": 0,
@@ -211,7 +241,7 @@
           "transition": "none",
           "tracker": {
             "state": "idle",
-            "confirmation_count": 0
+            "held_since": "2026-01-05T12:05:00Z"
           }
         }
       ]

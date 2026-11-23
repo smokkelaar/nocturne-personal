@@ -74,9 +74,10 @@ public class DirectGrantControllerTests : IDisposable
             auditService,
             new GrantRevocationService(
                 new GuestSessionCacheService(new MemoryCache(new MemoryCacheOptions()))),
+            TimeProvider.System,
             new Mock<ILogger<DirectGrantService>>().Object);
 
-        _controller = new DirectGrantController(new SubjectRepository(_dbContext.AsFactory()), directGrantService);
+        _controller = new DirectGrantController(new SubjectRepository(_dbContext.AsFactory(), AccountLinkRoutes.Off), directGrantService);
         _controller.ControllerContext = new ControllerContext
         {
             HttpContext = httpContext,

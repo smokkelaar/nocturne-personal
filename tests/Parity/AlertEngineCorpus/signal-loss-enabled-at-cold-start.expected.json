@@ -16,8 +16,7 @@
           ],
           "transition": "none",
           "tracker": {
-            "state": "idle",
-            "confirmation_count": 0
+            "state": "idle"
           },
           "next_change_at": "2026-03-02T12:20:00Z"
         },
@@ -25,6 +24,12 @@
           "rule_id": "00000000-0000-0000-0000-000000000002",
           "root": false,
           "unknown": true,
+          "unknown_facts": [
+            {
+              "fact": "glucose",
+              "reason": "absent"
+            }
+          ],
           "leaves": [
             {
               "leaf_id": 0,
@@ -32,7 +37,11 @@
               "unknown": true
             }
           ],
-          "transition": "none"
+          "transition": "none",
+          "tracker": {
+            "state": "idle",
+            "held_since": "2026-03-02T12:19:59Z"
+          }
         },
         {
           "rule_id": "00000000-0000-0000-0000-000000000003",
@@ -46,7 +55,6 @@
           "transition": "opened",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
             "excursion": 1
           },
           "next_change_at": "2026-03-02T12:20:00Z"
@@ -62,9 +70,15 @@
           ],
           "transition": "none",
           "tracker": {
-            "state": "idle",
-            "confirmation_count": 0
+            "state": "idle"
           },
+          "timer_ops": [
+            {
+              "op": "clear",
+              "path": "sustained",
+              "at": "2026-03-02T12:19:59Z"
+            }
+          ],
           "next_change_at": "2026-03-02T12:20:00Z"
         },
         {
@@ -78,8 +92,18 @@
             }
           ],
           "transition": "none",
+          "tracker": {
+            "state": "idle",
+            "held_since": "2026-03-02T12:19:59Z"
+          },
           "next_change_at": "2026-03-02T12:20:00Z",
           "unknown": true,
+          "unknown_facts": [
+            {
+              "fact": "glucose",
+              "reason": "ahead_of_clock"
+            }
+          ],
           "clock_anomaly": [
             {
               "fact": "enabled_at",
@@ -104,7 +128,6 @@
           "transition": "opened",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
             "excursion": 2
           }
         },
@@ -112,6 +135,12 @@
           "rule_id": "00000000-0000-0000-0000-000000000002",
           "root": false,
           "unknown": true,
+          "unknown_facts": [
+            {
+              "fact": "glucose",
+              "reason": "absent"
+            }
+          ],
           "leaves": [
             {
               "leaf_id": 0,
@@ -119,7 +148,11 @@
               "unknown": true
             }
           ],
-          "transition": "none"
+          "transition": "none",
+          "tracker": {
+            "state": "idle",
+            "held_since": "2026-03-02T12:19:59Z"
+          }
         },
         {
           "rule_id": "00000000-0000-0000-0000-000000000003",
@@ -133,7 +166,6 @@
           "transition": "hysteresis_started",
           "tracker": {
             "state": "hysteresis",
-            "confirmation_count": 0,
             "excursion": 1,
             "hysteresis_started_at": "2026-03-02T12:20:00Z"
           },
@@ -150,8 +182,7 @@
           ],
           "transition": "none",
           "tracker": {
-            "state": "idle",
-            "confirmation_count": 0
+            "state": "idle"
           },
           "timer_ops": [
             {
@@ -173,8 +204,7 @@
           ],
           "transition": "none",
           "tracker": {
-            "state": "idle",
-            "confirmation_count": 0
+            "state": "idle"
           },
           "next_change_at": "2026-03-02T12:45:00Z"
         }
@@ -195,7 +225,6 @@
           "transition": "continues",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
             "excursion": 2
           }
         },
@@ -203,6 +232,12 @@
           "rule_id": "00000000-0000-0000-0000-000000000002",
           "root": false,
           "unknown": true,
+          "unknown_facts": [
+            {
+              "fact": "glucose",
+              "reason": "absent"
+            }
+          ],
           "leaves": [
             {
               "leaf_id": 0,
@@ -210,7 +245,11 @@
               "unknown": true
             }
           ],
-          "transition": "none"
+          "transition": "none",
+          "tracker": {
+            "state": "idle",
+            "held_since": "2026-03-02T12:19:59Z"
+          }
         },
         {
           "rule_id": "00000000-0000-0000-0000-000000000003",
@@ -224,8 +263,7 @@
           "transition": "closed",
           "close_reason": "hysteresis",
           "tracker": {
-            "state": "idle",
-            "confirmation_count": 0
+            "state": "idle"
           }
         },
         {
@@ -239,8 +277,7 @@
           ],
           "transition": "none",
           "tracker": {
-            "state": "idle",
-            "confirmation_count": 0
+            "state": "idle"
           },
           "next_change_at": "2026-03-02T12:30:00Z"
         },
@@ -255,8 +292,7 @@
           ],
           "transition": "none",
           "tracker": {
-            "state": "idle",
-            "confirmation_count": 0
+            "state": "idle"
           },
           "next_change_at": "2026-03-02T12:45:00Z"
         }
@@ -277,7 +313,6 @@
           "transition": "continues",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
             "excursion": 2
           }
         },
@@ -285,6 +320,12 @@
           "rule_id": "00000000-0000-0000-0000-000000000002",
           "root": false,
           "unknown": true,
+          "unknown_facts": [
+            {
+              "fact": "glucose",
+              "reason": "absent"
+            }
+          ],
           "leaves": [
             {
               "leaf_id": 0,
@@ -292,7 +333,11 @@
               "unknown": true
             }
           ],
-          "transition": "none"
+          "transition": "none",
+          "tracker": {
+            "state": "idle",
+            "held_since": "2026-03-02T12:19:59Z"
+          }
         },
         {
           "rule_id": "00000000-0000-0000-0000-000000000003",
@@ -305,8 +350,7 @@
           ],
           "transition": "none",
           "tracker": {
-            "state": "idle",
-            "confirmation_count": 0
+            "state": "idle"
           }
         },
         {
@@ -321,7 +365,6 @@
           "transition": "opened",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
             "excursion": 3
           }
         },
@@ -336,8 +379,7 @@
           ],
           "transition": "none",
           "tracker": {
-            "state": "idle",
-            "confirmation_count": 0
+            "state": "idle"
           },
           "next_change_at": "2026-03-02T12:45:00Z"
         }
@@ -358,7 +400,6 @@
           "transition": "continues",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
             "excursion": 2
           }
         },
@@ -366,6 +407,12 @@
           "rule_id": "00000000-0000-0000-0000-000000000002",
           "root": false,
           "unknown": true,
+          "unknown_facts": [
+            {
+              "fact": "glucose",
+              "reason": "absent"
+            }
+          ],
           "leaves": [
             {
               "leaf_id": 0,
@@ -373,7 +420,11 @@
               "unknown": true
             }
           ],
-          "transition": "none"
+          "transition": "none",
+          "tracker": {
+            "state": "idle",
+            "held_since": "2026-03-02T12:19:59Z"
+          }
         },
         {
           "rule_id": "00000000-0000-0000-0000-000000000003",
@@ -386,8 +437,7 @@
           ],
           "transition": "none",
           "tracker": {
-            "state": "idle",
-            "confirmation_count": 0
+            "state": "idle"
           }
         },
         {
@@ -402,7 +452,6 @@
           "transition": "continues",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
             "excursion": 3
           }
         },
@@ -418,7 +467,6 @@
           "transition": "opened",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
             "excursion": 4
           }
         }
@@ -439,7 +487,6 @@
           "transition": "hysteresis_started",
           "tracker": {
             "state": "hysteresis",
-            "confirmation_count": 0,
             "excursion": 2,
             "hysteresis_started_at": "2026-03-02T12:46:00Z"
           },
@@ -456,8 +503,7 @@
           ],
           "transition": "none",
           "tracker": {
-            "state": "idle",
-            "confirmation_count": 0
+            "state": "idle"
           },
           "next_change_at": "2026-03-02T13:05:30Z"
         },
@@ -473,7 +519,6 @@
           "transition": "opened",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
             "excursion": 5
           },
           "next_change_at": "2026-03-02T13:05:30Z"
@@ -490,14 +535,14 @@
           "transition": "hysteresis_started",
           "tracker": {
             "state": "hysteresis",
-            "confirmation_count": 0,
             "excursion": 3,
             "hysteresis_started_at": "2026-03-02T12:46:00Z"
           },
           "timer_ops": [
             {
               "op": "clear",
-              "path": "sustained"
+              "path": "sustained",
+              "at": "2026-03-02T12:46:00Z"
             }
           ],
           "next_change_at": "2026-03-02T12:46:00.000000100Z"
@@ -514,7 +559,6 @@
           "transition": "hysteresis_started",
           "tracker": {
             "state": "hysteresis",
-            "confirmation_count": 0,
             "excursion": 4,
             "hysteresis_started_at": "2026-03-02T12:46:00Z"
           },
@@ -537,7 +581,6 @@
           "transition": "hysteresis_resumed",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
             "excursion": 2
           }
         },
@@ -553,7 +596,6 @@
           "transition": "opened",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
             "excursion": 6
           }
         },
@@ -569,7 +611,6 @@
           "transition": "hysteresis_started",
           "tracker": {
             "state": "hysteresis",
-            "confirmation_count": 0,
             "excursion": 5,
             "hysteresis_started_at": "2026-03-02T12:47:00Z"
           },
@@ -587,8 +628,7 @@
           "transition": "closed",
           "close_reason": "hysteresis",
           "tracker": {
-            "state": "idle",
-            "confirmation_count": 0
+            "state": "idle"
           },
           "timer_ops": [
             {
@@ -611,7 +651,6 @@
           "transition": "hysteresis_resumed",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
             "excursion": 4
           }
         }

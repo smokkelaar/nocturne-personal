@@ -80,7 +80,8 @@ public class AlertRulesControllerDisableTests
 
         var controller = new AlertRulesController(
             new TestNocturneDbContextFactory(db),
-            new TenantMembershipRepository(new TestNocturneDbContextFactory(db)),
+            new TenantMembershipRepository(new TestNocturneDbContextFactory(db), AccountLinkRoutes.Off),
+            new SubjectRepository(new TestNocturneDbContextFactory(db), AccountLinkRoutes.Off),
             new AlertRepository(new TestNocturneDbContextFactory(db)),
             new AlertRuleRepository(new TestNocturneDbContextFactory(db)),
             MockTenantAccessor.Create(db.TenantId).Object,
@@ -91,7 +92,7 @@ public class AlertRulesControllerDisableTests
             Mock.Of<ISecretEncryptionService>(),
             new AlertRuleRearm(new AlertRuleEvaluationGate()),
             new AlertRuleRetirement(tracker.Object, handler.Object, Mock.Of<IUnevaluableRuleNotice>()),
-            Mock.Of<ILogger<AlertRulesController>>());
+            Mock.Of<ILogger<AlertRulesController>>(), TimeProvider.System);
 
         return (controller, excursionId, tracker, handler, () => ruleExistedAtClose);
     }

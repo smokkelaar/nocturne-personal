@@ -74,7 +74,6 @@ public class AlertTrackerRepository : IAlertTrackerRepository
             {
                 AlertRuleId = state.AlertRuleId,
                 State = state.State,
-                ConfirmationCount = state.ConfirmationCount,
                 ActiveExcursionId = state.ActiveExcursionId,
                 UpdatedAt = state.UpdatedAt,
                 HysteresisStartedAt = state.HysteresisStartedAt,
@@ -82,12 +81,13 @@ public class AlertTrackerRepository : IAlertTrackerRepository
                 NextChangeAt = state.NextChangeAt,
                 NextChangeKnown = state.NextChangeKnown,
                 NextChangeGlucose = state.NextChangeGlucose,
+                HeldSince = state.HeldSince,
+                HeldFacts = state.HeldFacts,
             });
         }
         else
         {
             existing.State = state.State;
-            existing.ConfirmationCount = state.ConfirmationCount;
             existing.ActiveExcursionId = state.ActiveExcursionId;
             existing.UpdatedAt = state.UpdatedAt;
             existing.HysteresisStartedAt = state.HysteresisStartedAt;
@@ -95,6 +95,8 @@ public class AlertTrackerRepository : IAlertTrackerRepository
             existing.NextChangeAt = state.NextChangeAt;
             existing.NextChangeKnown = state.NextChangeKnown;
             existing.NextChangeGlucose = state.NextChangeGlucose;
+            existing.HeldSince = state.HeldSince;
+            existing.HeldFacts = state.HeldFacts;
         }
 
         await db.SaveChangesAsync(ct);
@@ -128,13 +130,7 @@ public class AlertTrackerRepository : IAlertTrackerRepository
         return entity is null ? null : MapAlertExcursion(entity);
     }
 
-    /// <summary>
-    /// Create a new excursion record and return it.
-    /// </summary>
-    /// <param name="alertRuleId">The unique identifier of the alert rule.</param>
-    /// <param name="startedAt">The timestamp when the excursion started.</param>
-    /// <param name="ct">The cancellation token.</param>
-    /// <returns>The created alert excursion.</returns>
+    /// <inheritdoc/>
     public virtual async Task<AlertExcursion> CreateExcursionAsync(
         Guid alertRuleId,
         DateTime startedAt,
@@ -145,6 +141,7 @@ public class AlertTrackerRepository : IAlertTrackerRepository
             Id = Guid.CreateVersion7(),
             AlertRuleId = alertRuleId,
             StartedAt = startedAt,
+            OpenedOwedAt = startedAt,
         };
 
         await using var lease = await OpenAsync(ct);
@@ -153,12 +150,7 @@ public class AlertTrackerRepository : IAlertTrackerRepository
         return MapAlertExcursion(excursion);
     }
 
-    /// <summary>
-    /// Close an excursion by setting its EndedAt timestamp.
-    /// </summary>
-    /// <param name="excursionId">The unique identifier of the excursion.</param>
-    /// <param name="endedAt">The timestamp when the excursion ended.</param>
-    /// <param name="ct">The cancellation token.</param>
+    /// <inheritdoc/>
     public virtual async Task CloseExcursionAsync(
         Guid excursionId,
         DateTime endedAt,
@@ -171,6 +163,7 @@ public class AlertTrackerRepository : IAlertTrackerRepository
         if (excursion != null)
         {
             excursion.EndedAt = endedAt;
+            excursion.ClosedOwedAt = endedAt;
             await lease.Context.SaveChangesAsync(ct);
         }
     }
@@ -259,14 +252,14 @@ public class AlertTrackerRepository : IAlertTrackerRepository
         unit.CommitAsync(
             token => work(bound, token),
             verifySucceeded is null ? null : (result, token) => verifySucceeded(bound, result, token),
-            entity => entity is AlertTrackerStateEntity or AlertExcursionEntity or AlertConditionTimerEntity,
+            entity => entity is AlertTrackerStateEntity or AlertExcursionEntity or AlertConditionTimerEntity
+                or AlertConditionNotTrueEntity,
             ct);
 
     private static AlertTrackerState MapTrackerState(AlertTrackerStateEntity entity) => new()
     {
         AlertRuleId = entity.AlertRuleId,
         State = entity.State,
-        ConfirmationCount = entity.ConfirmationCount,
         ActiveExcursionId = entity.ActiveExcursionId,
         UpdatedAt = entity.UpdatedAt,
         HysteresisStartedAt = entity.HysteresisStartedAt,
@@ -274,6 +267,8 @@ public class AlertTrackerRepository : IAlertTrackerRepository
         NextChangeAt = entity.NextChangeAt,
         NextChangeKnown = entity.NextChangeKnown,
         NextChangeGlucose = entity.NextChangeGlucose,
+        HeldSince = entity.HeldSince,
+        HeldFacts = entity.HeldFacts,
     };
 
     private static AlertRule MapAlertRule(AlertRuleEntity entity) => new()

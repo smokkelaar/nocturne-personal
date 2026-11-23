@@ -17,7 +17,6 @@
           "transition": "opened",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
             "excursion": 1
           },
           "next_change_at": "2026-04-01T13:11:00Z"
@@ -31,6 +30,12 @@
           "rule_id": "00000000-0000-0000-0000-000000000001",
           "root": false,
           "unknown": true,
+          "unknown_facts": [
+            {
+              "fact": "glucose",
+              "reason": "ahead_of_clock"
+            }
+          ],
           "leaves": [
             {
               "leaf_id": 0,
@@ -41,8 +46,8 @@
           "transition": "none",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
-            "excursion": 1
+            "excursion": 1,
+            "held_since": "2026-04-01T12:05:00Z"
           },
           "next_change_at": "2026-04-01T13:00:00Z",
           "clock_anomaly": [
@@ -69,7 +74,6 @@
           "transition": "continues",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
             "excursion": 1
           },
           "next_change_at": "2026-04-01T12:24:00Z"

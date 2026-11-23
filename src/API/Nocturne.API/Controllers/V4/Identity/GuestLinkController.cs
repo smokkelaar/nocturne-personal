@@ -6,6 +6,7 @@ using Nocturne.API.Authorization;
 using OpenApi.Remote.Attributes;
 using Nocturne.API.Extensions;
 using Nocturne.API.Middleware.Handlers;
+using Nocturne.API.RateLimiting;
 using Nocturne.API.Services.Auth;
 using Nocturne.Core.Contracts.Auth;
 using Nocturne.Core.Models.Authorization;
@@ -58,6 +59,9 @@ public class GuestLinkController : ControllerBase
         if (auth is not { IsAuthenticated: true, SubjectId: not null })
             return Unauthorized();
 
+        if (HttpContext.IsCallerInactive())
+            return Challenge();
+
         var effectiveSubjectId = auth.EffectiveSubjectId!.Value;
         var baseUrl = $"{Request.PublicScheme()}://{Request.Host}";
 
@@ -69,6 +73,7 @@ public class GuestLinkController : ControllerBase
                 request.Label,
                 baseUrl,
                 HttpContext.GetGrantedScopes(),
+                HttpContext.CallerAccessEndsAt(),
                 request.Scopes,
                 limitTo24Hours: HttpContext.IsCallerHistoryClamped(),
                 ct: ct);
@@ -183,13 +188,14 @@ public class GuestLinkController : ControllerBase
     [HttpPost("activate")]
     [AllowAnonymous]
     [EnableRateLimiting("guest-activate")]
+    [LimitGuestActivationsPerTenant]
     [ProducesResponseType(typeof(ActivateGuestLinkResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> ActivateGuestLink(
         [FromBody] ActivateGuestLinkRequest request,
         CancellationToken ct)
     {
-        var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
+        var ip = HttpContext.GetClientAddress();
         var userAgent = Request.Headers.UserAgent.FirstOrDefault();
 
         var result = await _guestLinkService.ActivateAsync(request.Code, ip, userAgent, ct);

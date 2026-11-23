@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Net;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
@@ -24,9 +25,7 @@ namespace Nocturne.Connectors.Glooko.Services;
 public class GlookoConnectorService
     : TokenConnectorService<GlookoConnectorConfiguration, GlookoAuthTokenProvider>
 {
-    private static readonly ConnectorLegacyIds LegacyIds = ConnectorLegacyIds.For<GlookoConnectorConfiguration>();
-
-    private readonly IMealMatchingService? _mealMatchingService;
+    private readonly IMealMatchLinker? _mealMatchLinker;
     private readonly ITimezoneTimelineService? _timezoneTimelineService;
     private readonly IDeviceClockService? _deviceClockService;
     private readonly IConnectorSyncCursorStore? _cursorStore;
@@ -44,7 +43,7 @@ public class GlookoConnectorService
         IRetryDelayStrategy retryDelayStrategy,
         GlookoAuthTokenProvider tokenProvider,
         IConnectorPublisher? publisher = null,
-        IMealMatchingService? mealMatchingService = null,
+        IMealMatchLinker? mealMatchLinker = null,
         ITimezoneTimelineService? timezoneTimelineService = null,
         IDeviceClockService? deviceClockService = null,
         IConnectorSyncCursorStore? cursorStore = null,
@@ -53,7 +52,7 @@ public class GlookoConnectorService
     )
         : base(httpClient, serverResolver, logger, retryDelayStrategy, tokenProvider, publisher, timeProvider)
     {
-        _mealMatchingService = mealMatchingService;
+        _mealMatchLinker = mealMatchLinker;
         _timezoneTimelineService = timezoneTimelineService;
         _deviceClockService = deviceClockService;
         _cursorStore = cursorStore;
@@ -242,10 +241,10 @@ public class GlookoConnectorService
         var maxCount = Math.Max(1, (int)Math.Ceiling((endDate - startDate).TotalMinutes / 5));
 
         return $"{endpoint}?patient={patientCode}"
-             + $"&startDate={startDate:yyyy-MM-ddTHH:mm:ss.fffZ}"
-             + $"&endDate={endDate:yyyy-MM-ddTHH:mm:ss.fffZ}"
+             + $"&startDate={startDate.ToString("yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture)}"
+             + $"&endDate={endDate.ToString("yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture)}"
              + $"&lastGuid={GlookoConstants.LegacyLastGuid}"
-             + $"&lastUpdatedAt={startDate:yyyy-MM-ddTHH:mm:ss.fffZ}"
+             + $"&lastUpdatedAt={startDate.ToString("yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture)}"
              + $"&limit={maxCount}";
     }
 
@@ -262,8 +261,8 @@ public class GlookoConnectorService
         var seriesParams = string.Join("&", series.Select(s => $"series[]={s}"));
 
         return $"{GlookoConstants.V3GraphDataPath}?patient={patientCode}"
-             + $"&startDate={startDate:yyyy-MM-ddTHH:mm:ss.fffZ}"
-             + $"&endDate={endDate:yyyy-MM-ddTHH:mm:ss.fffZ}"
+             + $"&startDate={startDate.ToString("yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture)}"
+             + $"&endDate={endDate.ToString("yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture)}"
              + $"&{seriesParams}"
              + "&locale=en&insulinTooltips=false&filterBgReadings=false&splitByDay=false";
     }
@@ -281,8 +280,8 @@ public class GlookoConnectorService
         var seriesParams = string.Join("&", GlookoConstants.V3PumpModeSeries.Select(s => $"series[]={s}"));
 
         return $"{GlookoConstants.V3GraphDataPath}?patient={patientCode}"
-             + $"&startDate={startDate:yyyy-MM-ddTHH:mm:ss.fffZ}"
-             + $"&endDate={endDate:yyyy-MM-ddTHH:mm:ss.fffZ}"
+             + $"&startDate={startDate.ToString("yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture)}"
+             + $"&endDate={endDate.ToString("yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture)}"
              + $"&{seriesParams}"
              + "&locale=en&insulinTooltips=false&filterBgReadings=false&splitByDay=false";
     }
@@ -589,8 +588,8 @@ public class GlookoConnectorService
             await ReportSyncMessageAsync(SyncMessageType.FetchingData,
                 new()
                 {
-                    ["from"] = chunkFrom.ToString("MMM dd"),
-                    ["to"] = chunkTo.ToString("MMM dd"),
+                    ["from"] = chunkFrom.ToString("MMM dd", CultureInfo.InvariantCulture),
+                    ["to"] = chunkTo.ToString("MMM dd", CultureInfo.InvariantCulture),
                     ["chunk"] = $"{i + 1}/{chunks.Count}",
                 },
                 cancellationToken);
@@ -706,12 +705,11 @@ public class GlookoConnectorService
             await PublishRecordTypeAsync(result, activeTypes,
                 carbs, config, cancellationToken));
 
-        // Food attribution resolves against the carbs published above.
+        // After the carbs above, so a carb intake this batch inserts is stored when its foods are attributed.
         var foodEntryImports = batchData.Foods is { Length: > 0 }
             ? context.V4TreatmentMapper.MapFoodsToConnectorEntries(batchData) : [];
-        Func<string, string?> foodResolver = externalEntryId => LegacyIds.Of("food", externalEntryId);
         landed &= await PublishFoodEntriesAndAttributeAsync(
-            foodEntryImports, carbs, foodResolver, config, result, activeTypes, cancellationToken);
+            foodEntryImports, config, result, activeTypes, cancellationToken);
 
         var stateSpans = context.StateSpanMapper.TransformV2ToStateSpans(batchData);
         landed &= Landed(activeTypes, SyncDataType.StateSpans, stateSpans,
@@ -788,7 +786,7 @@ public class GlookoConnectorService
         await PublishRecordTypeAsync(result, activeTypes,
             manualBasalInjections, config, cancellationToken);
 
-        // Food attribution resolves against the carbs published above.
+        // After the carbs above, so a carb intake this batch inserts is stored when its foods are attributed.
         if (v3Histories is null)
         {
             RecordFetchFailure(result, SyncDataType.Food, activeTypes);
@@ -808,27 +806,8 @@ public class GlookoConnectorService
             var foodEntryImports = historyMealCarbs.Count > 0 && v3Histories.Histories != null
                 ? context.V4TreatmentMapper.MapV3HistoryMealsToConnectorEntries(v3Histories, v2Foods) : [];
 
-            Func<string, string?>? foodResolver = null;
-            if (historyMealCarbs.Count > 0 && v3Histories.Histories != null)
-            {
-                var foodGuidToMealGuid = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-                foreach (var meal in GlookoV4TreatmentMapper.ExtractMeals(v3Histories))
-                {
-                    if (meal.SoftDeleted == true || string.IsNullOrEmpty(meal.Guid) || meal.Foods == null) continue;
-                    foreach (var food in meal.Foods)
-                    {
-                        if (food is { SoftDeleted: not true, Guid.Length: > 0 })
-                            foodGuidToMealGuid.TryAdd(food.Guid, meal.Guid!);
-                    }
-                }
-
-                foodResolver = externalEntryId =>
-                    foodGuidToMealGuid.TryGetValue(externalEntryId, out var mealGuid)
-                        ? LegacyIds.Of("v3meal", mealGuid) : null;
-            }
-
             await PublishFoodEntriesAndAttributeAsync(
-                foodEntryImports, allCarbs, foodResolver, config, result, activeTypes, cancellationToken);
+                foodEntryImports, config, result, activeTypes, cancellationToken);
         }
 
         var stateSpans = context.StateSpanMapper.TransformV3ToStateSpans(v3Data);
@@ -856,16 +835,15 @@ public class GlookoConnectorService
     }
 
     /// <summary>
-    ///     Publishes food catalog entries and attributes them to carb intakes via the meal matching service.
+    ///     Publishes food catalog entries and attributes them to the carb intakes the store holds under
+    ///     their legacy ids, through the meal matching service.
     /// </summary>
     /// <returns>
     ///     Whether the catalog import reached the tenant, or there was nothing to import. A failed
     ///     attribution does not count: the entries are already in the catalog.
     /// </returns>
     private async Task<bool> PublishFoodEntriesAndAttributeAsync(
-        List<ConnectorFoodEntryImport> foodEntryImports,
-        List<CarbIntake> carbIntakes,
-        Func<string, string?>? foodEntryToCarbLegacyId,
+        List<GlookoFoodEntryImport> foodEntryImports,
         GlookoConnectorConfiguration config,
         SyncResult result,
         HashSet<SyncDataType> activeTypes,
@@ -883,7 +861,7 @@ public class GlookoConnectorService
         // The publisher returns null only from its own catch (or the route found it unavailable); an
         // import that reached the catalog returns a list, empty when nothing was accepted.
         var importedEntries = await PublishByRouteForResultAsync<ConnectorFoodEntryImport, IReadOnlyList<ConnectorFoodEntry>>(
-            foodEntryImports, config, cancellationToken);
+            [.. foodEntryImports.Select(i => i.Entry)], config, cancellationToken);
 
         RecordPublishOutcome(result, SyncDataType.Food, foodEntryImports.Count, importedEntries is not null);
 
@@ -891,7 +869,8 @@ public class GlookoConnectorService
             return false;
 
         if (importedEntries.Count == 0
-            || _mealMatchingService == null || carbIntakes.Count == 0 || foodEntryToCarbLegacyId == null)
+            || _mealMatchLinker == null
+            || Publisher is not { IsAvailable: true } publisher)
             return true;
 
         var pendingEntries = importedEntries
@@ -900,29 +879,51 @@ public class GlookoConnectorService
 
         if (pendingEntries.Count == 0) return true;
 
-        var carbsByLegacyId = carbIntakes
-            .Where(ci => ci.LegacyId != null)
-            .ToDictionary(ci => ci.LegacyId!, StringComparer.OrdinalIgnoreCase);
+        var carbLegacyIdByExternalEntryId = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var import in foodEntryImports)
+            carbLegacyIdByExternalEntryId.TryAdd(import.Entry.ExternalEntryId.Trim(), import.CarbIntakeLegacyId);
+
+        var carbLegacyIdByEntry = pendingEntries
+            .Select(e => (Entry: e, LegacyId: carbLegacyIdByExternalEntryId.GetValueOrDefault(e.ExternalEntryId)))
+            .Where(e => e.LegacyId != null)
+            .ToList();
+
+        if (carbLegacyIdByEntry.Count == 0) return true;
+
+        IReadOnlyDictionary<string, Guid> storedCarbIds;
+        try
+        {
+            storedCarbIds = await publisher.Treatments.GetStoredCarbIntakeIdsAsync(
+                [.. carbLegacyIdByEntry.Select(e => e.LegacyId!).Distinct(StringComparer.Ordinal)],
+                cancellationToken);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException || ConnectorFaults.IsTimeout(ex, cancellationToken))
+        {
+            _logger.LogWarning(ex,
+                "[{ConnectorSource}] Failed to read the stored carb intakes, so {Count} food entries are not attributed",
+                ConnectorSource, carbLegacyIdByEntry.Count);
+            return true;
+        }
 
         var attributedCount = 0;
 
-        foreach (var entry in pendingEntries)
+        foreach (var (entry, legacyId) in carbLegacyIdByEntry)
         {
-            var legacyKey = foodEntryToCarbLegacyId(entry.ExternalEntryId);
-            if (legacyKey == null || !carbsByLegacyId.TryGetValue(legacyKey, out var carbIntake))
+            if (!storedCarbIds.TryGetValue(legacyId!, out var carbIntakeId))
                 continue;
 
             try
             {
-                await _mealMatchingService.AcceptMatchAsync(
-                    entry.Id, carbIntake.Id, entry.Carbs, timeOffsetMinutes: 0, cancellationToken);
-                attributedCount++;
+                if (await _mealMatchLinker.LinkAsync(
+                        entry.Id, carbIntakeId, entry.Carbs, timeOffsetMinutes: 0, cancellationToken)
+                    == AcceptMatchOutcome.Linked)
+                    attributedCount++;
             }
             catch (Exception ex) when (ex is not OperationCanceledException || ConnectorFaults.IsTimeout(ex, cancellationToken))
             {
                 _logger.LogWarning(ex,
                     "[{ConnectorSource}] Failed to attribute food entry {FoodEntryId} to CarbIntake {CarbIntakeId}",
-                    ConnectorSource, entry.Id, carbIntake.Id);
+                    ConnectorSource, entry.Id, carbIntakeId);
             }
         }
 
@@ -1699,7 +1700,7 @@ public class GlookoConnectorService
                 + "&sendSoftDeleted=false&allDevicesFlag=true";
 
         if (startDate.HasValue)
-            url += $"&startDate={startDate.Value:yyyy-MM-ddTHH:mm:ss.fffZ}";
+            url += $"&startDate={startDate.Value.ToString("yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture)}";
 
         return url;
     }
@@ -1872,7 +1873,7 @@ public class GlookoConnectorService
         return JsonSerializer.Deserialize<T>(result.Value.GetRawText());
     }
 
-    private static string FormatSsv2Cursor(DateTime utc) => utc.ToString("yyyy-MM-dd'T'HH:mm:ss.fff'Z'");
+    private static string FormatSsv2Cursor(DateTime utc) => utc.ToString("yyyy-MM-dd'T'HH:mm:ss.fff'Z'", CultureInfo.InvariantCulture);
 
     /// <summary>Page budget for the one-time historical scan: 12 × 500 boluses ≈ years of pump use.</summary>
     private const int HistoricalScanMaxPages = 12;
@@ -2019,8 +2020,8 @@ public class GlookoConnectorService
             if (patientCode == null) return null;
 
             var url = $"{GlookoConstants.V3HistoriesPath}?patient={patientCode}"
-                    + $"&startDate={fromDate:yyyy-MM-ddTHH:mm:ss.fffZ}"
-                    + $"&endDate={toDate:yyyy-MM-ddTHH:mm:ss.fffZ}";
+                    + $"&startDate={fromDate.ToString("yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture)}"
+                    + $"&endDate={toDate.ToString("yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture)}";
 
             _logger.LogInformation("[{ConnectorSource}] Fetching v3 histories from {StartDate:yyyy-MM-dd} to {EndDate:yyyy-MM-dd}",
                 ConnectorSource, fromDate, toDate);

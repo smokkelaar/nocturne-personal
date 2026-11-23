@@ -14,10 +14,18 @@
               "value": true
             }
           ],
+          "met_by": [
+            {
+              "leaf_id": 0,
+              "kind": "predicted",
+              "curve": "default",
+              "offset_minutes": 20,
+              "value": 60
+            }
+          ],
           "transition": "opened",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
             "excursion": 1
           }
         },
@@ -32,8 +40,7 @@
           ],
           "transition": "none",
           "tracker": {
-            "state": "idle",
-            "confirmation_count": 0
+            "state": "idle"
           }
         }
       ]
@@ -45,6 +52,12 @@
           "rule_id": "00000000-0000-0000-0000-000000000001",
           "root": false,
           "unknown": true,
+          "unknown_facts": [
+            {
+              "fact": "predictions",
+              "reason": "absent"
+            }
+          ],
           "leaves": [
             {
               "leaf_id": 0,
@@ -55,14 +68,20 @@
           "transition": "none",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
-            "excursion": 1
+            "excursion": 1,
+            "held_since": "2026-01-05T12:05:00Z"
           }
         },
         {
           "rule_id": "00000000-0000-0000-0000-000000000002",
           "root": false,
           "unknown": true,
+          "unknown_facts": [
+            {
+              "fact": "predictions",
+              "reason": "absent"
+            }
+          ],
           "leaves": [
             {
               "leaf_id": 0,
@@ -73,7 +92,7 @@
           "transition": "none",
           "tracker": {
             "state": "idle",
-            "confirmation_count": 0
+            "held_since": "2026-01-05T12:05:00Z"
           }
         }
       ]

@@ -151,7 +151,8 @@ public class AlertRulesControllerRearmPostgresTests(AlertRulesControllerRearmPos
             .Returns([]);
         var controller = new AlertRulesController(
             new Factory(() => Context(tenant, failure)),
-            new TenantMembershipRepository(new Factory(() => Context(tenant, failure))),
+            new TenantMembershipRepository(new Factory(() => Context(tenant, failure)), AccountLinkRoutes.Off),
+            new SubjectRepository(new Factory(() => Context(tenant, failure)), AccountLinkRoutes.Off),
             new AlertRepository(new Factory(() => Context(tenant, failure))),
             new AlertRuleRepository(new Factory(() => Context(tenant, failure))),
             MockTenantAccessor.Create(tenant).Object,
@@ -162,7 +163,7 @@ public class AlertRulesControllerRearmPostgresTests(AlertRulesControllerRearmPos
             Mock.Of<ISecretEncryptionService>(),
             new AlertRuleRearm(new AlertRuleEvaluationGate()),
             new AlertRuleRetirement(Mock.Of<IExcursionTracker>(), Mock.Of<IExcursionResolutionHandler>(), Mock.Of<IUnevaluableRuleNotice>()),
-            Mock.Of<ILogger<AlertRulesController>>());
+            Mock.Of<ILogger<AlertRulesController>>(), TimeProvider.System);
         return (controller, tenant, rule, failure);
     }
 

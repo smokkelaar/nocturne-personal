@@ -1,3 +1,4 @@
+using System.Globalization;
 using Nocturne.API.Multitenancy;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -628,7 +629,7 @@ public class SampleDataSeeder
         CancellationToken ct)
     {
         IReadOnlyList<AlertRuleChannelWrite> channels = ownerSubjectId is { } owner
-            ? [new AlertRuleChannelWrite(ChannelType.InApp, owner.ToString())]
+            ? [new AlertRuleChannelWrite(ChannelType.InApp, owner.ToString(), AddedBySubjectId: null, StopsAt: null, RecipientSubjectId: null)]
             : [];
         var seeded = await _alertRules.CreateMissingByNameAsync(
             DemoAlertSeeds.Defaults
@@ -1071,7 +1072,7 @@ public class SampleDataSeeder
             if (day.DayOfWeek != DayOfWeek.Sunday)
                 continue;
 
-            var syncId = $"demo-weight-{day:yyyy-MM-dd}";
+            var syncId = $"demo-weight-{day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}";
             if (existing.Contains(syncId))
                 continue;
 

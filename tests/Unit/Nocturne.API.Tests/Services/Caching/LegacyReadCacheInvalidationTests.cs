@@ -103,6 +103,7 @@ public class LegacyReadCacheInvalidationTests : IDisposable
     public async Task The_api_registrations_give_a_repository_the_port_that_clears_the_cache()
     {
         var services = new ServiceCollection().AddDomainServices().AddV4Infrastructure();
+        Nocturne.Infrastructure.Data.Extensions.ServiceCollectionExtensions.AddV4Repositories(services);
         services.Should().ContainSingle(d => d.ServiceType == typeof(ILegacyReadCacheInvalidation))
             .Which.ImplementationType.Should().Be<LegacyReadCacheInvalidation>();
         Nocturne.Infrastructure.Data.Extensions.ServiceCollectionExtensions.AddDataServices(new ServiceCollection())
@@ -116,6 +117,7 @@ public class LegacyReadCacheInvalidationTests : IDisposable
             .AddSingleton(Mock.Of<IDuplicateLinker>())
             .AddScoped<IRecordChangePublisher, RecordChangePublisher>()
             .AddSingleton<IAuditContext>(new SystemAuditContext())
+            .AddSingleton(TimeProvider.System)
             .AddSingleton(cache.Object);
         await using var provider = services.BuildServiceProvider();
         await using var scope = provider.CreateAsyncScope();

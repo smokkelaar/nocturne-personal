@@ -16,8 +16,7 @@
           ],
           "transition": "none",
           "tracker": {
-            "state": "idle",
-            "confirmation_count": 0
+            "state": "idle"
           },
           "next_change_at": "2026-04-01T12:20:00Z"
         },
@@ -33,7 +32,6 @@
           "transition": "opened",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
             "excursion": 1
           },
           "next_change_at": "2026-04-01T12:00:00.000000100Z"
@@ -50,7 +48,6 @@
           "transition": "opened",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
             "excursion": 2
           },
           "next_change_at": "2026-04-01T12:10:00Z"
@@ -67,7 +64,6 @@
           "transition": "opened",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
             "excursion": 3
           },
           "next_change_at": "2026-04-01T12:10:00Z"
@@ -84,7 +80,6 @@
           "transition": "opened",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
             "excursion": 4
           },
           "next_change_at": "2026-04-01T13:00:00Z"
@@ -101,7 +96,6 @@
           "transition": "opened",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
             "excursion": 5
           },
           "next_change_at": "2026-04-02T12:00:00Z"
@@ -118,7 +112,6 @@
           "transition": "opened",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
             "excursion": 6
           },
           "next_change_at": "2026-04-01T12:30:00Z"
@@ -135,7 +128,6 @@
           "transition": "opened",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
             "excursion": 7
           },
           "next_change_at": "2026-04-01T12:30:00Z"
@@ -152,7 +144,6 @@
           "transition": "opened",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
             "excursion": 8
           }
         },
@@ -168,7 +159,6 @@
           "transition": "opened",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
             "excursion": 9
           }
         },
@@ -184,7 +174,6 @@
           "transition": "opened",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
             "excursion": 10
           }
         },
@@ -200,7 +189,6 @@
           "transition": "opened",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
             "excursion": 11
           }
         },
@@ -216,7 +204,6 @@
           "transition": "opened",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
             "excursion": 12
           }
         },
@@ -232,7 +219,6 @@
           "transition": "opened",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
             "excursion": 13
           }
         }
@@ -252,8 +238,7 @@
           ],
           "transition": "none",
           "tracker": {
-            "state": "idle",
-            "confirmation_count": 0
+            "state": "idle"
           },
           "next_change_at": "2026-04-01T12:20:00Z"
         },
@@ -269,7 +254,6 @@
           "transition": "continues",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
             "excursion": 1
           },
           "next_change_at": "2026-04-01T12:00:00.000000100Z"
@@ -286,7 +270,6 @@
           "transition": "continues",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
             "excursion": 2
           },
           "next_change_at": "2026-04-01T12:10:00Z"
@@ -303,7 +286,6 @@
           "transition": "continues",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
             "excursion": 3
           },
           "next_change_at": "2026-04-01T12:10:00Z"
@@ -320,7 +302,6 @@
           "transition": "continues",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
             "excursion": 4
           },
           "next_change_at": "2026-04-01T13:00:00Z"
@@ -337,7 +318,6 @@
           "transition": "continues",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
             "excursion": 5
           },
           "next_change_at": "2026-04-02T12:00:00Z"
@@ -354,7 +334,6 @@
           "transition": "continues",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
             "excursion": 6
           },
           "next_change_at": "2026-04-01T12:30:00Z"
@@ -371,7 +350,6 @@
           "transition": "continues",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
             "excursion": 7
           },
           "next_change_at": "2026-04-01T12:30:00Z"
@@ -388,7 +366,6 @@
           "transition": "continues",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
             "excursion": 8
           }
         },
@@ -404,7 +381,6 @@
           "transition": "continues",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
             "excursion": 9
           }
         },
@@ -420,7 +396,6 @@
           "transition": "continues",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
             "excursion": 10
           }
         },
@@ -436,7 +411,6 @@
           "transition": "continues",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
             "excursion": 11
           }
         },
@@ -452,7 +426,6 @@
           "transition": "continues",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
             "excursion": 12
           }
         },
@@ -468,7 +441,6 @@
           "transition": "continues",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
             "excursion": 13
           }
         }
@@ -481,6 +453,12 @@
           "rule_id": "00000000-0000-0000-0000-000000000001",
           "root": false,
           "unknown": true,
+          "unknown_facts": [
+            {
+              "fact": "glucose",
+              "reason": "ahead_of_clock"
+            }
+          ],
           "leaves": [
             {
               "leaf_id": 0,
@@ -491,7 +469,7 @@
           "transition": "none",
           "tracker": {
             "state": "idle",
-            "confirmation_count": 0
+            "held_since": "2026-04-01T11:54:00Z"
           },
           "next_change_at": "2026-04-01T11:55:00Z",
           "clock_anomaly": [
@@ -505,6 +483,12 @@
           "rule_id": "00000000-0000-0000-0000-000000000002",
           "root": false,
           "unknown": true,
+          "unknown_facts": [
+            {
+              "fact": "glucose",
+              "reason": "ahead_of_clock"
+            }
+          ],
           "leaves": [
             {
               "leaf_id": 0,
@@ -515,8 +499,8 @@
           "transition": "none",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
-            "excursion": 1
+            "excursion": 1,
+            "held_since": "2026-04-01T11:54:00Z"
           },
           "next_change_at": "2026-04-01T11:55:00Z",
           "clock_anomaly": [
@@ -530,6 +514,12 @@
           "rule_id": "00000000-0000-0000-0000-000000000003",
           "root": false,
           "unknown": true,
+          "unknown_facts": [
+            {
+              "fact": "aps",
+              "reason": "ahead_of_clock"
+            }
+          ],
           "leaves": [
             {
               "leaf_id": 0,
@@ -540,8 +530,8 @@
           "transition": "none",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
-            "excursion": 2
+            "excursion": 2,
+            "held_since": "2026-04-01T11:54:00Z"
           },
           "next_change_at": "2026-04-01T11:55:00Z",
           "clock_anomaly": [
@@ -555,6 +545,12 @@
           "rule_id": "00000000-0000-0000-0000-000000000004",
           "root": false,
           "unknown": true,
+          "unknown_facts": [
+            {
+              "fact": "aps",
+              "reason": "ahead_of_clock"
+            }
+          ],
           "leaves": [
             {
               "leaf_id": 0,
@@ -565,8 +561,8 @@
           "transition": "none",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
-            "excursion": 3
+            "excursion": 3,
+            "held_since": "2026-04-01T11:54:00Z"
           },
           "next_change_at": "2026-04-01T11:55:00Z",
           "clock_anomaly": [
@@ -580,6 +576,12 @@
           "rule_id": "00000000-0000-0000-0000-000000000005",
           "root": false,
           "unknown": true,
+          "unknown_facts": [
+            {
+              "fact": "device_ages",
+              "reason": "ahead_of_clock"
+            }
+          ],
           "leaves": [
             {
               "leaf_id": 0,
@@ -590,8 +592,8 @@
           "transition": "none",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
-            "excursion": 4
+            "excursion": 4,
+            "held_since": "2026-04-01T11:54:00Z"
           },
           "next_change_at": "2026-04-01T11:55:00Z",
           "clock_anomaly": [
@@ -605,6 +607,12 @@
           "rule_id": "00000000-0000-0000-0000-000000000006",
           "root": false,
           "unknown": true,
+          "unknown_facts": [
+            {
+              "fact": "device_ages",
+              "reason": "ahead_of_clock"
+            }
+          ],
           "leaves": [
             {
               "leaf_id": 0,
@@ -615,8 +623,8 @@
           "transition": "none",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
-            "excursion": 5
+            "excursion": 5,
+            "held_since": "2026-04-01T11:54:00Z"
           },
           "next_change_at": "2026-04-01T11:55:00Z",
           "clock_anomaly": [
@@ -630,6 +638,12 @@
           "rule_id": "00000000-0000-0000-0000-000000000007",
           "root": false,
           "unknown": true,
+          "unknown_facts": [
+            {
+              "fact": "carbs",
+              "reason": "ahead_of_clock"
+            }
+          ],
           "leaves": [
             {
               "leaf_id": 0,
@@ -640,8 +654,8 @@
           "transition": "none",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
-            "excursion": 6
+            "excursion": 6,
+            "held_since": "2026-04-01T11:54:00Z"
           },
           "next_change_at": "2026-04-01T11:55:00Z",
           "clock_anomaly": [
@@ -655,6 +669,12 @@
           "rule_id": "00000000-0000-0000-0000-000000000008",
           "root": false,
           "unknown": true,
+          "unknown_facts": [
+            {
+              "fact": "insulin",
+              "reason": "ahead_of_clock"
+            }
+          ],
           "leaves": [
             {
               "leaf_id": 0,
@@ -665,8 +685,8 @@
           "transition": "none",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
-            "excursion": 7
+            "excursion": 7,
+            "held_since": "2026-04-01T11:54:00Z"
           },
           "next_change_at": "2026-04-01T11:55:00Z",
           "clock_anomaly": [
@@ -680,6 +700,12 @@
           "rule_id": "00000000-0000-0000-0000-000000000009",
           "root": false,
           "unknown": true,
+          "unknown_facts": [
+            {
+              "fact": "active_alerts",
+              "reason": "ahead_of_clock"
+            }
+          ],
           "leaves": [
             {
               "leaf_id": 0,
@@ -690,8 +716,8 @@
           "transition": "none",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
-            "excursion": 8
+            "excursion": 8,
+            "held_since": "2026-04-01T11:54:00Z"
           },
           "next_change_at": "2026-04-01T11:55:00Z",
           "clock_anomaly": [
@@ -705,6 +731,12 @@
           "rule_id": "00000000-0000-0000-0000-000000000010",
           "root": false,
           "unknown": true,
+          "unknown_facts": [
+            {
+              "fact": "state_spans",
+              "reason": "ahead_of_clock"
+            }
+          ],
           "leaves": [
             {
               "leaf_id": 0,
@@ -715,8 +747,8 @@
           "transition": "none",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
-            "excursion": 9
+            "excursion": 9,
+            "held_since": "2026-04-01T11:54:00Z"
           },
           "next_change_at": "2026-04-01T11:55:00Z",
           "clock_anomaly": [
@@ -730,6 +762,12 @@
           "rule_id": "00000000-0000-0000-0000-000000000011",
           "root": false,
           "unknown": true,
+          "unknown_facts": [
+            {
+              "fact": "state_spans",
+              "reason": "ahead_of_clock"
+            }
+          ],
           "leaves": [
             {
               "leaf_id": 0,
@@ -740,8 +778,8 @@
           "transition": "none",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
-            "excursion": 10
+            "excursion": 10,
+            "held_since": "2026-04-01T11:54:00Z"
           },
           "next_change_at": "2026-04-01T11:55:00Z",
           "clock_anomaly": [
@@ -755,6 +793,12 @@
           "rule_id": "00000000-0000-0000-0000-000000000012",
           "root": false,
           "unknown": true,
+          "unknown_facts": [
+            {
+              "fact": "do_not_disturb",
+              "reason": "ahead_of_clock"
+            }
+          ],
           "leaves": [
             {
               "leaf_id": 0,
@@ -765,8 +809,8 @@
           "transition": "none",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
-            "excursion": 11
+            "excursion": 11,
+            "held_since": "2026-04-01T11:54:00Z"
           },
           "next_change_at": "2026-04-01T11:55:00Z",
           "clock_anomaly": [
@@ -780,6 +824,12 @@
           "rule_id": "00000000-0000-0000-0000-000000000013",
           "root": false,
           "unknown": true,
+          "unknown_facts": [
+            {
+              "fact": "state_spans",
+              "reason": "ahead_of_clock"
+            }
+          ],
           "leaves": [
             {
               "leaf_id": 0,
@@ -790,13 +840,13 @@
           "transition": "none",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
-            "excursion": 12
+            "excursion": 12,
+            "held_since": "2026-04-01T11:54:00Z"
           },
           "next_change_at": "2026-04-01T11:55:00Z",
           "clock_anomaly": [
             {
-              "fact": "active_pump_state",
+              "fact": "active_pump_modes",
               "ahead_ms": 360000
             }
           ]
@@ -805,6 +855,12 @@
           "rule_id": "00000000-0000-0000-0000-000000000014",
           "root": false,
           "unknown": true,
+          "unknown_facts": [
+            {
+              "fact": "state_spans",
+              "reason": "ahead_of_clock"
+            }
+          ],
           "leaves": [
             {
               "leaf_id": 0,
@@ -815,8 +871,8 @@
           "transition": "none",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
-            "excursion": 13
+            "excursion": 13,
+            "held_since": "2026-04-01T11:54:00Z"
           },
           "next_change_at": "2026-04-01T11:55:00Z",
           "clock_anomaly": [
@@ -843,7 +899,6 @@
           "transition": "opened",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
             "excursion": 14
           }
         },
@@ -859,7 +914,6 @@
           "transition": "hysteresis_started",
           "tracker": {
             "state": "hysteresis",
-            "confirmation_count": 0,
             "excursion": 1,
             "hysteresis_started_at": "2026-04-01T12:40:00Z"
           },
@@ -877,7 +931,6 @@
           "transition": "hysteresis_started",
           "tracker": {
             "state": "hysteresis",
-            "confirmation_count": 0,
             "excursion": 2,
             "hysteresis_started_at": "2026-04-01T12:40:00Z"
           },
@@ -895,7 +948,6 @@
           "transition": "hysteresis_started",
           "tracker": {
             "state": "hysteresis",
-            "confirmation_count": 0,
             "excursion": 3,
             "hysteresis_started_at": "2026-04-01T12:40:00Z"
           },
@@ -913,7 +965,6 @@
           "transition": "continues",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
             "excursion": 4
           },
           "next_change_at": "2026-04-01T13:00:00Z"
@@ -930,7 +981,6 @@
           "transition": "continues",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
             "excursion": 5
           },
           "next_change_at": "2026-04-02T12:00:00Z"
@@ -947,7 +997,6 @@
           "transition": "hysteresis_started",
           "tracker": {
             "state": "hysteresis",
-            "confirmation_count": 0,
             "excursion": 6,
             "hysteresis_started_at": "2026-04-01T12:40:00Z"
           },
@@ -965,7 +1014,6 @@
           "transition": "hysteresis_started",
           "tracker": {
             "state": "hysteresis",
-            "confirmation_count": 0,
             "excursion": 7,
             "hysteresis_started_at": "2026-04-01T12:40:00Z"
           },
@@ -983,7 +1031,6 @@
           "transition": "continues",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
             "excursion": 8
           }
         },
@@ -999,7 +1046,6 @@
           "transition": "continues",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
             "excursion": 9
           }
         },
@@ -1015,7 +1061,6 @@
           "transition": "continues",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
             "excursion": 10
           }
         },
@@ -1031,7 +1076,6 @@
           "transition": "continues",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
             "excursion": 11
           }
         },
@@ -1047,7 +1091,6 @@
           "transition": "continues",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
             "excursion": 12
           }
         },
@@ -1063,7 +1106,6 @@
           "transition": "continues",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
             "excursion": 13
           }
         }

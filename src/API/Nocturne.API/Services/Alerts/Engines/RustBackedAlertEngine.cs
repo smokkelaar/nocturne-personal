@@ -26,10 +26,18 @@ internal sealed class RustBackedAlertEngine(
     AlertRuleEvaluationGate gate,
     AlertEngineErrors errors,
     ConditionVersionLog conditionLog,
+    NotTrueRecordingFloor notTrueFloor,
     TimeProvider timeProvider,
     ILogger<RustBackedAlertEngine> logger)
     : IAlertEvaluationEngine
 {
+    /// <summary>
+    /// The rule's stored sustained state, as every evaluation here reads it: through
+    /// <see cref="NotTrueRecordingFloor.Raise"/>.
+    /// </summary>
+    private async Task<ConditionTimers> ReadTimersAsync(Guid ruleId, CancellationToken ct) =>
+        notTrueFloor.Raise(await trackerRepository.Timers.GetAllForRuleAsync(ruleId, ct));
+
     /// <inheritdoc/>
     public async Task<AlertEngineEvaluation> EvaluateRuleAsync(
         AlertRuleSnapshot rule,
@@ -39,7 +47,7 @@ internal sealed class RustBackedAlertEngine(
     {
         using var lease = await gate.AcquireAsync(rule.Id, ct);
 
-        // The snapshot does not carry ConfirmationReadings/HysteresisMinutes.
+        // The snapshot does not carry HysteresisMinutes.
         var ruleRow = await trackerRepository.GetRuleAsync(rule.Id, ct);
         if (ruleRow is null)
         {
@@ -53,7 +61,7 @@ internal sealed class RustBackedAlertEngine(
         }
 
         var now = timeProvider.GetUtcNow().UtcDateTime;
-        var timers = RustEnvelopeMapper.BuildTimers(await trackerRepository.Timers.GetAllForRuleAsync(rule.Id, ct));
+        var timers = await ReadTimersAsync(rule.Id, ct);
         var trackerState = await trackerRepository.GetTrackerStateAsync(rule.Id, ct);
 
         var (response, result) = errors.Track("evaluate", () =>
@@ -62,9 +70,10 @@ internal sealed class RustBackedAlertEngine(
                 RustEnvelopeMapper.BuildRule(ruleRow),
                 RustEnvelopeMapper.BuildContext(context),
                 now,
-                timers,
+                RustEnvelopeMapper.BuildTimers(timers.FirstTrue),
                 RustEnvelopeMapper.BuildTracker(trackerState),
-                options.IncludeLeafValues);
+                options.IncludeLeafValues,
+                RustEnvelopeMapper.BuildTimers(timers.NotTrue));
             return (response, RustAlertEngine.GetRuleResult(response, options.IncludeLeafValues));
         });
 
@@ -81,20 +90,23 @@ internal sealed class RustBackedAlertEngine(
             return new AlertEngineEvaluation { Skipped = true };
         }
 
+        var heldFacts = HeldFacts.Format(result.UnknownFacts?.Select(f => new HeldFact(f.Fact, f.Reason)));
         var decision = new TrackerDecision(
             RustEnvelopeMapper.TransitionFromWire(result.Transition!.Value),
             result.CloseReason is { } reason ? RustEnvelopeMapper.CloseReasonFromWire(reason) : null,
-            RustEnvelopeMapper.PostStateFromWire(response.Tracker!));
+            RustEnvelopeMapper.PostStateFromWire(response.Tracker!, heldFacts));
         // The engine decided on the row read under the lease, which an edit can have changed
         // since the snapshot was loaded.
         var (transition, autoResolveTransition) = await ExcursionTransitionWriter.ApplyAsync(
             trackerRepository, logger, rule.Id, trackerState, decision, AlertRuleConditions.Of(ruleRow), now, ct,
-            result.AutoResolved, result.TimerOps, RecordedNextChange(rule, result, context));
+            result.AutoResolved, result.TimerOps, RecordedNextChange(rule, result, context), result.HeldTooLong);
 
         return new AlertEngineEvaluation
         {
             ConditionMet = result.Root!.Value,
             ConditionUnknown = result.Unknown,
+            UnknownFacts = result.UnknownFacts?.Select(f => new HeldFact(f.Fact, f.Reason)).ToList() ?? [],
+            HeldTooLong = result.HeldTooLong,
             Transition = transition,
             AutoResolveTransition = autoResolveTransition,
             LeafValues = options.IncludeLeafValues
@@ -104,6 +116,7 @@ internal sealed class RustBackedAlertEngine(
             ClockAnomalies = result.ClockAnomaly?
                 .Select(a => new ClockAnomaly(a.Fact, TimeSpan.FromMilliseconds(a.AheadMs)))
                 .ToList() ?? [],
+            MetBy = RustEnvelopeMapper.MetByFromWire(result.MetBy),
         };
     }
 
@@ -159,7 +172,7 @@ internal sealed class RustBackedAlertEngine(
 
         var response = RustAuxiliaryEvaluation.EvaluateNode(
             errors, ruleId, SmartSnoozeConfig.ConditionTree(conditions), Conditions.AlertConditionTypeNames.SnoozePathRoot,
-            context, timeProvider.GetUtcNow().UtcDateTime, await trackerRepository.Timers.GetAllForRuleAsync(ruleId, ct));
+            context, timeProvider.GetUtcNow().UtcDateTime, await ReadTimersAsync(ruleId, ct));
         var held = await ExcursionTransitionWriter.ApplyTimerOpsAsync(
             trackerRepository, logger, ruleId,
             rule => SmartSnoozeConfig.SameConditions(SmartSnoozeConfig.StoredConditions(rule.ClientConfiguration), conditions),
@@ -181,7 +194,7 @@ internal sealed class RustBackedAlertEngine(
             return none;
 
         var now = timeProvider.GetUtcNow().UtcDateTime;
-        var timers = await trackerRepository.Timers.GetAllForRuleAsync(rule.Id, ct);
+        var timers = await ReadTimersAsync(rule.Id, ct);
         var outcome = RustAuxiliaryEvaluation.AutoResolve(
             errors, rule, context, now, timers, state, logger);
 
@@ -204,7 +217,7 @@ internal sealed class RustBackedAlertEngine(
             RustEnvelopeMapper.WrapPayload(wire, rule.ConditionParams));
         var response = RustAuxiliaryEvaluation.EvaluateNode(
             errors, rule.Id, node, wire, context, timeProvider.GetUtcNow().UtcDateTime,
-            new Dictionary<string, DateTime>());
+            ConditionTimers.None);
         return response.Value!.Value;
     }
 }

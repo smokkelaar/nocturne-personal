@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -117,7 +118,8 @@ public class ServicesController : ControllerBase
     [RemoteQuery]
     [ProducesResponseType(typeof(ConnectionsOverview), 200)]
     public async Task<ActionResult<ConnectionsOverview>> GetConnections(CancellationToken cancellationToken = default) =>
-        Ok(await _connectionService.GetConnectionsAsync(HttpContext.GetSubjectId(), cancellationToken));
+        Ok(await _connectionService.GetConnectionsAsync(
+            HttpContext.GetSubjectId(), HttpContext.MayKeepDeviceCredentials(), cancellationToken));
 
     /// <summary>
     /// Get all active data sources that have been sending data to this Nocturne instance.
@@ -186,7 +188,7 @@ public class ServicesController : ControllerBase
     }
 
     /// <summary>
-    /// Get capabilities for a specific connector.
+    /// Get capabilities for a specific connector, and when an API secret the caller saves on it stops.
     /// </summary>
     /// <param name="id">The connector ID (e.g., "dexcom", "libre")</param>
     /// <returns>Connector capabilities</returns>
@@ -203,6 +205,14 @@ public class ServicesController : ControllerBase
         {
             return Problem(detail: $"Connector not found: {id}", statusCode: 404, title: "Not Found");
         }
+
+        if (!ConnectorConfigurationService.AdoptsSecret(id))
+            return Ok(capabilities);
+
+        if (ConnectorSecretSaver.MayAdoptFor(HttpContext.GetGrantedScopes(), HttpContext.IsCallerHistoryClamped()))
+            capabilities.SavedSecretStopsAt = HttpContext.CallerAccessEndsAt();
+        else
+            capabilities.SavedSecretMakesNoCredential = true;
 
         return Ok(capabilities);
     }
@@ -574,7 +584,7 @@ public class ServicesController : ControllerBase
         _logger.LogInformation(
             "Cursor reset requested for connector {ConnectorId} (from {From})",
             id,
-            request.From?.ToString("o") ?? "beginning");
+            request.From?.ToString("o", CultureInfo.InvariantCulture) ?? "beginning");
 
         var result = await _connectorSyncService.TriggerSyncAsync(id, syncRequest, cancellationToken);
         return SyncOrConflict(result);

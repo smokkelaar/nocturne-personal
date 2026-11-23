@@ -7,6 +7,7 @@ use chrono::TimeDelta;
 use serde_json::{Map, Value};
 
 use crate::enums::{WireEnum, wire_enum};
+use crate::facts::ContextFact;
 
 /// How far ahead of `now` an anchor may be and still read as `now`.
 pub const CLOCK_TOLERANCE: TimeDelta = TimeDelta::minutes(5);
@@ -44,10 +45,43 @@ wire_enum! {
         ActivePumpSuspension = "active_pump_suspension",
         ActiveOverride = "active_override",
         ActiveDoNotDisturb = "active_do_not_disturb",
-        ActivePumpState = "active_pump_state",
+        ActivePumpModes = "active_pump_modes",
         ActiveStateSpans = "active_state_spans",
+        SensorState = "sensor_state",
+        ApsDetermination = "aps_determination",
         Sustained = "sustained",
         HysteresisStartedAt = "hysteresis_started_at",
+        HeldSince = "held_since",
+    }
+}
+
+impl ClockAnchor {
+    /// The context fact that holds the anchor (engine-semantics.md §5.2);
+    /// `None` for the rule's and the engine's own instants.
+    #[must_use]
+    pub fn fact(self) -> Option<ContextFact> {
+        use ContextFact as F;
+        match self {
+            ClockAnchor::LastReadingAt | ClockAnchor::LatestTimestamp | ClockAnchor::EnabledAt => {
+                Some(F::Glucose)
+            }
+            ClockAnchor::LastApsCycleAt | ClockAnchor::LastApsEnactedAt => Some(F::Aps),
+            ClockAnchor::LastSiteChangeAt | ClockAnchor::LastSensorStartAt => Some(F::DeviceAges),
+            ClockAnchor::ActiveTrackers => Some(F::Trackers),
+            ClockAnchor::LastCarbAt => Some(F::Carbs),
+            ClockAnchor::LastBolusAt => Some(F::Insulin),
+            ClockAnchor::ActiveAlerts => Some(F::ActiveAlerts),
+            ClockAnchor::ActivePumpSuspension
+            | ClockAnchor::ActiveOverride
+            | ClockAnchor::ActivePumpModes
+            | ClockAnchor::ActiveStateSpans => Some(F::StateSpans),
+            ClockAnchor::ActiveDoNotDisturb => Some(F::DoNotDisturb),
+            ClockAnchor::SensorState => Some(F::SensorState),
+            ClockAnchor::ApsDetermination => Some(F::ApsDetermination),
+            ClockAnchor::Sustained | ClockAnchor::HysteresisStartedAt | ClockAnchor::HeldSince => {
+                None
+            }
+        }
     }
 }
 

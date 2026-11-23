@@ -103,11 +103,7 @@ public class SubjectService : ISubjectService
                 };
             }
 
-            _logger.LogDebug(
-                "Found existing subject {SubjectId} for OIDC identity {OidcSubjectId}",
-                existing.Id,
-                oidcSubjectId
-            );
+            _logger.LogDebug("Found existing subject {SubjectId} for an OIDC identity", existing.Id);
             return MapToModel(existing);
         }
 
@@ -120,11 +116,7 @@ public class SubjectService : ISubjectService
                 EmailConfirmedAt: verifiedEmail is null ? null : now),
             CancellationToken.None);
 
-        _logger.LogInformation(
-            "Created new subject {SubjectId} for OIDC identity {OidcSubjectId}",
-            subjectId,
-            oidcSubjectId
-        );
+        _logger.LogInformation("Created new subject {SubjectId} for an OIDC identity", subjectId);
         return MapToModel((await _subjects.GetAsync(subjectId, CancellationToken.None))!);
     }
 
@@ -143,7 +135,7 @@ public class SubjectService : ISubjectService
 
         var created = (await _subjects.GetAsync(subjectId, CancellationToken.None))!;
 
-        _logger.LogInformation("Created subject {SubjectId} ({Name})", created.Id, created.Name);
+        _logger.LogInformation("Created subject {SubjectId}", created.Id);
 
         await _auditService.LogAsync(AuthAuditEventType.SubjectCreated, created.Id, success: true,
             detailsJson: JsonSerializer.Serialize(new { name = created.Name }));
@@ -186,7 +178,7 @@ public class SubjectService : ISubjectService
 
         if (subject.IsSystemSubject)
         {
-            _logger.LogWarning("Attempted to delete system subject {SubjectId} ({Name})", subjectId, subject.Name);
+            _logger.LogWarning("Attempted to delete system subject {SubjectId}", subjectId);
             return new SubjectChange.NotFound();
         }
 
@@ -260,9 +252,8 @@ public class SubjectService : ISubjectService
             subjectId
         );
 
-        await _auditService.LogAsync(AuthAuditEventType.RoleAssigned, subjectId, success: true,
-            detailsJson: JsonSerializer.Serialize(new { role = roleName }),
-            actor: assignedBy is null ? null : new AuthAuditActor(assignedBy, null));
+        await _auditService.LogGlobalRoleChangeAsync(AuthAuditEventType.RoleAssigned, subjectId, roleName,
+            assignedBy is null ? null : new AuthAuditActor(assignedBy, null));
 
         return true;
     }
@@ -281,8 +272,7 @@ public class SubjectService : ISubjectService
             subjectId
         );
 
-        await _auditService.LogAsync(AuthAuditEventType.RoleRemoved, subjectId, success: true,
-            detailsJson: JsonSerializer.Serialize(new { role = roleName }));
+        await _auditService.LogGlobalRoleChangeAsync(AuthAuditEventType.RoleRemoved, subjectId, roleName);
 
         return true;
     }
@@ -374,6 +364,41 @@ public class SubjectService : ISubjectService
             CancellationToken.None);
         await ConfirmAssertedEmailAsync(subjectId, email, emailVerified);
         return (OidcLinkOutcome.Created, identityId);
+    }
+
+    /// <inheritdoc />
+    public async Task<Guid?> AdoptForSetupAsync(Guid createdSubjectId, string oidcSubjectId, string issuer, string tenantSlug)
+    {
+        var match = await _subjects.FindByOidcIdentityAsync(oidcSubjectId, issuer, CancellationToken.None);
+        if (match is null
+            || !await _subjects.AdoptForSetupAsync(
+                createdSubjectId, match.Subject.Id, match.Identity.Id, tenantSlug, CancellationToken.None))
+            return null;
+
+        _logger.LogInformation(
+            "Setup adopted subject {SubjectId} in place of {CreatedSubjectId}", match.Subject.Id, createdSubjectId);
+        await _auditService.LogAsync(AuthAuditEventType.SubjectDeleted, createdSubjectId, success: true,
+            actor: new AuthAuditActor(match.Subject.Id, null));
+        return match.Subject.Id;
+    }
+
+    /// <inheritdoc />
+    public async Task<Guid?> TakeUnclaimedOidcIdentityAsync(
+        Guid subjectId, string oidcSubjectId, string issuer, string? email, bool emailVerified)
+    {
+        var match = await _subjects.FindByOidcIdentityAsync(oidcSubjectId, issuer, CancellationToken.None);
+        if (match is null
+            || await _subjects.TakeUnclaimedOidcIdentityAsync(match.Identity.Id, subjectId, email, CancellationToken.None)
+                is not { } identityId)
+            return null;
+
+        _logger.LogInformation(
+            "Subject {SubjectId} took an identity from unclaimed subject {UnclaimedSubjectId}, which was deleted",
+            subjectId, match.Subject.Id);
+        await _auditService.LogAsync(AuthAuditEventType.SubjectDeleted, match.Subject.Id, success: true,
+            actor: new AuthAuditActor(subjectId, null));
+        await ConfirmAssertedEmailAsync(subjectId, email, emailVerified);
+        return identityId;
     }
 
     /// <summary>

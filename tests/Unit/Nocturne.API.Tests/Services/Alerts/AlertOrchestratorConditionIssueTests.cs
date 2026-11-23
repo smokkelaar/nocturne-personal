@@ -46,7 +46,7 @@ public class AlertOrchestratorConditionIssueTests
             RustEnvelopeMapper.WrapPayload(AlertConditionTypeNames.ToWireString(type), conditionParams));
         var errors = new AlertEngineErrors(new TestMeterFactory(), TimeProvider.System);
         return RustAuxiliaryEvaluation.EvaluateNode(
-            errors, RuleId, node, "condition", context, Now, new Dictionary<string, DateTime>()).Value!.Value;
+            errors, RuleId, node, "condition", context, Now, ConditionTimers.None).Value!.Value;
     }
 
     [NativeFact]
@@ -285,20 +285,18 @@ public class AlertOrchestratorConditionIssueTests
 
             _orchestrator = new AlertOrchestrator(
                 Engine.Object,
-                Mock.Of<IAlertRepository>(),
-                Mock.Of<IAlertRuleRepository>(),
+                new AlertRuleEvaluationGate(),
+                new AlertRuleDecisions(TimeProvider.System),
                 tenant.Object,
-                Delivery.Object,
                 enricher.Object,
-                Mock.Of<IAlertAcknowledgementService>(),
+                Mock.Of<IExcursionOpenedHandler>(),
                 Mock.Of<IExcursionResolutionHandler>(),
                 notice,
                 ClockNotice.Object,
-                TimeProvider.System,
                 new ListLogger<AlertOrchestrator>());
         }
 
         public Task EvaluateAsync(params AlertRuleSnapshot[] rules) =>
-            _orchestrator.EvaluateRulesAsync(rules, rules.Select(r => r.Id).ToHashSet(), Reading(40), CancellationToken.None);
+            _orchestrator.EvaluateRulesAsync(rules, rules.Select(r => r.Id).ToHashSet(), Reading(40), readAt: null, CancellationToken.None);
     }
 }

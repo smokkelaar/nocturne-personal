@@ -110,22 +110,20 @@ fn tracker_object() -> BoxedStrategy<Value> {
     let state = select(vec!["idle", "confirming", "active", "hysteresis", "stale"]);
     (
         state,
-        0..5i32,
         option::of(0..5u32),
         timestamp(),
         option::of(timestamp()),
         any::<bool>(),
         0..5u32,
     )
-        .prop_map(|(state, count, excursion, updated, started, rearm, next)| {
+        .prop_map(|(state, excursion, updated, started, rearm, last)| {
             json!({
                 "state": state,
-                "confirmation_count": count,
                 "active_excursion_ordinal": excursion,
                 "updated_at": updated,
                 "hysteresis_started_at": started,
                 "awaiting_rearm": rearm,
-                "next_excursion_ordinal": next,
+                "last_excursion_ordinal": last,
             })
         })
         .boxed()
@@ -162,12 +160,9 @@ fn flag() -> BoxedStrategy<Value> {
 }
 
 fn tracker_config() -> BoxedStrategy<Value> {
-    (option::of(-2..5i32), option::of(-2..40i32))
-        .prop_map(|(c, h)| {
+    option::of(-2..40i32)
+        .prop_map(|h| {
             let mut config = Map::new();
-            if let Some(c) = c {
-                config.insert("confirmation_readings".into(), c.into());
-            }
             if let Some(h) = h {
                 config.insert("hysteresis_minutes".into(), h.into());
             }
@@ -550,7 +545,7 @@ proptest! {
         prop_assert_eq!(reported, expected);
     }
 
-    /// `evaluate` fed its own `timers` and `tracker` each tick returns, tick by
+    /// `evaluate` fed its own `timers`, `not_true` and `tracker` each tick returns, tick by
     /// tick, the `result` of the core engine run over the same sequence.
     #[test]
     fn evaluate_threaded_through_its_response_matches_the_core_engine(
@@ -562,6 +557,7 @@ proptest! {
         let mut engine = EngineState::new();
 
         let mut timers = json!({});
+        let mut not_true = json!({});
         let mut tracker = Value::Null;
         for tick in &ticks {
             let response = call_json(
@@ -572,7 +568,9 @@ proptest! {
                     "context": tick.context,
                     "now": tick.now.to_rfc3339_opts(SecondsFormat::Secs, true),
                     "timers": timers,
+                    "not_true": not_true,
                     "tracker": tracker,
+                    "include_leaves": true,
                 })
                 .to_string(),
             );
@@ -583,7 +581,129 @@ proptest! {
             prop_assert_eq!(&response["result"], &core.to_json());
 
             timers = response["timers"].clone();
+            not_true = response["not_true"].clone();
             tracker = response["tracker"].clone();
         }
     }
+}
+
+fn sampled<S: Strategy>(strategy: &S, runner: &mut TestRunner, count: usize) -> Vec<S::Value> {
+    (0..count)
+        .map(|_| strategy.new_tree(runner).unwrap().current())
+        .collect()
+}
+
+fn corpus_scenarios(dir: &std::path::Path) -> Vec<Value> {
+    let mut files: Vec<_> = std::fs::read_dir(dir)
+        .unwrap()
+        .map(|entry| entry.unwrap().path())
+        .filter(|path| {
+            path.extension().is_some_and(|e| e == "json")
+                && !path.to_string_lossy().ends_with(".expected.json")
+        })
+        .collect();
+    files.sort();
+    files
+        .iter()
+        .map(|path| serde_json::from_slice(&std::fs::read(path).unwrap()).unwrap())
+        .collect()
+}
+
+/// Writes seed inputs for the `cargo fuzz` targets in `crates/nocturne-alerts-ffi/fuzz` into the directory named by
+/// `NOCTURNE_FUZZ_SEEDS`, one `<target>/` directory each, from the generators above and from the
+/// golden corpus in `tests/Parity/AlertEngineCorpus`:
+///
+/// ```text
+/// NOCTURNE_FUZZ_SEEDS=fuzz/corpus cargo test -p nocturne-alerts-ffi --test envelope_properties \
+///     write_fuzz_seeds -- --ignored
+/// ```
+#[test]
+#[ignore = "writes files; run on demand"]
+fn write_fuzz_seeds() {
+    let out = std::path::PathBuf::from(
+        std::env::var_os("NOCTURNE_FUZZ_SEEDS")
+            .expect("NOCTURNE_FUZZ_SEEDS names the corpus directory"),
+    );
+    let corpus = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../tests/Parity/AlertEngineCorpus");
+    let mut runner = TestRunner::deterministic();
+    let mut seeds: Vec<(String, Vec<u8>)> = Vec::new();
+
+    for entry in entry_points() {
+        let name = format!("ffi_{}", entry.name);
+        for request in sampled(&(entry.request)(), &mut runner, 24) {
+            seeds.push((name.clone(), request.to_string().into_bytes()));
+        }
+    }
+    for node in sampled(&tree(), &mut runner, 24) {
+        seeds.push(("node_parse".into(), node.to_string().into_bytes()));
+    }
+    let kinds = ConditionKind::ALL;
+    for (index, kind) in kinds.iter().enumerate() {
+        for body in sampled(&payload(*kind, &tree()), &mut runner, 3) {
+            let mut bytes = vec![u8::try_from(index).unwrap()];
+            bytes.extend(body.to_string().into_bytes());
+            seeds.push(("parse_payload".into(), bytes));
+        }
+    }
+
+    for scenario in corpus_scenarios(&corpus)
+        .into_iter()
+        .chain(corpus_scenarios(&corpus.join("replay")))
+    {
+        let rules = scenario["rules"].as_array().cloned().unwrap_or_default();
+        let ticks = scenario["ticks"].as_array().cloned().unwrap_or_default();
+        for rule in &rules {
+            let wire = rule["condition_type"].as_str().unwrap();
+            let params = &rule["condition_params"];
+            seeds.push((
+                "node_parse".into(),
+                node_of(wire, params).to_string().into_bytes(),
+            ));
+            if let Some(index) = kinds.iter().position(|k| k.name() == wire) {
+                let mut bytes = vec![u8::try_from(index).unwrap()];
+                bytes.extend(params.to_string().into_bytes());
+                seeds.push(("parse_payload".into(), bytes));
+            }
+            if let Some(auto_resolve) = rule["auto_resolve_params"].as_object() {
+                seeds.push((
+                    "node_parse".into(),
+                    Value::Object(auto_resolve.clone()).to_string().into_bytes(),
+                ));
+            }
+            let validate = json!({
+                "schema_version": 1,
+                "condition_type": wire,
+                "condition_params": params,
+            });
+            seeds.push(("ffi_validate".into(), validate.to_string().into_bytes()));
+            if let Some(tick) = ticks.first() {
+                let evaluate = json!({
+                    "schema_version": 1,
+                    "rule": rule,
+                    "context": tick["context"],
+                    "now": tick["at"],
+                });
+                seeds.push(("ffi_evaluate".into(), evaluate.to_string().into_bytes()));
+            }
+        }
+        if !rules.is_empty() && !ticks.is_empty() {
+            let replay = json!({ "schema_version": 1, "rules": rules, "ticks": ticks });
+            seeds.push(("ffi_replay".into(), replay.to_string().into_bytes()));
+        }
+    }
+
+    let mut written: std::collections::BTreeMap<String, usize> = std::collections::BTreeMap::new();
+    for (target, bytes) in seeds {
+        let dir = out.join(&target);
+        std::fs::create_dir_all(&dir).unwrap();
+        let count = written.entry(target).or_default();
+        std::fs::write(dir.join(format!("seed-{count:04}")), bytes).unwrap();
+        *count += 1;
+    }
+    println!("seeds written: {written:?}");
+}
+
+fn node_of(kind: &str, params: &Value) -> Value {
+    json!({ "type": kind, kind: params })
 }

@@ -16,8 +16,7 @@
           ],
           "transition": "none",
           "tracker": {
-            "state": "idle",
-            "confirmation_count": 0
+            "state": "idle"
           }
         }
       ]
@@ -36,8 +35,7 @@
           ],
           "transition": "none",
           "tracker": {
-            "state": "idle",
-            "confirmation_count": 0
+            "state": "idle"
           }
         }
       ]
@@ -57,7 +55,6 @@
           "transition": "opened",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
             "excursion": 1
           }
         }
@@ -70,6 +67,12 @@
           "rule_id": "00000000-0000-0000-0000-000000000001",
           "root": false,
           "unknown": true,
+          "unknown_facts": [
+            {
+              "fact": "pump",
+              "reason": "absent"
+            }
+          ],
           "leaves": [
             {
               "leaf_id": 0,
@@ -80,8 +83,8 @@
           "transition": "none",
           "tracker": {
             "state": "active",
-            "confirmation_count": 0,
-            "excursion": 1
+            "excursion": 1,
+            "held_since": "2026-01-05T12:15:00Z"
           }
         }
       ]

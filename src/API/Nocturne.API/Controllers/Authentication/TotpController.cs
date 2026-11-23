@@ -8,6 +8,7 @@ using OpenApi.Remote.Attributes;
 using Nocturne.API.Authorization;
 using Nocturne.API.Extensions;
 using Nocturne.API.Multitenancy;
+using Nocturne.API.RateLimiting;
 using Nocturne.API.Services.Auth;
 using Nocturne.Core.Contracts.Auth;
 using Nocturne.Core.Contracts.Multitenancy;
@@ -31,7 +32,7 @@ namespace Nocturne.API.Controllers.Authentication;
 /// here with an earlier code (<see cref="ITotpService.GetSecondFactorRequirementAsync"/>).
 /// </remarks>
 /// <seealso cref="ITotpService"/>
-/// <seealso cref="ISessionService"/>
+/// <seealso cref="SignInCompletion"/>
 /// <seealso cref="ISubjectService"/>
 /// <seealso cref="IAuthAuditService"/>
 [ApiController]
@@ -55,11 +56,10 @@ public class TotpController : ControllerBase
 
     private readonly ITotpService _totpService;
     private readonly ITrustedDeviceService _trustedDevices;
-    private readonly ISessionService _sessionService;
+    private readonly SignInCompletion _signIn;
     private readonly ISubjectService _subjectService;
     private readonly IAuthAuditService _auditService;
     private readonly ITenantAccessor _tenantAccessor;
-    private readonly ITenantMemberService _tenantMemberService;
     private readonly OidcOptions _oidcOptions;
     private readonly BaseDomainOptions _baseDomain;
     private readonly ILogger<TotpController> _logger;
@@ -70,22 +70,20 @@ public class TotpController : ControllerBase
     public TotpController(
         ITotpService totpService,
         ITrustedDeviceService trustedDevices,
-        ISessionService sessionService,
+        SignInCompletion signIn,
         ISubjectService subjectService,
         IAuthAuditService auditService,
         ITenantAccessor tenantAccessor,
-        ITenantMemberService tenantMemberService,
         IOptions<OidcOptions> oidcOptions,
         IOptions<BaseDomainOptions> baseDomainOptions,
         ILogger<TotpController> logger)
     {
         _totpService = totpService;
         _trustedDevices = trustedDevices;
-        _sessionService = sessionService;
+        _signIn = signIn;
         _subjectService = subjectService;
         _auditService = auditService;
         _tenantAccessor = tenantAccessor;
-        _tenantMemberService = tenantMemberService;
         _oidcOptions = oidcOptions.Value;
         _baseDomain = baseDomainOptions.Value;
         _logger = logger;
@@ -241,7 +239,7 @@ public class TotpController : ControllerBase
         if (untrusted > 0)
         {
             await _auditService.LogAsync(AuthAuditEventType.DeviceTrustRevoked, auth.SubjectId, success: true,
-                ipAddress: HttpContext.Connection.RemoteIpAddress?.ToString(),
+                ipAddress: HttpContext.GetClientAddress(),
                 userAgent: Request.Headers.UserAgent.ToString(),
                 detailsJson: JsonSerializer.Serialize(new { all = true, count = untrusted, reason = "authenticator_removed" }));
         }
@@ -258,7 +256,10 @@ public class TotpController : ControllerBase
     /// TOTP is a second factor, so this endpoint needs a step-up token from a completed passkey
     /// assertion or OIDC callback — it cannot be reached with a code alone. The token names the subject; a
     /// caller-supplied username is not accepted.
-    /// Rate-limited via the "totp-login" policy.
+    /// Rate-limited per client address via the "totp-login" policy, and per step-up token and per
+    /// account by <see cref="StepUpCodeAttempts"/>: a token's wrong codes spend it, and an account's
+    /// wrong codes across its tokens refuse further codes, with the rate-limit response, until the
+    /// window ends.
     /// On success: issues session cookies, updates last login time, and logs
     /// <see cref="AuthAuditEventType.Login"/>. On failure: logs <see cref="AuthAuditEventType.FailedAuth"/>.
     /// </remarks>
@@ -266,6 +267,8 @@ public class TotpController : ControllerBase
     /// <response code="400">Invalid step-up token or code.</response>
     /// <response code="403">Both factors passed, but this host does not admit the subject;
     /// <c>detail</c> is <see cref="NotAMember"/>.</response>
+    /// <response code="429">Too many attempts from this client address, or the account has no wrong codes left until
+    /// its window ends. The body is the rate limiter's, not a problem document, and <c>Retry-After</c> says when to try again.</response>
     [HttpPost("login")]
     [AllowAnonymous]
     [EnableRateLimiting("totp-login")]
@@ -273,12 +276,25 @@ public class TotpController : ControllerBase
     [ProducesResponseType(typeof(TotpLoginResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<TotpLoginResponse>> Login([FromBody] TotpLoginRequest request)
     {
-        var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
+        var ip = HttpContext.GetClientAddress();
         var ua = Request.Headers.UserAgent.ToString();
 
-        var result = await _totpService.VerifyStepUpAsync(request.StepUpToken, request.Code);
+        TotpLoginResult? result;
+        try
+        {
+            result = await _totpService.VerifyStepUpAsync(request.StepUpToken, request.Code);
+        }
+        catch (TotpStepUpLockedException ex)
+        {
+            await _auditService.LogAsync(AuthAuditEventType.FailedAuth, ex.SubjectId, success: false,
+                ipAddress: ip, userAgent: ua,
+                detailsJson: JsonSerializer.Serialize(new { method = "totp", reason = "too_many_wrong_codes" }));
+            return new RateLimitRejectionResult(ex.RetryAfter);
+        }
+
         if (result == null)
         {
             await _auditService.LogAsync(AuthAuditEventType.FailedAuth, targetSubjectId: null, success: false,
@@ -290,10 +306,7 @@ public class TotpController : ControllerBase
         // The primary factor decided who may sign in where, and the token carries that decision:
         // redeem it only on the host it was minted for. A membership revoked since then still
         // denies, unless the primary factor admitted this subject on an invite.
-        if (!IsMintingHost(result.TenantId)
-            || (result.TenantId is { } tenantId
-                && !result.AdmittedByInvite
-                && !await _tenantMemberService.IsMemberAsync(result.SubjectId, tenantId)))
+        if (!IsMintingHost(result.TenantId))
         {
             await _auditService.LogAsync(AuthAuditEventType.FailedAuth, result.SubjectId, success: false,
                 ipAddress: ip, userAgent: ua,
@@ -301,21 +314,24 @@ public class TotpController : ControllerBase
             return Problem(detail: NotAMember, statusCode: 403, title: "Forbidden");
         }
 
-        var session = await _sessionService.IssueSessionAsync(
+        SignInAdmission admission = result switch
+        {
+            { AdmittedByInvite: true } => new SignInAdmission.Invite(result.TenantId),
+            { TenantId: { } tenantId } => new SignInAdmission.Member(tenantId),
+            _ => new SignInAdmission.Account(),
+        };
+
+        var outcome = await _signIn.CompleteAsync(new SignInAttempt(
             result.SubjectId,
-            new SessionContext(
-                DeviceDescription: "TOTP",
-                IpAddress: HttpContext.Connection.RemoteIpAddress?.ToString(),
-                UserAgent: Request.Headers.UserAgent.ToString()));
+            SignInMethod.Totp,
+            admission,
+            new SecondFactorProof.CodeVerified(result),
+            new SessionContext(DeviceDescription: "TOTP", IpAddress: ip, UserAgent: ua)));
 
-        // The sign-in hint names the primary factor, which wrote it when it minted the step-up token.
-        Response.SetSessionCookies(session, _oidcOptions);
+        if (outcome is not SignInOutcome.SignedIn signedIn)
+            return Problem(detail: NotAMember, statusCode: 403, title: "Forbidden");
 
-        await _subjectService.UpdateLastLoginAsync(result.SubjectId);
-
-        await _auditService.LogAsync(AuthAuditEventType.Login, result.SubjectId, success: true,
-            ipAddress: ip, userAgent: ua,
-            detailsJson: JsonSerializer.Serialize(new { method = "totp" }));
+        await HttpContext.ApplySignInAsync(signedIn, _oidcOptions);
 
         if (request.TrustDevice
             && await _trustedDevices.TrustAsync(
@@ -333,8 +349,8 @@ public class TotpController : ControllerBase
         return Ok(new TotpLoginResponse
         {
             Success = true,
-            AccessToken = session.AccessToken,
-            ExpiresIn = session.ExpiresInSeconds,
+            AccessToken = signedIn.Session.AccessToken,
+            ExpiresIn = signedIn.Session.ExpiresInSeconds,
         });
     }
 

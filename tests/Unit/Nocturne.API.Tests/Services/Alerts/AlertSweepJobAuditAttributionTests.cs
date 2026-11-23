@@ -39,8 +39,8 @@ public class AlertSweepJobAuditAttributionTests
 
         var repository = AlertSweepRuns.Repository(Tenant, () => null);
         repository
-            .Setup(x => x.GetEnabledRulesAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync([rule]);
+            .Setup(x => x.ReadEnabledRulesAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new EnabledAlertRules([rule], []));
 
         IAuditContext? scopeContextAudit = null;
         bool? ambientIsSystemMutation = null;
@@ -49,7 +49,9 @@ public class AlertSweepJobAuditAttributionTests
         services.AddSingleton(repository.Object);
         services.AddSingleton(Mock.Of<ICanonicalGlucoseService>());
         services.AddSingleton(Mock.Of<IUnevaluableRuleNotice>());
+        services.AddSingleton(NoHeldRules.Notice());
         services.AddSingleton(Mock.Of<IClockAnomalyNotice>());
+        services.AddSingleton(Mock.Of<IAlertChannelNotice>());
         services.AddScoped<ITenantAccessor>(_ => Mock.Of<ITenantAccessor>());
         services.AddScoped<IAuditContext, AuditContext>();
         services.AddScoped(sp => new TenantReadContext(null, null, sp.GetRequiredService<IAuditContext>()));

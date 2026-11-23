@@ -4,6 +4,7 @@ using Nocturne.API.Attributes;
 using Nocturne.API.Controllers.V4.Base;
 using Nocturne.API.Models.Requests.V4;
 using Nocturne.API.Services.Treatments;
+using Nocturne.API.Validators.V4;
 using Nocturne.Core.Constants;
 using Nocturne.Core.Contracts.Repositories;
 using Nocturne.Core.Contracts.Treatments;
@@ -31,7 +32,9 @@ namespace Nocturne.API.Controllers.V4.Treatments;
 /// The <c>POST /meals</c> endpoint is idempotent on <c>(DataSource, SyncIdentifier)</c>: if a matching
 /// bolus already exists its <c>CorrelationId</c> is propagated to both records. The two repositories
 /// write on their own contexts, so <see cref="GuardRecreationAsync"/> is what keeps a refused meal
-/// from writing one half.
+/// from writing one half. The food types of the carb intake of an existing meal are filled through
+/// <see cref="CommittedWriteEnrichment"/>, so a failure there leaves them unset and the meal is still
+/// answered.
 ///
 /// Meal retrieval, including its demo-mode filtering, is <see cref="IMealReadService"/>.
 /// </remarks>
@@ -199,21 +202,15 @@ public class NutritionController : ControllerBase, IWriteScopedController
         [FromBody] CreateMealRequest request,
         CancellationToken ct = default)
     {
-        if (request.Timestamp == default)
-            return Problem(detail: "Timestamp must be set", statusCode: 400, title: "Bad Request");
+        if (TimestampRule.IsMissing(request.Timestamp))
+            return this.TimestampRequiredProblem();
 
         // The meal's bolus + carb intake share a correlation_id; it is a free-standing
         // grouping value (no batch row to persist), so honour a client-supplied id or mint one.
         var correlationId = request.CorrelationId ?? Guid.CreateVersion7();
-        var timestamp = request.Timestamp.UtcDateTime;
 
         var bolusModel = new Bolus
         {
-            Timestamp = timestamp,
-            UtcOffset = request.UtcOffset,
-            Device = request.Device,
-            App = request.App,
-            DataSource = request.DataSource,
             Insulin = request.Insulin,
             BolusType = request.BolusType,
             Kind = BolusKind.Manual,
@@ -222,21 +219,16 @@ public class NutritionController : ControllerBase, IWriteScopedController
             InsulinType = request.InsulinType,
             BolusCalculationId = request.BolusCalculationId,
             CorrelationId = correlationId,
-        };
+        }.WithHeaderFrom(request);
 
         var carbModel = new CarbIntake
         {
-            Timestamp = timestamp,
-            UtcOffset = request.UtcOffset,
-            Device = request.Device,
-            App = request.App,
-            DataSource = request.DataSource,
             Carbs = request.Carbs,
             SyncIdentifier = request.SyncIdentifier,
             CarbTime = request.CarbTime,
             AbsorptionTime = request.AbsorptionTime,
             CorrelationId = correlationId,
-        };
+        }.WithHeaderFrom(request);
 
         if (!string.IsNullOrEmpty(request.DataSource) && !string.IsNullOrEmpty(request.SyncIdentifier))
             await GuardRecreationAsync(request.DataSource, request.SyncIdentifier, ct);
@@ -261,7 +253,10 @@ public class NutritionController : ControllerBase, IWriteScopedController
         var carb = await _carbIntakeRepo.UpsertAsync(carbModel, WriteOrigin.Live, ct);
 
         if (!carb.Created)
-            await _treatmentFoodService.ApplyFoodTypesAsync([carb.Record], ct);
+        {
+            CarbIntake[] carbs = [carb.Record];
+            await CommittedWriteEnrichment.RunAsync(this, carbs, () => _treatmentFoodService.ApplyFoodTypesAsync(carbs, ct), ct);
+        }
 
         var response = new CreateMealResponse
         {

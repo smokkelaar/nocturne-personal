@@ -76,6 +76,13 @@ public class V4WriteScopeGatingTests
         public const string IdentityAndDelegation = "identity/delegation state, governed by RBAC atoms";
 
         /// <summary>
+        /// A team: no tenant's data, and no data-category scope names it. Refused to every credential
+        /// but the person's own sign-in by [RequireInteractiveSession], and each write finds the team
+        /// only through the caller's own membership of it.
+        /// </summary>
+        public const string OwnTeams = "teams the caller is in, only from the person's own sign-in";
+
+        /// <summary>
         /// Tenant administration, gated on <see cref="Scope.TenantSettings"/>. An administration
         /// atom, absent from <see cref="Scope.AllScopes"/>, so no data-category scope names it.
         /// Asserted per controller by
@@ -189,6 +196,7 @@ public class V4WriteScopeGatingTests
             ["SetupController"] = NotDataCategory.Setup,
             ["PlatformController"] = NotDataCategory.Setup,
             ["MyTenantsController"] = NotDataCategory.Setup,
+            ["TeamsController"] = NotDataCategory.OwnTeams,
             ["TenantCreationInviteController"] = NotDataCategory.Setup,
 
             ["AvatarController"] = NotDataCategory.IdentityAndDelegation,
@@ -296,6 +304,8 @@ public class V4WriteScopeGatingTests
             ["DebugController.PreviewEntries"] = NotDataCategory.ComputesAndReturns,
             ["SupportController.CreateIssue"] = NotDataCategory.OutboundOnly,
 
+            ["RecoveryEmailController.SetRecoveryEmail"] = NotDataCategory.OwnIdentity,
+            ["RecoveryEmailController.DeleteRecoveryEmail"] = NotDataCategory.OwnIdentity,
             ["AvatarController.Upload"] = NotDataCategory.OwnIdentity,
             ["AvatarController.Delete"] = NotDataCategory.OwnIdentity,
             ["ChatIdentityController.SetDefault"] = NotDataCategory.OwnIdentity,
@@ -320,6 +330,21 @@ public class V4WriteScopeGatingTests
             ["MyTenantsController.CreateTenant"] = NotDataCategory.CreatesOwnTenant,
             ["PlatformController.CreateTenant"] = NotDataCategory.CreatesOwnTenant,
             ["TenantCreationInviteController.Redeem"] = NotDataCategory.CreatesOwnTenant,
+
+            // Each finds the team only through the caller's own manager row, in the same query.
+            ["TeamsController.CreateTeam"] = NotDataCategory.OwnTeams,
+            ["TeamsController.RenameTeam"] = NotDataCategory.OwnTeams,
+            ["TeamsController.RemoveManager"] = NotDataCategory.OwnTeams,
+            ["TeamsController.CreateManagerInvite"] = NotDataCategory.OwnTeams,
+            ["TeamsController.RevokeManagerInvite"] = NotDataCategory.OwnTeams,
+            ["TeamsController.DeleteTeam"] = NotDataCategory.OwnTeams,
+            ["TeamsController.CreateAccessLink"] = NotDataCategory.OwnTeams,
+            ["TeamsController.RevokeAccessLink"] = NotDataCategory.OwnTeams,
+            // The invite token is what admits the caller to the team.
+            ["TeamsController.AcceptInvite"] = NotDataCategory.CapabilityToken,
+            // The link's token finds the team; the caller's own owner membership of the chosen site,
+            // read by the action, is what lets them give it access.
+            ["TeamsController.ApproveAccessLink"] = NotDataCategory.CapabilityToken,
         };
 
     /// <summary>

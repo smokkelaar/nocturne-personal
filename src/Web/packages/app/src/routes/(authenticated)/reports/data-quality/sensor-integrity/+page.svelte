@@ -1,5 +1,6 @@
 <script lang="ts">
   import { resolve } from "$app/paths";
+  import { plural } from "#lib/utils/plural.js";
   import {
     Card,
     CardContent,
@@ -128,8 +129,7 @@
         <CardHeader class="pb-3">
           <CardTitle class="text-base">{selectedBucket.label}</CardTitle>
           <CardDescription>
-            {selectedBucket.clusterCount}
-            {selectedBucket.clusterCount === 1 ? "flagged window" : "flagged windows"}
+            {plural(selectedBucket.clusterCount, ["# flagged window", "# flagged windows"])}
           </CardDescription>
         </CardHeader>
         <CardContent>

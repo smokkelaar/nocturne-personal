@@ -2,7 +2,8 @@ import { render } from "vitest-browser-svelte";
 import { page } from "vitest/browser";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { page as pageState } from "$app/state";
-import type { AlertRuleResponse } from "#lib/api/generated/nocturne-api-client.js";
+import type { AlertRuleResponse } from "@nocturne/api-client";
+import { ALERT_SETTING_OPTIONS } from "#lib/test-stubs/alert-setting-options.js";
 import { remoteCommand, remoteQuery } from "#lib/test-stubs/remote-resource.js";
 
 const RULE_ID = "11111111-1111-1111-1111-111111111111";
@@ -20,6 +21,7 @@ let rule = {
 } as unknown as AlertRuleResponse;
 const lastCover = { ...rule, coversLow: true, isLastLowCover: true } as unknown as AlertRuleResponse;
 const rules = [rule];
+const settingOptions = ALERT_SETTING_OPTIONS;
 const history = { items: [], totalCount: 0 };
 
 const refusal = vi.hoisted(() => ({
@@ -34,12 +36,14 @@ const refusal = vi.hoisted(() => ({
 vi.mock("#lib/api/generated/alertRules.generated.remote.js", () => ({
   getRules: () => remoteQuery(() => rules),
   getRule: () => remoteQuery(() => rule),
+  getSettingOptions: () => remoteQuery(() => settingOptions),
   updateRule: remoteCommand(() => refusal.update()),
   deleteRule: remoteCommand(() => refusal.remove()),
   testFire: remoteCommand(() =>
     refusal.testSends ? Promise.resolve({ success: true }) : Promise.reject(refusal.error),
   ),
   getInAppRecipients: () => remoteQuery(() => []),
+  keepChannel: remoteCommand(() => Promise.reject(new Error("not under test"))),
   suggestAutoResolve: remoteCommand(() => Promise.resolve({ condition: null })),
 }));
 
@@ -132,6 +136,26 @@ describe("alert rule editor", () => {
     await page.getByRole("button", { name: "Send a test alert" }).click();
 
     await expect.element(page.getByText("Test alert sent. Make sure that it arrived.")).toBeVisible();
+    expect(page.getByText(/Channels that do not send did not get it/).elements()).toHaveLength(0);
+  });
+
+  it("says that a channel that does not send did not get the test alert", async () => {
+    refusal.testSends = true;
+    rule = {
+      ...original,
+      channels: [
+        { id: "c1", channelType: "webhook", destination: "https://example.test/hook", state: "stopped" },
+      ],
+    } as unknown as AlertRuleResponse;
+    openRule(RULE_ID);
+
+    render(RuleEditorPage, {});
+
+    await page.getByRole("button", { name: "Send a test alert" }).click();
+
+    await expect
+      .element(page.getByText(/Test alert sent. Make sure that it arrived. Channels that do not send did not get it./))
+      .toBeVisible();
   });
 
   it("says how many times the alert would have started in the recent past", async () => {

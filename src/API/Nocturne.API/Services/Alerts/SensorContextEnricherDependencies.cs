@@ -45,4 +45,5 @@ internal sealed record SensorContextEnricherDependencies(
     ISleepService Sleep,
     ITrackerRepository Trackers,
     IReservoirEstimationService Reservoir,
+    ISensorStateReportRepository SensorStates,
     IOptions<AlertEvaluationOptions> Options);

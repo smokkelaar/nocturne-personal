@@ -229,7 +229,7 @@ public class TenantOverviewService : ITenantOverviewService
         Guid subjectId, IReadOnlySet<string> tokenScopes, AuthType authType,
         CancellationToken ct = default)
     {
-        var memberships = await _members.ListMembershipsOfSubjectAsync(subjectId, ct);
+        var memberships = await _members.ListMembershipsOfSubjectAsync(subjectId, _time.GetUtcNow().UtcDateTime, ct);
 
         var result = new List<GlucoseReadTenant>();
         foreach (var (tenant, membership) in memberships)
@@ -344,9 +344,9 @@ public class TenantOverviewService : ITenantOverviewService
             var onBoard = await services.GetRequiredService<IIobCobReader>()
                 .ReadTotalAsync(new DateTimeOffset(nowUtc).ToUnixTimeMilliseconds(), live: true, ct);
             therapy = new TenantOverviewTherapy(
-                onBoard.HasIob ? ScaledRounding.Round(onBoard.Iob.Iob, 2) : 0,
+                onBoard.HasIob ? OnBoardRounding.Iob(onBoard.Iob.Iob) : 0,
                 onBoard.HasIob,
-                onBoard.HasCob ? Math.Round(onBoard.Cob!.Cob) : 0,
+                onBoard.HasCob ? OnBoardRounding.Cob(onBoard.Cob!.Cob) : 0,
                 onBoard.HasCob);
         }
 

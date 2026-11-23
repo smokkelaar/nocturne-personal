@@ -212,7 +212,8 @@ public class AlertRulesControllerWebhookSecretTests
 
         var controller = new AlertRulesController(
             new TestNocturneDbContextFactory(ctx),
-            new TenantMembershipRepository(new TestNocturneDbContextFactory(ctx)),
+            new TenantMembershipRepository(new TestNocturneDbContextFactory(ctx), AccountLinkRoutes.Off),
+            new SubjectRepository(new TestNocturneDbContextFactory(ctx), AccountLinkRoutes.Off),
             new AlertRepository(new TestNocturneDbContextFactory(ctx)),
             new AlertRuleRepository(new TestNocturneDbContextFactory(ctx)),
             MockTenantAccessor.Create(ctx.TenantId).Object,
@@ -223,7 +224,7 @@ public class AlertRulesControllerWebhookSecretTests
             encryption,
             new AlertRuleRearm(new AlertRuleEvaluationGate()),
             new AlertRuleRetirement(Mock.Of<IExcursionTracker>(), Mock.Of<IExcursionResolutionHandler>(), Mock.Of<IUnevaluableRuleNotice>()),
-            Mock.Of<ILogger<AlertRulesController>>());
+            Mock.Of<ILogger<AlertRulesController>>(), TimeProvider.System);
 
         return (controller, ctx, encryption);
     }

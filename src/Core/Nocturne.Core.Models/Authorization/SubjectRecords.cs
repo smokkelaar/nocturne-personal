@@ -114,12 +114,16 @@ public abstract record EmailConfirmation
     public sealed record AddressMismatch : EmailConfirmation;
 }
 
-/// <summary>A tenant a change to a subject would leave without an owner who can sign in.</summary>
+/// <summary>A tenant whose last owner a subject is, by <c>TenantOwnerFilter.IsLastOwnerAsync</c>.</summary>
 public sealed record LastOwnerTenant(Guid TenantId, string Slug);
+
+/// <summary>A team whose last manager a subject is, by <c>TeamManagerFilter.IsLastManagerAsync</c>.</summary>
+public sealed record LastManagerTeam(Guid TeamId, string Name);
 
 /// <summary>
 /// What a change to a subject that may not leave a tenant without an owner found. It is refused
-/// with <see cref="LastOwnerOf"/> while the subject is the last owner of any tenant.
+/// with <see cref="LastOwnerOf"/> while the subject is the last owner of any tenant, and a deletion
+/// with <see cref="LastManagerOf"/> while the subject is the last manager of a team others belong to.
 /// </summary>
 public abstract record SubjectChange
 {
@@ -130,10 +134,16 @@ public abstract record SubjectChange
     public sealed record NotFound : SubjectChange;
 
     public sealed record LastOwnerOf(IReadOnlyList<LastOwnerTenant> OwnedTenants) : SubjectChange;
+
+    public sealed record LastManagerOf(IReadOnlyList<LastManagerTeam> ManagedTeams) : SubjectChange;
 }
 
 /// <summary>What keeps a subject's credentials valid between requests.</summary>
-public sealed record SubjectSignInState(bool IsActive, bool IsPlatformAdmin);
+public sealed record SubjectSignInState(bool IsActive, bool IsPlatformAdmin)
+{
+    /// <summary>Whether the subject may act as a platform admin now: only an active subject may.</summary>
+    public bool IsActivePlatformAdmin => IsActive && IsPlatformAdmin;
+}
 
 /// <summary>What assigning a global role to a subject found.</summary>
 public enum RoleAssignment
@@ -144,10 +154,8 @@ public enum RoleAssignment
 }
 
 /// <summary>
-/// Names the subject an anonymous enrolment is for. The options and complete steps of a flow
-/// share one match, so the subject the options step reuses or creates is the one the complete
-/// step re-resolves; the challenge token is not trusted for it, and an invite token is not a key
-/// for it because one invite can be accepted by several people.
+/// What an anonymous enrolment's options step creates: the kind of subject, under the name the
+/// caller typed. The complete step checks the subject its challenge was issued for against it.
 /// </summary>
 public abstract record EnrolmentMatch
 {

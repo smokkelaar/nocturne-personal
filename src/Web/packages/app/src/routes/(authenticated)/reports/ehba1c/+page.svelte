@@ -58,16 +58,6 @@
     { key: "veryHigh", label: "Very high", swatch: "var(--gri-zone-e)" },
   ];
 
-  /**
-   * How the chart is drawn: hard zone colours or a blend, zooming by a drag across the chart or by
-   * an overview strip, and boundary labels on the dashed rules or only in the key.
-   */
-  const CHART_DESIGN = {
-    lineMode: "zones",
-    zoomMode: "drag",
-    boundaryLabels: "inline",
-  } as const;
-
   const ZOOM_PRESETS: { key: string; label: string; months: number | null }[] = [
     { key: "3m", label: "3 months", months: 3 },
     { key: "6m", label: "6 months", months: 6 },
@@ -487,9 +477,6 @@
           {boundaries}
           zones={zoneBands.map((band) => ({ key: band.key, color: band.swatch }))}
           {yDomain}
-          lineMode={CHART_DESIGN.lineMode}
-          zoomMode={CHART_DESIGN.zoomMode}
-          boundaryLabels={CHART_DESIGN.boundaryLabels}
           {zoom}
           onZoom={(domain) => (zoom = domain)}
         >
@@ -550,11 +537,7 @@
             <svg width="20" height="4" aria-hidden="true" class="text-muted-foreground">
               <line x1="0" y1="2" x2="20" y2="2" stroke="currentColor" stroke-width="1.5" stroke-dasharray="4 3" />
             </svg>
-            <span>
-              {CHART_DESIGN.boundaryLabels === "key"
-                ? "Boundary: the lower limit of the range in its color"
-                : "Boundary between two ranges"}
-            </span>
+            <span>Boundary: the lower limit of the range in its color</span>
           </div>
           {#if labChartPoints.length > 0}
             <div class="flex items-center gap-1.5">

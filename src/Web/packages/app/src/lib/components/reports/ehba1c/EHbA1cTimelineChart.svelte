@@ -1,8 +1,7 @@
 <!--
-  The eHbA1c timeline: one line coloured by the zone each value falls in, a dashed rule at each zone
-  boundary, lab results as triangles, and a zoom onto part of the period. `lineMode` picks hard zone
-  colours or a blend between them; `zoomMode` picks dragging across the chart or an overview strip
-  below it; `boundaryLabels` picks labels on the rules or colour-coded rules named in the key only.
+  The eHbA1c timeline: one line in the colour of the zone each value falls in, a dashed rule in the
+  colour of the zone above each boundary with its label, lab results as triangles, and an overview
+  strip below the chart that picks the period shown.
 -->
 <script lang="ts">
   import type { Snippet } from "svelte";
@@ -27,9 +26,6 @@
     /** Low to high. */
     zones: Zone[];
     yDomain: [number, number];
-    lineMode: "zones" | "blend";
-    zoomMode: "drag" | "overview";
-    boundaryLabels: "inline" | "key";
     /** The visible period; null shows all of it. */
     zoom: [Date, Date] | null;
     onZoom: (domain: [Date, Date] | null) => void;
@@ -42,17 +38,12 @@
     boundaries,
     zones,
     yDomain,
-    lineMode,
-    zoomMode,
-    boundaryLabels,
     zoom,
     onZoom,
     tooltip,
   }: Props = $props();
 
   const DAY_MS = 24 * 60 * 60 * 1000;
-  /** A drag narrower than this is a click, not a zoom. */
-  const MIN_ZOOM_MS = 7 * DAY_MS;
 
   const fullDomain = $derived.by((): [Date, Date] => {
     const first = data[0]?.date ?? new Date();
@@ -68,36 +59,18 @@
   function lineStops(yScale: (v: number) => number, height: number): [number, string][] {
     if (height <= 0 || zones.length === 0) return [];
     const offset = (v: number) => Math.max(0, Math.min(1, yScale(v) / height));
-    if (lineMode === "zones") {
-      const stops: [number, string][] = [];
-      for (let i = zones.length - 1; i >= 0; i--) {
-        const top = i === zones.length - 1 ? 0 : offset(boundaries[i].value);
-        const bottom = i === 0 ? 1 : offset(boundaries[i - 1].value);
-        stops.push([top, zones[i].color], [bottom, zones[i].color]);
-      }
-      return stops;
+    const stops: [number, string][] = [];
+    for (let i = zones.length - 1; i >= 0; i--) {
+      const top = i === zones.length - 1 ? 0 : offset(boundaries[i].value);
+      const bottom = i === 0 ? 1 : offset(boundaries[i - 1].value);
+      stops.push([top, zones[i].color], [bottom, zones[i].color]);
     }
-    // A blend: each zone's colour sits at the middle of the zone, so the line changes colour
-    // gradually across each boundary instead of at it.
-    const lows = [yDomain[0], ...boundaries.map((b) => b.value)];
-    const highs = [...boundaries.map((b) => b.value), Math.max(yDomain[1], (boundaries.at(-1)?.value ?? 0) + 1)];
-    return zones
-      .map((zone, i): [number, string] => [offset((lows[i] + highs[i]) / 2), zone.color])
-      .reverse();
+    return stops;
   }
 
-  /** The colour of the zone `value` falls in, for a dashed rule drawn in the colour of the zone above it. */
+  /** The colour of the zone above boundary `index`, which its dashed rule and label are drawn in. */
   function zoneAbove(index: number): string {
     return zones[index + 1]?.color ?? "var(--muted-foreground)";
-  }
-
-  function handleBrushEnd(e: { brush: { x: Array<number | Date | string | null> } }) {
-    const [start, end] = e.brush.x ?? [];
-    if (start == null || end == null) return;
-    const from = new Date(start);
-    const to = new Date(end);
-    if (to.getTime() - from.getTime() < MIN_ZOOM_MS) return;
-    onZoom([from, to]);
   }
 
   function handleOverview(e: { brush: { x: Array<number | Date | string | null> } }) {
@@ -115,11 +88,11 @@
     return formatShortDate(v, xDomain[1].getTime() - xDomain[0].getTime() > 180 * DAY_MS);
   }
 
-  const padding = $derived({ top: 8, right: boundaryLabels === "inline" ? 8 : 16, bottom: 24, left: 40 });
+  const padding = { top: 8, right: 8, bottom: 24, left: 40 };
 </script>
 
 <div class="space-y-2">
-  <div class="h-[320px] w-full @md:h-[400px]" data-testid="ehba1c-chart" data-line-mode={lineMode} data-zoom-mode={zoomMode}>
+  <div class="h-[320px] w-full @md:h-[400px]" data-testid="ehba1c-chart">
     <Chart
       {data}
       x="date"
@@ -151,20 +124,18 @@
             {#if boundary.value > yDomain[0] && boundary.value < yDomain[1]}
               <Rule
                 y={boundary.value}
-                stroke={boundaryLabels === "key" ? zoneAbove(i) : "var(--muted-foreground)"}
-                class={boundaryLabels === "key" ? "stroke-2 opacity-80" : "stroke-1 opacity-60"}
+                stroke={zoneAbove(i)}
+                class="stroke-2 opacity-80"
                 dashArray="6 4"
                 data-testid="ehba1c-boundary"
               />
-              {#if boundaryLabels === "inline"}
-                <Text
-                  x={context.width - 4}
-                  y={context.yScale(boundary.value) - 4}
-                  value={`${boundary.label} ${boundary.valueLabel}`}
-                  textAnchor="end"
-                  class="text-2xs fill-muted-foreground"
-                />
-              {/if}
+              <Text
+                x={context.width - 4}
+                y={context.yScale(boundary.value) - 4}
+                value={`${boundary.label} ${boundary.valueLabel}`}
+                textAnchor="end"
+                class="text-2xs fill-muted-foreground"
+              />
             {/if}
           {/each}
 
@@ -208,21 +179,12 @@
           <Highlight lines={{ class: "stroke-muted-foreground/50" }} points={{ class: "fill-foreground stroke-background" }} />
         </Svg>
 
-        {#if zoomMode === "drag"}
-          <BrushContext
-            axis="x"
-            clickToReset={false}
-            onBrushEnd={handleBrushEnd}
-            classes={{ range: "bg-primary/15 border border-primary/40 rounded" }}
-          />
-        {/if}
-
         {@render tooltip(context)}
       {/snippet}
     </Chart>
   </div>
 
-  {#if zoomMode === "overview" && data.length > 1}
+  {#if data.length > 1}
     <div class="h-[64px] w-full print:hidden" data-testid="ehba1c-overview">
       <Chart
         {data}
@@ -267,8 +229,6 @@
         Reset zoom
       </Button>
     </div>
-  {:else if zoomMode === "drag"}
-    <p class="text-center text-xs text-muted-foreground print:hidden">Drag across the chart to zoom in on a period.</p>
   {:else}
     <p class="text-center text-xs text-muted-foreground print:hidden">Drag the edges of the strip to zoom in on a period.</p>
   {/if}

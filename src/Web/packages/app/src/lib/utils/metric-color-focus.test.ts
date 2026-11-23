@@ -209,6 +209,24 @@ describe("chosen colors", () => {
     ]);
   });
 
+  it("drops the theme's inner colors once a color is chosen", () => {
+    const scale = buildGlucoseScale(null, [{ value: 120, position: 0.4, color: "#000000" }], 90);
+    expect(scale.ramp).toEqual([
+      GLUCOSE_RAMP[0],
+      { position: 0.4, color: "#000000" },
+      GLUCOSE_RAMP.at(-1),
+    ]);
+    expect(scaleFill(120, scale)).toBe("#000000");
+  });
+
+  it("leads the glucose ramp by the chosen end colors alone", () => {
+    const scale = buildGlucoseScale(null, null, 90, { low: "#ffffff", high: "#000000" });
+    expect(scale.ramp).toEqual([
+      { position: 0, color: "#ffffff" },
+      { position: 1, color: "#000000" },
+    ]);
+  });
+
   it("leaves the theme ramp untouched without chosen colors", () => {
     expect(paintRamp(GLUCOSE_RAMP, {}, [{ value: 100, position: 0.3 }], [40, 350])).toBe(GLUCOSE_RAMP);
   });

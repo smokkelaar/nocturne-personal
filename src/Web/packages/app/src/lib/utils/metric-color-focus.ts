@@ -147,9 +147,10 @@ export function resolveColorEnds(candidate: ColorEnds): ColorEnds {
 }
 
 /**
- * The base ramp with the end colors in place of its ends and each colored boundary inside
- * `domain` as a stop of its own. A boundary the domain does not reach is ignored, as
- * {@link rampPosition} ignores it.
+ * The base ramp until a color is chosen. From then on only the ends, in the end colors where
+ * chosen, and each colored boundary inside `domain` lead the ramp: the base ramp's inner stops
+ * are dropped, so its own hues no longer appear between the chosen ones. A boundary the domain
+ * does not reach is ignored, as {@link rampPosition} ignores it.
  */
 export function paintRamp(
   base: readonly RampStop[],
@@ -162,18 +163,13 @@ export function paintRamp(
       b.color !== undefined && b.value > domain[0] && b.value < domain[1]
   );
   if (!ends.low && !ends.high && pinned.length === 0) return base;
-  const stops = base
-    .filter((stop) => !pinned.some((b) => b.position === stop.position))
-    .map((stop, i, all) =>
-      i === 0 && ends.low
-        ? { ...stop, color: ends.low }
-        : i === all.length - 1 && ends.high
-          ? { ...stop, color: ends.high }
-          : stop
-    );
-  return [...stops, ...pinned.map((b) => ({ position: b.position, color: b.color }))].sort(
-    (a, b) => a.position - b.position
-  );
+  const low = base[0];
+  const high = base[base.length - 1];
+  return [
+    { position: low.position, color: ends.low ?? low.color },
+    ...pinned.map((b) => ({ position: b.position, color: b.color })),
+    { position: high.position, color: ends.high ?? high.color },
+  ];
 }
 
 /**
